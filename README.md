@@ -19,3 +19,7 @@ A curated collection of useful and cool macOS scripts focused on terminal workfl
 ```bash
 chmod +x terminal/launchers/mqlaunch.sh
 ./terminal/launchers/mqlaunch.sh
+```
+## Goal
+
+Build fast, practical terminal tools that are fun to use.
