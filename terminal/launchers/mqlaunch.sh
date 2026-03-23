@@ -5,45 +5,66 @@ set -u
 APP_TERM_TITLE="mqlaunch"
 REFRESH_DELAY=0.2
 
+C_RESET=$'\e[0m'
+C_BOLD=$'\e[1m'
+C_BLUE=$'\e[34m'
+C_CYAN=$'\e[36m'
+C_GREEN=$'\e[32m'
+C_YELLOW=$'\e[33m'
+C_RED=$'\e[31m'
+C_MAGENTA=$'\e[35m'
+
 clear_screen() {
   clear
 }
 
-print_header() {
-  cat <<'EOF'
-========================================================
-                    MQ LAUNCHER (macOS)
-========================================================
-  1) Finder
-  2) Safari
-  3) Google Chrome
-  4) Spotify
-  5) Visual Studio Code
-  6) System Settings
-  7) Activity Monitor
-  8) Downloads folder
-  9) Home folder
- 10) Show IP + network info
- 11) Exit launcher
+set_terminal_title() {
+  print -Pn "\e]0;${APP_TERM_TITLE}\a"
+}
 
- Extra:
- 12) Lock screen
- 13) Sleep display
- 14) Open Utilities folder
- 15) Open Applications folder
- 16) Restart Finder
-========================================================
-EOF
+line() {
+  echo "${C_BLUE}========================================================${C_RESET}"
+}
+
+print_header() {
+  line
+  echo "${C_BOLD}${C_CYAN}                    MQ LAUNCHER (macOS)${C_RESET}"
+  line
+  echo "${C_GREEN}  1)${C_RESET} Finder"
+  echo "${C_GREEN}  2)${C_RESET} Safari"
+  echo "${C_GREEN}  3)${C_RESET} Google Chrome"
+  echo "${C_GREEN}  4)${C_RESET} Spotify"
+  echo "${C_GREEN}  5)${C_RESET} Visual Studio Code"
+  echo "${C_GREEN}  6)${C_RESET} System Settings"
+  echo "${C_GREEN}  7)${C_RESET} Activity Monitor"
+  echo "${C_GREEN}  8)${C_RESET} Downloads folder"
+  echo "${C_GREEN}  9)${C_RESET} Home folder"
+  echo "${C_GREEN} 10)${C_RESET} Show IP + network info"
+  echo "${C_GREEN} 11)${C_RESET} Exit launcher"
+  echo
+  echo "${C_BOLD}${C_MAGENTA} Extra${C_RESET}"
+  echo "${C_YELLOW} 12)${C_RESET} Lock screen"
+  echo "${C_YELLOW} 13)${C_RESET} Sleep display"
+  echo "${C_YELLOW} 14)${C_RESET} Open Utilities folder"
+  echo "${C_YELLOW} 15)${C_RESET} Open Applications folder"
+  echo "${C_YELLOW} 16)${C_RESET} Restart Finder"
+  echo "${C_YELLOW} 17)${C_RESET} Show date and time"
+  echo "${C_YELLOW} 18)${C_RESET} Open repo in browser"
+  line
 }
 
 print_footer() {
   echo
-  echo "Choose a number and press Enter."
+  echo "${C_BOLD}Choose a number and press Enter.${C_RESET}"
   echo
 }
 
 pause_brief() {
   sleep "$REFRESH_DELAY"
+}
+
+pause_enter() {
+  read -r "?Press Enter to continue..."
 }
 
 app_exists() {
@@ -55,8 +76,8 @@ open_app() {
   if app_exists "$app_name"; then
     open -a "$app_name"
   else
-    echo "App not found: $app_name"
-    read -r "?Press Enter..."
+    echo "${C_RED}App not found:${C_RESET} $app_name"
+    pause_enter
   fi
 }
 
@@ -65,34 +86,34 @@ open_path() {
   if [ -e "$target_path" ]; then
     open "$target_path"
   else
-    echo "Path not found: $target_path"
-    read -r "?Press Enter..."
+    echo "${C_RED}Path not found:${C_RESET} $target_path"
+    pause_enter
   fi
 }
 
 show_network_info() {
   clear_screen
-  echo "========================================================"
-  echo "                 NETWORK / IP INFORMATION"
-  echo "========================================================"
+  line
+  echo "${C_BOLD}${C_CYAN}                 NETWORK / IP INFORMATION${C_RESET}"
+  line
   echo
 
-  echo "Local hostname:"
+  echo "${C_BOLD}Local hostname:${C_RESET}"
   scutil --get LocalHostName 2>/dev/null || echo "Unavailable"
   echo
 
-  echo "Computer name:"
+  echo "${C_BOLD}Computer name:${C_RESET}"
   scutil --get ComputerName 2>/dev/null || echo "Unavailable"
   echo
 
-  echo "Primary IP addresses:"
+  echo "${C_BOLD}Primary IP addresses:${C_RESET}"
   ifconfig | awk '
     /^[a-z0-9]/ { iface=$1; sub(":", "", iface) }
     /inet / && $2 != "127.0.0.1" { print iface ": " $2 }
   '
   echo
 
-  echo "Wi-Fi info:"
+  echo "${C_BOLD}Wi-Fi info:${C_RESET}"
   local airport_bin="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
   if [ -x "$airport_bin" ]; then
     "$airport_bin" -I 2>/dev/null | grep -E " SSID|BSSID|agrCtlRSSI|channel"
@@ -101,7 +122,22 @@ show_network_info() {
   fi
 
   echo
-  read -r "?Press Enter to return..."
+  pause_enter
+}
+
+show_datetime() {
+  clear_screen
+  line
+  echo "${C_BOLD}${C_CYAN}                    DATE AND TIME${C_RESET}"
+  line
+  echo
+  date
+  echo
+  pause_enter
+}
+
+open_repo() {
+  open "https://github.com/MCamner/macos-scripts"
 }
 
 lock_screen() {
@@ -123,16 +159,13 @@ tell application "Terminal" to activate
 APPLESCRIPT
 }
 
-set_terminal_title() {
-  print -Pn "\e]0;${APP_TERM_TITLE}\a"
-}
-
 main_loop() {
   while true; do
     set_terminal_title
     clear_screen
     print_header
     print_footer
+
     read -r "?Selection: " choice
     echo
 
@@ -147,13 +180,15 @@ main_loop() {
       8) open_path "$HOME/Downloads" ;;
       9) open_path "$HOME" ;;
       10) show_network_info ;;
-      11) echo "Exiting mqlaunch..."; exit 0 ;;
+      11) echo "${C_GREEN}Exiting mqlaunch...${C_RESET}"; exit 0 ;;
       12) lock_screen ;;
       13) sleep_display ;;
       14) open_path "/Applications/Utilities" ;;
       15) open_path "/Applications" ;;
       16) restart_finder ;;
-      *) echo "Invalid selection: $choice"; read -r "?Press Enter..." ;;
+      17) show_datetime ;;
+      18) open_repo ;;
+      *) echo "${C_RED}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
 
     bring_terminal_front
