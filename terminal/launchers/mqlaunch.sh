@@ -86,6 +86,24 @@ open_app() {
   pause_enter
 }
 
+open_code() {
+  if open -b com.microsoft.VSCode 2>/dev/null; then
+    return 0
+  fi
+
+  if open -a "Visual Studio Code" 2>/dev/null; then
+    return 0
+  fi
+
+  if command -v code >/dev/null 2>&1; then
+    code . >/dev/null 2>&1
+    return 0
+  fi
+
+  echo "${C_RED}VS Code not found:${C_RESET} install it or make sure the app/CLI is available."
+  pause_enter
+}
+
 open_path() {
   local target_path="$1"
   if [ -e "$target_path" ]; then
@@ -179,7 +197,7 @@ main_loop() {
       2) open_app "Safari" ;;
       3) open_app "Google Chrome" ;;
       4) open_app "Spotify" ;;
-      5) open_app "Visual Studio Code" ;;
+      5) open_code ;;
       6) open_app "System Settings" ;;
       7) open_app "Activity Monitor" ;;
       8) open_path "$HOME/Downloads" ;;
