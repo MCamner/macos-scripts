@@ -1,31 +1,21 @@
 # macos-scripts
 
-A curated collection of useful and cool macOS scripts.
+A curated collection of useful and cool macOS scripts focused on terminal workflows, automation and system tools.
+
+## Current focus
+
+- `terminal/launchers/mqlaunch.sh` — a macOS terminal launcher for apps, folders and quick actions
 
 ## Structure
 
-- terminal/
-  - launchers/
-  - menus/
-  - themes/
-- automation/
-  - login/
-  - workflows/
-  - shortcuts/
-- system/
-  - tweaks/
-  - performance/
-  - monitoring/
-- ui/
-  - terminal-ui/
-  - ascii/
-  - dashboards/
-- tools/
-  - scripts/
-  - cli/
+- `terminal/` — launchers, menus and themes
+- `automation/` — login scripts, workflows and shortcuts
+- `system/` — tweaks, performance and monitoring
+- `ui/` — terminal UI, ASCII and dashboards
+- `tools/` — reusable scripts and CLI utilities
 
 ## Quick start
 
-Run:
-
+```bash
+chmod +x terminal/launchers/mqlaunch.sh
 ./terminal/launchers/mqlaunch.sh
