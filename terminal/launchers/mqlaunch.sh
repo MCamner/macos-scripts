@@ -5,9 +5,12 @@ set -u
 APP_TERM_TITLE="mqlaunch"
 REFRESH_DELAY=0.2
 
-clear_screen() { clear; }
+clear_screen() {
+  clear
+}
 
-print_header() { cat <<'MENU'
+print_header() {
+  cat <<'EOF'
 ========================================================
                     MQ LAUNCHER (macOS)
 ========================================================
@@ -30,7 +33,7 @@ print_header() { cat <<'MENU'
  15) Open Applications folder
  16) Restart Finder
 ========================================================
-MENU
+EOF
 }
 
 print_footer() {
@@ -39,7 +42,9 @@ print_footer() {
   echo
 }
 
-pause_brief() { sleep "$REFRESH_DELAY"; }
+pause_brief() {
+  sleep "$REFRESH_DELAY"
+}
 
 app_exists() {
   [ -d "/Applications/${1}.app" ] || [ -d "/System/Applications/${1}.app" ]
