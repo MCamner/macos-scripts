@@ -70,17 +70,20 @@ pause_enter() {
 }
 
 app_exists() {
-  [ -d "/Applications/${1}.app" ] || [ -d "/System/Applications/${1}.app" ]
+  [ -d "/Applications/${1}.app" ] || \
+  [ -d "/System/Applications/${1}.app" ] || \
+  [ -d "/System/Library/CoreServices/${1}.app" ]
 }
 
 open_app() {
   local app_name="$1"
-  if app_exists "$app_name"; then
-    open -a "$app_name"
-  else
-    echo "${C_RED}App not found:${C_RESET} $app_name"
-    pause_enter
+
+  if open -a "$app_name" 2>/dev/null; then
+    return 0
   fi
+
+  echo "${C_RED}App not found:${C_RESET} $app_name"
+  pause_enter
 }
 
 open_path() {
