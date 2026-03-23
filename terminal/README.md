@@ -12,6 +12,12 @@ Terminal-focused macOS tools and workflows.
 
 - `launchers/mqlaunch.sh` — a macOS terminal launcher for apps, folders and quick actions
 
+## Run locally
+
+```bash
+chmod +x terminal/launchers/mqlaunch.sh
+./terminal/launchers/mqlaunch.sh
+
 ## Goal
 
 Build fast, practical terminal tools that are fun to use.
