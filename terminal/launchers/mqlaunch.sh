@@ -36,7 +36,7 @@ print_header() {
   echo "${C_GREEN}  2)${C_RESET} Safari"
   echo "${C_GREEN}  3)${C_RESET} Google Chrome"
   echo "${C_GREEN}  4)${C_RESET} Spotify"
-  echo "${C_GREEN}  5)${C_RESET} Visual Studio Code"
+  echo "${C_GREEN}  5)${C_RESET} Xcode"
   echo "${C_GREEN}  6)${C_RESET} System Settings"
   echo "${C_GREEN}  7)${C_RESET} Activity Monitor"
   echo "${C_GREEN}  8)${C_RESET} Downloads folder"
@@ -197,7 +197,7 @@ main_loop() {
       2) open_app "Safari" ;;
       3) open_app "Google Chrome" ;;
       4) open_app "Spotify" ;;
-      5) open_code ;;
+      5) open_app "Xcode" ;;
       6) open_app "System Settings" ;;
       7) open_app "Activity Monitor" ;;
       8) open_path "$HOME/Downloads" ;;
