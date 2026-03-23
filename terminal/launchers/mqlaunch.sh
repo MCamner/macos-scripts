@@ -4,15 +4,17 @@ set -u
 
 APP_TERM_TITLE="mqlaunch"
 REFRESH_DELAY=0.2
+REPO_URL="https://github.com/MCamner/macos-scripts"
 
-C_RESET=$'\e[0m'
-C_BOLD=$'\e[1m'
-C_BLUE=$'\e[34m'
-C_CYAN=$'\e[36m'
-C_GREEN=$'\e[32m'
-C_YELLOW=$'\e[33m'
-C_RED=$'\e[31m'
-C_MAGENTA=$'\e[35m'
+# Colors
+C_RESET=$'\033[0m'
+C_BOLD=$'\033[1m'
+C_BLUE=$'\033[34m'
+C_CYAN=$'\033[36m'
+C_GREEN=$'\033[32m'
+C_YELLOW=$'\033[33m'
+C_RED=$'\033[31m'
+C_MAGENTA=$'\033[35m'
 
 clear_screen() {
   clear
@@ -137,7 +139,7 @@ show_datetime() {
 }
 
 open_repo() {
-  open "https://github.com/MCamner/macos-scripts"
+  open "$REPO_URL"
 }
 
 lock_screen() {
