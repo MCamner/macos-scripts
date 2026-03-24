@@ -19,3 +19,8 @@ Launcher scripts for macOS terminal workflows.
 ```bash
 chmod +x mqlaunch.sh
 ./mqlaunch.sh
+```
+
+## Goal
+
+Build simple launchers that make macOS faster, cleaner and more fun to use.
