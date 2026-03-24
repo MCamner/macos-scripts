@@ -52,6 +52,7 @@ print_header() {
   echo "${C_YELLOW} 16)${C_RESET} Restart Finder"
   echo "${C_YELLOW} 17)${C_RESET} Show date and time"
   echo "${C_YELLOW} 18)${C_RESET} Open repo in browser"
+  echo "${C_YELLOW} 19)${C_RESET} Run system check"
   line
 }
 
@@ -163,6 +164,15 @@ open_repo() {
   open "$REPO_URL"
 }
 
+run_system_check() {
+  if command -v system-check >/dev/null 2>&1; then
+    system-check
+  else
+    echo "${C_RED}system-check not found:${C_RESET} run ./install.sh first."
+    pause_enter
+  fi
+}
+
 lock_screen() {
   /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
 }
@@ -211,6 +221,7 @@ main_loop() {
       16) restart_finder ;;
       17) show_datetime ;;
       18) open_repo ;;
+      19) run_system_check ;;
       *) echo "${C_RED}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
 
