@@ -3,10 +3,10 @@
 set -u
 
 # ============================================================
-# MQLaunch v2 — Old School Utility
+# MQLaunch v3 — Old School Utility
 # ============================================================
 
-APP_TITLE="MQLaunch v2"
+APP_TITLE="MQLaunch v3"
 APP_SUBTITLE="Old School Utility"
 
 BASE_DIR="$HOME/macos-scripts"
@@ -408,6 +408,14 @@ backup_prompts() {
   pause_enter
 }
 
+open_base_dir() {
+  open_folder_screen "OPEN MACOS-SCRIPTS FOLDER" "$BASE_DIR" "Base dir missing:"
+}
+
+open_launcher_folder() {
+  open_folder_screen "OPEN LAUNCHER FOLDER" "$BASE_DIR/terminal/launchers" "Launcher folder missing:"
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -430,12 +438,11 @@ print_main_menu() {
   row3 "17. Show date and time" "18. Open repo in browser" "19. Run system check"
 
   empty_row
-  row "DEV / PROMPTS"
-  row3 "20. AI Modes" "21. Open AI Prompts folder" "22. Show prompt files"
-  row3 "23. Edit mqlaunch" "24. Backup prompts" ""
+  row "MENUS"
+  row3 "20. AI Modes" "21. Dev / Prompts" ""
 
   print_footer
-  printf "${C_TITLE}Select option [1-24]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-21]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -451,6 +458,20 @@ print_ai_menu() {
 
   print_footer
   printf "${C_TITLE}Select AI mode [0-9]: ${C_RESET}"
+}
+
+print_dev_menu() {
+  print_header
+  row "DEV / PROMPTS"
+  empty_row
+
+  row2 " 1. Open AI Prompts folder" " 2. Show prompt files"
+  row2 " 3. Edit mqlaunch" " 4. Backup prompts"
+  row2 " 5. Open macos-scripts folder" " 6. Open launcher folder"
+  row2 " 0. Back" ""
+
+  print_footer
+  printf "${C_TITLE}Select dev option [0-6]: ${C_RESET}"
 }
 
 ai_menu_loop() {
@@ -473,6 +494,27 @@ ai_menu_loop() {
       9) safe_run_ai menu ;;
       0) break ;;
       *) echo "${C_ERR}Invalid AI selection:${C_RESET} $choice"; pause_enter ;;
+    esac
+  done
+}
+
+dev_menu_loop() {
+  local choice
+
+  while true; do
+    print_dev_menu
+    read -r choice
+    echo
+
+    case "$choice" in
+      1) open_ai_prompts_folder ;;
+      2) show_prompt_files ;;
+      3) edit_mqlaunch ;;
+      4) backup_prompts ;;
+      5) open_base_dir ;;
+      6) open_launcher_folder ;;
+      0) break ;;
+      *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
 }
@@ -506,10 +548,7 @@ main_loop() {
       18) open_repo_browser ;;
       19) system_check ;;
       20) ai_menu_loop ;;
-      21) open_ai_prompts_folder ;;
-      22) show_prompt_files ;;
-      23) edit_mqlaunch ;;
-      24) backup_prompts ;;
+      21) dev_menu_loop ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -517,25 +556,27 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v2 — Old School Utility
+MQLaunch v3 — Old School Utility
 
 Usage:
   mqlaunch                Open main menu
   mqlaunch ai             Open AI submenu
+  mqlaunch dev            Open Dev / Prompts submenu
 
 Direct commands:
   finder | safari | chrome | spotify | xcode
   settings | monitor
   downloads | home | utilities | applications
   ip | lock | sleep | restart-finder | date
-  repo | check | ai
+  repo | check | ai | dev
   prompts | prompt-files | edit | backup-prompts
+  base | launchers
   auto | one | atlas | decide | research | root | solve | pdebug | menu
 
 Examples:
   mqlaunch
-  mqlaunch chrome
   mqlaunch ai
+  mqlaunch dev
   mqlaunch prompts
   mqlaunch edit
   mqlaunch backup-prompts
@@ -565,10 +606,13 @@ run_arg_command() {
     repo) open_repo_browser ;;
     check|health) system_check ;;
     ai) ai_menu_loop ;;
+    dev) dev_menu_loop ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
     backup-prompts|backup) backup_prompts ;;
+    base|macos-scripts) open_base_dir ;;
+    launchers|launcher-folder) open_launcher_folder ;;
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
     *)
