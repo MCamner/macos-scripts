@@ -20,7 +20,7 @@ BOX_INNER=88
 # --- ANSI colors --------------------------------------------
 if [[ -t 1 ]]; then
   C_RESET=$'\033[0m'
-  C_TITLE=$'\033[1;33m'   # amber / gul prompt
+  C_TITLE=$'\033[1;32m'
   C_ERR=$'\033[0;31m'
 else
   C_RESET=''
@@ -240,7 +240,7 @@ print_main_menu() {
   row3 " 7. Activity Monitor" "" ""
 
   empty_row
-  row "SYSTEM / CONTROL"
+  row "FILES / INFO"
   row3 " 8. Downloads folder" " 9. Home folder" "10. Show IP + network"
   row3 "11. Exit launcher" "12. Lock screen" "13. Sleep display"
 
