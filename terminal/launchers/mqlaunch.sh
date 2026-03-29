@@ -3,10 +3,14 @@
 set -u
 
 # ============================================================
-# MQLaunch v3 — Old School Utility
+# MQLaunch v3.1 — Old School Utility
+# Adds:
+# - better system_check
+# - mqlaunch symlink/path validation
+# - clearer AI backend status
 # ============================================================
 
-APP_TITLE="MQLaunch v3"
+APP_TITLE="MQLaunch v3.1"
 APP_SUBTITLE="Old School Utility"
 
 BASE_DIR="$HOME/macos-scripts"
@@ -15,6 +19,7 @@ PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
 MQ_SCRIPT="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 BACKUP_DIR="$BASE_DIR/backups"
+BIN_LINK="$HOME/bin/mqlaunch"
 
 BOX_INNER=88
 
@@ -155,14 +160,35 @@ resolve_prompt_dir() {
   return 1
 }
 
+resolve_ai_status() {
+  if [[ -x "$AI_SCRIPT" ]]; then
+    print -r -- "OK"
+  elif [[ -e "$AI_SCRIPT" ]]; then
+    print -r -- "FOUND_NOT_EXECUTABLE"
+  else
+    print -r -- "MISSING"
+  fi
+}
+
 safe_run_ai() {
   local mode="$1"
 
   if [[ -x "$AI_SCRIPT" ]]; then
     "$AI_SCRIPT" "$mode"
   else
-    echo "${C_ERR}AI script missing or not executable:${C_RESET}"
-    echo "$AI_SCRIPT"
+    print_header
+    row "AI BACKEND STATUS"
+    empty_row
+    if [[ -e "$AI_SCRIPT" ]]; then
+      row "ai-mode.sh found but not executable."
+      row "Run:"
+      row " chmod +x $AI_SCRIPT"
+    else
+      row "ai-mode.sh missing."
+      row "Expected:"
+      row " $AI_SCRIPT"
+    fi
+    print_footer
     pause_enter
   fi
 }
@@ -228,11 +254,22 @@ open_repo_browser() {
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
+  local ai_status=""
+  local link_target=""
+  local active_cmd=""
+
   resolved_prompt_dir="$(resolve_prompt_dir 2>/dev/null || true)"
+  ai_status="$(resolve_ai_status)"
 
   if [[ -n "$resolved_prompt_dir" ]]; then
     prompt_count="$(find "$resolved_prompt_dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
   fi
+
+  if [[ -L "$BIN_LINK" ]]; then
+    link_target="$(readlink "$BIN_LINK" 2>/dev/null || true)"
+  fi
+
+  active_cmd="$(command -v mqlaunch 2>/dev/null || true)"
 
   print_header
   row "SYSTEM CHECK"
@@ -244,17 +281,51 @@ system_check() {
     row "[FAIL] Base dir missing"
   fi
 
-  if [[ -x "$AI_SCRIPT" ]]; then
-    row "[OK]   ai-mode.sh executable"
+  if [[ -x "$MQ_SCRIPT" ]]; then
+    row "[OK]   mqlaunch.sh executable"
+  elif [[ -e "$MQ_SCRIPT" ]]; then
+    row "[FAIL] mqlaunch.sh found but not executable"
   else
-    row "[FAIL] ai-mode.sh missing/not executable"
+    row "[FAIL] mqlaunch.sh missing"
   fi
+
+  case "$ai_status" in
+    OK)
+      row "[OK]   AI backend executable"
+      ;;
+    FOUND_NOT_EXECUTABLE)
+      row "[FAIL] AI backend found but not executable"
+      ;;
+    MISSING)
+      row "[FAIL] AI backend missing"
+      ;;
+  esac
 
   if [[ -n "$resolved_prompt_dir" ]]; then
     row "[OK]   Prompt dir found"
     row "       $resolved_prompt_dir"
   else
     row "[FAIL] Prompt dir missing"
+  fi
+
+  if [[ -L "$BIN_LINK" ]]; then
+    if [[ "$link_target" == "$MQ_SCRIPT" ]]; then
+      row "[OK]   ~/bin/mqlaunch symlink correct"
+    else
+      row "[FAIL] ~/bin/mqlaunch points elsewhere"
+      row "       $link_target"
+    fi
+  elif [[ -e "$BIN_LINK" ]]; then
+    row "[FAIL] ~/bin/mqlaunch exists but is not a symlink"
+  else
+    row "[FAIL] ~/bin/mqlaunch missing"
+  fi
+
+  if [[ -n "$active_cmd" ]]; then
+    row "[OK]   mqlaunch command resolves"
+    row "       $active_cmd"
+  else
+    row "[FAIL] mqlaunch command not found in PATH"
   fi
 
   if command -v git >/dev/null 2>&1; then
@@ -556,7 +627,7 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v3 — Old School Utility
+MQLaunch v3.1 — Old School Utility
 
 Usage:
   mqlaunch                Open main menu
