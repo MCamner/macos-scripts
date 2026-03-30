@@ -6,7 +6,9 @@ Reusable scripts and command-line utilities.
 
 - `scripts/` — standalone helper scripts
 - `cli/` — command-line tools and wrappers
-- `mac-terminal-guide/` — macOS terminal guide (README + HTML)
+- [mac-terminal-guide](./mac-terminal-guide/README.md) — macOS terminal guide
+
+  - [Open HTML guide](./mac-terminal-guide/mac-terminal-guide.html)
 
 ## Goal
 
