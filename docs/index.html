@@ -4,12 +4,154 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>macos-scripts</title>
+  <style>
+    :root {
+      --bg: #0b0f10;
+      --panel: #11161a;
+      --text: #d7fbe8;
+      --muted: #8fbfa7;
+      --accent: #39ff88;
+      --border: #1f2a30;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #132026 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .window {
+      width: 100%;
+      max-width: 900px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #0f1418;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #2b3a42;
+    }
+
+    .titlebar span {
+      margin-left: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    .prompt {
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 40px;
+      line-height: 1.1;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      margin: 0 0 20px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    a.button {
+      display: inline-block;
+      padding: 12px 18px;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      color: var(--bg);
+      background: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    a.button.secondary {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    .code {
+      margin-top: 28px;
+      padding: 18px;
+      background: #0a0e11;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 30px;
+      }
+
+      .content {
+        padding: 22px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>macos-scripts</h1>
-  <p>Live preview for the macOS terminal guide.</p>
-  <p>
-    <a href="mac-terminal-guide.html">Open guide</a>
-  </p>
+  <main class="window">
+    <div class="titlebar">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>macos-scripts / live preview</span>
+    </div>
+
+    <section class="content">
+      <div class="prompt">$ open mac-terminal-guide</div>
+      <h1>macos-scripts</h1>
+      <p>
+        A live preview page for terminal workflows, tools, and the macOS terminal guide.
+      </p>
+
+      <div class="buttons">
+        <a class="button" href="mac-terminal-guide.html">Open Guide</a>
+        <a class="button secondary" href="https://github.com/MCamner/macos-scripts">View Repository</a>
+      </div>
+
+      <div class="code">> launcher: mqlaunch
+> site: github pages
+> status: online</div>
+    </section>
+  </main>
 </body>
 </html>
