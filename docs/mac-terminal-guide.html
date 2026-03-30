@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>macOS Terminal — Kommandoreferens</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1218;
+    --bg3: #141920;
+    --border: #1e2733;
+    --border2: #243040;
+    --green: #00ff87;
+    --green2: #00cc6a;
+    --cyan: #00d4ff;
+    --amber: #ffb300;
+    --pink: #ff4d8d;
+    --purple: #a78bfa;
+    --text: #c8d6e8;
+    --text2: #7a90a8;
+    --text3: #445566;
+    --tag-bg: rgba(0,255,135,0.08);
+    --tag-border: rgba(0,255,135,0.2);
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Space Grotesk', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,135,0.012) 2px,
+      rgba(0,255,135,0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,15,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    color: #000;
+    letter-spacing: -1px;
+  }
+
+  .logo-text {
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--green);
+  }
+
+  .header-search {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .header-search input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0.55rem 1rem 0.55rem 2.5rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .header-search input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(0,255,135,0.1);
+  }
+
+  .header-search input::placeholder {
+    color: var(--text3);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 0.85rem;
+  }
+
+  .count-badge {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  .count-badge span {
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+    background: var(--bg2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+
+  aside::-webkit-scrollbar { width: 4px; }
+  aside::-webkit-scrollbar-track { background: transparent; }
+  aside::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 1.25rem;
+    margin-bottom: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .sidebar-label:first-child { margin-top: 0; }
+
+  .cat-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.55rem 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text2);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    text-align: left;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .cat-btn:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .cat-btn.active {
+    color: var(--green);
+    background: rgba(0,255,135,0.06);
+  }
+
+  .cat-btn.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 20%; bottom: 20%;
+    width: 2px;
+    background: var(--green);
+    border-radius: 2px;
+  }
+
+  .cat-icon { font-size: 0.9rem; }
+
+  .cat-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--text3);
+  }
+
+  .cat-btn.active .cat-count {
+    background: rgba(0,255,135,0.1);
+    border-color: rgba(0,255,135,0.25);
+    color: var(--green2);
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .section-sub {
+    font-size: 0.8rem;
+    color: var(--text2);
+  }
+
+  /* ── COMMAND CARDS ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .cmd-card {
+    background: var(--bg2);
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .cmd-card:hover {
+    background: var(--bg3);
+  }
+
+  .cmd-card.expanded {
+    background: var(--bg3);
+  }
+
+  .cmd-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .cmd-name {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--green);
+    flex-shrink: 0;
+    min-width: 100px;
+    padding-top: 1px;
+  }
+
+  .cmd-short {
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .cmd-expand-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    color: var(--text3);
+    transition: transform 0.2s, color 0.15s;
+  }
+
+  .cmd-card.expanded .cmd-expand-btn {
+    transform: rotate(180deg);
+    color: var(--green);
+  }
+
+  .cmd-detail {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .cmd-card.expanded .cmd-detail {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .examples-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 0.5rem;
+  }
+
+  .example-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .example-line:last-child { margin-bottom: 0; }
+
+  .example-code-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 5px;
+    flex-shrink: 0;
+    max-width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  .example-code-wrap:hover {
+    border-color: rgba(0,212,255,0.35);
+  }
+
+  .example-code-wrap.copied {
+    border-color: rgba(0,255,135,0.5);
+    background: rgba(0,255,135,0.07);
+  }
+
+  .example-code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--cyan);
+    padding: 0.2rem 0.5rem 0.2rem 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+
+  .example-code-wrap.copied .example-code {
+    color: var(--green);
+  }
+
+  .copy-btn {
+    background: none;
+    border: none;
+    border-left: 1px solid rgba(0,212,255,0.15);
+    cursor: pointer;
+    padding: 0.2rem 0.45rem;
+    color: var(--text3);
+    font-size: 0.65rem;
+    line-height: 1;
+    transition: color 0.15s, background 0.15s;
+    border-radius: 0 4px 4px 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .copy-btn:hover {
+    color: var(--cyan);
+    background: rgba(0,212,255,0.1);
+  }
+
+  .example-code-wrap.copied .copy-btn {
+    color: var(--green);
+    border-left-color: rgba(0,255,135,0.25);
+  }
+
+  .example-desc {
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.5;
+    padding-top: 0.15rem;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-right: 0.35rem;
+    margin-top: 0.75rem;
+  }
+
+  .tag-danger { background: rgba(255,77,141,0.12); border: 1px solid rgba(255,77,141,0.25); color: var(--pink); }
+  .tag-net { background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2); color: var(--cyan); }
+  .tag-sudo { background: rgba(255,179,0,0.1); border: 1px solid rgba(255,179,0,0.2); color: var(--amber); }
+  .tag-safe { background: rgba(0,255,135,0.08); border: 1px solid rgba(0,255,135,0.18); color: var(--green2); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: var(--text3);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .empty .big { font-size: 2rem; margin-bottom: 1rem; }
+
+  /* ── SCROLLBAR ── */
+  main::-webkit-scrollbar { width: 4px; }
+  main::-webkit-scrollbar-track { background: transparent; }
+  main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  main { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    header { gap: 1rem; }
+    .count-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">$_</div>
+    <div class="logo-text">mac<span>OS</span> Terminal</div>
+  </div>
+  <div class="header-search">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Sök kommando eller beskrivning…" autocomplete="off">
+  </div>
+  <div class="count-badge">Visar <span id="visibleCount">0</span> kommandon</div>
+</header>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div class="sidebar-label">Kategorier</div>
+    <!-- generated by JS -->
+  </aside>
+
+  <main id="main">
+    <!-- generated by JS -->
+  </main>
+</div>
+
+<script>
+const COMMANDS = [
+  // ── NAVIGATION ──
+  { cat: "Navigation", cmd: "pwd", short: "Visa aktuell mapp (Print Working Directory)", tags: ["safe"],
+    examples: [
+      { code: "pwd", desc: "Skriver ut sökvägen till mappen du befinner dig i" }
+    ]
+  },
+  { cat: "Navigation", cmd: "ls", short: "Lista filer och mappar i aktuell katalog", tags: ["safe"],
+    examples: [
+      { code: "ls", desc: "Listar filer och mappar" },
+      { code: "ls -la", desc: "Listar ALLT inkl. dolda filer med detaljer" },
+      { code: "ls -lh", desc: "Listar med läsbar filstorlek (KB, MB)" },
+      { code: "ls ~/Desktop", desc: "Listar skrivbordets innehåll" }
+    ]
+  },
+  { cat: "Navigation", cmd: "cd", short: "Byt aktiv katalog (Change Directory)", tags: ["safe"],
+    examples: [
+      { code: "cd Documents", desc: "Gå in i mappen Documents" },
+      { code: "cd ..", desc: "Gå upp en nivå" },
+      { code: "cd ~", desc: "Gå till hemkatalogen" },
+      { code: "cd /", desc: "Gå till rotkatalogen" },
+      { code: "cd -", desc: "Gå tillbaka till förra katalogen" }
+    ]
+  },
+  { cat: "Navigation", cmd: "open", short: "Öppna fil, mapp eller URL med standardprogram", tags: ["safe"],
+    examples: [
+      { code: "open .", desc: "Öppna aktuell mapp i Finder" },
+      { code: "open fil.pdf", desc: "Öppna PDF med Preview" },
+      { code: "open https://apple.com", desc: "Öppna URL i webbläsare" },
+      { code: "open -a TextEdit fil.txt", desc: "Öppna med specifikt program" }
+    ]
+  },
+  { cat: "Navigation", cmd: "find", short: "Sök efter filer och mappar i filsystemet", tags: ["safe"],
+    examples: [
+      { code: "find . -name '*.log'", desc: "Hitta alla .log-filer i aktuell mapp" },
+      { code: "find ~ -name foto.jpg", desc: "Hitta foto.jpg i hemkatalogen" },
+      { code: "find /tmp -newer file.txt", desc: "Hitta filer nyare än file.txt" }
+    ]
+  },
+
+  // ── FILER & MAPPAR ──
+  { cat: "Filer & Mappar", cmd: "mkdir", short: "Skapa en ny katalog (Make Directory)", tags: ["safe"],
+    examples: [
+      { code: "mkdir projekt", desc: "Skapar mappen 'projekt'" },
+      { code: "mkdir -p a/b/c", desc: "Skapar hela sökvägen inkl. mellanliggande" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "touch", short: "Skapa en tom fil eller uppdatera tidsstämpel", tags: ["safe"],
+    examples: [
+      { code: "touch fil.txt", desc: "Skapar en tom fil om den inte finns" },
+      { code: "touch a.txt b.txt c.txt", desc: "Skapar flera filer på en gång" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "cp", short: "Kopiera filer eller mappar", tags: ["safe"],
+    examples: [
+      { code: "cp fil.txt kopia.txt", desc: "Kopierar fil.txt till kopia.txt" },
+      { code: "cp -r mapp/ nymapp/", desc: "Kopierar en hel mapp rekursivt" },
+      { code: "cp *.jpg ~/Bilder/", desc: "Kopierar alla JPG till Bilder" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "mv", short: "Flytta eller byta namn på filer och mappar", tags: ["safe"],
+    examples: [
+      { code: "mv gammal.txt ny.txt", desc: "Byter namn på filen" },
+      { code: "mv fil.txt ~/Documents/", desc: "Flyttar filen till Documents" },
+      { code: "mv mapp/ ~/Desktop/", desc: "Flyttar en hel mapp" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "rm", short: "Ta bort filer och mappar (permanent!)", tags: ["danger"],
+    examples: [
+      { code: "rm fil.txt", desc: "Tar bort fil.txt permanent" },
+      { code: "rm -r mapp/", desc: "Tar bort en hel mapp rekursivt" },
+      { code: "rm -rf mapp/", desc: "⚠️ Forcerar borttagning utan bekräftelse" },
+      { code: "rm *.tmp", desc: "Tar bort alla .tmp-filer" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "ln", short: "Skapa symboliska eller hårda länkar", tags: ["safe"],
+    examples: [
+      { code: "ln -s /path/fil länk", desc: "Skapar en symbolisk länk (genväg)" },
+      { code: "ln fil hård-länk", desc: "Skapar en hård länk till filen" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "chmod", short: "Ändra filrättigheter (läs/skriv/kör)", tags: ["sudo"],
+    examples: [
+      { code: "chmod +x script.sh", desc: "Gör filen körbar" },
+      { code: "chmod 755 fil", desc: "rwxr-xr-x — standard för skript" },
+      { code: "chmod 644 fil", desc: "rw-r--r-- — standard för filer" },
+      { code: "chmod -R 755 mapp/", desc: "Sätter rättigheter rekursivt" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "chown", short: "Ändra ägare av fil eller mapp", tags: ["sudo"],
+    examples: [
+      { code: "chown user fil.txt", desc: "Sätter user som ägare" },
+      { code: "sudo chown -R user:group mapp/", desc: "Ändrar ägare rekursivt" }
+    ]
+  },
+
+  // ── TEXTHANTERING ──
+  { cat: "Texthantering", cmd: "cat", short: "Visa innehållet i en eller flera filer", tags: ["safe"],
+    examples: [
+      { code: "cat fil.txt", desc: "Skriver ut hela filens innehåll" },
+      { code: "cat a.txt b.txt > c.txt", desc: "Slår ihop filer till c.txt" },
+      { code: "cat -n fil.txt", desc: "Visar innehållet med radnummer" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "less", short: "Bläddra i filer sida för sida (q = avsluta)", tags: ["safe"],
+    examples: [
+      { code: "less fil.txt", desc: "Öppnar filen för bläddring. q = avsluta, / = sök" },
+      { code: "less +G fil.txt", desc: "Hoppar direkt till slutet av filen" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "head", short: "Visa de första raderna i en fil", tags: ["safe"],
+    examples: [
+      { code: "head fil.txt", desc: "Visar de 10 första raderna" },
+      { code: "head -20 fil.txt", desc: "Visar de 20 första raderna" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "tail", short: "Visa de sista raderna i en fil", tags: ["safe"],
+    examples: [
+      { code: "tail fil.txt", desc: "Visar de 10 sista raderna" },
+      { code: "tail -f app.log", desc: "Följer filen live (loggar m.m.)" },
+      { code: "tail -50 fil.txt", desc: "Visar de 50 sista raderna" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "grep", short: "Sök efter text-mönster i filer", tags: ["safe"],
+    examples: [
+      { code: "grep 'fel' logg.txt", desc: "Hittar rader med ordet 'fel'" },
+      { code: "grep -r 'TODO' ./src", desc: "Söker rekursivt i alla filer" },
+      { code: "grep -i 'error' fil.txt", desc: "Skiftlägesokänslig sökning" },
+      { code: "grep -n 'pattern' fil", desc: "Visar radnummer för träffar" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "sed", short: "Strömredigera och ersätt text", tags: ["safe"],
+    examples: [
+      { code: "sed 's/gammalt/nytt/g' fil.txt", desc: "Ersätter alla förekomster" },
+      { code: "sed -i '' 's/foo/bar/g' fil", desc: "Ändrar filen direkt (macOS syntax)" },
+      { code: "sed '5d' fil.txt", desc: "Tar bort rad 5" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "awk", short: "Kraftfullt textbearbetningsverktyg per kolumn", tags: ["safe"],
+    examples: [
+      { code: "awk '{print $1}' fil.txt", desc: "Skriver ut första kolumnen" },
+      { code: "awk -F: '{print $1}' /etc/passwd", desc: "Väljer kolumn med : som separator" },
+      { code: "awk 'NR>5' fil.txt", desc: "Hoppar över de 5 första raderna" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "wc", short: "Räkna rader, ord och tecken i en fil", tags: ["safe"],
+    examples: [
+      { code: "wc -l fil.txt", desc: "Räknar antal rader" },
+      { code: "wc -w fil.txt", desc: "Räknar antal ord" },
+      { code: "wc -c fil.txt", desc: "Räknar antal bytes" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "sort", short: "Sortera rader i en fil", tags: ["safe"],
+    examples: [
+      { code: "sort fil.txt", desc: "Sorterar alfabetiskt" },
+      { code: "sort -r fil.txt", desc: "Sorterar i omvänd ordning" },
+      { code: "sort -n siffror.txt", desc: "Sorterar numeriskt" },
+      { code: "sort -u fil.txt", desc: "Sorterar och tar bort dubbletter" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "uniq", short: "Filtrera bort duplicerade rader", tags: ["safe"],
+    examples: [
+      { code: "uniq fil.txt", desc: "Tar bort på varandra följande dubbletter" },
+      { code: "sort fil.txt | uniq", desc: "Tar bort alla dubbletter" },
+      { code: "uniq -c fil.txt", desc: "Räknar förekomster av varje rad" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "diff", short: "Jämför skillnader mellan två filer", tags: ["safe"],
+    examples: [
+      { code: "diff fil1.txt fil2.txt", desc: "Visar skillnader rad för rad" },
+      { code: "diff -u fil1 fil2", desc: "Visar unified diff-format" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "nano", short: "Enkelt textredigeringsprogram i terminalen", tags: ["safe"],
+    examples: [
+      { code: "nano fil.txt", desc: "Öppnar eller skapar fil för redigering" },
+      { code: "nano +42 fil.txt", desc: "Öppnar filen vid rad 42" }
+    ]
+  },
+  { cat: "Texthantering", cmd: "vim", short: "Kraftfull modbaserad textredigerare", tags: ["safe"],
+    examples: [
+      { code: "vim fil.txt", desc: "Öppnar filen (i = infoga-läge, :wq = spara & avsluta)" },
+      { code: "vim +/pattern fil", desc: "Öppnar och hoppar till sökmönster" }
+    ]
+  },
+
+  // ── PROCESSER ──
+  { cat: "Processer", cmd: "ps", short: "Visa pågående processer", tags: ["safe"],
+    examples: [
+      { code: "ps aux", desc: "Listar alla processer för alla användare" },
+      { code: "ps aux | grep node", desc: "Filtrerar processer med node" }
+    ]
+  },
+  { cat: "Processer", cmd: "top", short: "Visa processor- och minnesanvändning live", tags: ["safe"],
+    examples: [
+      { code: "top", desc: "Startar live processövervakning (q = avsluta)" },
+      { code: "top -o cpu", desc: "Sorterar efter CPU-användning" }
+    ]
+  },
+  { cat: "Processer", cmd: "kill", short: "Skicka signal till en process (avsluta m.m.)", tags: ["danger"],
+    examples: [
+      { code: "kill 1234", desc: "Skickar SIGTERM (snällt avslut) till PID 1234" },
+      { code: "kill -9 1234", desc: "Tvångsavslutar processen (SIGKILL)" },
+      { code: "kill -l", desc: "Listar alla tillgängliga signaler" }
+    ]
+  },
+  { cat: "Processer", cmd: "pkill", short: "Avsluta processer via namn istället för PID", tags: ["danger"],
+    examples: [
+      { code: "pkill Safari", desc: "Avslutar alla Safari-processer" },
+      { code: "pkill -9 node", desc: "Tvångsavslutar alla node-processer" }
+    ]
+  },
+  { cat: "Processer", cmd: "killall", short: "Avsluta alla processer med ett visst namn", tags: ["danger"],
+    examples: [
+      { code: "killall Finder", desc: "Startar om Finder" },
+      { code: "killall -9 Chrome", desc: "Tvångsavslutar Chrome" }
+    ]
+  },
+  { cat: "Processer", cmd: "bg / fg", short: "Kör process i bakgrunden eller förgrunden", tags: ["safe"],
+    examples: [
+      { code: "Ctrl+Z", desc: "Pausa aktuell process" },
+      { code: "bg", desc: "Fortsätt pausad process i bakgrunden" },
+      { code: "fg", desc: "Ta tillbaka bakgrundsprocess till förgrunden" }
+    ]
+  },
+  { cat: "Processer", cmd: "jobs", short: "Lista bakgrundsjobb i aktuell session", tags: ["safe"],
+    examples: [
+      { code: "jobs", desc: "Visar alla aktiva bakgrundsjobb" },
+      { code: "jobs -l", desc: "Visar med process-ID" }
+    ]
+  },
+
+  // ── NÄTVERK ──
+  { cat: "Nätverk", cmd: "ping", short: "Testa nätverksanslutning till en host", tags: ["net"],
+    examples: [
+      { code: "ping google.com", desc: "Pingar Google (Ctrl+C för att avsluta)" },
+      { code: "ping -c 5 google.com", desc: "Skickar exakt 5 paketer" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "curl", short: "Hämta data från URL eller testa API:er", tags: ["net"],
+    examples: [
+      { code: "curl https://api.example.com", desc: "Gör en GET-förfrågan" },
+      { code: "curl -O https://example.com/fil.zip", desc: "Laddar ner en fil" },
+      { code: "curl -X POST -d 'data' URL", desc: "Skickar POST-förfrågan" },
+      { code: "curl -I https://example.com", desc: "Visar HTTP-headers" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "wget", short: "Ladda ner filer från internet", tags: ["net"],
+    examples: [
+      { code: "wget https://example.com/fil.zip", desc: "Laddar ner en fil" },
+      { code: "wget -c URL", desc: "Fortsätter en avbruten nedladdning" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "ssh", short: "Anslut säkert till fjärrserver (Secure Shell)", tags: ["net"],
+    examples: [
+      { code: "ssh user@server.com", desc: "Ansluter till server" },
+      { code: "ssh -p 2222 user@host", desc: "Ansluter på port 2222" },
+      { code: "ssh -i ~/.ssh/key user@host", desc: "Ansluter med SSH-nyckel" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "scp", short: "Kopiera filer säkert via SSH", tags: ["net"],
+    examples: [
+      { code: "scp fil.txt user@host:~/", desc: "Kopierar fil till fjärrservern" },
+      { code: "scp user@host:~/fil.txt .", desc: "Hämtar fil från fjärrservern" },
+      { code: "scp -r mapp/ user@host:~/", desc: "Kopierar hel mapp" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "ifconfig", short: "Visa nätverksgränssnitt och IP-adresser", tags: ["net"],
+    examples: [
+      { code: "ifconfig", desc: "Visar alla nätverksgränssnitt" },
+      { code: "ifconfig en0", desc: "Visar info om WiFi-gränssnittet" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "netstat", short: "Visa aktiva nätverksanslutningar", tags: ["net"],
+    examples: [
+      { code: "netstat -an", desc: "Visar alla anslutningar" },
+      { code: "netstat -tulpn", desc: "Visar lyssnade portar" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "nslookup", short: "Slå upp DNS-information för en domän", tags: ["net"],
+    examples: [
+      { code: "nslookup google.com", desc: "Slår upp IP-adress för domänen" },
+      { code: "nslookup -type=MX gmail.com", desc: "Hämtar MX-poster" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "traceroute", short: "Spåra nätverksvägen till en destination", tags: ["net"],
+    examples: [
+      { code: "traceroute google.com", desc: "Visar alla hopp till Google" }
+    ]
+  },
+
+  // ── SYSTEM ──
+  { cat: "System", cmd: "sudo", short: "Kör kommando som superanvändare (root)", tags: ["sudo", "danger"],
+    examples: [
+      { code: "sudo kommando", desc: "Kör kommandot med administratörsrättigheter" },
+      { code: "sudo -i", desc: "Starta en root-shell" },
+      { code: "sudo !!", desc: "Kör föregående kommando som sudo" }
+    ]
+  },
+  { cat: "System", cmd: "whoami", short: "Visa vilket användarkonto du är inloggad som", tags: ["safe"],
+    examples: [
+      { code: "whoami", desc: "Skriver ut användarnamnet" }
+    ]
+  },
+  { cat: "System", cmd: "uname", short: "Visa information om operativsystemet", tags: ["safe"],
+    examples: [
+      { code: "uname -a", desc: "Visar all systeminformation" },
+      { code: "uname -m", desc: "Visar processorarkitektur (arm64 / x86_64)" }
+    ]
+  },
+  { cat: "System", cmd: "sw_vers", short: "Visa macOS-version och build", tags: ["safe"],
+    examples: [
+      { code: "sw_vers", desc: "Visar produktnamn, version och build" },
+      { code: "sw_vers -productVersion", desc: "Visar bara versionsnumret" }
+    ]
+  },
+  { cat: "System", cmd: "df", short: "Visa diskutrymme på monterade enheter", tags: ["safe"],
+    examples: [
+      { code: "df -h", desc: "Visar diskutrymme i läsbart format" },
+      { code: "df -H .", desc: "Visar för aktuell diskenhet" }
+    ]
+  },
+  { cat: "System", cmd: "du", short: "Visa diskutrymme per mapp/fil", tags: ["safe"],
+    examples: [
+      { code: "du -sh mapp/", desc: "Visar total storlek av mapp" },
+      { code: "du -sh *", desc: "Visar storlek på allt i aktuell mapp" },
+      { code: "du -d1 -h ~", desc: "Visar hemkatalog-mappars storlek" }
+    ]
+  },
+  { cat: "System", cmd: "uptime", short: "Visa hur länge systemet kört och belastning", tags: ["safe"],
+    examples: [
+      { code: "uptime", desc: "Visar drifttid och CPU-belastning" }
+    ]
+  },
+  { cat: "System", cmd: "date", short: "Visa eller ändra systemets datum och tid", tags: ["safe"],
+    examples: [
+      { code: "date", desc: "Visar aktuellt datum och tid" },
+      { code: "date '+%Y-%m-%d'", desc: "Formaterat datum: 2025-01-15" }
+    ]
+  },
+  { cat: "System", cmd: "history", short: "Visa tidigare körda kommandon", tags: ["safe"],
+    examples: [
+      { code: "history", desc: "Visar kommandohistorik" },
+      { code: "history | grep git", desc: "Filtrerar historik efter 'git'" },
+      { code: "!42", desc: "Kör kommando nummer 42 från historik" },
+      { code: "!!", desc: "Kör föregående kommando igen" }
+    ]
+  },
+  { cat: "System", cmd: "env", short: "Visa alla miljövariabler", tags: ["safe"],
+    examples: [
+      { code: "env", desc: "Skriver ut alla miljövariabler" },
+      { code: "env | grep PATH", desc: "Visar PATH-variabeln" }
+    ]
+  },
+  { cat: "System", cmd: "export", short: "Sätt eller exportera miljövariabler", tags: ["safe"],
+    examples: [
+      { code: "export VAR=värde", desc: "Sätter en miljövariabel" },
+      { code: "export PATH=$PATH:/ny/path", desc: "Lägger till sökväg till PATH" }
+    ]
+  },
+  { cat: "System", cmd: "alias", short: "Skapa kortkommandon för längre kommandon", tags: ["safe"],
+    examples: [
+      { code: "alias ll='ls -la'", desc: "Skapar alias 'll' för 'ls -la'" },
+      { code: "alias", desc: "Listar alla aktiva alias" }
+    ]
+  },
+  { cat: "System", cmd: "which", short: "Visa sökväg till ett program", tags: ["safe"],
+    examples: [
+      { code: "which python3", desc: "Visar var python3 är installerat" },
+      { code: "which -a node", desc: "Visar alla installationer av node" }
+    ]
+  },
+  { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", tags: ["safe"],
+    examples: [
+      { code: "man ls", desc: "Öppnar manualen för ls (q = avsluta)" },
+      { code: "man -k sökord", desc: "Söker efter kommando via nyckelord" }
+    ]
+  },
+  { cat: "System", cmd: "shutdown", short: "Stäng av eller starta om Mac", tags: ["sudo", "danger"],
+    examples: [
+      { code: "sudo shutdown -h now", desc: "Stänger av datorn omedelbart" },
+      { code: "sudo shutdown -r now", desc: "Startar om datorn omedelbart" },
+      { code: "sudo shutdown -h +60", desc: "Stänger av om 60 minuter" }
+    ]
+  },
+  { cat: "System", cmd: "defaults", short: "Läs/skriv macOS-inställningar (plist)", tags: ["sudo"],
+    examples: [
+      { code: "defaults read com.apple.finder", desc: "Läser Finder-inställningar" },
+      { code: "defaults write com.apple.dock autohide -bool true", desc: "Göm Dock automatiskt" }
+    ]
+  },
+
+  // ── PAKETHANTERARE ──
+  { cat: "Pakethanterare", cmd: "brew", short: "Homebrew — paketchef för macOS", tags: ["safe"],
+    examples: [
+      { code: "brew install wget", desc: "Installerar ett paket" },
+      { code: "brew uninstall wget", desc: "Avinstallerar ett paket" },
+      { code: "brew update", desc: "Uppdaterar Homebrew själv" },
+      { code: "brew upgrade", desc: "Uppgraderar alla installerade paket" },
+      { code: "brew list", desc: "Listar installerade paket" },
+      { code: "brew search python", desc: "Söker efter paket" },
+      { code: "brew info node", desc: "Visar info om ett paket" }
+    ]
+  },
+  { cat: "Pakethanterare", cmd: "npm", short: "Node Package Manager — JavaScript-paket", tags: ["safe"],
+    examples: [
+      { code: "npm install", desc: "Installerar beroenden från package.json" },
+      { code: "npm install axios", desc: "Installerar axios lokalt" },
+      { code: "npm install -g nodemon", desc: "Installerar nodemon globalt" },
+      { code: "npm run dev", desc: "Kör 'dev'-skriptet" },
+      { code: "npm update", desc: "Uppdaterar paket" }
+    ]
+  },
+  { cat: "Pakethanterare", cmd: "pip3", short: "Python Package Installer", tags: ["safe"],
+    examples: [
+      { code: "pip3 install requests", desc: "Installerar requests-paketet" },
+      { code: "pip3 install -r requirements.txt", desc: "Installerar från lista" },
+      { code: "pip3 list", desc: "Visar installerade paket" },
+      { code: "pip3 freeze > requirements.txt", desc: "Sparar beroenden till fil" }
+    ]
+  },
+
+  // ── GIT ──
+  { cat: "Git", cmd: "git clone", short: "Klona ett fjärr-repository lokalt", tags: ["safe"],
+    examples: [
+      { code: "git clone https://github.com/user/repo.git", desc: "Klonar repository" },
+      { code: "git clone URL mapp", desc: "Klonar till specifik mapp" }
+    ]
+  },
+  { cat: "Git", cmd: "git status", short: "Visa status för filer i repository", tags: ["safe"],
+    examples: [
+      { code: "git status", desc: "Visar ändrade, staged och untracked filer" }
+    ]
+  },
+  { cat: "Git", cmd: "git add", short: "Förbered (stage) filer för commit", tags: ["safe"],
+    examples: [
+      { code: "git add fil.txt", desc: "Stagear en specifik fil" },
+      { code: "git add .", desc: "Stagear alla ändrade filer" },
+      { code: "git add -p", desc: "Interaktivt välj delar att stagea" }
+    ]
+  },
+  { cat: "Git", cmd: "git commit", short: "Spara staged ändringar med ett meddelande", tags: ["safe"],
+    examples: [
+      { code: "git commit -m 'Ändrade X'", desc: "Skapar en commit" },
+      { code: "git commit -am 'fix'", desc: "Stagear + committar alla ändrade filer" },
+      { code: "git commit --amend", desc: "Ändra senaste commit" }
+    ]
+  },
+  { cat: "Git", cmd: "git push", short: "Pusha lokala commits till fjärrserver", tags: ["safe"],
+    examples: [
+      { code: "git push", desc: "Pushar till spårad branch" },
+      { code: "git push origin main", desc: "Pushar main-branchen till origin" },
+      { code: "git push -u origin ny-branch", desc: "Pushar ny branch och sätter upstream" }
+    ]
+  },
+  { cat: "Git", cmd: "git pull", short: "Hämta och merga ändringar från fjärrserver", tags: ["safe"],
+    examples: [
+      { code: "git pull", desc: "Hämtar och mergar från spårad branch" },
+      { code: "git pull origin main", desc: "Hämtar från origin/main" }
+    ]
+  },
+  { cat: "Git", cmd: "git log", short: "Visa commit-historik", tags: ["safe"],
+    examples: [
+      { code: "git log", desc: "Visar commits i detalj" },
+      { code: "git log --oneline", desc: "Kompakt en-rad per commit" },
+      { code: "git log --graph --oneline", desc: "Visar branch-graf" }
+    ]
+  },
+  { cat: "Git", cmd: "git branch", short: "Hantera brancher", tags: ["safe"],
+    examples: [
+      { code: "git branch", desc: "Listar alla lokala brancher" },
+      { code: "git branch ny-branch", desc: "Skapar en ny branch" },
+      { code: "git branch -d branch", desc: "Tar bort en branch (safe)" },
+      { code: "git branch -D branch", desc: "Tvångsborttagning av branch" }
+    ]
+  },
+  { cat: "Git", cmd: "git checkout / switch", short: "Byt branch eller återställ filer", tags: ["safe"],
+    examples: [
+      { code: "git switch main", desc: "Byt till main-branchen" },
+      { code: "git checkout -b ny-branch", desc: "Skapa och byt till ny branch" },
+      { code: "git checkout -- fil.txt", desc: "Återställ fil till senaste commit" }
+    ]
+  },
+  { cat: "Git", cmd: "git merge", short: "Slå ihop en branch med aktuell branch", tags: ["safe"],
+    examples: [
+      { code: "git merge feature-branch", desc: "Mergar feature-branch till aktuell" }
+    ]
+  },
+  { cat: "Git", cmd: "git stash", short: "Tillfälligt spara undan ändringar", tags: ["safe"],
+    examples: [
+      { code: "git stash", desc: "Sparar undan alla ändringar" },
+      { code: "git stash pop", desc: "Återställer senast sparade ändringar" },
+      { code: "git stash list", desc: "Visar alla sparade stashes" }
+    ]
+  },
+
+  // ── OMDIRIGERING & PIPES ──
+  { cat: "Pipes & Omdirigering", cmd: "| (pipe)", short: "Skicka output från ett kommando till nästa", tags: ["safe"],
+    examples: [
+      { code: "ls | grep .txt", desc: "Filtrerar ls-output efter .txt" },
+      { code: "ps aux | grep node | head -5", desc: "Kedjar tre kommandon" },
+      { code: "cat fil.txt | wc -l", desc: "Räknar rader i en fil" }
+    ]
+  },
+  { cat: "Pipes & Omdirigering", cmd: "> och >>", short: "Omdirigera output till fil", tags: ["safe"],
+    examples: [
+      { code: "echo 'hej' > fil.txt", desc: "Skriver (ersätter) output till fil" },
+      { code: "echo 'hej' >> fil.txt", desc: "Lägger till output i slutet av fil" },
+      { code: "ls > lista.txt", desc: "Sparar ls-output till fil" }
+    ]
+  },
+  { cat: "Pipes & Omdirigering", cmd: "< och <<", short: "Skicka fil som input till kommando", tags: ["safe"],
+    examples: [
+      { code: "sort < osorterad.txt", desc: "Sorterar innehållet i filen" },
+      { code: "wc -l < fil.txt", desc: "Räknar rader via input" }
+    ]
+  },
+  { cat: "Pipes & Omdirigering", cmd: "tee", short: "Läs från stdin och skriv till fil OCH stdout", tags: ["safe"],
+    examples: [
+      { code: "ls | tee lista.txt", desc: "Sparar output till fil OCH visar i terminalen" },
+      { code: "kommando | tee -a logg.txt", desc: "Lägger till i fil och visar output" }
+    ]
+  },
+  { cat: "Pipes & Omdirigering", cmd: "xargs", short: "Bygg och kör kommandon från stdin", tags: ["safe"],
+    examples: [
+      { code: "find . -name '*.tmp' | xargs rm", desc: "Tar bort alla .tmp-filer" },
+      { code: "cat urls.txt | xargs curl -O", desc: "Laddar ner alla URL:er i filen" }
+    ]
+  },
+
+  // ── SHELL-TRICKS ──
+  { cat: "Shell-tricks", cmd: "Ctrl+C", short: "Avbryt aktuellt kommando omedelbart", tags: ["safe"],
+    examples: [
+      { code: "Ctrl + C", desc: "Skickar SIGINT-signal och stoppar processen" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "Ctrl+Z", short: "Pausa aktuellt kommando (till bakgrunden)", tags: ["safe"],
+    examples: [
+      { code: "Ctrl + Z", desc: "Pausar processen, sedan bg/fg för att hantera" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "Tab", short: "Autofyll filnamn och kommandon", tags: ["safe"],
+    examples: [
+      { code: "ls Do[Tab]", desc: "Fyller i 'Documents' automatiskt" },
+      { code: "git che[Tab]", desc: "Fyller i 'git checkout'" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "&&  och  ||", short: "Villkorlig körning av kommandon", tags: ["safe"],
+    examples: [
+      { code: "mkdir ny && cd ny", desc: "Kör cd bara om mkdir lyckas" },
+      { code: "git push || echo 'Push misslyckades'", desc: "Kör echo om push misslyckas" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "!!  och  !$", short: "Återanvänd förra kommandot eller argument", tags: ["safe"],
+    examples: [
+      { code: "sudo !!", desc: "Kör föregående kommando som sudo" },
+      { code: "mkdir mapp && cd !$", desc: "!$ = sista argumentet (mapp)" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "clear", short: "Rensa terminalfönstret", tags: ["safe"],
+    examples: [
+      { code: "clear", desc: "Rensar skärmen" },
+      { code: "Ctrl + L", desc: "Snabbtangent för clear" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "echo", short: "Skriv ut text eller variabelvärde", tags: ["safe"],
+    examples: [
+      { code: "echo 'Hej världen'", desc: "Skriver ut texten" },
+      { code: "echo $HOME", desc: "Skriver ut hemkatalogvariabeln" },
+      { code: "echo $PATH", desc: "Visar PATH-variabeln" }
+    ]
+  },
+
+  // ── TELNET & FJÄRRANSLUTNING ──
+  { cat: "Telnet & Fjärranslutning", cmd: "telnet", short: "Anslut till fjärrhost via Telnet-protokollet (okrypterat)", tags: ["net"],
+    examples: [
+      { code: "telnet example.com 80", desc: "Ansluter till port 80 — bra för att testa HTTP" },
+      { code: "telnet towel.blinkenlights.nl", desc: "Star Wars i ASCII-art (Easter egg!)" },
+      { code: "telnet smtp.server.com 25", desc: "Testa SMTP-server manuellt" },
+      { code: "Ctrl+]  sedan  quit", desc: "Avsluta en Telnet-session" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "nc (netcat)", short: "Schweiziska arméknifen för TCP/UDP-anslutningar", tags: ["net"],
+    examples: [
+      { code: "nc -zv host.com 80", desc: "Kontrollera om port 80 är öppen" },
+      { code: "nc -zv host.com 20-25", desc: "Skanna portintervall 20–25" },
+      { code: "nc -l 1234", desc: "Lyssna på port 1234 (enkel server)" },
+      { code: "nc host.com 1234", desc: "Anslut till lyssnande netcat" },
+      { code: "nc host.com 25", desc: "Prata SMTP manuellt" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "nmap", short: "Nätverksskanner — hitta öppna portar och tjänster", tags: ["net"],
+    examples: [
+      { code: "nmap 192.168.1.1", desc: "Skanna vanliga portar på en host" },
+      { code: "nmap -p 1-65535 host", desc: "Fullständig port-skanning" },
+      { code: "nmap -sV host", desc: "Identifiera tjänster och versioner" },
+      { code: "nmap 192.168.1.0/24", desc: "Skanna hela subnätet" },
+      { code: "nmap -O host", desc: "Försök identifiera operativsystem" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "ssh-keygen", short: "Generera SSH-nyckelpar för lösenordsfri inloggning", tags: ["net"],
+    examples: [
+      { code: "ssh-keygen -t ed25519", desc: "Genererar modern Ed25519-nyckel (rekommenderat)" },
+      { code: "ssh-keygen -t rsa -b 4096", desc: "Genererar 4096-bitars RSA-nyckel" },
+      { code: "ssh-keygen -f ~/.ssh/min_nyckel", desc: "Sparar nyckeln med eget namn" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "ssh-copy-id", short: "Kopiera din publika SSH-nyckel till fjärrserver", tags: ["net"],
+    examples: [
+      { code: "ssh-copy-id user@server.com", desc: "Kopierar ~/.ssh/id_rsa.pub till servern" },
+      { code: "ssh-copy-id -i ~/.ssh/min_nyckel.pub user@host", desc: "Kopierar specificerad nyckel" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "rsync", short: "Synkronisera filer lokalt eller via SSH effektivt", tags: ["net"],
+    examples: [
+      { code: "rsync -av källa/ mål/", desc: "Synkroniserar med verbose-output" },
+      { code: "rsync -avz mapp/ user@host:~/mapp/", desc: "Synkroniserar till fjärrserver med komprimering" },
+      { code: "rsync -av --delete källa/ mål/", desc: "Speglar exakt — tar bort filer som saknas i källan" },
+      { code: "rsync -av --dry-run källa/ mål/", desc: "Simulerar utan att ändra något" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "ftp", short: "Filöverföring via FTP-protokollet (okrypterat)", tags: ["net"],
+    examples: [
+      { code: "ftp ftp.example.com", desc: "Ansluter till FTP-server" },
+      { code: "get fil.txt", desc: "Laddar ner fil från server (inne i ftp)" },
+      { code: "put lokal.txt", desc: "Laddar upp fil till server (inne i ftp)" },
+      { code: "mget *.txt", desc: "Laddar ner flera filer" },
+      { code: "bye", desc: "Avslutar FTP-sessionen" }
+    ]
+  },
+  { cat: "Telnet & Fjärranslutning", cmd: "lsof -i", short: "Visa alla öppna nätverksanslutningar och portar", tags: ["net"],
+    examples: [
+      { code: "lsof -i", desc: "Listar alla nätverksanslutningar" },
+      { code: "lsof -i :8080", desc: "Visar vad som använder port 8080" },
+      { code: "lsof -i TCP", desc: "Visar bara TCP-anslutningar" },
+      { code: "sudo lsof -i -n -P", desc: "Visar alla anslutningar med portnamn" }
+    ]
+  },
+
+  // ── DISK & LAGRINGSMEDIA ──
+  { cat: "Disk & Lagring", cmd: "diskutil list", short: "Lista alla diskar och partitioner på systemet", tags: ["safe"],
+    examples: [
+      { code: "diskutil list", desc: "Visar alla diskar, partitioner och volymer" },
+      { code: "diskutil list /dev/disk2", desc: "Visar info om specifik disk" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "diskutil info", short: "Detaljerad information om en disk eller partition", tags: ["safe"],
+    examples: [
+      { code: "diskutil info /dev/disk0", desc: "Visar detaljerad diskinfo" },
+      { code: "diskutil info /", desc: "Info om startdisken" },
+      { code: "diskutil info disk0s1", desc: "Info om en specifik partition" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "diskutil eject", short: "Mata ut en extern disk säkert", tags: ["safe"],
+    examples: [
+      { code: "diskutil eject /dev/disk2", desc: "Matar ut disken säkert" },
+      { code: "diskutil eject /Volumes/MinDisk", desc: "Matar ut via volymnamn" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "diskutil eraseDisk", short: "Formatera om en disk helt (FÖRSTÖR ALL DATA!)", tags: ["danger", "sudo"],
+    examples: [
+      { code: "diskutil eraseDisk APFS NyDisk /dev/disk2", desc: "Formaterar disk som APFS" },
+      { code: "diskutil eraseDisk ExFAT USBDisk /dev/disk2", desc: "Formaterar som ExFAT (Windows-kompatibelt)" },
+      { code: "diskutil eraseDisk FAT32 FAT /dev/disk2", desc: "Formaterar som FAT32" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "diskutil repairVolume", short: "Reparera filsystemsfel på en volym", tags: ["sudo"],
+    examples: [
+      { code: "diskutil repairVolume /dev/disk1s1", desc: "Försöker reparera volymen" },
+      { code: "diskutil repairVolume /Volumes/MinDisk", desc: "Reparerar via volymnamn" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "diskutil verifyVolume", short: "Kontrollera om en volym har fel", tags: ["safe"],
+    examples: [
+      { code: "diskutil verifyVolume /dev/disk1s1", desc: "Verifierar volymens integritet" },
+      { code: "diskutil verifyVolume /", desc: "Verifierar startvolymen" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "hdiutil", short: "Hantera diskavbildningar (.dmg-filer)", tags: ["safe"],
+    examples: [
+      { code: "hdiutil attach fil.dmg", desc: "Monterar en DMG-fil" },
+      { code: "hdiutil detach /Volumes/MittDMG", desc: "Avmonterar en DMG-volym" },
+      { code: "hdiutil create -size 100m -fs APFS -volname 'MinDisk' disk.dmg", desc: "Skapar en ny 100 MB DMG" },
+      { code: "hdiutil convert input.dmg -format UDZO -o output.dmg", desc: "Komprimerar en DMG-fil" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "mount / umount", short: "Montera och avmontera filsystem manuellt", tags: ["sudo"],
+    examples: [
+      { code: "mount", desc: "Visar alla monterade filsystem" },
+      { code: "sudo mount -t apfs /dev/disk1s1 /mnt", desc: "Monterar en APFS-partition" },
+      { code: "sudo umount /Volumes/MinDisk", desc: "Avmonterar en volym" },
+      { code: "sudo diskutil unmount /dev/disk2s1", desc: "Avmonterar via diskutil (macOS-sätt)" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "dd", short: "Lågnivå-kopiering av disk/partition (byte för byte)", tags: ["danger", "sudo"],
+    examples: [
+      { code: "sudo dd if=/dev/disk2 of=backup.img bs=4m", desc: "Skapar en exakt avbild av disk2" },
+      { code: "sudo dd if=backup.img of=/dev/disk2 bs=4m", desc: "⚠️ Återställer avbild till disk" },
+      { code: "sudo dd if=/dev/urandom of=/dev/disk2 bs=1m", desc: "⚠️ Skriver slumpmässig data (säker radering)" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "fsck", short: "Kontrollera och reparera filsystem (kör från Recovery)", tags: ["danger", "sudo"],
+    examples: [
+      { code: "sudo fsck -fy /dev/disk1s1", desc: "Kontrollerar och reparerar automatiskt" },
+      { code: "sudo fsck_apfs -y /dev/disk1s1", desc: "Reparerar APFS-volym" },
+      { code: "sudo fsck_hfs -rf /dev/disk1s1", desc: "Reparerar HFS+-volym" }
+    ]
+  },
+  { cat: "Disk & Lagring", cmd: "tmutil", short: "Hantera Time Machine-säkerhetskopior via terminal", tags: ["safe"],
+    examples: [
+      { code: "tmutil status", desc: "Visar aktuell status för Time Machine" },
+      { code: "tmutil startbackup", desc: "Startar en säkerhetskopia manuellt" },
+      { code: "tmutil stopbackup", desc: "Stoppar pågående säkerhetskopia" },
+      { code: "tmutil listbackups", desc: "Listar alla säkerhetskopior" },
+      { code: "tmutil latestbackup", desc: "Visar senaste säkerhetskopiering" }
+    ]
+  },
+
+  // ── FELSÖKNING ──
+  { cat: "Felsökning", cmd: "log show", short: "Visa macOS systemloggar (unified logging)", tags: ["safe"],
+    examples: [
+      { code: "log show --last 1h", desc: "Visar loggar från senaste timmen" },
+      { code: "log show --predicate 'process == \"Safari\"' --last 30m", desc: "Filtrerar på process" },
+      { code: "log show --level error --last 2h", desc: "Visar bara fel senaste 2 timmarna" },
+      { code: "log show --style syslog --last 10m", desc: "Visar i klassiskt syslog-format" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "log stream", short: "Streama systemloggar live i realtid", tags: ["safe"],
+    examples: [
+      { code: "log stream", desc: "Strömmar alla systemloggar live" },
+      { code: "log stream --level error", desc: "Visar bara fel i realtid" },
+      { code: "log stream --predicate 'process == \"kernel\"'", desc: "Filtrerar kernel-loggar" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "dmesg", short: "Visa kernel-ring-buffer (hårdvaru- och bootmeddelanden)", tags: ["safe"],
+    examples: [
+      { code: "dmesg", desc: "Visar kernel-meddelanden sedan boot" },
+      { code: "dmesg | grep -i error", desc: "Filtrerar efter felmeddelanden" },
+      { code: "dmesg | tail -50", desc: "Visar de 50 senaste kernel-meddelandena" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "system_profiler", short: "Detaljerad systeminformation om hårdvara och mjukvara", tags: ["safe"],
+    examples: [
+      { code: "system_profiler SPHardwareDataType", desc: "Visar hårdvaruinfo (CPU, RAM, serienummer)" },
+      { code: "system_profiler SPSoftwareDataType", desc: "Visar mjukvaruinfo och OS-version" },
+      { code: "system_profiler SPNetworkDataType", desc: "Visar nätverkskonfiguration" },
+      { code: "system_profiler SPUSBDataType", desc: "Visar anslutna USB-enheter" },
+      { code: "system_profiler -detailLevel mini", desc: "Snabb oversikt av allt" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "ioreg", short: "Visa I/O Registry — hårdvaruträd och drivrutiner", tags: ["safe"],
+    examples: [
+      { code: "ioreg -l | grep -i battery", desc: "Visar batteriinformation" },
+      { code: "ioreg -p IOUSBHostDevice", desc: "Visar USB-enheter" },
+      { code: "ioreg -l | grep -i 'product name'", desc: "Visar produktnamn för enheter" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "pmset", short: "Ström- och energihantering — diagnostik och inställningar", tags: ["sudo"],
+    examples: [
+      { code: "pmset -g", desc: "Visar aktuella energiinställningar" },
+      { code: "pmset -g log | tail -50", desc: "Visar strömsloggar (sömn/uppvak)" },
+      { code: "pmset -g assertions", desc: "Visar vad som förhindrar sömn" },
+      { code: "pmset -g batt", desc: "Visar batteristatus och laddningscykel" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "spindump", short: "Samla in prestandadata för hängande processer", tags: ["sudo"],
+    examples: [
+      { code: "sudo spindump", desc: "Samlar prestandadata för alla processer" },
+      { code: "sudo spindump Safari 5 100", desc: "Analyserar Safari i 5 sekunder" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "sample", short: "Profilera en process under en period", tags: ["sudo"],
+    examples: [
+      { code: "sample Safari 10", desc: "Samlar data om Safari i 10 sekunder" },
+      { code: "sudo sample -wait Safari", desc: "Väntar på att processen startar" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "lsof", short: "Lista alla öppna filer och processer som använder dem", tags: ["safe"],
+    examples: [
+      { code: "lsof +D /Applications", desc: "Visar vad som håller filer öppna i Applications" },
+      { code: "lsof -p 1234", desc: "Visar alla filer öppnade av process 1234" },
+      { code: "lsof /path/till/fil", desc: "Visar vilken process som håller filen öppen" },
+      { code: "sudo lsof | grep deleted", desc: "Hittar borttagna filer som fortfarande är öppna" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "fs_usage", short: "Spåra filsystemsanrop i realtid", tags: ["sudo"],
+    examples: [
+      { code: "sudo fs_usage", desc: "Visar alla filsystemsoperationer live" },
+      { code: "sudo fs_usage -f filesystem Safari", desc: "Filtrerar på Safari" },
+      { code: "sudo fs_usage -w -f network", desc: "Visar nätverks-syscalls" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "otool", short: "Visa information om binärfiler och bibliotek", tags: ["safe"],
+    examples: [
+      { code: "otool -L /usr/bin/python3", desc: "Visar länkade dynamiska bibliotek" },
+      { code: "otool -hv /usr/bin/ls", desc: "Visar Mach-O-header" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "launchctl", short: "Hantera macOS-tjänster och bakgrundsprocesser (launchd)", tags: ["sudo"],
+    examples: [
+      { code: "launchctl list", desc: "Listar alla körande tjänster" },
+      { code: "launchctl list | grep -i apache", desc: "Söker efter specifik tjänst" },
+      { code: "sudo launchctl stop com.apple.Finder", desc: "Stoppar en tjänst" },
+      { code: "sudo launchctl start com.apple.Finder", desc: "Startar en tjänst" },
+      { code: "launchctl print system/com.apple.bluetoothd", desc: "Detaljinfo om en tjänst" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "vm_stat", short: "Visa statistik för virtuellt minne", tags: ["safe"],
+    examples: [
+      { code: "vm_stat", desc: "Visar minnessidor: free, active, wired, compressed" },
+      { code: "vm_stat 2", desc: "Uppdaterar var 2:a sekund" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "sysctl", short: "Läs och ändra kernel-parametrar", tags: ["sudo"],
+    examples: [
+      { code: "sysctl -a", desc: "Visar alla kernel-parametrar" },
+      { code: "sysctl hw.memsize", desc: "Visar installerat RAM i bytes" },
+      { code: "sysctl hw.ncpu", desc: "Visar antal CPU-kärnor" },
+      { code: "sysctl machdep.cpu.brand_string", desc: "Visar CPU-modell" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "networksetup", short: "Konfigurera och felsök nätverksinställningar", tags: ["sudo"],
+    examples: [
+      { code: "networksetup -listallnetworkservices", desc: "Listar alla nätverkstjänster" },
+      { code: "networksetup -getinfo Wi-Fi", desc: "Visar WiFi-konfiguration" },
+      { code: "networksetup -setdnsservers Wi-Fi 8.8.8.8 8.8.4.4", desc: "Sätter Google DNS för WiFi" },
+      { code: "networksetup -flushcachedlookups", desc: "Rensar DNS-cachen" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "dscacheutil -flushcache", short: "Rensa DNS-cache på macOS", tags: ["sudo"],
+    examples: [
+      { code: "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder", desc: "Fullständig DNS-cacherensning (macOS)" }
+    ]
+  },
+  { cat: "Felsökning", cmd: "csrutil", short: "System Integrity Protection — visa eller ändra SIP-status", tags: ["sudo"],
+    examples: [
+      { code: "csrutil status", desc: "Visar om SIP är aktiverat eller inaktiverat" }
+    ]
+  },
+
+  // ── SÄKERHET & KRYPTERING ──
+  { cat: "Säkerhet & Kryptering", cmd: "openssl", short: "Schweiziska arméknifen för kryptering och certifikat", tags: ["safe"],
+    examples: [
+      { code: "openssl version", desc: "Visar installerad OpenSSL-version" },
+      { code: "openssl genrsa -out privkey.pem 4096", desc: "Genererar 4096-bitars RSA-privatnyckel" },
+      { code: "openssl req -new -x509 -key privkey.pem -out cert.pem -days 365", desc: "Skapar självsignerat certifikat" },
+      { code: "openssl s_client -connect example.com:443", desc: "Inspekterar SSL/TLS-certifikat för en domän" },
+      { code: "openssl enc -aes-256-cbc -in fil.txt -out fil.enc", desc: "Krypterar en fil med AES-256" },
+      { code: "openssl enc -d -aes-256-cbc -in fil.enc -out fil.txt", desc: "Dekrypterar filen" },
+      { code: "openssl dgst -sha256 fil.txt", desc: "Beräknar SHA-256-kontrollsumma" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "md5 / shasum", short: "Beräkna kontrollsummor för att verifiera filintegritet", tags: ["safe"],
+    examples: [
+      { code: "md5 fil.txt", desc: "Beräknar MD5-hash för filen" },
+      { code: "shasum -a 256 fil.txt", desc: "Beräknar SHA-256-hash" },
+      { code: "shasum -a 512 fil.txt", desc: "Beräknar SHA-512-hash" },
+      { code: "shasum -c checksums.txt", desc: "Verifierar filer mot en checksum-fil" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "security", short: "Hantera macOS Keychain och certifikat via terminal", tags: ["sudo"],
+    examples: [
+      { code: "security find-internet-password -s 'github.com'", desc: "Hämtar lösenord för GitHub ur Keychain" },
+      { code: "security add-generic-password -a user -s tjänst -w lösenord", desc: "Lägger till lösenord i Keychain" },
+      { code: "security list-keychains", desc: "Listar alla keychains" },
+      { code: "security find-certificate -a -p > certs.pem", desc: "Exporterar alla certifikat" },
+      { code: "security verify-cert -c cert.pem", desc: "Verifierar ett certifikat" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "gpg", short: "GNU Privacy Guard — PGP-kryptering och signering", tags: ["safe"],
+    examples: [
+      { code: "gpg --gen-key", desc: "Genererar ett nytt GPG-nyckelpar" },
+      { code: "gpg --list-keys", desc: "Listar alla publika nycklar" },
+      { code: "gpg --encrypt -r mottagare@email.com fil.txt", desc: "Krypterar fil för mottagaren" },
+      { code: "gpg --decrypt fil.txt.gpg", desc: "Dekrypterar en GPG-fil" },
+      { code: "gpg --sign fil.txt", desc: "Signerar en fil digitalt" },
+      { code: "gpg --verify fil.txt.sig", desc: "Verifierar en digital signatur" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "chmod / umask", short: "Kontrollera standardrättigheter för nya filer", tags: ["safe"],
+    examples: [
+      { code: "umask", desc: "Visar aktuell umask (standardrättigheter)" },
+      { code: "umask 022", desc: "Sätter umask — nya filer får 644, mappar 755" },
+      { code: "umask 077", desc: "Strikt umask — bara ägaren kan läsa/skriva" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "xattr", short: "Visa och hantera utökade attribut (quarantine m.m.)", tags: ["safe"],
+    examples: [
+      { code: "xattr -l fil.app", desc: "Visar alla utökade attribut för filen" },
+      { code: "xattr -d com.apple.quarantine fil.app", desc: "Tar bort karantänflaggan (Gatekeeper)" },
+      { code: "xattr -cr mapp/", desc: "Tar bort alla xattrs rekursivt" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "codesign", short: "Verifiera eller signera macOS-applikationer", tags: ["safe"],
+    examples: [
+      { code: "codesign -vv -d /Applications/Safari.app", desc: "Visar signeringsinformation" },
+      { code: "codesign --verify --deep /Applications/App.app", desc: "Verifierar djup signatur" },
+      { code: "spctl --assess --verbose /Applications/App.app", desc: "Kontrollerar Gatekeeper-godkännande" }
+    ]
+  },
+
+  // ── KOMPRIMERING & ARKIV ──
+  { cat: "Komprimering & Arkiv", cmd: "zip / unzip", short: "Skapa och packa upp ZIP-arkiv", tags: ["safe"],
+    examples: [
+      { code: "zip arkiv.zip fil1.txt fil2.txt", desc: "Skapar ZIP med specificerade filer" },
+      { code: "zip -r arkiv.zip mapp/", desc: "Skapar ZIP av en hel mapp rekursivt" },
+      { code: "zip -e arkiv.zip fil.txt", desc: "Skapar lösenordsskyddat ZIP" },
+      { code: "unzip arkiv.zip", desc: "Packar upp ett ZIP-arkiv" },
+      { code: "unzip arkiv.zip -d målmapp/", desc: "Packar upp till specificerad mapp" },
+      { code: "unzip -l arkiv.zip", desc: "Listar innehållet utan att packa upp" }
+    ]
+  },
+  { cat: "Komprimering & Arkiv", cmd: "tar", short: "Skapa och packa upp TAR-arkiv (med/utan komprimering)", tags: ["safe"],
+    examples: [
+      { code: "tar -czf arkiv.tar.gz mapp/", desc: "Skapar gzip-komprimerat arkiv" },
+      { code: "tar -cjf arkiv.tar.bz2 mapp/", desc: "Skapar bzip2-komprimerat arkiv (mindre)" },
+      { code: "tar -xzf arkiv.tar.gz", desc: "Packar upp .tar.gz-arkiv" },
+      { code: "tar -xzf arkiv.tar.gz -C målmapp/", desc: "Packar upp till specificerad mapp" },
+      { code: "tar -tzf arkiv.tar.gz", desc: "Listar innehållet utan att packa upp" },
+      { code: "tar -czf - mapp/ | ssh user@host 'cat > arkiv.tar.gz'", desc: "Komprimera och skicka direkt via SSH" }
+    ]
+  },
+  { cat: "Komprimering & Arkiv", cmd: "gzip / gunzip", short: "Komprimera och dekomprimera enskilda filer", tags: ["safe"],
+    examples: [
+      { code: "gzip stor_fil.txt", desc: "Komprimerar och ersätter filen med .gz" },
+      { code: "gzip -k fil.txt", desc: "Komprimerar men behåller originalfilen" },
+      { code: "gzip -9 fil.txt", desc: "Maximal komprimering (långsam)" },
+      { code: "gunzip fil.txt.gz", desc: "Dekomprimerar .gz-filen" },
+      { code: "zcat fil.txt.gz", desc: "Visar innehållet utan att dekomprimera" }
+    ]
+  },
+  { cat: "Komprimering & Arkiv", cmd: "bzip2 / bunzip2", short: "Komprimera med bzip2 (bättre komprimering än gzip)", tags: ["safe"],
+    examples: [
+      { code: "bzip2 fil.txt", desc: "Komprimerar filen till .bz2" },
+      { code: "bzip2 -k fil.txt", desc: "Komprimerar men behåller originalfilen" },
+      { code: "bunzip2 fil.txt.bz2", desc: "Dekomprimerar .bz2-filen" }
+    ]
+  },
+  { cat: "Komprimering & Arkiv", cmd: "xz", short: "Komprimering med högt komprimeringsförhållande", tags: ["safe"],
+    examples: [
+      { code: "xz fil.txt", desc: "Komprimerar filen till .xz (bäst komprimering)" },
+      { code: "xz -k fil.txt", desc: "Komprimerar men behåller originalfilen" },
+      { code: "xz -d fil.txt.xz", desc: "Dekomprimerar .xz-filen" },
+      { code: "tar -cJf arkiv.tar.xz mapp/", desc: "Skapar .tar.xz-arkiv med tar" }
+    ]
+  },
+  { cat: "Komprimering & Arkiv", cmd: "7z", short: "7-Zip arkivhanterare (stödjer många format)", tags: ["safe"],
+    examples: [
+      { code: "7z a arkiv.7z mapp/", desc: "Skapar 7z-arkiv (kräver brew install p7zip)" },
+      { code: "7z x arkiv.7z", desc: "Packar upp 7z-arkiv" },
+      { code: "7z l arkiv.7z", desc: "Listar innehållet i arkivet" },
+      { code: "7z a -p arkiv.7z fil.txt", desc: "Skapar lösenordsskyddat arkiv" }
+    ]
+  },
+
+  // ── SKRIPT & AUTOMATISERING ──
+  { cat: "Skript & Automatisering", cmd: "crontab", short: "Schemalägg kommandon att köra automatiskt", tags: ["safe"],
+    examples: [
+      { code: "crontab -e", desc: "Redigera cron-schemat (öppnar editor)" },
+      { code: "crontab -l", desc: "Visa aktuella cron-jobb" },
+      { code: "crontab -r", desc: "Ta bort alla cron-jobb" },
+      { code: "0 9 * * 1-5 /script.sh", desc: "Kör script.sh varje vardag kl 09:00" },
+      { code: "*/15 * * * * kommando", desc: "Kör kommando var 15:e minut" },
+      { code: "0 0 * * 0 backup.sh", desc: "Kör backup varje söndag midnatt" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "at", short: "Schemalägg ett kommando att köra en gång vid given tid", tags: ["safe"],
+    examples: [
+      { code: "at 14:30 <<< 'say Mötet börjar!'", desc: "Talar om mötet kl 14:30" },
+      { code: "at now + 30 minutes <<< 'kommando'", desc: "Kör om 30 minuter" },
+      { code: "atq", desc: "Listar schemalagda at-jobb" },
+      { code: "atrm 3", desc: "Tar bort at-jobb nummer 3" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "bash / zsh", short: "Kör ett shell-skript eller starta ett nytt shell", tags: ["safe"],
+    examples: [
+      { code: "bash skript.sh", desc: "Kör ett bash-skript" },
+      { code: "zsh skript.sh", desc: "Kör skript med zsh (standard i macOS)" },
+      { code: "bash -x skript.sh", desc: "Debug-läge: visar varje kommando som körs" },
+      { code: "bash -n skript.sh", desc: "Kontrollera syntax utan att köra" },
+      { code: "source ~/.zshrc", desc: "Ladda om shell-konfigurationen" },
+      { code: ". ~/.zshrc", desc: "Kortform för source" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "osascript", short: "Kör AppleScript eller JavaScript for Automation (JXA)", tags: ["safe"],
+    examples: [
+      { code: "osascript -e 'say \"Hej!\"'", desc: "Talar text med macOS röst" },
+      { code: "osascript -e 'display dialog \"Meddelande\"'", desc: "Visar en dialogruta" },
+      { code: "osascript skript.scpt", desc: "Kör en AppleScript-fil" },
+      { code: "osascript -l JavaScript -e 'Application(\"Finder\").activate()'", desc: "JXA: aktivera Finder" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "say", short: "Text-till-tal med macOS inbyggda röster", tags: ["safe"],
+    examples: [
+      { code: "say 'Hej, det här är macOS'", desc: "Talar texten med standardröst" },
+      { code: "say -v Daniel 'Hello'", desc: "Använder rösten Daniel" },
+      { code: "say -v 'Alva' 'Hej Sverige'", desc: "Svensk röst Alva" },
+      { code: "say -v '?'", desc: "Listar alla tillgängliga röster" },
+      { code: "cat fil.txt | say", desc: "Läser upp innehållet i en fil" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "pbcopy / pbpaste", short: "Kopiera till och klistra från urklipp via terminal", tags: ["safe"],
+    examples: [
+      { code: "echo 'text' | pbcopy", desc: "Kopierar text till urklipp" },
+      { code: "cat fil.txt | pbcopy", desc: "Kopierar filinnehållet till urklipp" },
+      { code: "pbpaste", desc: "Klistrar in urklippets innehåll i terminalen" },
+      { code: "pbpaste > fil.txt", desc: "Sparar urklippets innehåll till fil" },
+      { code: "pwd | pbcopy", desc: "Kopierar aktuell sökväg till urklipp" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "sleep", short: "Pausa exekvering under angiven tid", tags: ["safe"],
+    examples: [
+      { code: "sleep 5", desc: "Väntar 5 sekunder" },
+      { code: "sleep 0.5", desc: "Väntar en halv sekund" },
+      { code: "kommando1 && sleep 10 && kommando2", desc: "Kör kommando2 tio sekunder efter kommando1" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "trap", short: "Fånga signaler och städa upp i shell-skript", tags: ["safe"],
+    examples: [
+      { code: "trap 'rm -f /tmp/tempfil' EXIT", desc: "Tar bort tempfil när skriptet avslutas" },
+      { code: "trap 'echo Avbruten!; exit' INT", desc: "Fångar Ctrl+C i ett skript" },
+      { code: "trap '' SIGINT", desc: "Ignorerar Ctrl+C helt" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "read", short: "Läs inmatning från användaren i ett skript", tags: ["safe"],
+    examples: [
+      { code: "read -p 'Ditt namn: ' namn", desc: "Frågar efter användarens namn" },
+      { code: "read -s -p 'Lösenord: ' pass", desc: "Döljer inmatningen (tyst läge)" },
+      { code: "read -t 10 svar", desc: "Timeout efter 10 sekunder" }
+    ]
+  },
+
+  // ── ANVÄNDARE & GRUPPER ──
+  { cat: "Användare & Grupper", cmd: "id", short: "Visa användar-ID, grupp-ID och grupptillhörighet", tags: ["safe"],
+    examples: [
+      { code: "id", desc: "Visar aktuell användares uid, gid och grupper" },
+      { code: "id username", desc: "Visar info för en specifik användare" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "groups", short: "Visa vilka grupper en användare tillhör", tags: ["safe"],
+    examples: [
+      { code: "groups", desc: "Visar aktuell användares grupper" },
+      { code: "groups username", desc: "Visar grupper för specificerad användare" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "dscl", short: "Directory Services — hantera användare och grupper på macOS", tags: ["sudo"],
+    examples: [
+      { code: "dscl . list /Users", desc: "Listar alla användare på systemet" },
+      { code: "dscl . list /Groups", desc: "Listar alla grupper" },
+      { code: "dscl . read /Users/username", desc: "Visar info om en användare" },
+      { code: "sudo dscl . -create /Users/nyuser", desc: "Skapar en ny användare" },
+      { code: "sudo dscl . -passwd /Users/username", desc: "Byter lösenord för en användare" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "passwd", short: "Byt lösenord för ett användarkonto", tags: ["sudo"],
+    examples: [
+      { code: "passwd", desc: "Byt lösenord för aktuell användare" },
+      { code: "sudo passwd username", desc: "Byt lösenord för annan användare" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "su", short: "Byt till ett annat användarkonto", tags: ["sudo"],
+    examples: [
+      { code: "su - username", desc: "Byter till ett annat användarkonto (med deras miljö)" },
+      { code: "su -", desc: "Byter till root-kontot" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "who / w", short: "Visa inloggade användare och vad de gör", tags: ["safe"],
+    examples: [
+      { code: "who", desc: "Visar inloggade användare" },
+      { code: "w", desc: "Visar inloggade användare och deras aktivitet" },
+      { code: "last", desc: "Visar historik över inloggningar" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "finger", short: "Visa information om en användare", tags: ["safe"],
+    examples: [
+      { code: "finger username", desc: "Visar detaljer om användaren" },
+      { code: "finger", desc: "Listar inloggade användare med detaljer" }
+    ]
+  },
+
+  // ── PRESTANDA & BENCHMARKING ──
+  { cat: "Prestanda & Benchmarking", cmd: "time", short: "Mät hur lång tid ett kommando tar att köra", tags: ["safe"],
+    examples: [
+      { code: "time ls -la", desc: "Mäter exekveringstiden för ls" },
+      { code: "time python3 skript.py", desc: "Mäter hur lång tid skriptet tar" },
+      { code: "time tar -czf arkiv.tar.gz mapp/", desc: "Mäter kompressionstid" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "iostat", short: "Visa I/O-statistik för disk och CPU", tags: ["safe"],
+    examples: [
+      { code: "iostat", desc: "Visar CPU- och disk-I/O-statistik" },
+      { code: "iostat -d 2", desc: "Uppdaterar disk-statistik var 2:a sekund" },
+      { code: "iostat -c 5", desc: "Visar 5 mätningar och avslutar" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "nettop", short: "Live-övervakning av nätverkstrafik per process", tags: ["sudo"],
+    examples: [
+      { code: "nettop", desc: "Startar interaktiv nätverksmonitor (q = avsluta)" },
+      { code: "nettop -m route", desc: "Visar routing-tabell i realtid" },
+      { code: "nettop -p pid", desc: "Filtrerar på en specifik process" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "powermetrics", short: "Detaljerad energi- och prestandastatistik (Apple Silicon)", tags: ["sudo"],
+    examples: [
+      { code: "sudo powermetrics --samplers cpu_power -i 1000 -n 5", desc: "Visar CPU-effekt 5 gånger (1 sek intervall)" },
+      { code: "sudo powermetrics --samplers smc -i 2000", desc: "Visar temperaturer och fläkthastigheter" },
+      { code: "sudo powermetrics --samplers gpu_power -i 1000 -n 3", desc: "Visar GPU-effektförbrukning" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "htop", short: "Interaktiv processmonitor (kräver brew install htop)", tags: ["safe"],
+    examples: [
+      { code: "htop", desc: "Öppnar grafisk processöverblick (F10 = avsluta)" },
+      { code: "htop -u username", desc: "Visar bara processer för en användare" },
+      { code: "htop -p 1234,5678", desc: "Visar specifika process-ID:n" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "activity monitor (CLI)", short: "macOS inbyggda prestandaverktyg via terminal", tags: ["safe"],
+    examples: [
+      { code: "top -o cpu -n 10", desc: "Visar top-10 CPU-krävande processer" },
+      { code: "top -o rsize -n 10", desc: "Visar top-10 minnesanvändare" },
+      { code: "ps aux --sort=-%cpu | head -11", desc: "Sorterar processer efter CPU-användning" },
+      { code: "ps aux --sort=-%mem | head -11", desc: "Sorterar processer efter minnesanvändning" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "ab (ApacheBench)", short: "HTTP-belastningstestning av webbservrar", tags: ["net"],
+    examples: [
+      { code: "ab -n 1000 -c 10 https://example.com/", desc: "1000 requests, 10 parallellt" },
+      { code: "ab -n 500 -c 50 -k https://api.example.com/endpoint", desc: "Testar API med keep-alive" }
+    ]
+  },
+  { cat: "Prestanda & Benchmarking", cmd: "caffeinate", short: "Förhindra att Mac går i viloläge under en process", tags: ["safe"],
+    examples: [
+      { code: "caffeinate", desc: "Håller Mac vaken tills Ctrl+C trycks" },
+      { code: "caffeinate -t 3600", desc: "Håller vaken i 3600 sekunder (1 timme)" },
+      { code: "caffeinate -i make", desc: "Håller vaken medan make körs" },
+      { code: "caffeinate -s", desc: "Förhindrar systemsömn (inte displaysömn)" }
+    ]
+  },
+
+  // ── AVANCERAD TEXT ──
+  { cat: "Avancerad Text", cmd: "jq", short: "Kraftfull JSON-processor och pretty-printer", tags: ["safe"],
+    examples: [
+      { code: "cat data.json | jq '.'", desc: "Pretty-printar JSON med färger" },
+      { code: "jq '.name' data.json", desc: "Hämtar värdet av fältet 'name'" },
+      { code: "jq '.users[0]'", desc: "Hämtar första elementet i users-array" },
+      { code: "jq '.[] | .email'", desc: "Hämtar email från varje objekt i arrayen" },
+      { code: "curl -s https://api.example.com | jq '.data'", desc: "Parsar API-svar direkt" },
+      { code: "jq -r '.name'", desc: "-r = raw output (utan citationstecken)" },
+      { code: "jq 'keys'", desc: "Listar alla nycklar i ett JSON-objekt" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "cut", short: "Klipp ut kolumner eller fält ur text", tags: ["safe"],
+    examples: [
+      { code: "cut -d':' -f1 /etc/passwd", desc: "Hämtar första fältet (användarnamn)" },
+      { code: "cut -d',' -f2,4 data.csv", desc: "Hämtar kolumn 2 och 4 från CSV" },
+      { code: "cut -c1-10 fil.txt", desc: "Hämtar tecken 1–10 från varje rad" },
+      { code: "ls -la | cut -c1-10", desc: "Visar bara rättighetsdelen av ls" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "tr", short: "Översätt eller ta bort tecken i text", tags: ["safe"],
+    examples: [
+      { code: "echo 'hej' | tr 'a-z' 'A-Z'", desc: "Konverterar till versaler" },
+      { code: "echo 'HEJ' | tr 'A-Z' 'a-z'", desc: "Konverterar till gemener" },
+      { code: "echo 'a:b:c' | tr ':' ','", desc: "Ersätter kolon med komma" },
+      { code: "cat fil.txt | tr -d '\\n'", desc: "Tar bort alla radbrytningar" },
+      { code: "cat fil.txt | tr -s ' '", desc: "Tar bort dubbla mellanslag" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "paste", short: "Slå ihop rader från flera filer sida vid sida", tags: ["safe"],
+    examples: [
+      { code: "paste fil1.txt fil2.txt", desc: "Slår ihop kolumnvis med tab" },
+      { code: "paste -d',' fil1.txt fil2.txt", desc: "Slår ihop med komma som separator" },
+      { code: "paste -s fil.txt", desc: "Slår ihop alla rader till en rad" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "column", short: "Formatera text i snygga kolumner", tags: ["safe"],
+    examples: [
+      { code: "column -t fil.txt", desc: "Justerar text i kolumner automatiskt" },
+      { code: "cat data.csv | column -t -s','", desc: "Visar CSV som justerad tabell" },
+      { code: "mount | column -t", desc: "Visar mount-info i snygga kolumner" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "tac", short: "Visa fil med raderna i omvänd ordning", tags: ["safe"],
+    examples: [
+      { code: "tac fil.txt", desc: "Skriver ut filen bakifrån (sista raden först)" },
+      { code: "tac logg.txt | head -20", desc: "Visar de 20 sista logg-raderna" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "rev", short: "Vänd på varje rad tecken för tecken", tags: ["safe"],
+    examples: [
+      { code: "echo 'hej' | rev", desc: "Ger 'jeh'" },
+      { code: "rev fil.txt", desc: "Vänder varje rad i filen" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "strings", short: "Extrahera läsbara textsträngar ur binärfiler", tags: ["safe"],
+    examples: [
+      { code: "strings /usr/bin/ls", desc: "Visar textsträngar i ls-binären" },
+      { code: "strings fil.bin | grep -i version", desc: "Letar versionssträngar i en binär" },
+      { code: "strings fil.bin | less", desc: "Bläddrar bland extraherade strängar" }
+    ]
+  },
+  { cat: "Avancerad Text", cmd: "xxd", short: "Hexdump — visa binärfiler som hex och ASCII", tags: ["safe"],
+    examples: [
+      { code: "xxd fil.bin", desc: "Visar filen som hexadecimal + ASCII" },
+      { code: "xxd fil.bin | head -20", desc: "Visar de första 20 raderna" },
+      { code: "xxd -r hex.txt > original.bin", desc: "Konverterar hex tillbaka till binär" }
+    ]
+  },
+
+  // ── XCODE & UTVECKLARVERKTYG ──
+  { cat: "Xcode & Utvecklarverktyg", cmd: "xcode-select", short: "Hantera aktiv Xcode/Command Line Tools-installation", tags: ["sudo"],
+    examples: [
+      { code: "xcode-select --install", desc: "Installerar Command Line Tools (CLT)" },
+      { code: "xcode-select -p", desc: "Visar sökvägen till aktiva developer tools" },
+      { code: "sudo xcode-select -s /Applications/Xcode.app", desc: "Byter aktiv Xcode-installation" },
+      { code: "sudo xcode-select --reset", desc: "Återställer till standard-sökvägen" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "xcodebuild", short: "Bygg och testa Xcode-projekt från terminalen", tags: ["safe"],
+    examples: [
+      { code: "xcodebuild -list", desc: "Listar targets, scheman och konfigurationer" },
+      { code: "xcodebuild -scheme MittSchema build", desc: "Bygger ett specifikt schema" },
+      { code: "xcodebuild test -scheme MittSchema -destination 'platform=iOS Simulator,name=iPhone 15'", desc: "Kör tester i simulator" },
+      { code: "xcodebuild clean", desc: "Rensar byggartifakter" },
+      { code: "xcodebuild -workspace App.xcworkspace -scheme App archive", desc: "Skapar ett arkiv för distribution" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "xcrun", short: "Kör Xcode-verktyg utan att ange full sökväg", tags: ["safe"],
+    examples: [
+      { code: "xcrun swift", desc: "Startar Swift REPL" },
+      { code: "xcrun clang -o program main.c", desc: "Kompilerar C-kod med Clang" },
+      { code: "xcrun actool", desc: "Hanterar asset-kataloger" },
+      { code: "xcrun --find gcc", desc: "Hittar sökvägen till gcc" },
+      { code: "xcrun --sdk iphonesimulator --show-sdk-path", desc: "Visar sökväg till iOS Simulator SDK" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "simctl", short: "Hantera iOS/watchOS/tvOS-simulatorer", tags: ["safe"],
+    examples: [
+      { code: "xcrun simctl list", desc: "Listar alla tillgängliga simulatorer" },
+      { code: "xcrun simctl list devices", desc: "Listar bara enheter" },
+      { code: "xcrun simctl boot 'iPhone 15 Pro'", desc: "Startar en specifik simulator" },
+      { code: "xcrun simctl install booted App.app", desc: "Installerar en app i körd simulator" },
+      { code: "xcrun simctl launch booted com.example.App", desc: "Startar appen i simulatorn" },
+      { code: "xcrun simctl screenshot booted skärmbild.png", desc: "Tar skärmbild av simulatorn" },
+      { code: "xcrun simctl erase all", desc: "Återställer alla simulatorer" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "swift", short: "Kör Swift-kod direkt i terminalen", tags: ["safe"],
+    examples: [
+      { code: "swift", desc: "Startar interaktiv Swift REPL" },
+      { code: "swift skript.swift", desc: "Kör ett Swift-skript direkt" },
+      { code: "swift package init --type executable", desc: "Skapar ett nytt Swift Package" },
+      { code: "swift build", desc: "Bygger ett Swift Package" },
+      { code: "swift test", desc: "Kör tester i ett Swift Package" },
+      { code: "swift run", desc: "Bygger och kör ett Swift Package" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "instruments", short: "Profilering och prestandaanalys av appar", tags: ["safe"],
+    examples: [
+      { code: "instruments -l", desc: "Listar tillgängliga profileringsmallar" },
+      { code: "instruments -t 'Time Profiler' -D trace.trace -l 5000 -p pid", desc: "Profilerar en process i 5 sekunder" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "clang / gcc", short: "Kompilera C, C++ och Objective-C-kod", tags: ["safe"],
+    examples: [
+      { code: "clang main.c -o program", desc: "Kompilerar C-fil till körbar" },
+      { code: "clang++ main.cpp -o program", desc: "Kompilerar C++-fil" },
+      { code: "clang -Wall -Wextra main.c -o program", desc: "Kompilerar med alla varningar" },
+      { code: "clang -O2 main.c -o program", desc: "Kompilerar med optimering nivå 2" }
+    ]
+  },
+  { cat: "Xcode & Utvecklarverktyg", cmd: "make", short: "Bygg projekt med Makefile", tags: ["safe"],
+    examples: [
+      { code: "make", desc: "Kör standardmålet i Makefile" },
+      { code: "make clean", desc: "Kör clean-målet (tar bort byggfiler)" },
+      { code: "make install", desc: "Installerar det byggda programmet" },
+      { code: "make -j8", desc: "Bygger med 8 parallella jobb (snabbare)" },
+      { code: "make -n", desc: "Visar vad som skulle köras utan att köra det" }
+    ]
+  },
+
+  // ── MILJÖ & SHELL-KONFIGURATION ──
+  { cat: "Miljö & Shell-konfiguration", cmd: ".zshrc / .bashrc", short: "Shell-konfigurationsfiler som körs vid varje session", tags: ["safe"],
+    examples: [
+      { code: "nano ~/.zshrc", desc: "Redigera zsh-konfigurationen (standard macOS)" },
+      { code: "source ~/.zshrc", desc: "Ladda om konfigurationen utan att starta om" },
+      { code: "echo $SHELL", desc: "Visar vilket shell du använder" },
+      { code: "cat ~/.zsh_history", desc: "Visar zsh-kommandohistoriken" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "export PATH", short: "Lägg till program i systemets sökväg", tags: ["safe"],
+    examples: [
+      { code: "echo $PATH", desc: "Visar aktuell PATH" },
+      { code: "export PATH=$PATH:/usr/local/bin", desc: "Lägger till sökväg temporärt" },
+      { code: "export PATH=\"$HOME/.local/bin:$PATH\"", desc: "Lägger till ~/.local/bin i PATH" },
+      { code: "which python3", desc: "Kontrollera var python3 hittas i PATH" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "env / printenv", short: "Visa alla eller specifika miljövariabler", tags: ["safe"],
+    examples: [
+      { code: "printenv", desc: "Listar alla miljövariabler" },
+      { code: "printenv HOME", desc: "Visar värdet av HOME-variabeln" },
+      { code: "printenv | sort", desc: "Sorterad lista av alla variabler" },
+      { code: "env VAR=värde kommando", desc: "Kör kommando med tillfällig variabel" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "$(  ) och ${ }", short: "Kommandosubstitution och variabelexpansion", tags: ["safe"],
+    examples: [
+      { code: "echo \"Idag är $(date)\"", desc: "Infogar kommandots output i strängen" },
+      { code: "filer=$(ls *.txt)", desc: "Sparar output av ls i variabel" },
+      { code: "echo ${variabel:-standard}", desc: "Använder 'standard' om variabeln är tom" },
+      { code: "echo ${#strang}", desc: "Visar längden på strängen" },
+      { code: "echo ${fil%.txt}", desc: "Tar bort .txt-suffixet från variabeln" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "set / unset", short: "Sätt eller ta bort shell-variabler och -alternativ", tags: ["safe"],
+    examples: [
+      { code: "set -e", desc: "Avbryt skript vid första felet (säkert läge)" },
+      { code: "set -x", desc: "Aktivera debug-utskrift av varje kommando" },
+      { code: "set -u", desc: "Behandla odefinierade variabler som fel" },
+      { code: "set -euo pipefail", desc: "Kombination för robusta skript" },
+      { code: "unset VARIABEL", desc: "Tar bort en miljövariabel" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "chsh", short: "Byt standardshell för din användare", tags: ["sudo"],
+    examples: [
+      { code: "chsh -s /bin/zsh", desc: "Byter till zsh (standard macOS)" },
+      { code: "chsh -s /bin/bash", desc: "Byter till bash" },
+      { code: "cat /etc/shells", desc: "Listar alla tillgängliga shells" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "direnv", short: "Ladda automatiskt .env-filer per katalog", tags: ["safe"],
+    examples: [
+      { code: "brew install direnv", desc: "Installerar direnv" },
+      { code: "echo 'eval \"$(direnv hook zsh)\"' >> ~/.zshrc", desc: "Aktiverar direnv i zsh" },
+      { code: "echo 'export API_KEY=abc123' > .envrc", desc: "Skapar en .envrc-fil" },
+      { code: "direnv allow .", desc: "Godkänner .envrc i aktuell mapp" }
+    ]
+  },
+
+  // ── VERSIONSHANTERING ──
+  { cat: "Versionshantering", cmd: "nvm", short: "Node Version Manager — hantera flera Node.js-versioner", tags: ["safe"],
+    examples: [
+      { code: "nvm install --lts", desc: "Installerar senaste LTS-versionen av Node" },
+      { code: "nvm install 20", desc: "Installerar Node.js version 20" },
+      { code: "nvm use 18", desc: "Aktiverar Node.js 18 i aktuell session" },
+      { code: "nvm alias default 20", desc: "Sätter Node 20 som standard" },
+      { code: "nvm ls", desc: "Listar alla installerade Node-versioner" },
+      { code: "nvm ls-remote", desc: "Listar alla tillgängliga versioner att installera" },
+      { code: "node -v && npm -v", desc: "Kontrollerar aktiva versioner" }
+    ]
+  },
+  { cat: "Versionshantering", cmd: "pyenv", short: "Hantera flera Python-versioner på samma system", tags: ["safe"],
+    examples: [
+      { code: "pyenv install 3.12.0", desc: "Installerar Python 3.12.0" },
+      { code: "pyenv versions", desc: "Listar alla installerade Python-versioner" },
+      { code: "pyenv global 3.12.0", desc: "Sätter global Python-version" },
+      { code: "pyenv local 3.11.0", desc: "Sätter lokal version för aktuell mapp (.python-version)" },
+      { code: "pyenv shell 3.10.0", desc: "Temporär version för aktuell shell-session" },
+      { code: "pyenv which python", desc: "Visar sökvägen till aktiv Python" }
+    ]
+  },
+  { cat: "Versionshantering", cmd: "rbenv", short: "Hantera flera Ruby-versioner", tags: ["safe"],
+    examples: [
+      { code: "rbenv install 3.3.0", desc: "Installerar Ruby 3.3.0" },
+      { code: "rbenv versions", desc: "Listar installerade Ruby-versioner" },
+      { code: "rbenv global 3.3.0", desc: "Sätter global Ruby-version" },
+      { code: "rbenv local 3.2.0", desc: "Sätter lokal version för mappen" },
+      { code: "rbenv rehash", desc: "Uppdaterar shims efter ny gem-installation" }
+    ]
+  },
+  { cat: "Versionshantering", cmd: "asdf", short: "Universal versionshanterare för många språk", tags: ["safe"],
+    examples: [
+      { code: "asdf plugin add nodejs", desc: "Lägger till Node.js-plugin" },
+      { code: "asdf install nodejs 20.0.0", desc: "Installerar Node.js 20" },
+      { code: "asdf global nodejs 20.0.0", desc: "Sätter global version" },
+      { code: "asdf local python 3.12.0", desc: "Sätter lokal Python-version" },
+      { code: "asdf list", desc: "Listar alla installerade versioner" },
+      { code: "asdf current", desc: "Visar aktiva versioner för alla verktyg" }
+    ]
+  },
+  { cat: "Versionshantering", cmd: "volta", short: "Snabb JavaScript-verktygshanterare (Node, npm, Yarn)", tags: ["safe"],
+    examples: [
+      { code: "volta install node", desc: "Installerar senaste LTS Node" },
+      { code: "volta install node@18", desc: "Installerar specifik version" },
+      { code: "volta pin node@20", desc: "Låser Node-version för projektet (package.json)" },
+      { code: "volta list", desc: "Listar installerade verktyg" }
+    ]
+  },
+
+  // ── MEDIA & BILDER ──
+  { cat: "Media & Bilder", cmd: "ffmpeg", short: "Kraftfull konvertering och bearbetning av video/ljud", tags: ["safe"],
+    examples: [
+      { code: "ffmpeg -i input.mp4 output.avi", desc: "Konverterar video till AVI-format" },
+      { code: "ffmpeg -i video.mp4 -vn audio.mp3", desc: "Extraherar ljudspåret som MP3" },
+      { code: "ffmpeg -i input.mp4 -ss 00:01:00 -t 30 klipp.mp4", desc: "Klipper 30 sekunder från 1 min in" },
+      { code: "ffmpeg -i input.mp4 -vf scale=1280:720 output.mp4", desc: "Ändrar upplösning till 720p" },
+      { code: "ffmpeg -i input.mp4 -r 24 output.mp4", desc: "Ändrar bildfrekvens till 24 fps" },
+      { code: "ffmpeg -framerate 30 -i bild%03d.png video.mp4", desc: "Skapar video från bildsekvens" },
+      { code: "ffmpeg -i video.mp4 -vf fps=1 frame%04d.png", desc: "Exporterar 1 bild per sekund" }
+    ]
+  },
+  { cat: "Media & Bilder", cmd: "sips", short: "Scriptable Image Processing System — inbyggt i macOS", tags: ["safe"],
+    examples: [
+      { code: "sips -Z 800 bild.jpg", desc: "Skalar ner bild till max 800px (behåller proportioner)" },
+      { code: "sips -z 600 800 bild.jpg", desc: "Ändrar storlek till 600x800 px" },
+      { code: "sips -s format png bild.jpg --out bild.png", desc: "Konverterar JPG till PNG" },
+      { code: "sips -s format jpeg bild.png --out bild.jpg", desc: "Konverterar PNG till JPG" },
+      { code: "for f in *.jpg; do sips -Z 1200 \"$f\"; done", desc: "Batch-skalar alla JPG-filer" },
+      { code: "sips -r 90 bild.jpg", desc: "Roterar bilden 90 grader" },
+      { code: "sips --getProperty all bild.jpg", desc: "Visar alla metadata och egenskaper" }
+    ]
+  },
+  { cat: "Media & Bilder", cmd: "exiftool", short: "Läs, skriv och redigera EXIF-metadata i mediafiler", tags: ["safe"],
+    examples: [
+      { code: "exiftool bild.jpg", desc: "Visar all metadata för bilden" },
+      { code: "exiftool -GPS:GPSLatitude bild.jpg", desc: "Visar GPS-koordinater" },
+      { code: "exiftool -all= bild.jpg", desc: "Tar bort all metadata (integritetsskydd)" },
+      { code: "exiftool -r -all= mapp/", desc: "Tar bort metadata från alla filer i mapp" },
+      { code: "exiftool '-DateTimeOriginal=2024:01:15 12:00:00' bild.jpg", desc: "Ändrar datum för bilden" },
+      { code: "exiftool -ext jpg -r mapp/", desc: "Visar metadata för alla JPG rekursivt" }
+    ]
+  },
+  { cat: "Media & Bilder", cmd: "screencapture", short: "Ta skärmdumpar och spela in skärm via terminal", tags: ["safe"],
+    examples: [
+      { code: "screencapture skärmbild.png", desc: "Ta skärmdump av hela skärmen" },
+      { code: "screencapture -i klipp.png", desc: "Interaktivt markera område att ta bild av" },
+      { code: "screencapture -w fönster.png", desc: "Klicka på ett fönster för att ta bild" },
+      { code: "screencapture -t jpg bild.jpg", desc: "Sparar som JPG istället för PNG" },
+      { code: "screencapture -c", desc: "Kopiera skärmdumpen till urklipp" },
+      { code: "screencapture -v video.mov", desc: "Spela in skärmen till en MOV-fil" }
+    ]
+  },
+  { cat: "Media & Bilder", cmd: "afplay / afinfo", short: "Spela upp och inspektera ljudfiler via terminal", tags: ["safe"],
+    examples: [
+      { code: "afplay musik.mp3", desc: "Spelar upp en ljudfil (Ctrl+C för att stoppa)" },
+      { code: "afplay -v 0.5 musik.mp3", desc: "Spelar med 50% volym" },
+      { code: "afplay -r 2.0 musik.mp3", desc: "Spelar med dubbel hastighet" },
+      { code: "afinfo musik.mp3", desc: "Visar information om ljudfilen" }
+    ]
+  },
+  { cat: "Media & Bilder", cmd: "qlmanage", short: "Quick Look från terminalen — förhandsvisa filer", tags: ["safe"],
+    examples: [
+      { code: "qlmanage -p bild.jpg", desc: "Öppnar Quick Look-förhandsgranskning" },
+      { code: "qlmanage -p dokument.pdf", desc: "Förhandsgranskar en PDF" },
+      { code: "qlmanage -t -s 256 -o . bild.jpg", desc: "Skapar en 256px thumbnail av bilden" }
+    ]
+  },
+
+  // ── CERTIFIKAT & PKI-FELSÖKNING ──
+  { cat: "Certifikat & PKI", cmd: "openssl s_client", short: "Anslut till TLS/SSL-server och inspektera certifikatet", tags: ["net"],
+    examples: [
+      { code: "openssl s_client -connect example.com:443", desc: "Visa hela certifikatkedjan för en domän" },
+      { code: "openssl s_client -connect example.com:443 -showcerts", desc: "Visa ALLA certifikat i kedjan (root, intermediate, leaf)" },
+      { code: "openssl s_client -connect example.com:443 </dev/null 2>/dev/null | openssl x509 -noout -dates", desc: "Visa utgångsdatum för certifikatet" },
+      { code: "openssl s_client -connect smtp.gmail.com:587 -starttls smtp", desc: "Testa STARTTLS på en SMTP-server" },
+      { code: "openssl s_client -connect example.com:443 -tls1_2", desc: "Tvinga TLS 1.2 vid anslutning" },
+      { code: "openssl s_client -connect example.com:443 -tls1_3", desc: "Tvinga TLS 1.3 vid anslutning" },
+      { code: "echo | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -issuer -subject", desc: "Visa utfärdare (Issuer) och ämne (Subject)" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl x509", short: "Läs, inspektera och konvertera X.509-certifikat", tags: ["safe"],
+    examples: [
+      { code: "openssl x509 -in cert.pem -text -noout", desc: "Visa all information i ett certifikat" },
+      { code: "openssl x509 -in cert.pem -noout -issuer", desc: "Visa utfärdaren (CA) av certifikatet" },
+      { code: "openssl x509 -in cert.pem -noout -subject", desc: "Visa certifikatets ämne (CN, O, OU)" },
+      { code: "openssl x509 -in cert.pem -noout -dates", desc: "Visa giltighetsdatum (notBefore / notAfter)" },
+      { code: "openssl x509 -in cert.pem -noout -serial", desc: "Visa certifikatets serienummer" },
+      { code: "openssl x509 -in cert.pem -noout -fingerprint -sha256", desc: "Beräkna SHA-256-fingeravtrycket" },
+      { code: "openssl x509 -in cert.pem -noout -ext subjectAltName", desc: "Visa alla domäner i SAN-fältet (Subject Alternative Name)" },
+      { code: "openssl x509 -in cert.der -inform DER -out cert.pem -outform PEM", desc: "Konvertera DER-certifikat till PEM-format" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl verify", short: "Verifiera ett certifikat mot en CA-kedja", tags: ["safe"],
+    examples: [
+      { code: "openssl verify cert.pem", desc: "Verifiera mot systemets CA-bundle" },
+      { code: "openssl verify -CAfile ca-bundle.pem cert.pem", desc: "Verifiera mot en specifik CA-fil" },
+      { code: "openssl verify -CAfile ca.pem -untrusted intermediate.pem cert.pem", desc: "Verifiera med mellanliggande CA (intermediate)" },
+      { code: "openssl verify -verbose -x509_strict cert.pem", desc: "Strikt verifiering med detaljerad output" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl req", short: "Skapa och inspektera CSR (Certificate Signing Request)", tags: ["safe"],
+    examples: [
+      { code: "openssl req -new -newkey rsa:2048 -nodes -keyout privkey.pem -out request.csr", desc: "Generera ny nyckel och CSR i ett steg" },
+      { code: "openssl req -in request.csr -text -noout", desc: "Visa innehållet i en CSR" },
+      { code: "openssl req -in request.csr -noout -subject", desc: "Visa ämnet i CSR:en" },
+      { code: "openssl req -new -key privkey.pem -out request.csr -subj '/CN=example.com/O=Företaget/C=SE'", desc: "Skapa CSR med specificerade fält" },
+      { code: "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes", desc: "Skapa självsignerat certifikat direkt" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl pkcs12", short: "Hantera PKCS#12-filer (.p12 / .pfx) — certifikat + privat nyckel", tags: ["safe"],
+    examples: [
+      { code: "openssl pkcs12 -in certifikat.p12 -info -noout", desc: "Visa innehållsinfo utan att exportera" },
+      { code: "openssl pkcs12 -in certifikat.p12 -out cert.pem -nodes", desc: "Exportera certifikat och nyckel till PEM" },
+      { code: "openssl pkcs12 -in certifikat.p12 -nokeys -out cert_only.pem", desc: "Exportera bara certifikatet (utan nyckeln)" },
+      { code: "openssl pkcs12 -in certifikat.p12 -nocerts -nodes -out privkey.pem", desc: "Exportera bara den privata nyckeln" },
+      { code: "openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out nytt.p12", desc: "Skapa en ny .p12-fil från PEM-filer" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl crl", short: "Inspektera Certificate Revocation Lists (CRL)", tags: ["safe"],
+    examples: [
+      { code: "openssl crl -in crl.pem -text -noout", desc: "Visa innehållet i en CRL" },
+      { code: "openssl crl -in crl.der -inform DER -text -noout", desc: "Visa DER-formaterad CRL" },
+      { code: "openssl crl -in crl.pem -noout -lastupdate -nextupdate", desc: "Visa CRL:ens giltighetstid" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "security (certifikat)", short: "Hantera certifikat i macOS Keychain via terminal", tags: ["sudo"],
+    examples: [
+      { code: "security find-certificate -a -p > alla_certs.pem", desc: "Exportera alla certifikat ur Keychain till PEM" },
+      { code: "security find-certificate -c 'example.com' -p", desc: "Hitta certifikat med visst namn och exportera" },
+      { code: "security find-certificate -a /System/Library/Keychains/SystemRootCertificates.keychain | grep 'labl'", desc: "Lista alla betrodda rot-CA:er i systemet" },
+      { code: "sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ca.pem", desc: "Lägg till eget CA-certifikat som betrott" },
+      { code: "sudo security delete-certificate -c 'Certifikatnamn' /Library/Keychains/System.keychain", desc: "Ta bort ett certifikat ur System Keychain" },
+      { code: "security verify-cert -c cert.pem -v", desc: "Verifiera ett certifikat mot macOS betrodda CA:er" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "curl (TLS-felsökning)", short: "Felsök TLS/certifikatproblem med curl", tags: ["net"],
+    examples: [
+      { code: "curl -v https://example.com 2>&1 | grep -A5 'Server certificate'", desc: "Visa certifikatinfo under anslutning" },
+      { code: "curl --insecure https://example.com", desc: "Hoppa över certifikatverifiering (felsökning ONLY)" },
+      { code: "curl --cacert ca.pem https://example.com", desc: "Verifiera mot ett specifikt CA-certifikat" },
+      { code: "curl --cert client.pem --key privkey.pem https://example.com", desc: "Använd klientcertifikat (mutual TLS)" },
+      { code: "curl -w '%{ssl_verify_result}\\n' -o /dev/null -s https://example.com", desc: "Visa TLS-verifieringsresultat (0 = OK)" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "nmap (TLS-skanning)", short: "Skanna TLS-konfiguration och certifikat med nmap", tags: ["net"],
+    examples: [
+      { code: "nmap --script ssl-cert -p 443 example.com", desc: "Hämta och visa certifikatinfo" },
+      { code: "nmap --script ssl-enum-ciphers -p 443 example.com", desc: "Lista alla stödda TLS-cipher suites" },
+      { code: "nmap --script ssl-dh-params -p 443 example.com", desc: "Kontrollera Diffie-Hellman-parametrar (Logjam)" },
+      { code: "nmap --script tls-alpn -p 443 example.com", desc: "Visa stödda ALPN-protokoll (HTTP/2 m.m.)" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "dig (DANE / TLSA)", short: "Kontrollera DNS-baserade certifikatposter", tags: ["net"],
+    examples: [
+      { code: "dig example.com A +short", desc: "Slå upp IP-adress för domänen" },
+      { code: "dig _443._tcp.example.com TLSA", desc: "Hämta DANE TLSA-post (certifikatpinning i DNS)" },
+      { code: "dig example.com CAA", desc: "Visa CAA-poster (vilka CA:er får utfärda cert)" },
+      { code: "dig _dmarc.example.com TXT", desc: "Kontrollera DMARC-post" },
+      { code: "dig example.com +dnssec", desc: "Visa DNSSEC-information" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "openssl ocsp", short: "Kontrollera om ett certifikat är återkallat via OCSP", tags: ["net"],
+    examples: [
+      { code: "openssl ocsp -issuer ca.pem -cert cert.pem -url http://ocsp.example.com -resp_text", desc: "Kontrollera certifikatsstatus via OCSP" },
+      { code: "openssl x509 -in cert.pem -noout -ocsp_uri", desc: "Hämta OCSP-URL:en från certifikatet" }
+    ]
+  },
+  { cat: "Certifikat & PKI", cmd: "step (smallstep CLI)", short: "Modernt CLI-verktyg för PKI, certifikat och JWT", tags: ["safe"],
+    examples: [
+      { code: "brew install step", desc: "Installerar step CLI (brew)" },
+      { code: "step certificate inspect cert.pem", desc: "Visa certifikatinfo i läsbart format" },
+      { code: "step certificate inspect https://example.com", desc: "Inspektera certifikat direkt från URL" },
+      { code: "step certificate verify cert.pem --roots ca.pem", desc: "Verifiera certifikat mot CA" },
+      { code: "step certificate create 'Min CA' ca.crt ca.key --profile root-ca", desc: "Skapa en lokal rot-CA" },
+      { code: "step certificate create example.com cert.crt cert.key --ca ca.crt --ca-key ca.key", desc: "Utfärda ett certifikat signerat av din CA" }
+    ]
+  },
+];
+
+// ── SETUP ──
+const categories = [...new Set(COMMANDS.map(c => c.cat))];
+const TAG_LABELS = { danger: '⚠ Farligt', net: '⬡ Nätverk', sudo: '⬆ Root', safe: '✔ Säkert' };
+
+let activeCategory = 'Alla';
+let searchQuery = '';
+
+function tagHtml(tags) {
+  return (tags||[]).map(t => `<span class="tag tag-${t}">${TAG_LABELS[t]||t}</span>`).join('');
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const allCount = COMMANDS.length;
+  let html = `<button class="cat-btn ${activeCategory==='Alla'?'active':''}" onclick="setCategory('Alla')">
+    <span class="cat-icon">◈</span> Alla kommandon
+    <span class="cat-count">${allCount}</span>
+  </button>`;
+
+  categories.forEach(cat => {
+    const count = COMMANDS.filter(c => c.cat === cat).length;
+    const icons = { 'Navigation':'⌘','Filer & Mappar':'⊞','Texthantering':'⊟','Processer':'⊛','Nätverk':'⊕','System':'⊙','Pakethanterare':'⊡','Git':'⊢','Pipes & Omdirigering':'⊣','Shell-tricks':'⊤','Telnet & Fjärranslutning':'⊥','Disk & Lagring':'⊦','Felsökning':'⊧','Säkerhet & Kryptering':'⊨','Komprimering & Arkiv':'⊩','Skript & Automatisering':'⊪','Användare & Grupper':'⊫','Prestanda & Benchmarking':'⊬','Avancerad Text':'⊭','Xcode & Utvecklarverktyg':'⊮','Miljö & Shell-konfiguration':'⊯','Miljö & Shell':'⊯','Versionshantering':'⊰','Media & Bilder':'⊱','Certifikat & PKI':'⊲' };
+    const icon = icons[cat] || '◆';
+    html += `<button class="cat-btn ${activeCategory===cat?'active':''}" onclick="setCategory('${cat}')">
+      <span class="cat-icon">${icon}</span> ${cat}
+      <span class="cat-count">${count}</span>
+    </button>`;
+  });
+
+  sidebar.innerHTML = html;
+}
+
+function filteredCommands() {
+  return COMMANDS.filter(c => {
+    const matchCat = activeCategory === 'Alla' || c.cat === activeCategory;
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || c.cmd.toLowerCase().includes(q) || c.short.toLowerCase().includes(q) ||
+      (c.examples||[]).some(e => e.code.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q));
+    return matchCat && matchSearch;
+  });
+}
+
+function renderMain() {
+  const main = document.getElementById('main');
+  const cmds = filteredCommands();
+  document.getElementById('visibleCount').textContent = cmds.length;
+
+  if (cmds.length === 0) {
+    main.innerHTML = `<div class="empty"><div class="big">◌</div>Inga kommandon hittades för "${searchQuery}"</div>`;
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  cmds.forEach(c => {
+    if (!groups[c.cat]) groups[c.cat] = [];
+    groups[c.cat].push(c);
+  });
+
+  let html = '';
+  Object.entries(groups).forEach(([cat, cmds]) => {
+    html += `<div class="section-header">
+      <span class="section-title">${cat}</span>
+      <span class="section-sub">${cmds.length} kommando${cmds.length!==1?'n':''}</span>
+    </div>
+    <div class="grid">`;
+
+    cmds.forEach(c => {
+      const exHtml = (c.examples||[]).map(e => {
+        const escaped = e.code.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<div class="example-line">
+          <div class="example-code-wrap" id="">
+            <span class="example-code" title="${escaped}">${e.code}</span>
+            <button class="copy-btn" onclick="copyCode(event, '${escaped}')" title="Kopiera">⎘</button>
+          </div>
+          <span class="example-desc">${e.desc}</span>
+        </div>`;
+      }).join('');
+
+      html += `<div class="cmd-card" onclick="toggleCard(this)">
+        <div class="cmd-top">
+          <span class="cmd-name">${c.cmd}</span>
+          <span class="cmd-short">${c.short}</span>
+          <span class="cmd-expand-btn">▾</span>
+        </div>
+        <div class="cmd-detail">
+          <div class="examples-label">Exempel</div>
+          ${exHtml}
+          ${tagHtml(c.tags)}
+        </div>
+      </div>`;
+    });
+
+    html += '</div>';
+  });
+
+  main.innerHTML = html;
+}
+
+function toggleCard(el) {
+  el.classList.toggle('expanded');
+}
+
+function copyCode(event, code) {
+  event.stopPropagation();
+  const wrap = event.currentTarget.closest('.example-code-wrap');
+  const btn = event.currentTarget;
+  navigator.clipboard.writeText(code).then(() => {
+    wrap.classList.add('copied');
+    btn.textContent = '✓';
+    setTimeout(() => {
+      wrap.classList.remove('copied');
+      btn.textContent = '⎘';
+    }, 1500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    wrap.classList.add('copied');
+    btn.textContent = '✓';
+    setTimeout(() => {
+      wrap.classList.remove('copied');
+      btn.textContent = '⎘';
+    }, 1500);
+  });
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderSidebar();
+  renderMain();
+  document.querySelector('main').scrollTop = 0;
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  if (searchQuery) activeCategory = 'Alla';
+  renderSidebar();
+  renderMain();
+});
+
+// Init
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>
