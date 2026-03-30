@@ -16,7 +16,7 @@ A collection of macOS scripts, tools, and terminal utilities designed to improve
 
 ## 📂 Project Structure
 
-```text
+```
 macos-scripts/
 ├── terminal/        # launchers, UI, terminal tools
 ├── automation/      # workflows and automation scripts
@@ -28,6 +28,14 @@ macos-scripts/
 ├── ui/              # dashboards and visual tools
 └── install.sh       # setup script
 ```
+
+---
+
+## 🔑 Main Entry Points
+
+* `install.sh` — setup script for installation
+* `mqlaunch` — launcher for terminal workflows
+* [`mac-terminal-guide`](./tools/mac-terminal-guide/README.md) — terminal guide and HTML resource
 
 ---
 
@@ -47,7 +55,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-Launch the tool:
+Launch:
 
 ```bash
 mqlaunch
@@ -88,11 +96,13 @@ This repo is built around:
 
 ## 🤝 Contributing
 
-Feel free to fork, experiment, and improve.
+This project is evolving continuously.
+Ideas, improvements, and experiments are welcome.
 
 ---
 
 ## 📌 Author
 
 Mattias Camner
+
 
