@@ -1,25 +1,98 @@
 # macos-scripts
 
-A curated collection of useful and cool macOS scripts focused on terminal workflows, automation and system tools.
+A collection of macOS scripts, tools, and terminal utilities designed to improve workflow, automation, and daily productivity.
 
-## Current focus
+---
 
-- `terminal/launchers/mqlaunch.sh` — a macOS terminal launcher for apps, folders and quick actions
+## 🚀 Features
 
-## Structure
+* ⚡ Quick-access terminal launcher (`mqlaunch`)
+* 🧰 Reusable scripts for automation and system tasks
+* 🖥️ Terminal-based tools and dashboards
+* 📚 Practical guides (like macOS terminal setup)
+* 🧩 Modular structure for easy expansion
 
-- `terminal/` — launchers, menus and themes
-- `automation/` — login scripts, workflows and shortcuts
-- `system/` — tweaks, performance and monitoring
-- `ui/` — terminal UI, ASCII and dashboards
-- `tools/` — reusable scripts and CLI utilities
+---
 
-## Quick start
+## 📂 Project Structure
+
+```text
+macos-scripts/
+├── terminal/        # launchers, UI, terminal tools
+├── automation/      # workflows and automation scripts
+├── system/          # system tweaks and utilities
+├── tools/           # reusable tools and guides
+│   ├── scripts/
+│   ├── cli/
+│   └── mac-terminal-guide/
+├── ui/              # dashboards and visual tools
+└── install.sh       # setup script
+```
+
+---
+
+## ⚡ Quick Start
+
+Clone the repo:
 
 ```bash
-chmod +x terminal/launchers/mqlaunch.sh
-./terminal/launchers/mqlaunch.sh
+git clone https://github.com/MCamner/macos-scripts.git
+cd macos-scripts
 ```
-## Goal
 
-Build fast, practical terminal tools that are fun to use.
+Run the installer:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+Launch the tool:
+
+```bash
+mqlaunch
+```
+
+---
+
+## 🧰 Tools Spotlight
+
+### 👉 mac-terminal-guide
+
+A practical guide for improving your macOS terminal setup.
+
+* [Open README](./tools/mac-terminal-guide/README.md)
+* [Open HTML Guide](./tools/mac-terminal-guide/mac-terminal-guide.html)
+
+---
+
+## 🎯 Philosophy
+
+This repo is built around:
+
+* simplicity over complexity
+* practical tools over theory
+* modular building blocks
+* fast workflows
+
+---
+
+## 🛠️ Roadmap
+
+* Improve `mqlaunch` UI and features
+* Add more automation scripts
+* Expand terminal dashboard
+* Create more guides and ready-to-use setups
+
+---
+
+## 🤝 Contributing
+
+Feel free to fork, experiment, and improve.
+
+---
+
+## 📌 Author
+
+Mattias Camner
+
