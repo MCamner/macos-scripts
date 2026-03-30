@@ -3,14 +3,14 @@
 set -u
 
 # ============================================================
-# MQLaunch v3.1 — Old School Utility
+# MQLaunch v3.2 — Old School Utility
 # Adds:
-# - better system_check
-# - mqlaunch symlink/path validation
-# - clearer AI backend status
+# - terminal guide in Dev / Prompts
+# - local HTML first, GitHub fallback
+# - v3.1 checks retained
 # ============================================================
 
-APP_TITLE="MQLaunch v3.1"
+APP_TITLE="MQLaunch v3.2"
 APP_SUBTITLE="Old School Utility"
 
 BASE_DIR="$HOME/macos-scripts"
@@ -20,6 +20,9 @@ REPO_URL="https://github.com/MCamner/macos-scripts"
 MQ_SCRIPT="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 BACKUP_DIR="$BASE_DIR/backups"
 BIN_LINK="$HOME/bin/mqlaunch"
+
+TERMINAL_GUIDE_HTML="$BASE_DIR/tools/mac terminal_guide/mac-terminal-guide.html"
+TERMINAL_GUIDE_URL="https://github.com/MCamner/macos-scripts/tree/main/tools/mac%20terminal_guide"
 
 BOX_INNER=88
 
@@ -251,6 +254,24 @@ open_repo_browser() {
   open "$REPO_URL"
 }
 
+open_terminal_guide() {
+  print_header
+  row "OPEN MAC TERMINAL GUIDE"
+  empty_row
+
+  if [[ -f "$TERMINAL_GUIDE_HTML" ]]; then
+    row "Opening local guide:"
+    row " $TERMINAL_GUIDE_HTML"
+    print_footer
+    open "$TERMINAL_GUIDE_HTML"
+  else
+    row "Local guide missing, using GitHub:"
+    row " $TERMINAL_GUIDE_URL"
+    print_footer
+    open "$TERMINAL_GUIDE_URL"
+  fi
+}
+
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
@@ -306,6 +327,12 @@ system_check() {
     row "       $resolved_prompt_dir"
   else
     row "[FAIL] Prompt dir missing"
+  fi
+
+  if [[ -f "$TERMINAL_GUIDE_HTML" ]]; then
+    row "[OK]   Terminal guide local file found"
+  else
+    row "[FAIL] Terminal guide local file missing"
   fi
 
   if [[ -L "$BIN_LINK" ]]; then
@@ -539,10 +566,10 @@ print_dev_menu() {
   row2 " 1. Open AI Prompts folder" " 2. Show prompt files"
   row2 " 3. Edit mqlaunch" " 4. Backup prompts"
   row2 " 5. Open macos-scripts folder" " 6. Open launcher folder"
-  row2 " 0. Back" ""
+  row2 " 7. Open mac terminal guide" " 0. Back"
 
   print_footer
-  printf "${C_TITLE}Select dev option [0-6]: ${C_RESET}"
+  printf "${C_TITLE}Select dev option [0-7]: ${C_RESET}"
 }
 
 ai_menu_loop() {
@@ -584,6 +611,7 @@ dev_menu_loop() {
       4) backup_prompts ;;
       5) open_base_dir ;;
       6) open_launcher_folder ;;
+      7) open_terminal_guide ;;
       0) break ;;
       *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
     esac
@@ -627,7 +655,7 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v3.1 — Old School Utility
+MQLaunch v3.2 — Old School Utility
 
 Usage:
   mqlaunch                Open main menu
@@ -641,7 +669,7 @@ Direct commands:
   ip | lock | sleep | restart-finder | date
   repo | check | ai | dev
   prompts | prompt-files | edit | backup-prompts
-  base | launchers
+  base | launchers | guide
   auto | one | atlas | decide | research | root | solve | pdebug | menu
 
 Examples:
@@ -651,6 +679,7 @@ Examples:
   mqlaunch prompts
   mqlaunch edit
   mqlaunch backup-prompts
+  mqlaunch guide
 EOH
 }
 
@@ -684,6 +713,7 @@ run_arg_command() {
     backup-prompts|backup) backup_prompts ;;
     base|macos-scripts) open_base_dir ;;
     launchers|launcher-folder) open_launcher_folder ;;
+    guide|terminal-guide) open_terminal_guide ;;
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
     *)
