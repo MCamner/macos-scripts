@@ -16,7 +16,7 @@ A collection of macOS scripts, tools, and terminal utilities designed to improve
 
 ## 📂 Project Structure
 
-```
+```text
 macos-scripts/
 ├── terminal/        # launchers, UI, terminal tools
 ├── automation/      # workflows and automation scripts
@@ -104,5 +104,6 @@ Ideas, improvements, and experiments are welcome.
 ## 📌 Author
 
 Mattias Camner
+
 
 
