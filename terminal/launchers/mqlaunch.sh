@@ -3,14 +3,15 @@
 set -u
 
 # ============================================================
-# MQLaunch v3.2 — Old School Utility
-# Adds:
-# - terminal guide in Dev / Prompts
-# - local HTML first, GitHub fallback
-# - v3.1 checks retained
+# MQLaunch v3.3c — Old School Utility
+# Same core as v3.2/v3.3b, but:
+# - skull header
+# - no vertical side bars on content rows
+# - no 11. Exit launcher in menu
+# - X. Exit launcher shown under Time in main menu
 # ============================================================
 
-APP_TITLE="MQLaunch v3.2"
+APP_TITLE="MQLaunch v3.3c"
 APP_SUBTITLE="Old School Utility"
 
 BASE_DIR="$HOME/macos-scripts"
@@ -45,12 +46,12 @@ repeat_char() {
 }
 
 border() {
-  printf "+%s+\n" "$(repeat_char "$BOX_INNER" "-")"
+  printf '%s\n' "$(repeat_char "$BOX_INNER" "-")"
 }
 
 row() {
   local text="$1"
-  printf "| %-*.*s |\n" "$BOX_INNER" "$BOX_INNER" "$text"
+  printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
 row3() {
@@ -67,7 +68,13 @@ row2() {
 }
 
 empty_row() {
-  row ""
+  printf '\n'
+}
+
+header_dual_row() {
+  local left="$1"
+  local right="$2"
+  printf "%-54s %33s\n" "$left" "$right"
 }
 
 pause_enter() {
@@ -95,8 +102,11 @@ short_host() {
 print_header() {
   clear_screen
   border
-  row "                                  ${APP_TITLE}"
-  row "                               ${APP_SUBTITLE}"
+  header_dual_row "$APP_TITLE" "        .-."
+  header_dual_row "$APP_SUBTITLE" "       (o o)"
+  header_dual_row "" "       | O \\"
+  header_dual_row "" "        \\   \\"
+  header_dual_row "" "         \`~~~'"
   border
 }
 
@@ -106,9 +116,22 @@ print_footer() {
   host="$(short_host)"
   user_name="$USER"
 
-  empty_row
+  printf '\n'
   row "Host: ${host}   User: ${user_name}"
   row "Time: ${now}"
+  border
+}
+
+print_main_footer() {
+  local now host user_name
+  now="$(date '+%Y-%m-%d %H:%M:%S')"
+  host="$(short_host)"
+  user_name="$USER"
+
+  printf '\n'
+  row "Host: ${host}   User: ${user_name}"
+  row "Time: ${now}"
+  row "X. Exit launcher"
   border
 }
 
@@ -528,7 +551,7 @@ print_main_menu() {
   empty_row
   row "SYSTEM / CONTROL"
   row3 " 8. Downloads folder" " 9. Home folder" "10. Show IP + network"
-  row3 "11. Exit launcher" "12. Lock screen" "13. Sleep display"
+  row3 "12. Lock screen" "13. Sleep display" ""
 
   empty_row
   row "TOOLS"
@@ -539,8 +562,8 @@ print_main_menu() {
   row "MENUS"
   row3 "20. AI Modes" "21. Dev / Prompts" ""
 
-  print_footer
-  printf "${C_TITLE}Select option [1-21]: ${C_RESET}"
+  print_main_footer
+  printf "${C_TITLE}Select option [1-10,12-21,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -637,7 +660,7 @@ main_loop() {
       8) open_downloads_folder ;;
       9) open_home_folder ;;
       10) show_network_info ;;
-      11) echo "Exiting ${APP_TITLE}..."; exit 0 ;;
+      x|X) echo "Exiting ${APP_TITLE}..."; exit 0 ;;
       12) lock_screen ;;
       13) sleep_display ;;
       14) open_utilities_folder ;;
@@ -655,12 +678,15 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v3.2 — Old School Utility
+MQLaunch v3.3c — Old School Utility
 
 Usage:
   mqlaunch                Open main menu
   mqlaunch ai             Open AI submenu
   mqlaunch dev            Open Dev / Prompts submenu
+
+Main menu:
+  Exit is now X, not 11
 
 Direct commands:
   finder | safari | chrome | spotify | xcode
@@ -671,15 +697,6 @@ Direct commands:
   prompts | prompt-files | edit | backup-prompts
   base | launchers | guide
   auto | one | atlas | decide | research | root | solve | pdebug | menu
-
-Examples:
-  mqlaunch
-  mqlaunch ai
-  mqlaunch dev
-  mqlaunch prompts
-  mqlaunch edit
-  mqlaunch backup-prompts
-  mqlaunch guide
 EOH
 }
 

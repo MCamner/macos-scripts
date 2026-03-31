@@ -555,212 +555,7 @@
 
   .empty .big { font-size: 2rem; margin-bottom: 1rem; }
 
-  /* ── SPECIAL PANELS ── */
-  .panel {
-    padding: 2rem;
-    max-width: 900px;
-  }
-
-  .panel-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.35rem;
-  }
-
-  .panel-sub {
-    font-size: 0.85rem;
-    color: var(--text2);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-  }
-
-  /* Brew install block */
-  .brew-block {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-  }
-
-  .brew-block-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg3);
-  }
-
-  .brew-block-title {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text2);
-  }
-
-  .brew-block-title span { color: var(--green); }
-
-  .brew-copy-btn {
-    background: rgba(0,255,135,0.08);
-    border: 1px solid rgba(0,255,135,0.2);
-    border-radius: 6px;
-    color: var(--green2);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    padding: 0.25rem 0.75rem;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-
-  .brew-copy-btn:hover { background: rgba(0,255,135,0.15); color: var(--green); }
-  .brew-copy-btn.copied { background: rgba(0,255,135,0.2); color: var(--green); }
-
-  .brew-code {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    color: var(--cyan);
-    padding: 1.25rem 1.5rem;
-    white-space: pre-wrap;
-    word-break: break-all;
-    line-height: 1.8;
-  }
-
-  .brew-code .comment { color: var(--text3); }
-  .brew-code .cmd-keyword { color: var(--green); }
-  .brew-code .pkg { color: var(--amber); }
-
-  /* Install grid */
-  .install-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-  }
-
-  .install-item {
-    background: var(--bg2);
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  .install-item-top {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .install-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .dot-builtin { background: var(--green); }
-  .dot-brew { background: var(--amber); }
-  .dot-xcode { background: var(--cyan); }
-
-  .install-name {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .install-desc {
-    font-size: 0.75rem;
-    color: var(--text2);
-    padding-left: 1.3rem;
-  }
-
-  .install-legend {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.75rem;
-    color: var(--text2);
-  }
-  .install-legend span { display: flex; align-items: center; gap: 0.4rem; }
-
-  /* ── KEYBOARD SHORTCUTS ── */
-  .kb-section {
-    margin-bottom: 2rem;
-  }
-
-  .kb-section-title {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .kb-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .kb-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg2);
-    padding: 0.6rem 1rem;
-    gap: 1rem;
-    transition: background 0.12s;
-  }
-
-  .kb-row:hover { background: var(--bg3); }
-
-  .kb-desc {
-    font-size: 0.8rem;
-    color: var(--text2);
-    flex: 1;
-  }
-
-  .kb-keys {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    flex-shrink: 0;
-  }
-
-  .key {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--text);
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-bottom: 2px solid var(--border2);
-    border-radius: 5px;
-    padding: 0.15rem 0.5rem;
-    min-width: 24px;
-    text-align: center;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
-  }
-
-  .key-special { color: var(--green); border-color: rgba(0,255,135,0.25); }
-  .key-plus { background: none; border: none; box-shadow: none; color: var(--text3); font-size: 0.6rem; min-width: auto; padding: 0; }
-
+  /* ── SCROLLBAR ── */
   main::-webkit-scrollbar { width: 4px; }
   main::-webkit-scrollbar-track { background: transparent; }
   main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -791,6 +586,7 @@
 
 <div class="layout">
   <aside id="sidebar">
+    <div class="sidebar-label">Kategorier</div>
     <!-- generated by JS -->
   </aside>
 
@@ -1698,181 +1494,8 @@ const COMMANDS = [
       { code: "csrutil status", desc: "Visar om SIP är aktiverat eller inaktiverat" }
     ]
   },
-  { cat: "Felsökning", cmd: "mdutil", short: "Hantera Spotlight-index — felsök indexeringsproblem", tags: ["sudo"],
-    examples: [
-      { code: "mdutil -s /", desc: "Visa indexeringsstatus för startvolymen" },
-      { code: "sudo mdutil -E /", desc: "Radera och återskapa Spotlight-index" },
-      { code: "sudo mdutil -i off /", desc: "Inaktivera Spotlight-indexering" },
-      { code: "sudo mdutil -i on /", desc: "Aktivera Spotlight-indexering igen" },
-      { code: "mdutil -a -s", desc: "Visa status för alla monterade volymer" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "mdfind", short: "Spotlight-sökning från terminalen", tags: ["safe"],
-    examples: [
-      { code: "mdfind 'kMDItemDisplayName == \"*.log\"'", desc: "Hitta alla .log-filer via Spotlight" },
-      { code: "mdfind -name rapport.pdf", desc: "Hitta filer med exakt namn" },
-      { code: "mdfind -onlyin ~/Documents 'fel'", desc: "Sök bara i Documents-mappen" },
-      { code: "mdfind 'kMDItemKind == \"PDF Document\"'", desc: "Hitta alla PDF-dokument" },
-      { code: "mdfind 'kMDItemContentModificationDate > $time.today(-1)'", desc: "Filer ändrade de senaste 24 timmarna" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "plutil", short: "Validera och konvertera plist-filer (konfigurationsfiler)", tags: ["safe"],
-    examples: [
-      { code: "plutil -lint fil.plist", desc: "Validera plist-filens syntax (0 = OK)" },
-      { code: "plutil -p fil.plist", desc: "Pretty-printa plist-filens innehåll" },
-      { code: "plutil -convert xml1 fil.plist", desc: "Konvertera binär plist till läsbar XML" },
-      { code: "plutil -convert binary1 fil.plist", desc: "Konvertera XML plist till binärformat" },
-      { code: "plutil -convert json fil.plist -o fil.json", desc: "Konvertera plist till JSON" },
-      { code: "plutil -extract NSNavLastRootDirectory raw ~/Library/Preferences/com.apple.finder.plist", desc: "Hämta ett specifikt värde ur en plist" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "scutil", short: "Felsök systemkonfiguration — nätverk, DNS, VPN, hostname", tags: ["sudo"],
-    examples: [
-      { code: "scutil --dns", desc: "Visa DNS-konfiguration och sökordning" },
-      { code: "scutil --proxy", desc: "Visa aktuella proxyinställningar" },
-      { code: "scutil --nwi", desc: "Visa nätverksgränssnittsinformation (Network Interface Info)" },
-      { code: "scutil --get HostName", desc: "Visa systemets hostname" },
-      { code: "sudo scutil --set HostName mitt-mac", desc: "Ändra hostname" },
-      { code: "sudo scutil --set ComputerName 'Mitt Mac'", desc: "Ändra datornamnet (visas i Finder)" },
-      { code: "scutil --get LocalHostName", desc: "Visa Bonjour-namnet (.local)" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "airport", short: "Felsök WiFi-anslutningar och skanna nätverk", tags: ["safe"],
-    examples: [
-      { code: "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I", desc: "Visa info om aktiv WiFi-anslutning (SSID, RSSI, kanal)" },
-      { code: "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s", desc: "Skanna och lista alla WiFi-nätverk i närheten" },
-      { code: "alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'", desc: "Skapa ett alias för enklare användning" },
-      { code: "airport -z", desc: "Koppla bort från aktuellt WiFi-nätverk" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "tcpdump", short: "Spåra och analysera nätverkstrafik på paketnivå", tags: ["sudo"],
-    examples: [
-      { code: "sudo tcpdump -i en0", desc: "Lyssna på WiFi-gränssnittet (en0)" },
-      { code: "sudo tcpdump -i any", desc: "Lyssna på alla gränssnitt" },
-      { code: "sudo tcpdump -i en0 port 443", desc: "Fånga bara HTTPS-trafik" },
-      { code: "sudo tcpdump -i en0 host 8.8.8.8", desc: "Fånga trafik till/från specifik host" },
-      { code: "sudo tcpdump -i en0 -w dump.pcap", desc: "Spara paket till fil (öppna i Wireshark)" },
-      { code: "sudo tcpdump -r dump.pcap", desc: "Läs och analysera en sparad pcap-fil" },
-      { code: "sudo tcpdump -i en0 'tcp and port 80'", desc: "Kombinera filter med BPF-syntax" },
-      { code: "sudo tcpdump -i en0 -c 100", desc: "Fånga exakt 100 paket och avsluta" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "dtrace", short: "Avancerad dynamisk spårning av syscalls och kernel-händelser", tags: ["sudo"],
-    examples: [
-      { code: "sudo dtrace -n 'syscall::open*:entry { printf(\"%s %s\\n\", execname, copyinstr(arg0)); }'", desc: "Spåra alla filöppningar i realtid" },
-      { code: "sudo dtrace -n 'syscall:::entry /execname == \"Safari\"/ { @[probefunc] = count(); }'", desc: "Räkna syscalls för Safari" },
-      { code: "sudo dtrace -n 'io:::start { printf(\"%s %d\\n\", execname, args[0]->b_bcount); }'", desc: "Spåra disk I/O per process" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "heap", short: "Analysera heap-minnesbild av en körande process", tags: ["sudo"],
-    examples: [
-      { code: "sudo heap PID", desc: "Visa minneslayout för en process" },
-      { code: "sudo heap -addresses all PID", desc: "Visa alla heap-adresser" },
-      { code: "sudo heap PID | grep 'total'", desc: "Visa totalt heap-minne" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "leaks", short: "Hitta minnesläckor i en körande process", tags: ["sudo"],
-    examples: [
-      { code: "leaks PID", desc: "Sök efter minnesläckor i process med angivet PID" },
-      { code: "leaks --outputGraph=leak.dot PID", desc: "Exportera läckgraf som Graphviz-fil" },
-      { code: "MallocStackLogging=1 ./program && leaks program", desc: "Kör program med stack-loggning och analysera" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "malloc_history", short: "Visa allokeringshistorik för en minnesadress", tags: ["sudo"],
-    examples: [
-      { code: "malloc_history PID ADDRESS", desc: "Spåra var en specifik minnesadress allokerades" },
-      { code: "malloc_history -fullStacks PID ADDRESS", desc: "Visa fullständig stackspårning" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "footprint", short: "Mät minnesfotavtrycket för en process i detalj", tags: ["sudo"],
-    examples: [
-      { code: "footprint PID", desc: "Visa minnesfotavtrycket uppdelat per kategori" },
-      { code: "footprint -a", desc: "Analysera alla körande processer" },
-      { code: "footprint Safari", desc: "Analysera Safari via processnamn" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "sc_usage", short: "Visa realtidsstatistik för systemanrop per process", tags: ["sudo"],
-    examples: [
-      { code: "sudo sc_usage Safari", desc: "Visa syscall-statistik för Safari" },
-      { code: "sudo sc_usage -e Safari", desc: "Visa bara felaktiga systemanrop" },
-      { code: "sudo sc_usage PID", desc: "Analysera via process-ID" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "latency", short: "Mät systemlatens och schemaläggningsfördröjning", tags: ["sudo"],
-    examples: [
-      { code: "sudo latency", desc: "Mät systemlatens löpande (Ctrl+C för rapport)" },
-      { code: "sudo latency -st 1000 -c 10", desc: "Mät med tröskel 1000µs, 10 iterationer" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "atos", short: "Översätt minnesadresser till symbolnamn (stack traces)", tags: ["safe"],
-    examples: [
-      { code: "atos -o program.dSYM -l 0x100000000 0x10000abcd", desc: "Symbolisera en adress med debug-symboler" },
-      { code: "atos -p PID 0x10000abcd", desc: "Symbolisera adress i körande process" },
-      { code: "atos -arch arm64 -o MyApp.app/MyApp 0x10000abcd", desc: "Symbolisera för specifik arkitektur" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "symbolicate", short: "Symbolisera kraschrapporter (.crash-filer)", tags: ["safe"],
-    examples: [
-      { code: "symbolicatecrash kraschen.crash > symboliserad.txt", desc: "Symbolisera en kraschrapport med dSYM" },
-      { code: "export DEVELOPER_DIR=$(xcode-select -p)", desc: "Sätt sökväg för symbolicatecrash" },
-      { code: "find ~/Library/Logs/DiagnosticReports -name '*.crash'", desc: "Hitta kraschrapporter på systemet" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "notificationcenter", short: "Felsök notifikationer och sandlåde-behörigheter", tags: ["safe"],
-    examples: [
-      { code: "log stream --predicate 'subsystem == \"com.apple.usernotifications\"'", desc: "Streama notifikationsloggar live" },
-      { code: "log show --predicate 'subsystem == \"com.apple.usernotifications\"' --last 1h", desc: "Visa notifikationsloggar senaste timmen" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "taskpolicy", short: "Ändra schemaläggningsprioritet för en process", tags: ["sudo"],
-    examples: [
-      { code: "taskpolicy -b kommando", desc: "Kör kommando med bakgrundsprioritet" },
-      { code: "taskpolicy -d kommando", desc: "Kör med diskintensiv I/O-policy" },
-      { code: "sudo taskpolicy -p PID -b", desc: "Sänk prioritet för en körande process" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "renice", short: "Ändra CPU-prioritet (nice-värde) för körande process", tags: ["sudo"],
-    examples: [
-      { code: "renice -n 10 -p PID", desc: "Sänk prioritet för process (10 = lägre prio)" },
-      { code: "renice -n -10 -p PID", desc: "Höj prioritet (kräver sudo, -20 = högst)" },
-      { code: "sudo renice -n -20 -p PID", desc: "Ge process maximal CPU-prioritet" },
-      { code: "ps -eo pid,ni,comm | sort -k2 -n", desc: "Lista processer sorterat efter nice-värde" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "nvram", short: "Läs och skriv NVRAM/firmware-variabler (boot-inställningar)", tags: ["sudo"],
-    examples: [
-      { code: "nvram -p", desc: "Lista alla NVRAM-variabler" },
-      { code: "nvram boot-args", desc: "Visa aktuella boot-argument" },
-      { code: "sudo nvram boot-args='-v'", desc: "Aktivera verbose boot (visas text vid start)" },
-      { code: "sudo nvram -d boot-args", desc: "Ta bort boot-args (återställ standard)" },
-      { code: "sudo nvram SystemAudioVolume=%80", desc: "Sätt startljudsvolym" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "kextstat", short: "Lista inlästa kernel extensions (kext/drivrutiner)", tags: ["safe"],
-    examples: [
-      { code: "kextstat", desc: "Lista alla inlästa kernel extensions" },
-      { code: "kextstat | grep -v com.apple", desc: "Lista bara tredjepartsdrivrutiner" },
-      { code: "kextstat | grep -i bluetooth", desc: "Filtrera på Bluetooth-drivrutiner" },
-      { code: "kmutil showloaded", desc: "Modernare alternativ till kextstat (macOS 11+)" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "AssetCacheManagerUtil", short: "Hantera och felsöka Content Caching på macOS", tags: ["sudo"],
-    examples: [
-      { code: "AssetCacheManagerUtil status", desc: "Visa status för Content Cache-tjänsten" },
-      { code: "AssetCacheManagerUtil activate", desc: "Aktivera Content Caching" },
-      { code: "AssetCacheManagerUtil deactivate", desc: "Inaktivera Content Caching" },
-      { code: "AssetCacheManagerUtil flushCache", desc: "Töm hela Content Cache" },
-      { code: "AssetCacheLocatorUtil", desc: "Hitta tillgängliga cacheservrar i nätverket" }
-    ]
-  },
-  { cat: "Felsökning", cmd: "caffeinate (felsökning)", short: "Hindra Mac från att sova under felsökningssession", tags: ["safe"],
-    examples: [
-      { code: "caffeinate -d", desc: "Förhindra att displayen dimmas/stängs av" },
-      { code: "caffeinate -i", desc: "Förhindra systemsömn (idle sleep)" },
-      { code: "caffeinate -m", desc: "Förhindra disksömn" },
-      { code: "caffeinate -u -t 3600", desc: "Håll systemet aktivt i 1 timme, simulera användaraktivitet" }
-    ]
-  },
+
+  // ── SÄKERHET & KRYPTERING ──
   { cat: "Säkerhet & Kryptering", cmd: "openssl", short: "Schweiziska arméknifen för kryptering och certifikat", tags: ["safe"],
     examples: [
       { code: "openssl version", desc: "Visar installerad OpenSSL-version" },
@@ -2590,716 +2213,32 @@ const COMMANDS = [
       { code: "step certificate create example.com cert.crt cert.key --ca ca.crt --ca-key ca.key", desc: "Utfärda ett certifikat signerat av din CA" }
     ]
   },
-
-  // ── MODERNA CLI-VERKTYG ──
-  { cat: "Moderna CLI-verktyg", cmd: "ripgrep (rg)", short: "Blixtsnabb textsökning — modernare ersättare för grep", tags: ["safe"],
-    examples: [
-      { code: "brew install ripgrep", desc: "Installera via Homebrew" },
-      { code: "rg 'sökterm'", desc: "Sök rekursivt i aktuell mapp (ignorerar .gitignore automatiskt)" },
-      { code: "rg 'TODO' ./src", desc: "Sök i en specifik mapp" },
-      { code: "rg -i 'error'", desc: "Skiftlägesokänslig sökning" },
-      { code: "rg -l 'pattern'", desc: "Lista bara filnamnen som matchar (ej radinnehållet)" },
-      { code: "rg -n 'pattern'", desc: "Visa radnummer för varje träff" },
-      { code: "rg -t py 'import'", desc: "Sök bara i Python-filer (-t = filtyp)" },
-      { code: "rg -g '!*.log' 'fel'", desc: "Exkludera .log-filer från sökningen" },
-      { code: "rg --stats 'pattern'", desc: "Visa statistik: antal träffar, filer, söktid" },
-      { code: "rg -C 3 'pattern'", desc: "Visa 3 rader kontext runt varje träff" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "fd", short: "Snabb och användarvänlig ersättare för find", tags: ["safe"],
-    examples: [
-      { code: "brew install fd", desc: "Installera via Homebrew" },
-      { code: "fd pattern", desc: "Sök efter filer med namn som matchar pattern" },
-      { code: "fd '.txt'", desc: "Hitta alla .txt-filer rekursivt" },
-      { code: "fd -t f pattern", desc: "Sök bara efter filer (f), inte mappar" },
-      { code: "fd -t d src", desc: "Hitta bara mappar med 'src' i namnet" },
-      { code: "fd -e jpg", desc: "Hitta alla filer med filändelsen .jpg" },
-      { code: "fd -H pattern", desc: "Inkludera dolda filer i sökningen" },
-      { code: "fd pattern -x rm", desc: "Kör rm på varje träff (ta bort matchande filer)" },
-      { code: "fd -tf --changed-within 1d", desc: "Hitta filer ändrade de senaste 24 timmarna" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "bat", short: "cat med syntaxmarkering, radnummer och Git-integration", tags: ["safe"],
-    examples: [
-      { code: "brew install bat", desc: "Installera via Homebrew" },
-      { code: "bat fil.txt", desc: "Visa fil med syntaxmarkering och radnummer" },
-      { code: "bat fil.py", desc: "Automatisk syntaxmarkering baserad på filändelse" },
-      { code: "bat -n fil.txt", desc: "Visa med radnummer men utan ram/dekorationer" },
-      { code: "bat --plain fil.txt", desc: "Visa utan ram, radnummer eller markering (ren text)" },
-      { code: "bat -A fil.txt", desc: "Visa dolda tecken (tabs, spaces, radslut)" },
-      { code: "bat --diff fil.txt", desc: "Markera rader som ändrats enligt Git" },
-      { code: "bat --theme=TwoDark fil.txt", desc: "Välj ett specifikt färgtema" },
-      { code: "bat --list-themes", desc: "Visa alla tillgängliga teman" },
-      { code: "man ls | bat -l man", desc: "Visa man-sidor med syntaxmarkering" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "eza", short: "Modernare ls med färger, ikoner och Git-status", tags: ["safe"],
-    examples: [
-      { code: "brew install eza", desc: "Installera via Homebrew" },
-      { code: "eza", desc: "Lista filer med färger (ersätter ls)" },
-      { code: "eza -la", desc: "Lång lista med dolda filer (ersätter ls -la)" },
-      { code: "eza -lah", desc: "Lång lista med läsbar filstorlek (KB, MB)" },
-      { code: "eza --icons", desc: "Visa filtypsikoner bredvid filnamnen" },
-      { code: "eza --git", desc: "Visa Git-status per fil (M=ändrad, A=ny, ?=untracked)" },
-      { code: "eza -T", desc: "Visa katalogträd (ersätter tree)" },
-      { code: "eza -T --level=2", desc: "Träd med max 2 nivåer djup" },
-      { code: "eza -lS", desc: "Sortera efter filstorlek (störst sist)" },
-      { code: "eza --sort=modified", desc: "Sortera efter senast ändrad" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "zoxide", short: "Smart cd som lär sig dina vanligaste kataloger", tags: ["safe"],
-    examples: [
-      { code: "brew install zoxide", desc: "Installera via Homebrew" },
-      { code: "echo 'eval \"$(zoxide init zsh)\"' >> ~/.zshrc", desc: "Aktivera i zsh (lägg till i .zshrc)" },
-      { code: "z projekt", desc: "Hoppa till den mest besökta mappen som matchar 'projekt'" },
-      { code: "z doc kod", desc: "Matcha flera delar av sökvägen (t.ex. ~/Documents/Kod)" },
-      { code: "zi", desc: "Interaktivt välj bland topp-matcherna (kräver fzf)" },
-      { code: "zoxide query -l", desc: "Lista alla sparade sökvägar med poäng" },
-      { code: "zoxide add ~/mymapp", desc: "Manuellt lägg till en mapp i databasen" },
-      { code: "zoxide remove ~/gammal", desc: "Ta bort en mapp ur databasen" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "tree", short: "Visa katalogstruktur som ett träd", tags: ["safe"],
-    examples: [
-      { code: "brew install tree", desc: "Installera via Homebrew" },
-      { code: "tree", desc: "Visa katalogträd från aktuell mapp" },
-      { code: "tree -L 2", desc: "Begränsa trädet till 2 nivåer djup" },
-      { code: "tree -a", desc: "Inkludera dolda filer (börjar med .)" },
-      { code: "tree -d", desc: "Visa bara kataloger, inga filer" },
-      { code: "tree -I 'node_modules|.git'", desc: "Exkludera mappar från visningen" },
-      { code: "tree -h", desc: "Visa filstorlekar i läsbart format" },
-      { code: "tree --dirsfirst", desc: "Lista kataloger före filer" },
-      { code: "tree -o struktur.txt", desc: "Spara trädet till en textfil" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "gh", short: "GitHub CLI — hantera repos, PRs och issues direkt i terminalen", tags: ["net"],
-    examples: [
-      { code: "brew install gh", desc: "Installera via Homebrew" },
-      { code: "gh auth login", desc: "Logga in på GitHub (öppnar browser)" },
-      { code: "gh repo clone owner/repo", desc: "Klona ett GitHub-repository" },
-      { code: "gh repo create mitt-projekt --public", desc: "Skapa ett nytt publikt repo på GitHub" },
-      { code: "gh pr list", desc: "Lista öppna Pull Requests i aktuellt repo" },
-      { code: "gh pr create --title 'Fix bug' --body 'Beskrivning'", desc: "Skapa en ny Pull Request" },
-      { code: "gh pr checkout 42", desc: "Checka ut PR #42 lokalt" },
-      { code: "gh pr merge 42 --squash", desc: "Merga PR #42 med squash" },
-      { code: "gh issue list", desc: "Lista öppna issues" },
-      { code: "gh issue create --title 'Bug' --body 'Beskrivning'", desc: "Skapa ett nytt issue" },
-      { code: "gh workflow run deploy.yml", desc: "Trigga ett GitHub Actions-workflow manuellt" },
-      { code: "gh run list", desc: "Lista senaste GitHub Actions-körningar" },
-      { code: "gh release create v1.0.0 --notes 'Release notes'", desc: "Skapa en ny release på GitHub" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "shellcheck", short: "Statisk analysator för bash/sh-skript — hittar buggar och fallgropar", tags: ["safe"],
-    examples: [
-      { code: "brew install shellcheck", desc: "Installera via Homebrew" },
-      { code: "shellcheck skript.sh", desc: "Analysera ett shell-skript och visa varningar" },
-      { code: "shellcheck -s bash skript.sh", desc: "Analysera specifikt som bash-skript" },
-      { code: "shellcheck -s sh skript.sh", desc: "Analysera som POSIX sh" },
-      { code: "shellcheck -e SC2034 skript.sh", desc: "Ignorera varningskod SC2034" },
-      { code: "shellcheck *.sh", desc: "Analysera alla .sh-filer i aktuell mapp" },
-      { code: "find . -name '*.sh' | xargs shellcheck", desc: "Rekursiv analys av alla skript" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "shfmt", short: "Formatera och indragskorrigera shell-skript automatiskt", tags: ["safe"],
-    examples: [
-      { code: "brew install shfmt", desc: "Installera via Homebrew" },
-      { code: "shfmt skript.sh", desc: "Visa formaterat skript (ändrar inte filen)" },
-      { code: "shfmt -w skript.sh", desc: "Formatera och skriv ändringar direkt till filen" },
-      { code: "shfmt -d skript.sh", desc: "Visa diff av vad som skulle ändras" },
-      { code: "shfmt -i 2 skript.sh", desc: "Använd 2 mellanslag som indrag" },
-      { code: "shfmt -i 0 skript.sh", desc: "Använd tabbar som indrag" },
-      { code: "shfmt -l .", desc: "Lista alla filer som behöver formateras" },
-      { code: "find . -name '*.sh' | xargs shfmt -w", desc: "Formatera alla skript rekursivt" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "btop", short: "Vacker resursmonitor — CPU, RAM, disk, nätverk i en vy", tags: ["safe"],
-    examples: [
-      { code: "brew install btop", desc: "Installera via Homebrew" },
-      { code: "btop", desc: "Starta btop (q = avsluta, h = hjälp)" },
-      { code: "btop --utf-force", desc: "Tvinga UTF-8-tecken för grafik" },
-      { code: "btop -p /mnt/ssd", desc: "Övervaka specifik disk-partition" },
-      { code: "--- KORTKOMMANDON ---", desc: "──────────────────────────────────────" },
-      { code: "m", desc: "Växla minnesvisning (ram/swap/kombinerat)" },
-      { code: "n", desc: "Växla nätverksgränssnitt" },
-      { code: "f", desc: "Filtrera processlistan" },
-      { code: "k", desc: "Skicka signal/avsluta en process" },
-      { code: "e", desc: "Visa/dölj utökad CPU-information per kärna" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "wget", short: "Ladda ner filer och webbsidor från internet", tags: ["net"],
-    examples: [
-      { code: "brew install wget", desc: "Installera via Homebrew (ej inbyggt på macOS)" },
-      { code: "wget https://example.com/fil.zip", desc: "Ladda ner en fil till aktuell mapp" },
-      { code: "wget -O nytt-namn.zip https://example.com/fil.zip", desc: "Ladda ner och spara med eget namn" },
-      { code: "wget -c https://example.com/stor-fil.zip", desc: "Fortsätt en avbruten nedladdning" },
-      { code: "wget -q https://example.com/fil.zip", desc: "Tyst läge — ingen output (quiet)" },
-      { code: "wget -r -np https://example.com/docs/", desc: "Ladda ner en hel katalog rekursivt" },
-      { code: "wget --mirror https://example.com", desc: "Spegla en hel webbplats lokalt" },
-      { code: "wget -i urls.txt", desc: "Ladda ner alla URL:er listade i en textfil" },
-      { code: "wget --user=user --password=pass URL", desc: "Ladda ner med HTTP-autentisering" },
-      { code: "wget --limit-rate=500k URL", desc: "Begränsa nedladdningshastigheten till 500 KB/s" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "mas", short: "Mac App Store via terminalen — installera och uppdatera appar", tags: ["sudo"],
-    examples: [
-      { code: "brew install mas", desc: "Installera via Homebrew" },
-      { code: "mas list", desc: "Lista alla installerade App Store-appar med ID" },
-      { code: "mas search Xcode", desc: "Sök efter en app i App Store" },
-      { code: "mas install 497799835", desc: "Installera Xcode (via app-ID)" },
-      { code: "mas upgrade", desc: "Uppdatera alla installerade App Store-appar" },
-      { code: "mas upgrade 497799835", desc: "Uppdatera en specifik app via ID" },
-      { code: "mas outdated", desc: "Lista appar som har tillgängliga uppdateringar" },
-      { code: "mas info 497799835", desc: "Visa information om en app" },
-      { code: "mas signin --dialog", desc: "Logga in på App Store via dialog" }
-    ]
-  },
-  { cat: "Moderna CLI-verktyg", cmd: "dockutil", short: "Hantera macOS Dock-innehåll via terminalen", tags: ["safe"],
-    examples: [
-      { code: "brew install dockutil", desc: "Installera via Homebrew" },
-      { code: "dockutil --list", desc: "Lista alla appar och objekt i Docken" },
-      { code: "dockutil --add /Applications/Safari.app", desc: "Lägg till Safari i Docken" },
-      { code: "dockutil --remove Safari", desc: "Ta bort Safari från Docken" },
-      { code: "dockutil --move Safari --position 1", desc: "Flytta Safari till position 1 i Docken" },
-      { code: "dockutil --add '' --type spacer --section apps", desc: "Lägg till en separator/spacer i Docken" },
-      { code: "dockutil --remove all", desc: "⚠️ Ta bort ALLA objekt från Docken" },
-      { code: "dockutil --add /Applications/Xcode.app --after Safari", desc: "Lägg till Xcode direkt efter Safari" },
-      { code: "dockutil --list | grep -v spacer", desc: "Lista Dock-appar utan spacers" }
-    ]
-  },
-
-  // ── DOLDA PÄRLOR ──
-  { cat: "Dolda pärlor", cmd: "caffeinate + ssh", short: "Håll en SSH-session levande och förhindra timeout", tags: ["net"],
-    examples: [
-      { code: "caffeinate -i ssh user@server", desc: "Förhindrar att Mac sover och tappar SSH-sessionen" },
-      { code: "ssh -o ServerAliveInterval=60 user@server", desc: "Skickar keepalive-paket var 60:e sekund" },
-      { code: "ssh -o ServerAliveCountMax=3 user@server", desc: "Kopplar ner efter 3 missade keepalives" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "tput", short: "Styr terminalen — färger, markören och skärmrensning i skript", tags: ["safe"],
-    examples: [
-      { code: "tput cols", desc: "Visa terminalens bredd i antal tecken" },
-      { code: "tput lines", desc: "Visa terminalens höjd i antal rader" },
-      { code: "tput bold; echo 'Fetstil'; tput sgr0", desc: "Skriv ut fetstilstext, återställ sedan" },
-      { code: "tput setaf 2; echo 'Grön text'; tput sgr0", desc: "Skriv ut grön text (2=grön, 1=röd, 4=blå)" },
-      { code: "tput civis", desc: "Göm markören (bra i skript med progress-bar)" },
-      { code: "tput cnorm", desc: "Visa markören igen" },
-      { code: "tput cup 10 20", desc: "Flytta markören till rad 10, kolumn 20" },
-      { code: "tput smul; echo 'Understruken'; tput rmul", desc: "Understruken text" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "column -t", short: "Formatera kommandooutput som en snygg tabell automatiskt", tags: ["safe"],
-    examples: [
-      { code: "ps aux | column -t", desc: "Formaterar ps-output i justerade kolumner" },
-      { code: "cat /etc/passwd | column -t -s ':'", desc: "Parsar : som separator och visar som tabell" },
-      { code: "mount | column -t", desc: "Snyggar till mount-utskriften" },
-      { code: "{ echo 'NAMN ÅLDER STAD'; echo 'Anna 28 Stockholm'; echo 'Erik 34 Göteborg'; } | column -t", desc: "Skapa en snygg tabell inline i terminalen" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "script", short: "Spela in allt som händer i terminalen till en fil", tags: ["safe"],
-    examples: [
-      { code: "script session.log", desc: "Börja spela in — allt sparas i session.log (exit för att stoppa)" },
-      { code: "script -q /dev/null", desc: "Undertryck 'Script started'-meddelandet" },
-      { code: "script -a session.log", desc: "Lägg till i en befintlig loggfil (append)" },
-      { code: "cat session.log", desc: "Visa den inspelade sessionen som text" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "fold", short: "Bryt långa rader vid given bredd — bra för skript och mail", tags: ["safe"],
-    examples: [
-      { code: "fold -w 80 lång_fil.txt", desc: "Bryt rader vid 80 tecken" },
-      { code: "fold -s -w 72 text.txt", desc: "Bryt vid ordgränser (s=space) för läsbarhet" },
-      { code: "echo 'Lång text...' | fold -w 40", desc: "Bryt piped text" },
-      { code: "cat meddelande.txt | fold -s -w 72 | mail -s 'Ämne' user@example.com", desc: "Formatera text korrekt för e-post" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "yes", short: "Skriv ut 'y' i en oändlig ström — automatisera bekräftelser", tags: ["safe"],
-    examples: [
-      { code: "yes | rm -ri mapp/", desc: "Automatiskt svara 'y' på alla bekräftelsefrågor" },
-      { code: "yes 'ja' | kommando", desc: "Svara 'ja' på varje prompt" },
-      { code: "yes | head -5", desc: "Skriver ut 'y' exakt 5 gånger" },
-      { code: "yes > /dev/null &", desc: "CPU-stresstest (kör i bakgrunden, avsluta med kill)" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "watch", short: "Kör ett kommando upprepat och visa output live — saknas i macOS men finns via brew", tags: ["safe"],
-    examples: [
-      { code: "brew install watch", desc: "Installera (watch finns ej inbyggt på macOS)" },
-      { code: "watch -n 2 df -h", desc: "Visa diskutrymme uppdaterat var 2:a sekund" },
-      { code: "watch -n 1 'ps aux | grep node'", desc: "Övervaka en specifik process live" },
-      { code: "watch -d -n 5 ls -la", desc: "Markera skillnader sedan senaste körning (-d=diff)" },
-      { code: "watch -n 0.5 date", desc: "Visa klockan med 0.5 sekunders uppdatering" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "parallel", short: "Kör kommandon parallellt och utnyttja alla CPU-kärnor", tags: ["safe"],
-    examples: [
-      { code: "brew install parallel", desc: "Installera via Homebrew" },
-      { code: "cat urls.txt | parallel curl -O", desc: "Ladda ner alla URL:er parallellt" },
-      { code: "ls *.jpg | parallel -j4 convert {} {.}.png", desc: "Konvertera bilder med 4 parallella jobb" },
-      { code: "parallel echo ::: A B C D", desc: "Kör echo parallellt för A, B, C, D" },
-      { code: "parallel -j$(nproc) gzip ::: *.log", desc: "Komprimera alla .log med max CPU-kärnor" },
-      { code: "seq 1 10 | parallel -j4 'echo Jobbet {}; sleep 1'", desc: "Kör 10 jobb med 4 parallella workers" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "pv", short: "Pipe Viewer — visa progress och hastighet för dataöverföringar", tags: ["safe"],
-    examples: [
-      { code: "brew install pv", desc: "Installera via Homebrew" },
-      { code: "pv stor_fil.iso > /dev/null", desc: "Visa hastighet och progress för läsning" },
-      { code: "pv fil.tar.gz | tar -xz", desc: "Visa progress vid extrahering av arkiv" },
-      { code: "dd if=/dev/sda | pv | dd of=backup.img", desc: "Visa progress vid disk-kopiering med dd" },
-      { code: "cat stor_databas.sql | pv | mysql -u root -p databas", desc: "Visa progress vid import av SQL-dump" },
-      { code: "pv -s 1G fil.bin | gzip > fil.bin.gz", desc: "Komprimera med känd storlek för progress-bar" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "mtr", short: "Kombinerar ping och traceroute i ett live-verktyg", tags: ["net"],
-    examples: [
-      { code: "brew install mtr", desc: "Installera via Homebrew" },
-      { code: "mtr google.com", desc: "Live-spårning av nätverksvägen med paketförlust och latens" },
-      { code: "mtr --report google.com", desc: "Kör 10 cykler och skriv ut rapport" },
-      { code: "mtr -n google.com", desc: "Visa IP-adresser istället för hostnamn (snabbare)" },
-      { code: "mtr --tcp --port 443 example.com", desc: "Spåra med TCP istället för ICMP (bra om ICMP blockeras)" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "entr", short: "Kör ett kommando automatiskt när en fil ändras", tags: ["safe"],
-    examples: [
-      { code: "brew install entr", desc: "Installera via Homebrew" },
-      { code: "ls *.py | entr python3 app.py", desc: "Starta om Python-appen när en .py-fil ändras" },
-      { code: "ls src/*.js | entr -r node server.js", desc: "Starta om Node-server vid filändring (-r=restart)" },
-      { code: "find . -name '*.go' | entr go test ./...", desc: "Kör Go-tester automatiskt vid varje ändring" },
-      { code: "ls Makefile src/*.c | entr make", desc: "Bygg projektet automatiskt vid varje ändring" },
-      { code: "echo 'fil.txt' | entr -p cat fil.txt", desc: "Visa filens innehåll live vid varje ändring" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "fzf", short: "Fuzzy-sökare — interaktiv filtrering av allt i terminalen", tags: ["safe"],
-    examples: [
-      { code: "brew install fzf", desc: "Installera via Homebrew" },
-      { code: "$(fzf)", desc: "Interaktivt välj en fil via fuzzy-sökning" },
-      { code: "history | fzf", desc: "Sök igenom kommandohistoriken interaktivt" },
-      { code: "cat fil.txt | fzf", desc: "Filtrera raderna i en fil interaktivt" },
-      { code: "kill -9 $(ps aux | fzf | awk '{print $2}')", desc: "Välj och döda en process interaktivt" },
-      { code: "git checkout $(git branch | fzf)", desc: "Välj Git-branch interaktivt" },
-      { code: "vim $(fzf)", desc: "Välj fil att öppna i vim via fuzzy-sökning" },
-      { code: "ls | fzf --preview 'cat {}'", desc: "Förhandsgranska filer medan du söker" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "expect", short: "Automatisera interaktiva program som frågar efter input", tags: ["safe"],
-    examples: [
-      { code: "brew install expect", desc: "Installera via Homebrew" },
-      { code: "expect -c 'spawn ssh user@host; expect \"password:\"; send \"lösenord\\n\"; interact'", desc: "Automatisera SSH-inloggning" },
-      { code: "autoexpect ./interaktivt_program", desc: "Spela in ett expect-skript automatiskt" },
-      { code: "expect skript.exp", desc: "Kör ett färdigt expect-skript" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "nohup", short: "Kör ett kommando som överlever även när terminalen stängs", tags: ["safe"],
-    examples: [
-      { code: "nohup python3 server.py &", desc: "Kör server i bakgrunden — fortsätter efter utloggning" },
-      { code: "nohup ./backup.sh > backup.log 2>&1 &", desc: "Kör med loggning av stdout och stderr" },
-      { code: "nohup kommando & disown", desc: "Starta och koppla bort från shell-sessionen" },
-      { code: "jobs -l", desc: "Kontrollera att jobbet körs i bakgrunden" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "socat", short: "Avancerad nätverks-relay — tunnlar, proxies och port-forwarding", tags: ["net"],
-    examples: [
-      { code: "brew install socat", desc: "Installera via Homebrew" },
-      { code: "socat TCP-LISTEN:8080,fork TCP:intern-server:80", desc: "Vidarebefordra port 8080 till intern server:80" },
-      { code: "socat - TCP:example.com:80", desc: "Öppna en rå TCP-anslutning (som telnet)" },
-      { code: "socat TCP-LISTEN:1234 EXEC:/bin/bash", desc: "Skapa en enkel bind-shell (lokalt, teständamål)" },
-      { code: "socat UNIX-LISTEN:/tmp/myapp.sock,fork TCP:localhost:3000", desc: "Unix socket → TCP proxy" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "stdbuf", short: "Styr buffring av stdin/stdout/stderr för ett kommando", tags: ["safe"],
-    examples: [
-      { code: "stdbuf -oL tail -f app.log | grep ERROR", desc: "Inaktivera buffring — grep ser varje rad direkt" },
-      { code: "stdbuf -o0 kommando | tee logg.txt", desc: "Unbuffrad output till pipe och fil simultant" },
-      { code: "stdbuf -i0 -o0 -e0 ./program", desc: "Inaktivera all buffring för stdin, stdout och stderr" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "tee -a", short: "Skriv output till både skärm och fil — utan att avbryta pipen", tags: ["safe"],
-    examples: [
-      { code: "kommando | tee output.log", desc: "Visa output OCH spara till fil samtidigt" },
-      { code: "kommando | tee -a logg.txt", desc: "Lägg till output i befintlig fil (append)" },
-      { code: "kommando | tee /dev/stderr | nästa_kommando", desc: "Förgrena pipen — skicka kopia till stderr" },
-      { code: "sudo tee /etc/konfig.conf << 'EOF'\nrad1\nrad2\nEOF", desc: "Skriv flera rader till root-ägd fil via sudo" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "install", short: "Kopiera filer OCH sätt rättigheter i ett enda kommando", tags: ["sudo"],
-    examples: [
-      { code: "install -m 755 skript.sh /usr/local/bin/", desc: "Kopiera och sätt körbar (ingen separat chmod)" },
-      { code: "install -m 644 config.conf /etc/myapp/", desc: "Kopiera konfigfil med korrekta rättigheter" },
-      { code: "install -d -m 755 /opt/myapp/logs", desc: "Skapa katalog med rätt rättigheter (-d)" },
-      { code: "install -o root -g wheel -m 750 bin /usr/local/bin/", desc: "Sätt ägare, grupp och rättigheter på en gång" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "comm", short: "Jämför två sorterade filer och visa gemensamma/unika rader", tags: ["safe"],
-    examples: [
-      { code: "comm fil1.txt fil2.txt", desc: "Tre kolumner: bara i fil1 | bara i fil2 | i båda" },
-      { code: "comm -12 fil1.txt fil2.txt", desc: "Visa bara rader som finns i BÅDA filerna" },
-      { code: "comm -23 fil1.txt fil2.txt", desc: "Visa rader som BARA finns i fil1 (inte fil2)" },
-      { code: "comm -13 fil1.txt fil2.txt", desc: "Visa rader som BARA finns i fil2" },
-      { code: "comm <(sort lista_a.txt) <(sort lista_b.txt)", desc: "Sortera automatiskt med process substitution" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "mktemp", short: "Skapa en unik temporär fil eller katalog säkert", tags: ["safe"],
-    examples: [
-      { code: "tmpfil=$(mktemp)", desc: "Skapar /tmp/tmp.XXXXXXXX och sparar sökvägen" },
-      { code: "tmpdir=$(mktemp -d)", desc: "Skapar en temporär katalog" },
-      { code: "mktemp /tmp/backup.XXXXXX.tar.gz", desc: "Skapa temp-fil med eget suffix" },
-      { code: "trap 'rm -f $tmpfil' EXIT", desc: "Städa automatiskt upp temp-filen när skriptet avslutas" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "sponge", short: "Samla in hela stdin innan skrivning — undviker överskrivningsfällan", tags: ["safe"],
-    examples: [
-      { code: "brew install moreutils", desc: "Installera sponge via moreutils" },
-      { code: "sort fil.txt | sponge fil.txt", desc: "Sortera och skriv tillbaka till SAMMA fil (fungerar, till skillnad från > fil.txt)" },
-      { code: "grep -v 'gammal' fil.txt | sponge fil.txt", desc: "Filtrera och spara till samma fil" },
-      { code: "jq '.' data.json | sponge data.json", desc: "Pretty-printa JSON och spara tillbaka på plats" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "vidir", short: "Redigera filnamn i bulk med din textredigerare", tags: ["safe"],
-    examples: [
-      { code: "brew install renameutils", desc: "Installera via Homebrew" },
-      { code: "vidir .", desc: "Öppnar alla filnamn i $EDITOR — spara för att döpa om/ta bort" },
-      { code: "vidir *.jpg", desc: "Redigera bara JPG-filnamnen i editorn" },
-      { code: "find . -name '*.txt' | vidir -", desc: "Batch-rename via find och pipe" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "lsregister", short: "Hantera macOS Launch Services-databasen (standardprogram)", tags: ["sudo"],
-    examples: [
-      { code: "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | grep -i 'handler'", desc: "Visa alla registrerade filhanterare" },
-      { code: "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user", desc: "Återskapa Launch Services-databasen — fixar trasiga standardprogram" },
-      { code: "open -a 'Visual Studio Code' fil.py", desc: "Öppna fil med ett specifikt program utan att ändra standard" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "sw_vers + awk", short: "Kombinera kommandon för automatiserade systemrapporter", tags: ["safe"],
-    examples: [
-      { code: "system_profiler SPHardwareDataType | awk '/Model Name|Chip|Memory|Serial/{print}'", desc: "Extrahera bara relevant hårdvaruinfo" },
-      { code: "sw_vers -productVersion | awk -F. '{print $1\".\"$2}'", desc: "Hämta bara major.minor-version (t.ex. 14.5)" },
-      { code: "uptime | awk '{print $3, $4}' | tr -d ','", desc: "Extrahera bara drifttiden ur uptime-output" },
-      { code: "df -h / | awk 'NR==2{print \"Disk:\", $3, \"av\", $2, \"(\", $5, \")\"}'", desc: "Visa diskstatus i ett snyggt format" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "networkQuality", short: "Inbyggt macOS-verktyg för att mäta nätverkskvalitet (macOS 12+)", tags: ["net"],
-    examples: [
-      { code: "networkQuality", desc: "Kör nätverkskvalitetstest (upload, download, responsiveness)" },
-      { code: "networkQuality -v", desc: "Verbose-läge — visa detaljerade mätvärden" },
-      { code: "networkQuality -s", desc: "Sekventiellt läge (ett test i taget, inte parallellt)" },
-      { code: "networkQuality -I en0", desc: "Testa specifikt nätverksgränssnitt" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "brctl", short: "Felsök iCloud Drive-synkronisering via terminal", tags: ["safe"],
-    examples: [
-      { code: "brctl status", desc: "Visa iCloud Drive-synkstatus" },
-      { code: "brctl log -w", desc: "Streama iCloud-loggar live" },
-      { code: "brctl diagnose", desc: "Skapa en diagnostikrapport för iCloud Drive" },
-      { code: "brctl download ~/Library/Mobile\\ Documents/fil.txt", desc: "Tvinga ned en specifik iCloud-fil lokalt" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "dot_clean", short: "Ta bort dolda macOS-metadatafiler (._-filer) från volymer", tags: ["safe"],
-    examples: [
-      { code: "dot_clean /Volumes/USB-disk", desc: "Rensa ._-filer från en USB-disk (bra inför delning med Windows)" },
-      { code: "dot_clean -m /Volumes/Nätverksdisk", desc: "Slå ihop ._-filer med sin originalfil istället för att ta bort" },
-      { code: "find . -name '._*' -delete", desc: "Alternativ: ta bort alla ._-filer manuellt med find" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "textutil", short: "Konvertera textdokument — doc, docx, rtf, html, txt via terminal", tags: ["safe"],
-    examples: [
-      { code: "textutil -convert txt dokument.docx", desc: "Konvertera Word-dokument till ren text" },
-      { code: "textutil -convert html rapport.docx", desc: "Konvertera Word till HTML" },
-      { code: "textutil -convert rtf README.txt", desc: "Konvertera text till RTF" },
-      { code: "textutil -convert docx *.rtf", desc: "Batch-konvertera alla RTF till Word" },
-      { code: "textutil -info dokument.docx", desc: "Visa metadata om dokumentet" },
-      { code: "textutil -cat html *.txt -output samlad.html", desc: "Slå ihop flera textfiler till en HTML" }
-    ]
-  },
-  { cat: "Dolda pärlor", cmd: "automator", short: "Kör Automator-arbetsflöden (.workflow) från terminalen", tags: ["safe"],
-    examples: [
-      { code: "automator workflow.workflow", desc: "Kör ett Automator-arbetsflöde" },
-      { code: "automator -i input.txt workflow.workflow", desc: "Kör med en fil som indata" },
-      { code: "ls *.pdf | automator samla_pdfer.workflow", desc: "Skicka lista med filer som indata via pipe" }
-    ]
-  },
 ];
-
 
 // ── SETUP ──
 const categories = [...new Set(COMMANDS.map(c => c.cat))];
 const TAG_LABELS = { danger: '⚠ Farligt', net: '⬡ Nätverk', sudo: '⬆ Root', safe: '✔ Säkert' };
 
 let activeCategory = 'Alla';
-let activeView = 'commands'; // 'commands' | 'start' | 'kbd'
 let searchQuery = '';
 
 function tagHtml(tags) {
   return (tags||[]).map(t => `<span class="tag tag-${t}">${TAG_LABELS[t]||t}</span>`).join('');
 }
 
-function key(label, special=false) {
-  return `<span class="key${special?' key-special':''}">${label}</span>`;
-}
-function plus() { return `<span class="key key-plus">+</span>`; }
-
-function renderKbdPanel() {
-  const sections = [
-    { title: 'Redigering av kommandoraden', rows: [
-      { desc: 'Flytta markören till rad-start', keys: [key('Ctrl'),plus(),key('A')] },
-      { desc: 'Flytta markören till rad-slut', keys: [key('Ctrl'),plus(),key('E')] },
-      { desc: 'Hoppa ett ord framåt', keys: [key('Esc'),plus(),key('F')] },
-      { desc: 'Hoppa ett ord bakåt', keys: [key('Esc'),plus(),key('B')] },
-      { desc: 'Ta bort tecken framför markören (delete)', keys: [key('Ctrl'),plus(),key('D')] },
-      { desc: 'Ta bort tecken bakom markören (backspace)', keys: [key('⌫')] },
-      { desc: 'Ta bort från markör till rad-slut', keys: [key('Ctrl'),plus(),key('K')] },
-      { desc: 'Ta bort från markör till rad-start', keys: [key('Ctrl'),plus(),key('U')] },
-      { desc: 'Ta bort föregående ord', keys: [key('Ctrl'),plus(),key('W')] },
-      { desc: 'Ta bort nästa ord', keys: [key('Esc'),plus(),key('D')] },
-      { desc: 'Klistra in senast borttagna text', keys: [key('Ctrl'),plus(),key('Y')] },
-      { desc: 'Transponera (byt) två tecken vid markören', keys: [key('Ctrl'),plus(),key('T')] },
-      { desc: 'Ändra ord till VERSALER', keys: [key('Esc'),plus(),key('U')] },
-      { desc: 'Ändra ord till gemener', keys: [key('Esc'),plus(),key('L')] },
-      { desc: 'Kommentera bort raden (lägg till #)', keys: [key('Esc'),plus(),key('#')] },
-    ]},
-    { title: 'Historik & sökning', rows: [
-      { desc: 'Föregående kommando i historiken', keys: [key('↑')] },
-      { desc: 'Nästa kommando i historiken', keys: [key('↓')] },
-      { desc: 'Inkrementell sökning bakåt i historik', keys: [key('Ctrl'),plus(),key('R')] },
-      { desc: 'Inkrementell sökning framåt i historik', keys: [key('Ctrl'),plus(),key('S')] },
-      { desc: 'Avbryt sökning, behåll aktuell rad', keys: [key('Ctrl'),plus(),key('G')] },
-      { desc: 'Hoppa till äldsta kommandot i historik', keys: [key('Esc'),plus(),key('<')] },
-      { desc: 'Hoppa till nyaste kommandot i historik', keys: [key('Esc'),plus(),key('>')] },
-      { desc: 'Expandera !! (senaste kommando) inline', keys: [key('Esc'),plus(),key('↑')] },
-    ]},
-    { title: 'Autokomplettering', rows: [
-      { desc: 'Autofyll kommando, fil eller argument', keys: [key('Tab',true)] },
-      { desc: 'Visa alla möjliga kompletteringar', keys: [key('Tab',true),key('Tab',true)] },
-      { desc: 'Komplettera filnamn med wildcards', keys: [key('Esc'),plus(),key('*')] },
-      { desc: 'Lista möjliga kompletteringar utan att fylla i', keys: [key('Esc'),plus(),key('=')] },
-    ]},
-    { title: 'Processkontroll', rows: [
-      { desc: 'Avbryt körande kommando (SIGINT)', keys: [key('Ctrl',true),plus(),key('C')] },
-      { desc: 'Pausa/stoppa process (SIGTSTP)', keys: [key('Ctrl',true),plus(),key('Z')] },
-      { desc: 'Avsluta shell / skicka EOF', keys: [key('Ctrl',true),plus(),key('D')] },
-      { desc: 'Frys output till skärmen', keys: [key('Ctrl'),plus(),key('S')] },
-      { desc: 'Återuppta fryst output', keys: [key('Ctrl'),plus(),key('Q')] },
-      { desc: 'Skicka process till bakgrunden', keys: [key('Ctrl'),plus(),key('Z'),plus(),key('bg')] },
-    ]},
-    { title: 'Skärmkontroll i Terminal.app', rows: [
-      { desc: 'Rensa skärmen (som kommandot clear)', keys: [key('Ctrl'),plus(),key('L')] },
-      { desc: 'Rensa scrollback-buffert', keys: [key('⌘',true),plus(),key('K')] },
-      { desc: 'Nytt terminalfönster', keys: [key('⌘',true),plus(),key('N')] },
-      { desc: 'Ny flik', keys: [key('⌘',true),plus(),key('T')] },
-      { desc: 'Stäng flik', keys: [key('⌘',true),plus(),key('W')] },
-      { desc: 'Nästa flik', keys: [key('⌘',true),plus(),key('}')] },
-      { desc: 'Föregående flik', keys: [key('⌘',true),plus(),key('{')] },
-      { desc: 'Öka textstorlek', keys: [key('⌘',true),plus(),key('+')] },
-      { desc: 'Minska textstorlek', keys: [key('⌘',true),plus(),key('-')] },
-      { desc: 'Återställ textstorlek', keys: [key('⌘',true),plus(),key('0')] },
-      { desc: 'Kopiera markerad text', keys: [key('⌘',true),plus(),key('C')] },
-      { desc: 'Klistra in', keys: [key('⌘',true),plus(),key('V')] },
-      { desc: 'Välj all text i terminalen', keys: [key('⌘',true),plus(),key('A')] },
-      { desc: 'Sök i terminalens output', keys: [key('⌘',true),plus(),key('F')] },
-    ]},
-    { title: 'Skärmkontroll i iTerm2', rows: [
-      { desc: 'Dela fönster horisontellt', keys: [key('⌘',true),plus(),key('D')] },
-      { desc: 'Dela fönster vertikalt', keys: [key('⌘',true),plus(),key('⇧'),plus(),key('D')] },
-      { desc: 'Byt delat fönster', keys: [key('⌘',true),plus(),key('[')] },
-      { desc: 'Visa kommandohistorik (visuellt)', keys: [key('⌘',true),plus(),key(';')] },
-      { desc: 'Autoplettering med popup', keys: [key('⌘',true),plus(),key('/')] },
-      { desc: 'Instant Replay (se vad som hände)', keys: [key('⌘',true),plus(),key('⌥'),plus(),key('B')] },
-      { desc: 'Öppna Toolbelt', keys: [key('⌘',true),plus(),key('⇧'),plus(),key('T')] },
-      { desc: 'Viloläge / Expose för flikar', keys: [key('⌘',true),plus(),key('⌥'),plus(),key('E')] },
-    ]},
-    { title: 'Användbara zsh-specifika genvägar', rows: [
-      { desc: 'Expandera alias inline (visa vad alias gör)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('A')] },
-      { desc: 'Redigera kommandot i $EDITOR (vim/nano)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('E')] },
-      { desc: 'Byt ut föregående ord i kommandot', keys: [key('Esc'),plus(),key('.')] },
-      { desc: 'Upprepa senaste argument från historik', keys: [key('Esc'),plus(),key('_')] },
-      { desc: 'Växla senaste kommandon (byt ordning)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('Ctrl'),plus(),key('X')] },
-    ]},
-  ];
-
-  let html = `<div class="panel">
-    <div class="panel-title">⌨ Tangentbordsgenvägar</div>
-    <div class="panel-sub">Alla viktiga snabbtangenter för macOS Terminal, zsh och iTerm2. <span style="color:var(--green)">Ctrl-kombinationer</span> gäller inne i terminalen. <span style="color:var(--green)">⌘-kombinationer</span> gäller i Terminal.app/iTerm2-fönstret.</div>`;
-
-  sections.forEach(s => {
-    html += `<div class="kb-section">
-      <div class="kb-section-title">${s.title}</div>
-      <div class="kb-grid">`;
-    s.rows.forEach(r => {
-      html += `<div class="kb-row">
-        <span class="kb-desc">${r.desc}</span>
-        <span class="kb-keys">${r.keys.join('')}</span>
-      </div>`;
-    });
-    html += `</div></div>`;
-  });
-
-  html += `</div>`;
-  return html;
-}
-
-function brewCopy(btn, id) {
-  const el = document.getElementById(id);
-  const text = el.innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '✓ Kopierat';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '⎘ Kopiera'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-function brewCopyBlock(id, label, code) {
-  return `<div class="brew-block">
-    <div class="brew-block-header">
-      <span class="brew-block-title">${label}</span>
-      <button class="brew-copy-btn" onclick="brewCopy(this,'${id}')">⎘ Kopiera</button>
-    </div>
-    <div class="brew-code" id="${id}">${code}</div>
-  </div>`;
-}
-
-function renderStartPanel() {
-  const step1 = `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`;
-  const step1Html = `<span class="cmd-keyword">/bin/bash</span> -c <span class="pkg">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>`;
-
-  const step2Text = `# Essentiella verktyg
-brew install wget curl git
-
-# Moderna ersättare för klassiska kommandon
-brew install ripgrep fd bat eza zoxide
-
-# Terminal-verktyg
-brew install fzf pv mtr entr watch tree parallel
-
-# Nätverk & säkerhet
-brew install nmap socat moreutils
-
-# Utveckling
-brew install gh shellcheck shfmt jq
-
-# Systeminformation
-brew install btop htop
-
-# macOS-verktyg
-brew install mas dockutil renameutils`;
-
-  const step2Html = `<span class="comment"># Essentiella verktyg</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">wget curl git</span>
-
-<span class="comment"># Moderna ersättare för klassiska kommandon</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">ripgrep fd bat eza zoxide</span>
-
-<span class="comment"># Terminal-verktyg</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">fzf pv mtr entr watch tree parallel</span>
-
-<span class="comment"># Nätverk & säkerhet</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">nmap socat moreutils</span>
-
-<span class="comment"># Utveckling</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">gh shellcheck shfmt jq</span>
-
-<span class="comment"># Systeminformation</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">btop htop</span>
-
-<span class="comment"># macOS-verktyg</span>
-<span class="cmd-keyword">brew install</span> <span class="pkg">mas dockutil renameutils</span>`;
-
-  const step3Html = `<span class="comment"># Installerar Command Line Tools (git, clang, make, xcrun...)</span>
-<span class="cmd-keyword">xcode-select</span> --install`;
-
-  const builtins = [
-    { name:'curl', desc:'HTTP-klient & filnedladdning', type:'builtin' },
-    { name:'ssh / scp', desc:'Säker fjärranslutning & kopiering', type:'builtin' },
-    { name:'git', desc:'Versionshantering', type:'builtin' },
-    { name:'python3', desc:'Python-tolk', type:'builtin' },
-    { name:'openssl', desc:'TLS, certifikat & kryptering', type:'builtin' },
-    { name:'nano / vim', desc:'Textredigerare', type:'builtin' },
-    { name:'grep / find / awk', desc:'Sökning och textbearbetning', type:'builtin' },
-    { name:'tcpdump', desc:'Nätverkspacketfångst', type:'builtin' },
-    { name:'say / pbcopy', desc:'Text-till-tal & urklipp', type:'builtin' },
-    { name:'diskutil / hdiutil', desc:'Disk- och avbildningshantering', type:'builtin' },
-    { name:'screencapture', desc:'Skärmdumpar & skärminspelning', type:'builtin' },
-    { name:'launchctl', desc:'Systemtjänster (launchd)', type:'builtin' },
-    { name:'networkQuality', desc:'Nätverkskvalitetstest (macOS 12+)', type:'builtin' },
-    { name:'brctl / tmutil', desc:'iCloud Drive & Time Machine', type:'builtin' },
-    { name:'system_profiler', desc:'Hårdvaru- och mjukvaruinfo', type:'builtin' },
-    { name:'ripgrep (rg)', desc:'Snabb textsökning — ersätter grep', type:'brew' },
-    { name:'fd', desc:'Snabb filsökning — ersätter find', type:'brew' },
-    { name:'bat', desc:'cat med syntaxfärgning och Git', type:'brew' },
-    { name:'eza', desc:'Modernare ls med ikoner', type:'brew' },
-    { name:'fzf', desc:'Interaktiv fuzzy-sökare', type:'brew' },
-    { name:'btop / htop', desc:'Grafisk resursmonitor', type:'brew' },
-    { name:'gh', desc:'GitHub CLI — PRs, issues, releases', type:'brew' },
-    { name:'mtr', desc:'ping + traceroute live', type:'brew' },
-    { name:'jq', desc:'JSON-processor och pretty-printer', type:'brew' },
-    { name:'watch', desc:'Upprepa kommando med live-uppdatering', type:'brew' },
-    { name:'entr', desc:'Kör om vid filändring', type:'brew' },
-    { name:'parallel', desc:'Parallell körning av kommandon', type:'brew' },
-    { name:'nmap', desc:'Nätverksskanner och portskanning', type:'brew' },
-    { name:'wget', desc:'Filnedladdning med återupptagning', type:'brew' },
-    { name:'clang / make / ld', desc:'Kompilator och byggverktyg', type:'xcode' },
-    { name:'xcrun / xcodebuild', desc:'Xcode-byggverktyg', type:'xcode' },
-    { name:'simctl', desc:'iOS/watchOS Simulator-hantering', type:'xcode' },
-    { name:'swift / swiftc', desc:'Swift-tolk och kompilator', type:'xcode' },
-  ];
-
-  const legendHtml = `<div class="install-legend">
-    <span><div class="install-dot dot-builtin"></div> Inbyggt i macOS</span>
-    <span><div class="install-dot dot-brew"></div> Kräver brew install</span>
-    <span><div class="install-dot dot-xcode"></div> Kräver xcode-select --install</span>
-  </div>`;
-
-  const gridHtml = `<div class="install-grid">${
-    builtins.map(b => `<div class="install-item">
-      <div class="install-item-top">
-        <div class="install-dot dot-${b.type}"></div>
-        <span class="install-name">${b.name}</span>
-      </div>
-      <div class="install-desc">${b.desc}</div>
-    </div>`).join('')
-  }</div>`;
-
-  const sectionLabel = (t) => `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:0.75rem;margin-top:1.75rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border)">${t}</div>`;
-
-  return `<div class="panel">
-    <div class="panel-title">⬢ Kom igång med macOS Terminal</div>
-    <div class="panel-sub">Många kommandon är inbyggda i macOS och fungerar direkt. Övriga installeras enkelt med <strong style="color:var(--green)">Homebrew</strong> — macOS motsvarighet till <code style="color:var(--cyan);font-family:var(--font-mono);font-size:0.85em">apt</code> på Linux/Ubuntu.</div>
-
-    ${sectionLabel('Steg 1 — Installera Homebrew (körs en gång)')}
-    ${brewCopyBlock('brew-install-cmd', '🍺 Klistra in i terminalen', step1Html)}
-
-    ${sectionLabel('Steg 2 — Installera rekommenderade verktyg')}
-    ${brewCopyBlock('brew-all-cmd', '📦 Installera allt på en gång', step2Html)}
-
-    ${sectionLabel('Steg 3 — Installera Xcode Command Line Tools')}
-    ${brewCopyBlock('xcode-cmd', '🛠 Ger dig clang, make, git, xcrun, swift m.fl.', step3Html)}
-
-    ${sectionLabel('Vad behöver installeras?')}
-    ${legendHtml}
-    ${gridHtml}
-  </div>`;
-}
-
 function renderSidebar() {
   const sidebar = document.getElementById('sidebar');
   const allCount = COMMANDS.length;
-
-  let html = `
-    <div class="sidebar-label">Snabbval</div>
-    <button class="cat-btn ${activeView==='start'?'active':''}" onclick="setView('start')">
-      <span class="cat-icon">⬢</span> Kom igång
-    </button>
-    <button class="cat-btn ${activeView==='kbd'?'active':''}" onclick="setView('kbd')">
-      <span class="cat-icon">⌨</span> Tangentbord
-    </button>
-    <div class="sidebar-label">Kategorier</div>
-    <button class="cat-btn ${activeView==='commands' && activeCategory==='Alla'?'active':''}" onclick="setCategory('Alla')">
-      <span class="cat-icon">◈</span> Alla kommandon
-      <span class="cat-count">${allCount}</span>
-    </button>`;
+  let html = `<button class="cat-btn ${activeCategory==='Alla'?'active':''}" onclick="setCategory('Alla')">
+    <span class="cat-icon">◈</span> Alla kommandon
+    <span class="cat-count">${allCount}</span>
+  </button>`;
 
   categories.forEach(cat => {
     const count = COMMANDS.filter(c => c.cat === cat).length;
-    const icons = { 'Navigation':'⌘','Filer & Mappar':'⊞','Texthantering':'⊟','Processer':'⊛','Nätverk':'⊕','System':'⊙','Pakethanterare':'⊡','Git':'⊢','Pipes & Omdirigering':'⊣','Shell-tricks':'⊤','Telnet & Fjärranslutning':'⊥','Disk & Lagring':'⊦','Felsökning':'⊧','Säkerhet & Kryptering':'⊨','Komprimering & Arkiv':'⊩','Skript & Automatisering':'⊪','Användare & Grupper':'⊫','Prestanda & Benchmarking':'⊬','Avancerad Text':'⊭','Xcode & Utvecklarverktyg':'⊮','Miljö & Shell-konfiguration':'⊯','Miljö & Shell':'⊯','Versionshantering':'⊰','Media & Bilder':'⊱','Certifikat & PKI':'⊲','Moderna CLI-verktyg':'⊳','Dolda pärlor':'★' };
+    const icons = { 'Navigation':'⌘','Filer & Mappar':'⊞','Texthantering':'⊟','Processer':'⊛','Nätverk':'⊕','System':'⊙','Pakethanterare':'⊡','Git':'⊢','Pipes & Omdirigering':'⊣','Shell-tricks':'⊤','Telnet & Fjärranslutning':'⊥','Disk & Lagring':'⊦','Felsökning':'⊧','Säkerhet & Kryptering':'⊨','Komprimering & Arkiv':'⊩','Skript & Automatisering':'⊪','Användare & Grupper':'⊫','Prestanda & Benchmarking':'⊬','Avancerad Text':'⊭','Xcode & Utvecklarverktyg':'⊮','Miljö & Shell-konfiguration':'⊯','Miljö & Shell':'⊯','Versionshantering':'⊰','Media & Bilder':'⊱','Certifikat & PKI':'⊲' };
     const icon = icons[cat] || '◆';
-    const isActive = activeView === 'commands' && activeCategory === cat;
-    html += `<button class="cat-btn ${isActive?'active':''}" onclick="setCategory('${cat}')">
+    html += `<button class="cat-btn ${activeCategory===cat?'active':''}" onclick="setCategory('${cat}')">
       <span class="cat-icon">${icon}</span> ${cat}
       <span class="cat-count">${count}</span>
     </button>`;
@@ -3320,16 +2259,6 @@ function filteredCommands() {
 
 function renderMain() {
   const main = document.getElementById('main');
-
-  if (activeView === 'start') {
-    main.innerHTML = renderStartPanel();
-    return;
-  }
-  if (activeView === 'kbd') {
-    main.innerHTML = renderKbdPanel();
-    return;
-  }
-
   const cmds = filteredCommands();
   document.getElementById('visibleCount').textContent = cmds.length;
 
@@ -3338,6 +2267,7 @@ function renderMain() {
     return;
   }
 
+  // Group by category
   const groups = {};
   cmds.forEach(c => {
     if (!groups[c.cat]) groups[c.cat] = [];
@@ -3366,7 +2296,7 @@ function renderMain() {
           </div>`;
         }
         return `<div class="example-line">
-          <div class="example-code-wrap">
+          <div class="example-code-wrap" id="">
             <span class="example-code" title="${escaped}">${e.code}</span>
             <button class="copy-btn" onclick="copyCode(event, '${escaped}')" title="Kopiera">⎘</button>
           </div>
@@ -3405,29 +2335,30 @@ function copyCode(event, code) {
   navigator.clipboard.writeText(code).then(() => {
     wrap.classList.add('copied');
     btn.textContent = '✓';
-    setTimeout(() => { wrap.classList.remove('copied'); btn.textContent = '⎘'; }, 1500);
+    setTimeout(() => {
+      wrap.classList.remove('copied');
+      btn.textContent = '⎘';
+    }, 1500);
   }).catch(() => {
+    // Fallback for older browsers
     const ta = document.createElement('textarea');
-    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    ta.value = code;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
     document.body.removeChild(ta);
-    wrap.classList.add('copied'); btn.textContent = '✓';
-    setTimeout(() => { wrap.classList.remove('copied'); btn.textContent = '⎘'; }, 1500);
+    wrap.classList.add('copied');
+    btn.textContent = '✓';
+    setTimeout(() => {
+      wrap.classList.remove('copied');
+      btn.textContent = '⎘';
+    }, 1500);
   });
 }
 
-function setView(view) {
-  activeView = view;
-  activeCategory = 'Alla';
-  searchQuery = '';
-  document.getElementById('searchInput').value = '';
-  renderSidebar();
-  renderMain();
-  document.querySelector('main').scrollTop = 0;
-}
-
 function setCategory(cat) {
-  activeView = 'commands';
   activeCategory = cat;
   renderSidebar();
   renderMain();
@@ -3436,7 +2367,7 @@ function setCategory(cat) {
 
 document.getElementById('searchInput').addEventListener('input', e => {
   searchQuery = e.target.value;
-  if (searchQuery) { activeView = 'commands'; activeCategory = 'Alla'; }
+  if (searchQuery) activeCategory = 'Alla';
   renderSidebar();
   renderMain();
 });
@@ -3447,4 +2378,3 @@ renderMain();
 </script>
 </body>
 </html>
-
