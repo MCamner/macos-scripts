@@ -3,16 +3,16 @@
 set -u
 
 # ============================================================
-# MQLaunch v3.3c — Old School Utility
-# Same core as v3.2/v3.3b, but:
-# - skull header
-# - no vertical side bars on content rows
-# - no 11. Exit launcher in menu
-# - X. Exit launcher shown under Time in main menu
+# MQLaunch v3.4 — Old School Utility
+# Adds:
+# - MAIN MENU in bold
+# - Author line in header
+# - Git Launch + Net Launch in Dev / Prompts
 # ============================================================
 
-APP_TITLE="MQLaunch v3.3c"
+APP_TITLE="MQLaunch v3.4"
 APP_SUBTITLE="Old School Utility"
+APP_AUTHOR="Author Mattias Camner"
 
 BASE_DIR="$HOME/macos-scripts"
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
@@ -32,10 +32,12 @@ if [[ -t 1 ]]; then
   C_RESET=$'\033[0m'
   C_TITLE=$'\033[1;33m'
   C_ERR=$'\033[0;31m'
+  C_BOLD=$'\033[1m'
 else
   C_RESET=''
   C_TITLE=''
   C_ERR=''
+  C_BOLD=''
 fi
 
 # --- Helpers ------------------------------------------------
@@ -52,6 +54,11 @@ border() {
 row() {
   local text="$1"
   printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
+}
+
+row_bold() {
+  local text="$1"
+  printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
 row3() {
@@ -104,7 +111,7 @@ print_header() {
   border
   header_dual_row "$APP_TITLE" "        .-."
   header_dual_row "$APP_SUBTITLE" "       (o o)"
-  header_dual_row "" "       | O \\"
+  header_dual_row "$APP_AUTHOR" "       | O \\"
   header_dual_row "" "        \\   \\"
   header_dual_row "" "         \`~~~'"
   border
@@ -217,6 +224,94 @@ safe_run_ai() {
     print_footer
     pause_enter
   fi
+}
+
+run_git_screen() {
+  local title="$1"
+  local cmd="$2"
+
+  print_header
+  row "$title"
+  empty_row
+  row "Repo:"
+  row " $BASE_DIR"
+  empty_row
+
+  (
+    cd "$BASE_DIR" 2>/dev/null || exit 1
+    eval "$cmd"
+  )
+
+  echo
+  print_footer
+  pause_enter
+}
+
+copy_network_info() {
+  local wifi_ip gateway dns payload
+  wifi_ip="$(ipconfig getifaddr en0 2>/dev/null || echo "-")"
+  gateway="$(route -n get default 2>/dev/null | awk '/gateway:/{print $2; exit}')"
+  dns="$(scutil --dns 2>/dev/null | awk '/nameserver\[[0-9]+\]/{print $3; exit}')"
+
+  [[ -z "$gateway" ]] && gateway="-"
+  [[ -z "$dns" ]] && dns="-"
+
+  payload="Wi-Fi: $wifi_ip
+Gateway: $gateway
+DNS: $dns"
+
+  if command -v pbcopy >/dev/null 2>&1; then
+    print -r -- "$payload" | pbcopy
+    print_header
+    row "COPY NETWORK INFO"
+    empty_row
+    row "Copied to clipboard:"
+    row " Wi-Fi: $wifi_ip"
+    row " Gateway: $gateway"
+    row " DNS: $dns"
+    print_footer
+    pause_enter
+  else
+    echo "${C_ERR}pbcopy missing.${C_RESET}"
+    pause_enter
+  fi
+}
+
+open_network_settings() {
+  print_header
+  row "OPEN NETWORK SETTINGS"
+  empty_row
+  row "Opening System Settings → Network"
+  print_footer
+  open "x-apple.systempreferences:com.apple.Network-Settings.extension"
+}
+
+ping_test() {
+  print_header
+  row "PING TEST"
+  empty_row
+  row "Target: 1.1.1.1"
+  empty_row
+  ping -c 4 1.1.1.1
+  echo
+  print_footer
+  pause_enter
+}
+
+show_dns_gateway() {
+  local gateway dns
+  gateway="$(route -n get default 2>/dev/null | awk '/gateway:/{print $2; exit}')"
+  dns="$(scutil --dns 2>/dev/null | awk '/nameserver\[[0-9]+\]/{print $3; exit}')"
+  [[ -z "$gateway" ]] && gateway="-"
+  [[ -z "$dns" ]] && dns="-"
+
+  print_header
+  row "DNS + GATEWAY"
+  empty_row
+  row "Gateway: $gateway"
+  row "DNS:     $dns"
+  print_footer
+  pause_enter
 }
 
 # --- Actions ------------------------------------------------
@@ -540,7 +635,7 @@ open_launcher_folder() {
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
-  row "MAIN MENU"
+  row_bold "MAIN MENU"
   empty_row
 
   row "APPS"
@@ -589,10 +684,37 @@ print_dev_menu() {
   row2 " 1. Open AI Prompts folder" " 2. Show prompt files"
   row2 " 3. Edit mqlaunch" " 4. Backup prompts"
   row2 " 5. Open macos-scripts folder" " 6. Open launcher folder"
-  row2 " 7. Open mac terminal guide" " 0. Back"
+  row2 " 7. Open mac terminal guide" " 8. Git Launch"
+  row2 " 9. Net Launch" " 0. Back"
 
   print_footer
-  printf "${C_TITLE}Select dev option [0-7]: ${C_RESET}"
+  printf "${C_TITLE}Select dev option [0-9]: ${C_RESET}"
+}
+
+print_git_menu() {
+  print_header
+  row "GIT LAUNCH"
+  empty_row
+
+  row2 " 1. Git status" " 2. Git pull"
+  row2 " 3. Git push" " 4. Open repo in browser"
+  row2 " 5. Open local repo folder" " 0. Back"
+
+  print_footer
+  printf "${C_TITLE}Select git option [0-5]: ${C_RESET}"
+}
+
+print_net_menu() {
+  print_header
+  row "NET LAUNCH"
+  empty_row
+
+  row2 " 1. Show IP + network info" " 2. Ping test"
+  row2 " 3. Show DNS + gateway" " 4. Open Network Settings"
+  row2 " 5. Copy IP info to clipboard" " 0. Back"
+
+  print_footer
+  printf "${C_TITLE}Select net option [0-5]: ${C_RESET}"
 }
 
 ai_menu_loop() {
@@ -619,6 +741,46 @@ ai_menu_loop() {
   done
 }
 
+git_menu_loop() {
+  local choice
+
+  while true; do
+    print_git_menu
+    read -r choice
+    echo
+
+    case "$choice" in
+      1) run_git_screen "GIT STATUS" "git status --short --branch" ;;
+      2) run_git_screen "GIT PULL" "git pull" ;;
+      3) run_git_screen "GIT PUSH" "git push" ;;
+      4) open_repo_browser ;;
+      5) open_base_dir ;;
+      0) break ;;
+      *) echo "${C_ERR}Invalid git selection:${C_RESET} $choice"; pause_enter ;;
+    esac
+  done
+}
+
+net_menu_loop() {
+  local choice
+
+  while true; do
+    print_net_menu
+    read -r choice
+    echo
+
+    case "$choice" in
+      1) show_network_info ;;
+      2) ping_test ;;
+      3) show_dns_gateway ;;
+      4) open_network_settings ;;
+      5) copy_network_info ;;
+      0) break ;;
+      *) echo "${C_ERR}Invalid net selection:${C_RESET} $choice"; pause_enter ;;
+    esac
+  done
+}
+
 dev_menu_loop() {
   local choice
 
@@ -635,6 +797,8 @@ dev_menu_loop() {
       5) open_base_dir ;;
       6) open_launcher_folder ;;
       7) open_terminal_guide ;;
+      8) git_menu_loop ;;
+      9) net_menu_loop ;;
       0) break ;;
       *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
     esac
@@ -678,7 +842,7 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v3.3c — Old School Utility
+MQLaunch v3.4 — Old School Utility
 
 Usage:
   mqlaunch                Open main menu
@@ -686,7 +850,7 @@ Usage:
   mqlaunch dev            Open Dev / Prompts submenu
 
 Main menu:
-  Exit is now X, not 11
+  Exit is X, not 11
 
 Direct commands:
   finder | safari | chrome | spotify | xcode
@@ -696,6 +860,7 @@ Direct commands:
   repo | check | ai | dev
   prompts | prompt-files | edit | backup-prompts
   base | launchers | guide
+  gitlaunch | netlaunch
   auto | one | atlas | decide | research | root | solve | pdebug | menu
 EOH
 }
@@ -731,6 +896,8 @@ run_arg_command() {
     base|macos-scripts) open_base_dir ;;
     launchers|launcher-folder) open_launcher_folder ;;
     guide|terminal-guide) open_terminal_guide ;;
+    gitlaunch|git) git_menu_loop ;;
+    netlaunch|net) net_menu_loop ;;
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
     *)
