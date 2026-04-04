@@ -26,7 +26,7 @@ err()  { printf "%b%s%b\n" "$C_RED" "$1" "$C_RESET" >&2; }
 
 usage() {
   cat <<USAGE
-$SCRIPT_NAME - macOS tweaks utility v2
+$SCRIPT_NAME - macOS tweaks utility
 
 Usage:
   $SCRIPT_NAME [command] [options]
@@ -48,6 +48,7 @@ Options:
   -h, --help      Show help
 
 Examples:
+  $SCRIPT_NAME menu
   $SCRIPT_NAME status
   $SCRIPT_NAME workstation
   $SCRIPT_NAME all --dry-run
@@ -275,41 +276,43 @@ show_status() {
   printf "\n%bmacOS Tweaks Status%b\n" "$C_BOLD" "$C_RESET"
   printf "%b-------------------%b\n" "$C_DIM" "$C_RESET"
 
-  print_pref "Dock autohide"                "com.apple.dock"          "autohide"
-  print_pref "Dock show recents"            "com.apple.dock"          "show-recents"
-  print_pref "Dock tile size"               "com.apple.dock"          "tilesize"
-  print_pref "Dock minimize effect"         "com.apple.dock"          "mineffect"
-  print_pref "Dock minimize to app"         "com.apple.dock"          "minimize-to-application"
-  print_pref "Dock hidden translucency"     "com.apple.dock"          "showhidden"
+  print_pref "Dock autohide"                "com.apple.dock"            "autohide"
+  print_pref "Dock show recents"            "com.apple.dock"            "show-recents"
+  print_pref "Dock tile size"               "com.apple.dock"            "tilesize"
+  print_pref "Dock minimize effect"         "com.apple.dock"            "mineffect"
+  print_pref "Dock minimize to app"         "com.apple.dock"            "minimize-to-application"
+  print_pref "Dock hidden translucency"     "com.apple.dock"            "showhidden"
 
-  print_pref "Finder show hidden files"     "com.apple.finder"        "AppleShowAllFiles"
-  print_pref "Finder show path bar"         "com.apple.finder"        "ShowPathbar"
-  print_pref "Finder show status bar"       "com.apple.finder"        "ShowStatusBar"
-  print_pref "Finder folders first"         "com.apple.finder"        "_FXSortFoldersFirst"
+  print_pref "Finder show hidden files"     "com.apple.finder"          "AppleShowAllFiles"
+  print_pref "Finder show path bar"         "com.apple.finder"          "ShowPathbar"
+  print_pref "Finder show status bar"       "com.apple.finder"          "ShowStatusBar"
+  print_pref "Finder folders first"         "com.apple.finder"          "_FXSortFoldersFirst"
 
-  print_pref "Show all extensions"          "NSGlobalDomain"          "AppleShowAllExtensions"
-  print_pref "Key repeat"                   "NSGlobalDomain"          "KeyRepeat"
-  print_pref "Initial key repeat"           "NSGlobalDomain"          "InitialKeyRepeat"
+  print_pref "Show all extensions"          "NSGlobalDomain"            "AppleShowAllExtensions"
+  print_pref "Key repeat"                   "NSGlobalDomain"            "KeyRepeat"
+  print_pref "Initial key repeat"           "NSGlobalDomain"            "InitialKeyRepeat"
 
   print_pref "No .DS_Store on network"      "com.apple.desktopservices" "DSDontWriteNetworkStores"
   print_pref "No .DS_Store on USB"          "com.apple.desktopservices" "DSDontWriteUSBStores"
 
-  print_pref "Screenshot location"          "com.apple.screencapture" "location"
-  print_pref "Screenshot type"              "com.apple.screencapture" "type"
+  print_pref "Screenshot location"          "com.apple.screencapture"   "location"
+  print_pref "Screenshot type"              "com.apple.screencapture"   "type"
 
-  print_pref "Require password after saver" "com.apple.screensaver"   "askForPassword"
-  print_pref "Password delay"               "com.apple.screensaver"   "askForPasswordDelay"
+  print_pref "Require password after saver" "com.apple.screensaver"     "askForPassword"
+  print_pref "Password delay"               "com.apple.screensaver"     "askForPasswordDelay"
 
-  print_pref "Personalized ads"             "com.apple.AdLib"         "allowApplePersonalizedAdvertising"
+  print_pref "Personalized ads"             "com.apple.AdLib"           "allowApplePersonalizedAdvertising"
 
   printf "\n"
 }
 
 interactive_menu() {
-  cat <<MENU
+  while true; do
+    clear
+    cat <<MENU
 
-macOS Tweaks Utility v2
-======================
+macOS Tweaks Utility
+====================
 1) Status
 2) Backup current values
 3) Apply developer tweaks
@@ -323,21 +326,61 @@ macOS Tweaks Utility v2
 
 MENU
 
-  read -r -p "Choose an option: " choice
+    read -r -p "Choose an option: " choice
+    echo
 
-  case "$choice" in
-    1) show_status ;;
-    2) backup_selected ;;
-    3) backup_selected; apply_dev_tweaks; restart_affected_apps ;;
-    4) backup_selected; apply_clean_tweaks; restart_affected_apps ;;
-    5) backup_selected; apply_fast_tweaks; restart_affected_apps ;;
-    6) backup_selected; apply_workstation_tweaks; restart_affected_apps ;;
-    7) backup_selected; apply_dev_tweaks; apply_clean_tweaks; apply_fast_tweaks; restart_affected_apps ;;
-    8) revert_latest ;;
-    9) show_latest_backup ;;
-    0) exit 0 ;;
-    *) err "Invalid option."; exit 1 ;;
-  esac
+    case "$choice" in
+      1)
+        show_status
+        ;;
+      2)
+        backup_selected
+        ;;
+      3)
+        backup_selected
+        apply_dev_tweaks
+        restart_affected_apps
+        ;;
+      4)
+        backup_selected
+        apply_clean_tweaks
+        restart_affected_apps
+        ;;
+      5)
+        backup_selected
+        apply_fast_tweaks
+        restart_affected_apps
+        ;;
+      6)
+        backup_selected
+        apply_workstation_tweaks
+        restart_affected_apps
+        ;;
+      7)
+        backup_selected
+        apply_dev_tweaks
+        apply_clean_tweaks
+        apply_fast_tweaks
+        restart_affected_apps
+        ;;
+      8)
+        revert_latest
+        ;;
+      9)
+        show_latest_backup
+        ;;
+      0)
+        ok "Exiting."
+        break
+        ;;
+      *)
+        err "Invalid option."
+        ;;
+    esac
+
+    echo
+    read -r -p "Press Enter to return to menu..." _
+  done
 }
 
 parse_args() {
