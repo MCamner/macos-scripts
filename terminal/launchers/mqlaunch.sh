@@ -632,6 +632,39 @@ open_launcher_folder() {
   open_folder_screen "OPEN LAUNCHER FOLDER" "$BASE_DIR/terminal/launchers" "Launcher folder missing:"
 }
 
+
+open_tweaks_menu() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" menu
+}
+
+show_tweaks_status() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" status
+}
+
+run_tweaks_workstation() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" workstation
+}
+
+run_tweaks_dev() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" dev
+}
+
+run_tweaks_clean() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" clean
+}
+
+run_tweaks_fast() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" fast
+}
+
+run_tweaks_all() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" all
+}
+
+revert_tweaks_latest() {
+  bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" revert-latest
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -655,10 +688,10 @@ print_main_menu() {
 
   empty_row
   row "MENUS"
-  row3 "20. AI Modes" "21. Dev / Prompts" ""
+  row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-21,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-22,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -835,6 +868,7 @@ main_loop() {
       19) system_check ;;
       20) ai_menu_loop ;;
       21) dev_menu_loop ;;
+      22) open_tweaks_menu ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -848,6 +882,7 @@ Usage:
   mqlaunch                Open main menu
   mqlaunch ai             Open AI submenu
   mqlaunch dev            Open Dev / Prompts submenu
+  mqlaunch tweaks         Open Tweaks menu
 
 Main menu:
   Exit is X, not 11
@@ -857,10 +892,12 @@ Direct commands:
   settings | monitor
   downloads | home | utilities | applications
   ip | lock | sleep | restart-finder | date
-  repo | check | ai | dev
+  repo | check | ai | dev | tweaks
   prompts | prompt-files | edit | backup-prompts
   base | launchers | guide
   gitlaunch | netlaunch
+  tweaks-status | tweaks-workstation | tweaks-dev
+  tweaks-clean | tweaks-fast | tweaks-all | tweaks-revert
   auto | one | atlas | decide | research | root | solve | pdebug | menu
 EOH
 }
@@ -889,6 +926,14 @@ run_arg_command() {
     check|health) system_check ;;
     ai) ai_menu_loop ;;
     dev) dev_menu_loop ;;
+    tweaks|tweak|tw) open_tweaks_menu ;;
+    tweaks-status) show_tweaks_status ;;
+    tweaks-workstation) run_tweaks_workstation ;;
+    tweaks-dev) run_tweaks_dev ;;
+    tweaks-clean) run_tweaks_clean ;;
+    tweaks-fast) run_tweaks_fast ;;
+    tweaks-all) run_tweaks_all ;;
+    tweaks-revert|revert-tweaks) revert_tweaks_latest ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
