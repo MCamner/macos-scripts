@@ -2,6 +2,8 @@
 set -euo pipefail
 
 SCRIPT_NAME="$(basename "$0")"
+BASE_DIR="${HOME}/macos-scripts"
+UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 BACKUP_DIR="${HOME}/.macos-tweaks-backup"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_FILE="${BACKUP_DIR}/backup-${TIMESTAMP}.txt"
@@ -15,6 +17,14 @@ APP_SUBTITLE="MQLaunch Module"
 APP_AUTHOR="Author Mattias Camner"
 
 BOX_INNER=88
+
+if [[ -f "$UI_LIB" ]]; then
+  source "$UI_LIB"
+else
+  echo "Missing UI library: $UI_LIB" >&2
+  exit 1
+fi
+
 
 C_RESET='\033[0m'
 C_BOLD='\033[1m'
@@ -30,77 +40,6 @@ ok()   { printf "%b%s%b\n" "$C_GREEN" "$1" "$C_RESET"; }
 warn() { printf "%b%s%b\n" "$C_YELLOW" "$1" "$C_RESET"; }
 err()  { printf "%b%s%b\n" "$C_RED" "$1" "$C_RESET" >&2; }
 
-repeat_char() {
-  local count="$1"
-  local char="$2"
-  printf '%*s' "$count" '' | tr ' ' "$char"
-}
-
-border() {
-  printf '%s\n' "$(repeat_char "$BOX_INNER" "-")"
-}
-
-row() {
-  local text="$1"
-  printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
-}
-
-row_bold() {
-  local text="$1"
-  printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
-}
-
-row2() {
-  local c1="$1"
-  local c2="$2"
-  row "$(printf '%-40s %-40s' "$c1" "$c2")"
-}
-
-header_dual_row() {
-  local left="$1"
-  local right="$2"
-  printf "%-54s %33s\n" "$left" "$right"
-}
-
-clear_screen() {
-  if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
-    tput clear
-  else
-    clear
-  fi
-}
-
-short_host() {
-  hostname -s 2>/dev/null || hostname
-}
-
-print_header() {
-  clear_screen
-  border
-  header_dual_row "$APP_TITLE" "        .-."
-  header_dual_row "$APP_SUBTITLE" "       (o o)"
-  header_dual_row "$APP_AUTHOR" "       | O \\"
-  header_dual_row "" "        \\   \\"
-  header_dual_row "" "         \`~~~'"
-  border
-}
-
-print_footer() {
-  local now host user_name
-  now="$(date '+%Y-%m-%d %H:%M:%S')"
-  host="$(short_host)"
-  user_name="$USER"
-
-  printf '\n'
-  row "Host: ${host}   User: ${user_name}"
-  row "Time: ${now}"
-  border
-}
-
-pause_enter() {
-  echo
-  read -r -p "Press Enter to continue..." _
-}
 
 usage() {
   cat <<USAGE

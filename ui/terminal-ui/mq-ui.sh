@@ -80,7 +80,8 @@ header_dual_row() {
 
 pause_enter() {
   echo
-  read -r -p "Press Enter to continue..." _
+  printf 'Press Enter to continue...'
+  read -r _
 }
 
 set_terminal_title() {
