@@ -10,6 +10,12 @@ DRY_RUN=0
 VERBOSE=0
 COMMAND="menu"
 
+APP_TITLE="macOS Tweaks Utility"
+APP_SUBTITLE="MQLaunch Module"
+APP_AUTHOR="Author Mattias Camner"
+
+BOX_INNER=88
+
 C_RESET='\033[0m'
 C_BOLD='\033[1m'
 C_DIM='\033[2m'
@@ -23,6 +29,78 @@ log()  { printf "%b%s%b\n" "$C_BLUE" "$1" "$C_RESET"; }
 ok()   { printf "%b%s%b\n" "$C_GREEN" "$1" "$C_RESET"; }
 warn() { printf "%b%s%b\n" "$C_YELLOW" "$1" "$C_RESET"; }
 err()  { printf "%b%s%b\n" "$C_RED" "$1" "$C_RESET" >&2; }
+
+repeat_char() {
+  local count="$1"
+  local char="$2"
+  printf '%*s' "$count" '' | tr ' ' "$char"
+}
+
+border() {
+  printf '%s\n' "$(repeat_char "$BOX_INNER" "-")"
+}
+
+row() {
+  local text="$1"
+  printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
+}
+
+row_bold() {
+  local text="$1"
+  printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
+}
+
+row2() {
+  local c1="$1"
+  local c2="$2"
+  row "$(printf '%-40s %-40s' "$c1" "$c2")"
+}
+
+header_dual_row() {
+  local left="$1"
+  local right="$2"
+  printf "%-54s %33s\n" "$left" "$right"
+}
+
+clear_screen() {
+  if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
+    tput clear
+  else
+    clear
+  fi
+}
+
+short_host() {
+  hostname -s 2>/dev/null || hostname
+}
+
+print_header() {
+  clear_screen
+  border
+  header_dual_row "$APP_TITLE" "        .-."
+  header_dual_row "$APP_SUBTITLE" "       (o o)"
+  header_dual_row "$APP_AUTHOR" "       | O \\"
+  header_dual_row "" "        \\   \\"
+  header_dual_row "" "         \`~~~'"
+  border
+}
+
+print_footer() {
+  local now host user_name
+  now="$(date '+%Y-%m-%d %H:%M:%S')"
+  host="$(short_host)"
+  user_name="$USER"
+
+  printf '\n'
+  row "Host: ${host}   User: ${user_name}"
+  row "Time: ${now}"
+  border
+}
+
+pause_enter() {
+  echo
+  read -r -p "Press Enter to continue..." _
+}
 
 usage() {
   cat <<USAGE
@@ -46,13 +124,6 @@ Options:
   --dry-run       Preview only, do not change anything
   -v, --verbose   Show commands as they run
   -h, --help      Show help
-
-Examples:
-  $SCRIPT_NAME menu
-  $SCRIPT_NAME status
-  $SCRIPT_NAME workstation
-  $SCRIPT_NAME all --dry-run
-  $SCRIPT_NAME revert-latest
 USAGE
 }
 
@@ -273,8 +344,9 @@ apply_workstation_tweaks() {
 }
 
 show_status() {
-  printf "\n%bmacOS Tweaks Status%b\n" "$C_BOLD" "$C_RESET"
-  printf "%b-------------------%b\n" "$C_DIM" "$C_RESET"
+  print_header
+  row_bold "TWEAKS STATUS"
+  printf '\n'
 
   print_pref "Dock autohide"                "com.apple.dock"            "autohide"
   print_pref "Dock show recents"            "com.apple.dock"            "show-recents"
@@ -303,58 +375,62 @@ show_status() {
 
   print_pref "Personalized ads"             "com.apple.AdLib"           "allowApplePersonalizedAdvertising"
 
-  printf "\n"
+  print_footer
+}
+
+print_tweaks_menu() {
+  print_header
+  row_bold "TWEAKS MENU"
+  printf '\n'
+
+  row2 " 1. Status" " 2. Backup current values"
+  row2 " 3. Apply developer tweaks" " 4. Apply clean tweaks"
+  row2 " 5. Apply fast tweaks" " 6. Apply workstation profile"
+  row2 " 7. Apply all tweaks" " 8. Revert latest backup"
+  row2 " 9. Show latest backup path" " 0. Exit"
+
+  print_footer
+  printf "${C_BLUE}Select option [0-9]: ${C_RESET}"
 }
 
 interactive_menu() {
   while true; do
-    clear
-    cat <<MENU
-
-macOS Tweaks Utility
-====================
-1) Status
-2) Backup current values
-3) Apply developer tweaks
-4) Apply clean tweaks
-5) Apply fast tweaks
-6) Apply workstation profile
-7) Apply all tweaks
-8) Revert latest backup
-9) Show latest backup path
-0) Exit
-
-MENU
-
-    read -r -p "Choose an option: " choice
+    print_tweaks_menu
+    read -r choice
     echo
 
     case "$choice" in
       1)
         show_status
+        pause_enter
         ;;
       2)
         backup_selected
+        pause_enter
         ;;
       3)
         backup_selected
         apply_dev_tweaks
         restart_affected_apps
+        pause_enter
         ;;
       4)
         backup_selected
         apply_clean_tweaks
         restart_affected_apps
+        pause_enter
         ;;
       5)
         backup_selected
         apply_fast_tweaks
         restart_affected_apps
+        pause_enter
         ;;
       6)
         backup_selected
         apply_workstation_tweaks
         restart_affected_apps
+        pause_enter
         ;;
       7)
         backup_selected
@@ -362,12 +438,15 @@ MENU
         apply_clean_tweaks
         apply_fast_tweaks
         restart_affected_apps
+        pause_enter
         ;;
       8)
         revert_latest
+        pause_enter
         ;;
       9)
         show_latest_backup
+        pause_enter
         ;;
       0)
         ok "Exiting."
@@ -375,11 +454,9 @@ MENU
         ;;
       *)
         err "Invalid option."
+        pause_enter
         ;;
     esac
-
-    echo
-    read -r -p "Press Enter to return to menu..." _
   done
 }
 

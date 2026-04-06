@@ -23,7 +23,7 @@ BACKUP_DIR="$BASE_DIR/backups"
 BIN_LINK="$HOME/bin/mqlaunch"
 
 TERMINAL_GUIDE_HTML="$BASE_DIR/tools/mac terminal_guide/mac-terminal-guide.html"
-TERMINAL_GUIDE_URL="https://github.com/MCamner/macos-scripts/tree/main/tools/mac%20terminal_guide"
+TERMINAL_GUIDE_URL="https://mcamner.github.io/macos-scripts/"
 
 BOX_INNER=88
 
