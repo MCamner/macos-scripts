@@ -564,10 +564,7 @@ revert_tweaks_latest() {
 backup_mqlaunch() {
   local stamp backup_file
   stamp="$(date '+%Y%m%d-%H%M%S')"
-  launcher_backup_dir="$BACKUP_DIR/launchers"
-  backup_file="$launcher_backup_dir/mqlaunch-$stamp.sh.bak"
-
-  mkdir -p "$launcher_backup_dir"
+  backup_file="$BASE_DIR/terminal/launchers/mqlaunch-$stamp.sh.bak"
 
   print_header
   row "BACKUP MQLAUNCH"
