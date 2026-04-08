@@ -2,23 +2,28 @@
 
 Terminal-focused macOS tools and workflows.
 
-## Includes
+This area contains the command-line control layer of the project: launchers, menu-driven tools, shared terminal UI, and terminal-specific themes.
 
-- `launchers/` — app launchers and startup menus
-- `menus/` — terminal menu systems
-- `themes/` — terminal styling and appearance
+---
 
-## Current project
+## Overview
 
-- `launchers/mqlaunch.sh` — a macOS terminal launcher for apps, folders and quick actions
+The `terminal/` section is where the project becomes a usable terminal environment rather than a loose collection of scripts.
 
-## Run locally
+It is designed for:
 
-```bash
-chmod +x terminal/launchers/mqlaunch.sh
-./terminal/launchers/mqlaunch.sh
-```
+- launcher-driven workflows
+- menu-based terminal tools
+- reusable terminal UI patterns
+- modular expansion over time
 
-## Goal
+---
 
-Build fast, practical terminal tools that are fun to use.
+## Structure
+
+```text
+terminal/
+├── launchers/   # active launcher scripts
+├── menus/       # reusable or future menu modules
+├── themes/      # zsh themes and theme switching
+└── README.md
