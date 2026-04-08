@@ -591,8 +591,8 @@ backup_mqlaunch() {
 
 
 theme_cmd() {
-  local theme_script="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
-  local cmd="${1:-list}"
+  local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
+  local cmd="${1:-current}"
   shift || true
 
   if [[ -x "$theme_script" ]]; then
@@ -602,9 +602,9 @@ theme_cmd() {
     bash "$theme_script" "$cmd" "$@"
   else
     print_header
-    row "THEME MANAGER"
+    row "THEME SWITCHER"
     empty_row
-    row "Theme manager script missing:"
+    row "Theme switcher script missing:"
     row " $theme_script"
     print_footer
     pause_enter
@@ -617,15 +617,13 @@ print_themes_menu() {
   row "THEMES"
   empty_row
 
-  row2 " 1. List themes" " 2. Current theme"
-  row2 " 3. Preview classic" " 4. Preview green"
-  row2 " 5. Apply classic" " 6. Apply green"
-  row2 " 7. Apply amber" " 8. Apply ice"
-  row2 " 9. Apply synth" "10. Reset theme"
+  row2 " 1. Current theme" " 2. Apply amber"
+  row2 " 3. Apply green" " 4. Apply minimal"
+  row2 " 5. Apply ice" " 6. Reset theme"
   row2 " 0. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select theme option [0-10]: ${C_RESET}"
+  printf "${C_TITLE}Select theme option [0-6]: ${C_RESET}"
 }
 
 themes_menu_loop() {
@@ -637,16 +635,12 @@ themes_menu_loop() {
     echo
 
     case "$choice" in
-      1) theme_cmd list; pause_enter ;;
-      2) theme_cmd current; pause_enter ;;
-      3) theme_cmd preview classic ;;
-      4) theme_cmd preview green ;;
-      5) theme_cmd apply classic; pause_enter ;;
-      6) theme_cmd apply green; pause_enter ;;
-      7) theme_cmd apply amber; pause_enter ;;
-      8) theme_cmd apply ice; pause_enter ;;
-      9) theme_cmd apply synth; pause_enter ;;
-      10) theme_cmd reset; pause_enter ;;
+      1) theme_cmd current; pause_enter ;;
+      2) theme_cmd apply amber ;;
+      3) theme_cmd apply green ;;
+      4) theme_cmd apply minimal ;;
+      5) theme_cmd apply ice ;;
+      6) theme_cmd reset ;;
       0) break ;;
       *) echo "${C_ERR}Invalid theme selection:${C_RESET} $choice"; pause_enter ;;
     esac
@@ -889,8 +883,8 @@ Direct commands:
   prompts | prompt-files | edit | backup-prompts | backup-mqlaunch
   base | launchers | guide
   gitlaunch | netlaunch
-  theme-list | theme-current | theme-reset
-  theme-classic | theme-green | theme-amber | theme-ice | theme-synth
+  theme-current | theme-reset
+  theme-amber | theme-green | theme-minimal | theme-ice
   tweaks-status | tweaks-workstation | tweaks-dev
   tweaks-clean | tweaks-fast | tweaks-all | tweaks-revert
   auto | one | atlas | decide | research | root | solve | pdebug | menu
@@ -931,14 +925,12 @@ run_arg_command() {
     tweaks-revert|revert-tweaks) revert_tweaks_latest ;;
     dashboard|dash) open_dashboard ;;
     theme|themes) themes_menu_loop ;;
-    theme-list) theme_cmd list ;;
     theme-current) theme_cmd current ;;
     theme-reset) theme_cmd reset ;;
-    theme-classic) theme_cmd apply classic ;;
-    theme-green) theme_cmd apply green ;;
     theme-amber) theme_cmd apply amber ;;
+    theme-green) theme_cmd apply green ;;
+    theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
-    theme-synth) theme_cmd apply synth ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
