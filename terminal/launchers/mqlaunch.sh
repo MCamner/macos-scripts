@@ -589,6 +589,70 @@ backup_mqlaunch() {
   pause_enter
 }
 
+
+theme_cmd() {
+  local theme_script="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
+  local cmd="${1:-list}"
+  shift || true
+
+  if [[ -x "$theme_script" ]]; then
+    bash "$theme_script" "$cmd" "$@"
+  elif [[ -f "$theme_script" ]]; then
+    chmod +x "$theme_script" 2>/dev/null || true
+    bash "$theme_script" "$cmd" "$@"
+  else
+    print_header
+    row "THEME MANAGER"
+    empty_row
+    row "Theme manager script missing:"
+    row " $theme_script"
+    print_footer
+    pause_enter
+    return 1
+  fi
+}
+
+print_themes_menu() {
+  print_header
+  row "THEMES"
+  empty_row
+
+  row2 " 1. List themes" " 2. Current theme"
+  row2 " 3. Preview classic" " 4. Preview green"
+  row2 " 5. Apply classic" " 6. Apply green"
+  row2 " 7. Apply amber" " 8. Apply ice"
+  row2 " 9. Apply synth" "10. Reset theme"
+  row2 " 0. Back" ""
+
+  print_footer
+  printf "${C_TITLE}Select theme option [0-10]: ${C_RESET}"
+}
+
+themes_menu_loop() {
+  local choice
+
+  while true; do
+    print_themes_menu
+    read -r choice
+    echo
+
+    case "$choice" in
+      1) theme_cmd list; pause_enter ;;
+      2) theme_cmd current; pause_enter ;;
+      3) theme_cmd preview classic ;;
+      4) theme_cmd preview green ;;
+      5) theme_cmd apply classic; pause_enter ;;
+      6) theme_cmd apply green; pause_enter ;;
+      7) theme_cmd apply amber; pause_enter ;;
+      8) theme_cmd apply ice; pause_enter ;;
+      9) theme_cmd apply synth; pause_enter ;;
+      10) theme_cmd reset; pause_enter ;;
+      0) break ;;
+      *) echo "${C_ERR}Invalid theme selection:${C_RESET} $choice"; pause_enter ;;
+    esac
+  done
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -643,10 +707,10 @@ print_dev_menu() {
   row2 " 5. Backup mqlaunch" " 6. Open macos-scripts folder"
   row2 " 7. Open launcher folder" " 8. Open mac terminal guide"
   row2 " 9. Git Launch" "10. Net Launch"
-  row2 " 0. Back" ""
+  row2 "11. Themes" " 0. Back"
 
   print_footer
-  printf "${C_TITLE}Select dev option [0-10]: ${C_RESET}"
+  printf "${C_TITLE}Select dev option [0-11]: ${C_RESET}"
 }
 
 print_git_menu() {
@@ -758,6 +822,7 @@ dev_menu_loop() {
       8) open_terminal_guide ;;
       9) git_menu_loop ;;
       10) net_menu_loop ;;
+      11) themes_menu_loop ;;
       0) break ;;
       *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
     esac
@@ -809,6 +874,8 @@ Usage:
   mqlaunch ai             Open AI submenu
   mqlaunch dev            Open Dev / Prompts submenu
   mqlaunch tweaks         Open Tweaks menu
+  mqlaunch dashboard      Open Dashboard
+  mqlaunch theme          Open Themes menu
 
 Main menu:
   Exit is X, not 11
@@ -818,10 +885,12 @@ Direct commands:
   settings | monitor
   downloads | home | utilities | applications
   ip | lock | sleep | restart-finder | date
-  repo | check | ai | dev | tweaks
+  repo | check | ai | dev | tweaks | dashboard | theme
   prompts | prompt-files | edit | backup-prompts | backup-mqlaunch
   base | launchers | guide
   gitlaunch | netlaunch
+  theme-list | theme-current | theme-reset
+  theme-classic | theme-green | theme-amber | theme-ice | theme-synth
   tweaks-status | tweaks-workstation | tweaks-dev
   tweaks-clean | tweaks-fast | tweaks-all | tweaks-revert
   auto | one | atlas | decide | research | root | solve | pdebug | menu
@@ -860,6 +929,16 @@ run_arg_command() {
     tweaks-fast) run_tweaks_fast ;;
     tweaks-all) run_tweaks_all ;;
     tweaks-revert|revert-tweaks) revert_tweaks_latest ;;
+    dashboard|dash) open_dashboard ;;
+    theme|themes) themes_menu_loop ;;
+    theme-list) theme_cmd list ;;
+    theme-current) theme_cmd current ;;
+    theme-reset) theme_cmd reset ;;
+    theme-classic) theme_cmd apply classic ;;
+    theme-green) theme_cmd apply green ;;
+    theme-amber) theme_cmd apply amber ;;
+    theme-ice) theme_cmd apply ice ;;
+    theme-synth) theme_cmd apply synth ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;

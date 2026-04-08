@@ -10,18 +10,35 @@
 : "${APP_SUBTITLE:=Terminal Utility}"
 : "${APP_AUTHOR:=Author Mattias Camner}"
 : "${BOX_INNER:=88}"
+: "${MQ_THEME_FILE:=$HOME/.mq-theme}"
+
+# ------------------------------------------------------------
+# Optional theme file
+# ------------------------------------------------------------
+if [[ -f "$MQ_THEME_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$MQ_THEME_FILE"
+fi
 
 # ------------------------------------------------------------
 # ANSI colors
 # ------------------------------------------------------------
 if [[ -t 1 ]]; then
-  C_RESET=$'\033[0m'
-  C_TITLE=$'\033[1;33m'
-  C_ERR=$'\033[0;31m'
-  C_OK=$'\033[0;32m'
-  C_WARN=$'\033[0;33m'
-  C_INFO=$'\033[0;34m'
-  C_BOLD=$'\033[1m'
+  _MQ_DEFAULT_RESET=$'\033[0m'
+  _MQ_DEFAULT_TITLE=$'\033[1;33m'
+  _MQ_DEFAULT_ERR=$'\033[0;31m'
+  _MQ_DEFAULT_OK=$'\033[0;32m'
+  _MQ_DEFAULT_WARN=$'\033[0;33m'
+  _MQ_DEFAULT_INFO=$'\033[0;34m'
+  _MQ_DEFAULT_BOLD=$'\033[1m'
+
+  C_RESET="${MQ_COLOR_RESET:-$_MQ_DEFAULT_RESET}"
+  C_TITLE="${MQ_COLOR_TITLE:-$_MQ_DEFAULT_TITLE}"
+  C_ERR="${MQ_COLOR_ERR:-$_MQ_DEFAULT_ERR}"
+  C_OK="${MQ_COLOR_OK:-$_MQ_DEFAULT_OK}"
+  C_WARN="${MQ_COLOR_WARN:-$_MQ_DEFAULT_WARN}"
+  C_INFO="${MQ_COLOR_INFO:-$_MQ_DEFAULT_INFO}"
+  C_BOLD="${MQ_COLOR_BOLD:-$_MQ_DEFAULT_BOLD}"
 else
   C_RESET=''
   C_TITLE=''
