@@ -647,6 +647,26 @@ themes_menu_loop() {
   done
 }
 
+
+open_tools_menu() {
+  local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
+
+  if [[ -x "$tools_script" ]]; then
+    bash "$tools_script" menu
+  elif [[ -f "$tools_script" ]]; then
+    chmod +x "$tools_script" 2>/dev/null || true
+    bash "$tools_script" menu
+  else
+    print_header
+    row "TOOLS MENU"
+    empty_row
+    row "Tools menu script missing:"
+    row " $tools_script"
+    print_footer
+    pause_enter
+  fi
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -701,10 +721,11 @@ print_dev_menu() {
   row2 " 5. Backup mqlaunch" " 6. Open macos-scripts folder"
   row2 " 7. Open launcher folder" " 8. Open mac terminal guide"
   row2 " 9. Git Launch" "10. Net Launch"
-  row2 "11. Themes" " 0. Back"
+  row2 "11. Themes" "12. Tools Menu"
+  row2 " 0. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select dev option [0-11]: ${C_RESET}"
+  printf "${C_TITLE}Select dev option [0-12]: ${C_RESET}"
 }
 
 print_git_menu() {
@@ -817,6 +838,7 @@ dev_menu_loop() {
       9) git_menu_loop ;;
       10) net_menu_loop ;;
       11) themes_menu_loop ;;
+      12) open_tools_menu ;;
       0) break ;;
       *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
     esac
@@ -870,6 +892,7 @@ Usage:
   mqlaunch tweaks         Open Tweaks menu
   mqlaunch dashboard      Open Dashboard
   mqlaunch theme          Open Themes menu
+  mqlaunch tools-menu     Open Tools Menu
 
 Main menu:
   Exit is X, not 11
@@ -882,7 +905,8 @@ Direct commands:
   repo | check | ai | dev | tweaks | dashboard | theme
   prompts | prompt-files | edit | backup-prompts | backup-mqlaunch
   base | launchers | guide
-  gitlaunch | netlaunch
+  gitlaunch | git | netlaunch | net
+  tools-menu | toolsmenu | menu-tools
   theme-current | theme-reset
   theme-amber | theme-green | theme-minimal | theme-ice
   tweaks-status | tweaks-workstation | tweaks-dev
@@ -931,6 +955,7 @@ run_arg_command() {
     theme-green) theme_cmd apply green ;;
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
+    tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
