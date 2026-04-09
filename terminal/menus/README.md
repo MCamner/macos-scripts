@@ -2,36 +2,70 @@
 
 Reusable terminal menu modules for `macos-scripts`.
 
-This folder is meant for extracted or standalone menu-driven tools that can be used outside the main launcher.
-
----
+This folder contains modular, menu-driven terminal tools that can be launched from the main launcher or run directly during development.
 
 ## Purpose
 
-The `menus/` area exists to make terminal workflows more modular.
+The `menus/` directory exists to keep terminal workflows modular.
 
-Instead of putting every flow directly inside `mqlaunch.sh`, reusable menu modules can live here and be called when needed.
+Instead of placing every interactive flow directly inside `mqlaunch.sh`, reusable menu modules can live here and be called when needed.
 
-That makes the system easier to grow, test, and maintain.
+This makes the system easier to:
 
----
+- grow
+- test
+- maintain
+- reuse across launchers and scripts
 
-## Current direction
+## What belongs here
 
-This folder is intended for:
+Use this folder for:
 
 - reusable submenu logic
 - standalone terminal tools
 - menu-driven workflow modules
 - extracted command groups from larger launchers
 
----
-
-## Current file
+## Current files
 
 ### `mq-tools-menu.sh`
+A reusable tools menu built on top of shared terminal UI helpers.
 
-A reusable tools menu built on top of:
+### `mq-system-menu.sh`
+A reusable system menu for quick macOS system actions and checks.
+
+### `menu-template.sh`
+A starter template for building new menu modules.
+
+## Design rules
+
+Each menu module should:
+
+- be self-contained
+- source shared UI helpers when available
+- support standalone execution
+- expose one main loop function
+- keep actions separated into small functions
+- exit cleanly back to caller
+
+Recommended structure:
+
+- `menu_header()`
+- `show_menu()`
+- `handle_choice()`
+- `menu_loop()`
+
+## Shared dependencies
+
+Menus should prefer shared helpers from the project when available, for example:
+
+- `ui/terminal-ui/mq-ui.sh`
+
+If a shared helper is missing, the menu should degrade gracefully and still run.
+
+## Running a menu directly
+
+From the repo root:
 
 ```bash
-ui/terminal-ui/mq-ui.sh
+bash terminal/menus/mq-tools-menu.sh
