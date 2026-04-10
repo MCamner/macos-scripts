@@ -648,6 +648,11 @@ themes_menu_loop() {
 }
 
 
+open_git_menu() {
+  local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
+  [[ -f "$git_script" ]] && bash "$git_script" || echo "Git menu not found."
+}
+
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
@@ -956,6 +961,7 @@ run_arg_command() {
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
+    git-menu|gitmenu|menu-git|git) open_git_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
