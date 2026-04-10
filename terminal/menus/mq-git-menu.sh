@@ -4,6 +4,10 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Menu header
+source "$BASE_DIR/terminal/menus/mq-menu-header.sh"
+APP_SUBTITLE="Safer Git Actions"
+
 UI_FILE="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
 if [[ -f "$UI_FILE" ]]; then
@@ -34,7 +38,7 @@ confirm_action() {
   [[ "$reply" =~ ^[Yy]$ ]]
 }
 
-print_header() {
+print_header_mode "MQLAUNCH" "$APP_SUBTITLE" "GIT MODE"_mode "MQLAUNCH" "$APP_SUBTITLE" "GIT MODE"() {
   clear_screen
   echo -e "${C_BOLD}${C_CYAN}========================================${C_RESET}"
   echo -e "${C_BOLD}${C_CYAN}               GIT MENU V3              ${C_RESET}"
