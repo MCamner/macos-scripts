@@ -1,38 +1,109 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
+set -euo pipefail
 
-set -e
+PROJECT_ROOT="${PROJECT_ROOT:-$HOME/macos-scripts}"
+BIN_DIR="$PROJECT_ROOT/bin"
+TARGET="$BIN_DIR/mqlaunch"
+ZSHRC="$HOME/.zshrc"
+RUN_CHECKS=1
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TARGET_DIR="$HOME/bin"
+for arg in "$@"; do
+  case "$arg" in
+    --skip-checks)
+      RUN_CHECKS=0
+      ;;
+    *)
+      echo "Unknown option: $arg"
+      echo "Usage: ./install.sh [--skip-checks]"
+      exit 1
+      ;;
+  esac
+done
 
-MQ_SOURCE="$SCRIPT_DIR/terminal/launchers/mqlaunch.sh"
-MQ_TARGET="$TARGET_DIR/mqlaunch"
+info() {
+  echo "[INFO] $1"
+}
 
-SC_SOURCE="$SCRIPT_DIR/tools/scripts/system-check.sh"
-SC_TARGET="$TARGET_DIR/system-check"
+pass() {
+  echo "[PASS] $1"
+}
 
-mkdir -p "$TARGET_DIR"
+warn() {
+  echo "[WARN] $1"
+}
 
-if [ ! -f "$MQ_SOURCE" ]; then
-  echo "Source file not found: $MQ_SOURCE"
+fail() {
+  echo "[FAIL] $1"
   exit 1
+}
+
+echo "== macos-scripts install =="
+
+[[ -d "$PROJECT_ROOT" ]] || fail "Project root not found: $PROJECT_ROOT"
+
+mkdir -p "$BIN_DIR"
+
+cat > "$TARGET" <<'WRAPPER'
+#!/usr/bin/env zsh
+set -euo pipefail
+
+PROJECT_ROOT="$HOME/macos-scripts"
+exec "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" "$@"
+WRAPPER
+
+chmod +x "$TARGET"
+pass "Installed wrapper: $TARGET"
+
+PATH_LINE='export PATH="$HOME/macos-scripts/bin:$PATH"'
+if [[ -f "$ZSHRC" ]]; then
+  if ! grep -Fq "$PATH_LINE" "$ZSHRC"; then
+    {
+      echo ""
+      echo "# macos-scripts"
+      echo "$PATH_LINE"
+    } >> "$ZSHRC"
+    pass "Added PATH entry to $ZSHRC"
+  else
+    pass "PATH already configured in $ZSHRC"
+  fi
+else
+  cat > "$ZSHRC" <<EOF2
+# macos-scripts
+$PATH_LINE
+EOF2
+  pass "Created $ZSHRC with PATH entry"
 fi
 
-if [ ! -f "$SC_SOURCE" ]; then
-  echo "Source file not found: $SC_SOURCE"
-  exit 1
+[[ -f "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" ]] || fail "Missing legacy launcher"
+[[ -f "$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh" ]] || fail "Missing v1 launcher"
+pass "Launcher files verified"
+
+zsh "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" help >/dev/null 2>&1 || fail "Legacy launcher help check failed"
+pass "Legacy launcher responds"
+
+bash "$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh" help >/dev/null 2>&1 || fail "V1 launcher help check failed"
+pass "V1 launcher responds"
+
+if (( RUN_CHECKS )); then
+  echo
+  info "Running smoke checks..."
+
+  if [[ -x "$PROJECT_ROOT/tools/scripts/test-all.sh" ]]; then
+    "$PROJECT_ROOT/tools/scripts/test-all.sh" || fail "Smoke checks failed"
+    pass "All smoke checks passed"
+  else
+    warn "Smoke test script not found: $PROJECT_ROOT/tools/scripts/test-all.sh"
+    warn "Skipping smoke checks"
+  fi
+else
+  warn "Skipping smoke checks (--skip-checks)"
 fi
 
-cp "$MQ_SOURCE" "$MQ_TARGET"
-cp "$SC_SOURCE" "$SC_TARGET"
-
-chmod +x "$MQ_TARGET"
-chmod +x "$SC_TARGET"
-
-echo "Installed:"
-echo "  $MQ_TARGET"
-echo "  $SC_TARGET"
 echo
-echo "Run with:"
-echo "  mqlaunch"
-echo "  system-check"
+echo "== Install complete =="
+echo
+echo "Next steps:"
+echo "  1. Restart terminal or run: source ~/.zshrc"
+echo "  2. Run: mqlaunch"
+echo "  3. Try: mqlaunch perf"
+echo "  4. Run checks anytime with: ~/macos-scripts/tools/scripts/test-all.sh"
