@@ -15,12 +15,6 @@ APP_SUBTITLE="Branded Neon Command Surface"
 APP_AUTHOR="Author Mattias Camner"
 
 BASE_DIR="$HOME/macos-scripts"
-
-# Performance bridge
-if [[ -f "$BASE_DIR/terminal/bridges/performance-bridge.sh" ]]; then
-  # shellcheck disable=SC1091
-  source "$BASE_DIR/terminal/bridges/performance-bridge.sh"
-fi
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
 PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
@@ -924,7 +918,6 @@ Usage:
   mqlaunch theme          Open Themes menu
   mqlaunch tools-menu     Open Tools Menu
 
-  mqlaunch perf          Open Performance Menu
 Main menu:
   Exit is X, not 11
 
@@ -987,7 +980,6 @@ run_arg_command() {
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
-    perf|performance) open_v1_performance_menu ;;
     git-menu|gitmenu|menu-git|git) open_git_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
