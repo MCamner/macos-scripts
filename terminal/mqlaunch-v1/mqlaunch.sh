@@ -22,6 +22,8 @@ source "$SCRIPT_DIR/commands/dev.sh"
 source "$SCRIPT_DIR/commands/performance.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/tools.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/meta.sh"
 
 # Menus
 # shellcheck source=/dev/null
