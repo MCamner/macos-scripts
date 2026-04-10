@@ -3,15 +3,15 @@
 set -u
 
 # ============================================================
-# MQLaunch v3.4 — Old School Utility
+# MQLAUNCH — Branded Neon Command Surface
 # Adds:
 # - MAIN MENU in bold
 # - Author line in header
 # - Git Launch + Net Launch in Dev / Prompts
 # ============================================================
 
-APP_TITLE="MQLaunch v3.4"
-APP_SUBTITLE="Old School Utility"
+APP_TITLE="MQLAUNCH"
+APP_SUBTITLE="Branded Neon Command Surface"
 APP_AUTHOR="Author Mattias Camner"
 
 BASE_DIR="$HOME/macos-scripts"
@@ -22,6 +22,7 @@ MQ_SCRIPT="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 BACKUP_DIR="$BASE_DIR/backups"
 BIN_LINK="$HOME/bin/mqlaunch"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
+DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
 
 TERMINAL_GUIDE_HTML="$BASE_DIR/tools/mac terminal_guide/mac-terminal-guide.html"
 TERMINAL_GUIDE_URL="https://mcamner.github.io/macos-scripts/"
@@ -35,6 +36,19 @@ fi
 
 
 BOX_INNER=88
+
+
+print_header() {
+  clear
+  if [[ -f "$DASHBOARD_V71" ]]; then
+    bash "$DASHBOARD_V71" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
+  else
+    echo "$APP_TITLE — $APP_SUBTITLE"
+    printf '%s
+' "----------------------------------------------------------------------------------------"
+  fi
+  echo
+}
 
 # --- Shared UI ------------------------------------------------
 open_app() {
@@ -630,6 +644,11 @@ themes_menu_loop() {
   local choice
 
   while true; do
+    clear
+    if [[ -f "$DASHBOARD_V71" ]]; then
+      bash "$DASHBOARD_V71" "MQLAUNCH" "Branded Neon Command Surface" "ONLINE"
+      echo
+    fi
     print_themes_menu
     read -r choice
     echo
@@ -888,7 +907,7 @@ main_loop() {
 
 show_help() {
   cat <<EOH
-MQLaunch v3.4 — Old School Utility
+MQLAUNCH — Branded Neon Command Surface
 
 Usage:
   mqlaunch                Open main menu
@@ -990,4 +1009,3 @@ else
   main_loop
 fi
 
-DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
