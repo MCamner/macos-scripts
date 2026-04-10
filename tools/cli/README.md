@@ -1,39 +1,31 @@
-# UI
+# CLI
 
-Visual and interface-focused terminal components for the `macos-scripts` project.
+Command-line tools and wrappers for the `macos-scripts` project.
 
 ## Purpose
 
-Keep presentation, branding, and terminal experience separate from core script logic.
+Keep small executable entry points in one place.
 
 ## Contents
 
-* `terminal-ui/` — reusable terminal UI helpers and layout functions
-* `ascii/` — ASCII visuals, branded headers, and dashboard modules
-* `dashboards/` — compact dashboard-style views and status screens
+* `ai-mode.sh` — launcher for AI-related terminal workflows
+* `mq-dashboard.sh` — command-line dashboard helper
 
-## Design goals
+## How to run
 
-The `ui/` layer should make command-line tools feel:
+### Run AI mode
 
-* clearer
-* more consistent
-* more polished
-* more fun to use
+From the project root:
 
-## How it is used
+`bash tools/cli/ai-mode.sh`
 
-UI modules in this directory are intended to be reused by launcher scripts, menus, and dashboard views.
+### Run the dashboard helper
 
-Examples include:
+From the project root:
 
-* shared terminal layout helpers from `ui/terminal-ui/`
-* branded ASCII headers from `ui/ascii/`
-* status-oriented dashboard views from `ui/dashboards/`
+`bash tools/cli/mq-dashboard.sh`
 
 ## Notes
 
-Keep UI concerns in this directory whenever possible instead of hardcoding presentation directly inside launcher or menu logic.
+CLI tools in this directory should stay focused, scriptable, and easy to call from launchers, menus, or terminal shortcuts.
 
-
-Keep UI concerns in this directory whenever possible instead of hardcoding presentation directly inside launcher or menu logic.
