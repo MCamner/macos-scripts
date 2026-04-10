@@ -703,6 +703,36 @@ open_tools_menu() {
   fi
 }
 
+get_repo_version() {
+  local version_file="$BASE_DIR/VERSION"
+
+  if [[ -f "$version_file" ]]; then
+    head -n 1 "$version_file"
+  else
+    echo "unknown"
+  fi
+}
+
+show_version_info() {
+  print_header
+  row_bold "VERSION INFO"
+  empty_row
+
+  local version
+  version="$(get_repo_version)"
+
+  row "Project:        macos-scripts"
+  row "Version:        $version"
+  row "Release stage:  baseline"
+  row "Shell:          zsh"
+  row "Project root:   $BASE_DIR"
+  row "Legacy:         $BASE_DIR/terminal/launchers/mqlaunch.sh"
+  row "V1:             $BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
+
+  print_footer
+  pause_enter
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -731,10 +761,11 @@ print_main_menu() {
   empty_row
   row "WORKFLOWS"
   row2 "23. Performance" "24. Dev"
-  row "25. Tools"
+  row2 "23. Performance" "24. Dev"
+  row2 "25. Tools" "26. Version"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-25,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-26,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -920,6 +951,7 @@ main_loop() {
       23) open_v1_performance_menu ;;
       24) open_v1_dev_menu ;;
       25) open_v1_tools_menu ;;
+      26) show_version_info ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -942,6 +974,7 @@ Usage:
   mqlaunch git           Open Dev Menu
   mqlaunch tools         Open Tools Menu
   mqlaunch perf          Open Performance Menu
+  mqlaunch version       Show version information
   mqlaunch dev-v1        Compatibility alias for Dev Menu
   mqlaunch git-v1        Compatibility alias for Dev Menu
   mqlaunch tools-v1      Compatibility alias for Tools Menu
@@ -1008,6 +1041,7 @@ run_arg_command() {
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     perf|performance) open_v1_performance_menu ;;
+    version|ver|about) show_version_info ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;

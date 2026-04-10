@@ -25,6 +25,9 @@ route_command() {
     performance|perf)
       menu_performance
       ;;
+    version|ver|about)
+      command_show_version
+      ;;
     health|check)
       command_health_check
       ;;
@@ -61,6 +64,7 @@ Usage:
   mqlaunch dev            Open dev menu
   mqlaunch git            Open dev menu
   mqlaunch perf           Open performance menu
+  mqlaunch version        Show version info
   mqlaunch health         Run health check
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
