@@ -6,8 +6,8 @@ performance_reports_dir() {
   printf "%s\n" "$dir"
 }
 
-perf_trim() {
-  echo "$1" | awk '{$1=$1; print}'
+perf_has_command() {
+  command -v "$1" >/dev/null 2>&1
 }
 
 perf_cpu_count() {
@@ -22,13 +22,43 @@ perf_disk_percent_root() {
   df -h / | tail -1 | awk '{print $5}' | tr -d '%'
 }
 
+perf_disk_line_root() {
+  df -h / | tail -1
+}
+
 perf_battery_percent() {
-  pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -1 | tr -d '%' || true
+  if perf_has_command pmset; then
+    pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -1 | tr -d '%' || true
+  fi
+}
+
+perf_battery_line() {
+  if perf_has_command pmset; then
+    pmset -g batt 2>/dev/null | tail -1 || echo "Battery info unavailable"
+  else
+    echo "Battery info unavailable"
+  fi
+}
+
+perf_memory_pressure_raw() {
+  if perf_has_command memory_pressure; then
+    memory_pressure 2>/dev/null || true
+  fi
+}
+
+perf_memory_pressure_tail() {
+  local mp
+  mp="$(perf_memory_pressure_raw)"
+  if [[ -n "$mp" ]]; then
+    echo "$mp" | tail -5
+  else
+    echo "Memory pressure data unavailable"
+  fi
 }
 
 perf_memory_pressure_level() {
   local mp
-  mp="$(memory_pressure 2>/dev/null || true)"
+  mp="$(perf_memory_pressure_raw)"
 
   if echo "$mp" | grep -qi "System-wide memory free percentage"; then
     local free_pct
@@ -56,6 +86,20 @@ perf_memory_pressure_level() {
 
 perf_network_ip() {
   ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true
+}
+
+perf_network_display() {
+  local ip
+  ip="$(perf_network_ip)"
+  [[ -z "$ip" ]] && ip="Unavailable"
+  echo "$ip"
+}
+
+perf_battery_display() {
+  local batt
+  batt="$(perf_battery_percent)"
+  [[ -z "$batt" ]] && batt="N/A"
+  echo "$batt"
 }
 
 perf_score_status() {
@@ -179,8 +223,6 @@ command_perf_health_score() {
   local status
   local color
   local warnings
-  local batt_display
-  local net_display
 
   output="$(perf_health_score)"
   score="$(echo "$output" | sed -n '1p')"
@@ -188,27 +230,20 @@ command_perf_health_score() {
   status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
-  batt_display="$(perf_battery_percent)"
-  [[ -z "$batt_display" ]] && batt_display="N/A"
-
-  net_display="$(perf_network_ip)"
-  [[ -z "$net_display" ]] && net_display="Unavailable"
-
-  echo -e "Score: ${color}${score}/100${C_RESET}"
+  echo -e "Score:  ${color}${score}/100${C_RESET}"
   echo "Status: $status"
   echo
 
-  print_section "Warnings"
-  echo "$warnings"
+  print_warning_block "$warnings"
   echo
 
   print_section "Signals"
-  echo "Load (1m):       $(perf_load_1m)"
-  echo "CPU cores:       $(perf_cpu_count)"
-  echo "Disk (/):        $(perf_disk_percent_root)%"
-  echo "Battery:         $batt_display%"
-  echo "Memory pressure: $(perf_memory_pressure_level)"
-  echo "Network IP:      $net_display"
+  print_kv "Load (1m):" "$(perf_load_1m)"
+  print_kv "CPU cores:" "$(perf_cpu_count)"
+  print_kv "Disk (/):" "$(perf_disk_percent_root)%"
+  print_kv "Battery:" "$(perf_battery_display)%"
+  print_kv "Memory pressure:" "$(perf_memory_pressure_level)"
+  print_kv "Network IP:" "$(perf_network_display)"
 
   pause_enter
 }
@@ -229,10 +264,10 @@ command_perf_overview() {
   local warnings
 
   cpu_line="$(uptime)"
-  mem_pressure="$(memory_pressure 2>/dev/null | tail -5 || true)"
-  disk_line="$(df -h / | tail -1)"
-  ip_addr="$(perf_network_ip)"
-  battery_line="$(pmset -g batt 2>/dev/null | tail -1 || echo "Battery info unavailable")"
+  mem_pressure="$(perf_memory_pressure_tail)"
+  disk_line="$(perf_disk_line_root)"
+  ip_addr="$(perf_network_display)"
+  battery_line="$(perf_battery_line)"
 
   score_output="$(perf_health_score)"
   score="$(echo "$score_output" | sed -n '1p')"
@@ -241,6 +276,7 @@ command_perf_overview() {
   color="$(perf_score_color "$score")"
 
   echo -e "Health score: ${color}${score}/100${C_RESET} ($status)"
+  print_divider
   echo
 
   echo "Uptime / Load:"
@@ -252,7 +288,7 @@ command_perf_overview() {
   echo
 
   echo "Network IP:"
-  echo "${ip_addr:-No active Wi-Fi/Ethernet IP found}"
+  echo "$ip_addr"
   echo
 
   echo "Battery:"
@@ -260,15 +296,10 @@ command_perf_overview() {
   echo
 
   echo "Memory pressure:"
-  if [[ -n "$mem_pressure" ]]; then
-    echo "$mem_pressure"
-  else
-    echo "Memory pressure data unavailable"
-  fi
+  echo "$mem_pressure"
   echo
 
-  print_section "Warnings"
-  echo "$warnings"
+  print_warning_block "$warnings"
 
   pause_enter
 }
@@ -309,7 +340,7 @@ command_perf_network() {
   print_section "Network Overview"
 
   echo "Active IP:"
-  perf_network_ip || echo "No active interface IP found"
+  echo "$(perf_network_display)"
   echo
 
   echo "Routes:"
@@ -326,9 +357,13 @@ command_perf_battery() {
   print_header
   print_section "Battery Status"
 
-  pmset -g batt 2>/dev/null || echo "Battery data unavailable"
-  echo
-  pmset -g ps 2>/dev/null || true
+  if perf_has_command pmset; then
+    pmset -g batt 2>/dev/null || echo "Battery data unavailable"
+    echo
+    pmset -g ps 2>/dev/null || true
+  else
+    echo "Battery data unavailable"
+  fi
 
   pause_enter
 }
@@ -375,7 +410,7 @@ command_perf_snapshot() {
     echo
 
     echo "=== MEMORY PRESSURE ==="
-    memory_pressure 2>/dev/null || echo "memory_pressure unavailable"
+    perf_memory_pressure_raw || echo "memory_pressure unavailable"
     echo
 
     echo "=== VM STAT ==="
@@ -391,7 +426,7 @@ command_perf_snapshot() {
     echo
 
     echo "=== NETWORK ==="
-    perf_network_ip || echo "No active interface IP found"
+    perf_network_display
     echo
     netstat -rn | head -n 40
     echo
@@ -399,7 +434,7 @@ command_perf_snapshot() {
     echo
 
     echo "=== BATTERY ==="
-    pmset -g batt 2>/dev/null || echo "Battery data unavailable"
+    perf_battery_line
     echo
 
     echo "=== PROJECT SIZE ==="
@@ -429,21 +464,27 @@ command_perf_quick_watch() {
     local score_output
     local score
     local status
+    local disk_line
+    local batt_line
 
     score_output="$(perf_health_score)"
     score="$(echo "$score_output" | sed -n '1p')"
     status="$(perf_score_status "$score")"
+    disk_line="$(perf_disk_line_root)"
+    batt_line="$(perf_battery_line)"
 
     clear
     print_section "Quick Watch"
-    echo "Time: $(date)"
-    echo "Health: $score/100 ($status)"
+    print_kv "Time:" "$(date)"
+    print_kv "Health:" "$score/100 ($status)"
+    echo
+    print_divider
     echo
     uptime
     echo
-    df -h / | tail -1
+    echo "$disk_line"
     echo
-    pmset -g batt 2>/dev/null | tail -1 || echo "Battery data unavailable"
+    echo "$batt_line"
     echo
     echo "Top CPU:"
     ps -Ao %cpu,comm | sort -nr | head -n 6

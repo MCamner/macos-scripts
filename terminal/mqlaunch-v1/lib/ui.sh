@@ -20,3 +20,29 @@ print_menu_item() {
 print_footer_hint() {
   printf "\n%b\n" "${C_DIM}Type a command, number, or x to exit.${C_RESET}"
 }
+
+print_divider() {
+  printf '%*s\n' 52 '' | tr ' ' '-'
+}
+
+print_kv() {
+  local key="$1"
+  local value="$2"
+  printf "%-18s %s\n" "$key" "$value"
+}
+
+print_warning_block() {
+  local warnings="$1"
+
+  print_section "Warnings"
+
+  if [[ -z "$warnings" || "$warnings" == "No major issues detected" ]]; then
+    echo "✓ No major issues detected"
+    return
+  fi
+
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    echo "! $line"
+  done <<< "$warnings"
+}

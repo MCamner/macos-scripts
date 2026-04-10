@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-dev_print_kv() {
-  local key="$1"
-  local value="$2"
-  printf "%-18s %s\n" "$key" "$value"
-}
-
 command_git_status() {
   print_header
   print_section "Git Status"
@@ -90,10 +84,10 @@ command_dev_repo_health() {
   changed_count="$(cd "$PROJECT_ROOT" && git status --porcelain 2>/dev/null | grep -vc '^??' || true)"
   untracked_count="$(cd "$PROJECT_ROOT" && git status --porcelain 2>/dev/null | grep -c '^??' || true)"
 
-  dev_print_kv "Branch:" "$current_branch"
-  dev_print_kv "Last commit:" "$last_commit"
-  dev_print_kv "Changed files:" "$changed_count"
-  dev_print_kv "Untracked files:" "$untracked_count"
+  print_kv "Branch:" "$current_branch"
+  print_kv "Last commit:" "$last_commit"
+  print_kv "Changed files:" "$changed_count"
+  print_kv "Untracked files:" "$untracked_count"
 
   echo
   print_section "Git Status Summary"

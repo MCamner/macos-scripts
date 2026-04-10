@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-tools_print_kv() {
-  local key="$1"
-  local value="$2"
-  printf "%-18s %s\n" "$key" "$value"
-}
-
 command_tools_open_tools_root() {
   open_path "$PROJECT_ROOT/tools"
 }
@@ -88,9 +82,9 @@ command_tools_repo_summary() {
   dir_count="$(find "$tools_dir" -type d | wc -l | awk '{print $1}')"
   file_count="$(find "$tools_dir" -type f | wc -l | awk '{print $1}')"
 
-  tools_print_kv "Tools root:" "$tools_dir"
-  tools_print_kv "Directories:" "$dir_count"
-  tools_print_kv "Files:" "$file_count"
+  print_kv "Tools root:" "$tools_dir"
+  print_kv "Directories:" "$dir_count"
+  print_kv "Files:" "$file_count"
 
   echo
   print_section "Top-level entries"
