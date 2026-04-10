@@ -1,8 +1,43 @@
 # macos-scripts
 
-⚡ **Turn your macOS terminal into a modular workflow hub**
+⚡ **Turn your macOS terminal into a fast, modular command center**
 
-A curated collection of macOS scripts, tools, launchers, and terminal utilities designed to speed up daily work, automate repetitive tasks, and provide a clean foundation for a personal CLI toolkit.
+Run your workflows, monitor your system, and manage your projects — all from a single launcher.
+Built for speed. Designed to evolve.
+
+---
+
+## ⚡ What it feels like
+
+```bash
+mqlaunch
+```
+
+* Instant access to tools
+* Real-time system insight
+* Structured workflows instead of scattered scripts
+
+👉 Think **Raycast for your terminal**
+
+---
+
+## 🖥️ Preview
+
+```
+mqlaunch perf
+
+Performance Menu
+1  Overview
+2  Health score
+3  Top CPU processes
+4  Top memory processes
+5  Disk usage
+6  Network overview
+7  Battery status
+8  Create snapshot
+9  Quick watch
+b  Back
+```
 
 ---
 
@@ -18,17 +53,17 @@ Most terminal setups fall into one of two traps:
 * simple to install
 * fast to use
 * modular by design
-* easy to expand over time
+* easy to extend over time
 
 ---
 
 ## 🧩 What you get
 
-* **mqlaunch** — a terminal launcher for workflows, tools, and navigation
-* **Performance tools** — system health, load, disk usage, snapshots
-* **Dev tools** — git workflows, repo health, navigation helpers
-* **Tools module** — access to scripts, CLI tools, and guides
-* **Modular architecture** — legacy + v1 system running safely in parallel
+* ⚡ **mqlaunch** — central command launcher
+* 📊 **Performance** — system health & monitoring
+* 🛠 **Dev** — git + repo workflows
+* 📦 **Tools** — scripts, CLI utilities, guides
+* 🔌 **Modular architecture** — evolve without breaking
 
 ---
 
@@ -49,51 +84,20 @@ mqlaunch
 
 ---
 
-## 🧠 Core Commands
-
-### Launcher
-
-```bash
-mqlaunch
-```
-
-### Performance
+## 🚀 Try this first
 
 ```bash
 mqlaunch perf
 ```
 
-### Development
-
-```bash
-mqlaunch dev
-mqlaunch git
-```
-
-### Tools
-
-```bash
-mqlaunch tools
-```
-
----
-
-## 🧪 Demo Flow (Recommended)
-
-After install:
-
-```bash
-mqlaunch perf
-```
-
-Try:
+Press:
 
 * `1` → Overview
 * `2` → Health score
 * `8` → Snapshot
 * `9` → Live monitoring
 
-Then:
+Then explore:
 
 ```bash
 mqlaunch dev
@@ -102,21 +106,32 @@ mqlaunch tools
 
 ---
 
+## 🧠 Core Commands
+
+```bash
+mqlaunch        # Open launcher
+mqlaunch perf   # System performance
+mqlaunch dev    # Dev / git workflows
+mqlaunch tools  # Tools & scripts
+```
+
+---
+
 ## 🏗️ Project Structure
 
-```text
+```
 macos-scripts/
 ├── ai-prompts/        # AI workflows & prompts
 ├── automation/        # automation scripts
-├── backups/           # snapshots & backups
+├── backups/           # snapshots & reports
 ├── docs/              # GitHub Pages
-├── system/            # macOS tweaks & system tools
+├── system/            # macOS tweaks & utilities
 ├── terminal/
-│   ├── bridges/       # legacy → v1 routing layer
+│   ├── bridges/       # legacy → v1 routing
 │   ├── launchers/     # production launcher
 │   └── mqlaunch-v1/   # modular v1 system
 ├── tools/             # reusable scripts & guides
-├── ui/                # terminal UI / dashboards
+├── ui/                # terminal UI & dashboards
 └── install.sh
 ```
 
@@ -126,10 +141,12 @@ macos-scripts/
 
 This project uses a **safe migration model**:
 
-* legacy launcher remains stable
-* new modules are built in **v1 architecture**
-* bridges connect old → new
+* legacy launcher stays stable
+* new features built in **v1 modules**
+* bridges route commands safely
 * no risky rewrites
+
+👉 Result: evolve fast without breaking your workflow
 
 ---
 
@@ -139,7 +156,7 @@ This project uses a **safe migration model**:
 
 * system overview
 * health score
-* CPU / memory processes
+* CPU / memory analysis
 * disk usage
 * network info
 * battery status
@@ -148,7 +165,7 @@ This project uses a **safe migration model**:
 
 ---
 
-### 🛠️ Dev
+### 🛠 Dev
 
 * repo health
 * git status / pull / push
@@ -163,7 +180,7 @@ This project uses a **safe migration model**:
 * tools directory navigation
 * scripts / CLI access
 * terminal guide
-* repo structure view
+* repo structure overview
 * README discovery
 
 ---
@@ -172,9 +189,9 @@ This project uses a **safe migration model**:
 
 * bootstrap a new Mac
 * speed up terminal workflows
-* build a personal CLI environment
+* build a personal CLI workspace
 * organize scripts into a real system
-* learn shell scripting through real tools
+* learn shell scripting through practical tools
 
 ---
 
@@ -192,7 +209,7 @@ This project uses a **safe migration model**:
 * unify UI helpers across modules
 * expand automation workflows
 * improve CLI UX
-* evolve toward plugin-style modules
+* move toward plugin-style modules
 * remove legacy layer when stable
 
 ---
@@ -201,14 +218,16 @@ This project uses a **safe migration model**:
 
 **Mattias Camner**
 
-Project page:
-https://mcamner.github.io/macos-scripts/
+🌐 https://mcamner.github.io/macos-scripts/
 
 ---
 
 ## ⭐️ If you like it
 
-Star the repo, fork it, and build your own workflow system.
+Star the repo ⭐
+Fork it 🍴
+Build your own terminal system ⚡
+
 
 
 
