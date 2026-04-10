@@ -34,3 +34,6 @@ Examples include:
 ## Notes
 
 Keep UI concerns in this directory whenever possible instead of hardcoding presentation directly inside launcher or menu logic.
+
+
+Keep UI concerns in this directory whenever possible instead of hardcoding presentation directly inside launcher or menu logic.
