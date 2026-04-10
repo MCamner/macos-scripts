@@ -989,3 +989,5 @@ if [[ $# -gt 0 ]]; then
 else
   main_loop
 fi
+
+DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
