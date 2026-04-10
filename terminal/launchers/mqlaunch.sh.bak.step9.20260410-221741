@@ -52,7 +52,9 @@ else
   exit 1
 fi
 
+
 BOX_INNER=88
+
 
 print_header() {
   clear
@@ -557,6 +559,7 @@ open_launcher_folder() {
   open_folder_screen "OPEN LAUNCHER FOLDER" "$BASE_DIR/terminal/launchers" "Launcher folder missing:"
 }
 
+
 open_tweaks_menu() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" menu
 }
@@ -589,6 +592,7 @@ revert_tweaks_latest() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" revert-latest
 }
 
+
 backup_mqlaunch() {
   local stamp backup_file
   stamp="$(date '+%Y%m%d-%H%M%S')"
@@ -616,6 +620,7 @@ backup_mqlaunch() {
   print_footer
   pause_enter
 }
+
 
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
@@ -679,6 +684,7 @@ themes_menu_loop() {
   done
 }
 
+
 open_git_menu() {
   local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
   [[ -f "$git_script" ]] && bash "$git_script" || echo "Git menu not found."
@@ -729,7 +735,7 @@ print_main_menu() {
   row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-25,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-22,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -912,9 +918,6 @@ main_loop() {
       20) ai_menu_loop ;;
       21) dev_menu_loop ;;
       22) open_tweaks_menu ;;
-      23) open_v1_performance_menu ;;
-      24) open_v1_dev_menu ;;
-      25) open_v1_tools_menu ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -927,19 +930,16 @@ MQLAUNCH — Branded Neon Command Surface
 Usage:
   mqlaunch                Open main menu
   mqlaunch ai             Open AI submenu
-
+  mqlaunch dev            Open Dev / Prompts submenu
   mqlaunch tweaks         Open Tweaks menu
   mqlaunch dashboard      Open Dashboard
   mqlaunch theme          Open Themes menu
   mqlaunch tools-menu     Open Tools Menu
 
+  mqlaunch perf          Open Performance Menu
   mqlaunch dev           Open Dev Menu
   mqlaunch git           Open Dev Menu
   mqlaunch tools         Open Tools Menu
-  mqlaunch perf          Open Performance Menu
-  mqlaunch dev-v1        Compatibility alias for Dev Menu
-  mqlaunch git-v1        Compatibility alias for Dev Menu
-  mqlaunch tools-v1      Compatibility alias for Tools Menu
 Main menu:
   Exit is X, not 11
 
@@ -1004,7 +1004,6 @@ run_arg_command() {
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     perf|performance) open_v1_performance_menu ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
-    tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     git-menu|gitmenu|menu-git|git) open_git_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;

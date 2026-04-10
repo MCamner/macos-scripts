@@ -1,0 +1,104 @@
+macOS Performance Snapshot
+Generated: fre 10 apr. 2026 22:22:09 CEST
+Host: Zephyr
+User: mansys
+
+=== HEALTH SCORE ===
+Score: 100/100
+Status: Excellent
+Warnings:
+No major issues detected
+
+=== UPTIME / LOAD ===
+22:22  up  5:09, 2 users, load averages: 3,21 3,50 3,49
+
+=== DISK ===
+Filesystem                                                     Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk3s1s1                                                228Gi    12Gi    34Gi    26%    458k  359M    0%   /
+devfs                                                         201Ki   201Ki     0Bi   100%     696     0  100%   /dev
+/dev/disk3s6                                                  228Gi    20Ki    34Gi     1%       0  359M    0%   /System/Volumes/VM
+/dev/disk3s2                                                  228Gi   8,5Gi    34Gi    20%    1,5k  359M    0%   /System/Volumes/Preboot
+/dev/disk3s4                                                  228Gi   6,0Mi    34Gi     1%     109  359M    0%   /System/Volumes/Update
+/dev/disk1s2                                                  500Mi   6,0Mi   482Mi     2%       1  4,9M    0%   /System/Volumes/xarts
+/dev/disk1s1                                                  500Mi   6,0Mi   482Mi     2%      32  4,9M    0%   /System/Volumes/iSCPreboot
+/dev/disk1s3                                                  500Mi   1,5Mi   482Mi     1%      98  4,9M    0%   /System/Volumes/Hardware
+/dev/disk3s5                                                  228Gi   173Gi    34Gi    84%    1,5M  359M    0%   /System/Volumes/Data
+map auto_home                                                   0Bi     0Bi     0Bi   100%       0     0     -   /System/Volumes/Data/home
+/Users/mansys/Documents/Install Apps/Thock-1.16.3/Thock.app   228Gi   171Gi    36Gi    83%    1,4M  373M    0%   /private/var/folders/rk/7k6rkwg939d44ct1l4nfd8cc0000gn/T/AppTranslocation/E806CCC6-5059-4FF3-83D7-87B8BB023E49
+
+=== MEMORY PRESSURE ===
+The system has 17179869184 (1048576 pages with a page size of 16384).
+
+Stats: 
+Pages free: 70837 
+Pages purgeable: 28465 
+Pages purged: 336936 
+
+Swap I/O:
+Swapins: 0 
+Swapouts: 0 
+
+Page Q counts:
+Pages active: 349926 
+Pages inactive: 348107 
+Pages speculative: 5873 
+Pages throttled: 0 
+Pages wired down: 139475 
+
+Compressor Stats:
+Pages used by compressor: 94506 
+Pages decompressed: 219459 
+Pages compressed: 587120 
+
+File I/O:
+Pageins: 1637537 
+Pageouts: 14561 
+
+System-wide memory free percentage: 76%
+
+=== VM STAT ===
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                               71005.
+Pages active:                            349943.
+Pages inactive:                          348107.
+Pages speculative:                         5873.
+Pages throttled:                              0.
+Pages wired down:                        139475.
+Pages purgeable:                          28465.
+"Translation faults":                  46707454.
+Pages copy-on-write:                    2187729.
+Pages zero filled:                     49217250.
+Pages reactivated:                       813586.
+Pages purged:                            336936.
+File-backed pages:                       283261.
+Anonymous pages:                         420662.
+Pages stored in compressor:              244382.
+Pages occupied by compressor:             94506.
+Decompressions:                          219459.
+Compressions:                            587120.
+Pageins:                                1637539.
+Pageouts:                                 14561.
+Swapins:                                      0.
+Swapouts:                                     0.
+
+=== TOP CPU ===
+ 6737     1 204,4  0,3 03:33:08 /System/Library/Frameworks/ScreenSaver.framework/PlugIns/legacyScreenSaver.appex/Contents/MacOS/legacyScreenSaver
+  601     1  11,2  0,3 05:07:43 /usr/sbin/coreaudiod
+  594     1   6,6  0,9 05:07:43 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+14855  1346   1,9  0,9 01:26:25 /Applications/ChatGPT Atlas.app/Contents/Support/ChatGPT Atlas.app/Contents/Frameworks/ChatGPT Atlas Framework.framework/Versions/146.0.7680.165/Helpers/ChatGPT Atlas (Renderer).app/Contents/MacOS/ChatGPT Atlas (Renderer)
+  579     1   1,0  0,2 05:07:43 /usr/sbin/bluetoothd
+ 1358  1346   0,9  0,8 05:06:50 /Applications/ChatGPT Atlas.app/Contents/Support/ChatGPT Atlas.app/Contents/Frameworks/ChatGPT Atlas Framework.framework/Versions/146.0.7680.165/Helpers/ChatGPT Atlas (Service).app/Contents/MacOS/ChatGPT Atlas (Service)
+ 1017     1   0,8  0,4 05:07:15 /usr/libexec/sharingd
+  562     1   0,8  0,2 05:07:43 /usr/libexec/locationd
+ 1161     1   0,7  0,1 05:07:07 /System/Library/PrivateFrameworks/CoreSpeech.framework/corespeechd
+ 1338     1   0,5  0,4 05:06:52 /Applications/AlDente.app/Contents/MacOS/AlDente
+  708     1   0,5  0,3 05:07:41 /System/Library/DriverExtensions/com.apple.DriverKit-AppleBCMWLAN.dext/com.apple.DriverKit-AppleBCMWLAN
+ 7205  1346   0,4  6,7 03:24:39 /Applications/ChatGPT Atlas.app/Contents/Support/ChatGPT Atlas.app/Contents/Frameworks/ChatGPT Atlas Framework.framework/Versions/146.0.7680.165/Helpers/ChatGPT Atlas (Renderer).app/Contents/MacOS/ChatGPT Atlas (Renderer)
+ 7358     1   0,3  0,9 03:21:24 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  997     1   0,3  0,2 05:07:16 /usr/libexec/rapportd
+ 1138     1   0,2  0,1 05:07:10 /usr/libexec/milod
+  526     1   0,2  0,1 05:07:43 /usr/libexec/configd
+ 1357     1   0,1  0,1 05:06:50 /Library/PrivilegedHelperTools/com.apphousekitchen.aldente-pro.helper
+ 1346  1238   0,1  1,5 05:06:51 /Applications/ChatGPT Atlas.app/Contents/Support/ChatGPT Atlas.app/Contents/MacOS/ChatGPT Atlas
+ 1106     1   0,1  0,1 05:07:12 /usr/libexec/nearbyd
+  582     1   0,1  0,1 05:07:43 /usr/libexec/corebrightnessd

@@ -20,6 +20,8 @@ source "$SCRIPT_DIR/commands/repo.sh"
 source "$SCRIPT_DIR/commands/dev.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/performance.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/tools.sh"
 
 # Menus
 # shellcheck source=/dev/null

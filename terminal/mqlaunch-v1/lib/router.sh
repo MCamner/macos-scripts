@@ -10,13 +10,13 @@ route_command() {
     system)
       menu_system
       ;;
-    tools)
+    tools|tools-v1|menu-tools-v1)
       menu_tools
       ;;
     automation|auto)
       menu_automation
       ;;
-    dev)
+    dev|git|dev-v1)
       menu_dev
       ;;
     ai)
@@ -34,11 +34,15 @@ route_command() {
     guide|terminal-guide)
       command_open_terminal_guide
       ;;
+    help|-h|--help)
+      show_help
+      ;;
     x|exit|quit)
       return 0
       ;;
     *)
       err "Unknown command: $cmd"
+      echo
       show_help
       return 1
       ;;
@@ -55,12 +59,12 @@ Usage:
   mqlaunch tools          Open tools menu
   mqlaunch automation     Open automation menu
   mqlaunch dev            Open dev menu
-  mqlaunch ai             Open AI menu
-  mqlaunch performance    Open performance menu
+  mqlaunch git            Open dev menu
   mqlaunch perf           Open performance menu
   mqlaunch health         Run health check
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
+  mqlaunch help           Show this help
 
 HELP
 }

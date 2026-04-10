@@ -729,7 +729,7 @@ print_main_menu() {
   row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-25,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-22,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -912,9 +912,6 @@ main_loop() {
       20) ai_menu_loop ;;
       21) dev_menu_loop ;;
       22) open_tweaks_menu ;;
-      23) open_v1_performance_menu ;;
-      24) open_v1_dev_menu ;;
-      25) open_v1_tools_menu ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
