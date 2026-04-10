@@ -733,6 +733,38 @@ show_version_info() {
   pause_enter
 }
 
+run_self_check() {
+  print_header
+  row_bold "SELF-CHECK"
+  empty_row
+
+  local check_script="$BASE_DIR/tools/scripts/test-all.sh"
+
+  row "Running smoke checks..."
+  empty_row
+
+  if [[ ! -x "$check_script" ]]; then
+    echo "${C_ERR}Missing or non-executable:${C_RESET} $check_script"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  "$check_script"
+  local status=$?
+
+  echo
+  if [[ $status -eq 0 ]]; then
+    echo "${C_OK}All smoke checks passed.${C_RESET}"
+  else
+    echo "${C_ERR}Smoke checks failed.${C_RESET}"
+  fi
+
+  print_footer
+  pause_enter
+  return $status
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -763,9 +795,10 @@ print_main_menu() {
   row2 "23. Performance" "24. Dev"
   row2 "23. Performance" "24. Dev"
   row2 "25. Tools" "26. Version"
+  row "27. Self-check"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-26,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-27,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -952,6 +985,7 @@ main_loop() {
       24) open_v1_dev_menu ;;
       25) open_v1_tools_menu ;;
       26) show_version_info ;;
+      27) run_self_check ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -975,6 +1009,7 @@ Usage:
   mqlaunch tools         Open Tools Menu
   mqlaunch perf          Open Performance Menu
   mqlaunch version       Show version information
+  mqlaunch check         Run full self-check
   mqlaunch dev-v1        Compatibility alias for Dev Menu
   mqlaunch git-v1        Compatibility alias for Dev Menu
   mqlaunch tools-v1      Compatibility alias for Tools Menu
@@ -1042,6 +1077,7 @@ run_arg_command() {
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;
+    check|health) run_self_check ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
