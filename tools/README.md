@@ -1,6 +1,6 @@
 # Tools
 
-Reusable scripts and command-line utilities.
+Reusable scripts and command-line utilities for the `macos-scripts` project.
 
 ## Purpose
 
@@ -12,25 +12,26 @@ Keep useful building blocks in one place.
 * `cli/` — command-line tools and wrappers
 * `mac-terminal-guide` — macOS terminal guide
 
-  * Open HTML guide: `tools/mac-terminal-guide/mac-terminal-guide.html`
+  * HTML guide: `tools/mac-terminal-guide/mac-terminal-guide.html`
 
 ## How to run
 
-### Run a CLI tool
+### CLI tools
 
-From the project root:
+Run from the project root:
 
 `bash tools/cli/ai-mode.sh`
 
-### Run a helper script
+### Helper scripts
 
-From the project root:
+Run from the project root:
 
 `bash tools/scripts/<script-name>.sh`
 
-### Open the macOS terminal guide
+### Terminal guide
 
-From the project root:
+Open from the project root:
 
 `open "tools/mac-terminal-guide/mac-terminal-guide.html"`
+
 
