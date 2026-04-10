@@ -1,33 +1,34 @@
 # macos-scripts
 
-> ⚡ Turn your macOS terminal into a powerful workflow hub
+⚡ **Turn your macOS terminal into a modular workflow hub**
 
-A curated collection of macOS scripts, tools, and terminal utilities designed to **boost productivity, automate tasks, and simplify daily workflows**.
+A curated collection of macOS scripts, tools, launchers, and terminal utilities designed to speed up daily work, automate repetitive tasks, and provide a clean foundation for a personal CLI toolkit.
 
 ---
 
 ## 🚀 Why this exists
 
-Most terminal setups are either:
+Most terminal setups fall into one of two traps:
 
-* too minimal → no real productivity gain
-* too complex → hard to maintain
+* **Too minimal** → no real productivity gain
+* **Too complex** → hard to maintain
 
-**macos-scripts sits in the middle:**
+**macos-scripts** aims for the middle:
 
 * simple to install
-* powerful in use
+* fast to use
 * modular by design
+* easy to expand over time
 
 ---
 
-## 🧠 What you get
+## 🧩 What you get
 
-* ⚡ **mqlaunch** — a fast terminal launcher for workflows and tools
-* 🧰 reusable scripts for automation and system tasks
-* 🖥️ terminal dashboards and utilities
-* 📚 practical guides (like macOS terminal setup)
-* 🧩 modular structure for easy expansion
+* **mqlaunch** — a terminal launcher for workflows, tools, and navigation
+* **Performance tools** — system health, load, disk usage, snapshots
+* **Dev tools** — git workflows, repo health, navigation helpers
+* **Tools module** — access to scripts, CLI tools, and guides
+* **Modular architecture** — legacy + v1 system running safely in parallel
 
 ---
 
@@ -40,7 +41,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-Then run:
+Then:
 
 ```bash
 mqlaunch
@@ -48,97 +49,166 @@ mqlaunch
 
 ---
 
-## 🖥️ Preview
+## 🧠 Core Commands
 
+### Launcher
+
+```bash
+mqlaunch
 ```
-MAIN MENU
----------
-1. System tools
-2. Automation
-3. Terminal tools
-4. AI tools
-5. Git tools
-X. Exit
 
-> Fast. Minimal. Powerful.
+### Performance
+
+```bash
+mqlaunch perf
+```
+
+### Development
+
+```bash
+mqlaunch dev
+mqlaunch git
+```
+
+### Tools
+
+```bash
+mqlaunch tools
 ```
 
 ---
 
-## 🧰 Core Tool: mqlaunch
+## 🧪 Demo Flow (Recommended)
 
-`mqlaunch` is the heart of the project.
+After install:
 
-It acts as:
+```bash
+mqlaunch perf
+```
 
-* a launcher
-* a control center
-* a workflow engine
+Try:
 
-Instead of remembering commands, you navigate a structured menu.
+* `1` → Overview
+* `2` → Health score
+* `8` → Snapshot
+* `9` → Live monitoring
+
+Then:
+
+```bash
+mqlaunch dev
+mqlaunch tools
+```
 
 ---
 
-## 📂 Project Structure
+## 🏗️ Project Structure
 
-```
+```text
 macos-scripts/
-├── terminal/        # launchers, UI, terminal tools
-├── automation/      # workflows and automation scripts
-├── system/          # system tweaks and utilities
-├── tools/           # reusable tools and guides
-│   ├── scripts/
-│   ├── cli/
-│   └── mac-terminal-guide/
-├── ui/              # dashboards and visual tools
-└── install.sh       # setup script
+├── ai-prompts/        # AI workflows & prompts
+├── automation/        # automation scripts
+├── backups/           # snapshots & backups
+├── docs/              # GitHub Pages
+├── system/            # macOS tweaks & system tools
+├── terminal/
+│   ├── bridges/       # legacy → v1 routing layer
+│   ├── launchers/     # production launcher
+│   └── mqlaunch-v1/   # modular v1 system
+├── tools/             # reusable scripts & guides
+├── ui/                # terminal UI / dashboards
+└── install.sh
 ```
+
+---
+
+## 🧠 Architecture
+
+This project uses a **safe migration model**:
+
+* legacy launcher remains stable
+* new modules are built in **v1 architecture**
+* bridges connect old → new
+* no risky rewrites
+
+---
+
+## 🔧 Modules
+
+### ⚡ Performance
+
+* system overview
+* health score
+* CPU / memory processes
+* disk usage
+* network info
+* battery status
+* snapshots
+* quick watch
+
+---
+
+### 🛠️ Dev
+
+* repo health
+* git status / pull / push
+* commit history
+* branch overview
+* repo navigation
+
+---
+
+### 📦 Tools
+
+* tools directory navigation
+* scripts / CLI access
+* terminal guide
+* repo structure view
+* README discovery
 
 ---
 
 ## 🎯 Use Cases
 
-* bootstrap a new macOS environment
-* speed up daily terminal workflows
-* build your own CLI toolkit
-* learn practical shell scripting
-* create a personal productivity system
+* bootstrap a new Mac
+* speed up terminal workflows
+* build a personal CLI environment
+* organize scripts into a real system
+* learn shell scripting through real tools
 
 ---
 
 ## 🧠 Philosophy
 
-* simplicity over complexity
-* practical tools over theory
-* fast workflows over perfect setups
-* modular building blocks
+* simple > complex
+* practical > theoretical
+* fast > perfect
+* modular evolution > rewrites
 
 ---
 
-## 🛠️ Roadmap
+## 🗺️ Roadmap
 
-* improve mqlaunch UI/UX
-* add more automation scripts
-* expand terminal dashboards
-* create plug-and-play tool packs
-
----
-
-## 🤝 Contributing
-
-Ideas, improvements, and experiments are welcome.
+* unify UI helpers across modules
+* expand automation workflows
+* improve CLI UX
+* evolve toward plugin-style modules
+* remove legacy layer when stable
 
 ---
 
-## 📌 Author
+## 👤 Author
 
-Mattias Camner
+**Mattias Camner**
 
----
-
-## 🌐 Project page
-
+Project page:
 https://mcamner.github.io/macos-scripts/
+
+---
+
+## ⭐️ If you like it
+
+Star the repo, fork it, and build your own workflow system.
 
 
 
