@@ -840,7 +840,7 @@ dev_menu_loop() {
       6) open_base_dir ;;
       7) open_launcher_folder ;;
       8) open_terminal_guide ;;
-      9) git_menu_loop ;;
+      9) open_git_menu ;;
       10) net_menu_loop ;;
       11) themes_menu_loop ;;
       12) open_tools_menu ;;
@@ -970,7 +970,7 @@ run_arg_command() {
     base|macos-scripts) open_base_dir ;;
     launchers|launcher-folder) open_launcher_folder ;;
     guide|terminal-guide) open_terminal_guide ;;
-    gitlaunch|git) git_menu_loop ;;
+    gitlaunch) git_menu_loop ;;
     netlaunch|net) net_menu_loop ;;
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
