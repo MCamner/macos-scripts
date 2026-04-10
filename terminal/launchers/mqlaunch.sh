@@ -720,13 +720,18 @@ print_main_menu() {
   row3 "12. Lock screen" "13. Sleep display" ""
 
   empty_row
-  row "TOOLS"
+  row "QUICK ACTIONS"
   row3 "14. Utilities folder" "15. Applications folder" "16. Restart Finder"
   row3 "17. Show date and time" "18. Open repo in browser" "19. Run system check"
 
   empty_row
   row "MENUS"
   row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
+
+  empty_row
+  row "WORKFLOWS"
+  row2 "23. Performance" "24. Dev"
+  row "25. Tools"
 
   print_main_footer
   printf "${C_TITLE}Select option [1-10,12-25,X]: ${C_RESET}"
@@ -911,7 +916,7 @@ main_loop() {
       19) system_check ;;
       20) ai_menu_loop ;;
       21) dev_menu_loop ;;
-      22) open_tweaks_menu ;;
+      22) tweaks_menu_loop ;;
       23) open_v1_performance_menu ;;
       24) open_v1_dev_menu ;;
       25) open_v1_tools_menu ;;
