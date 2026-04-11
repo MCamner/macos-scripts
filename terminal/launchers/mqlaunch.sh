@@ -298,20 +298,17 @@ open_repo_browser() {
 }
 
 open_terminal_guide() {
-  print_header
-  row "OPEN MAC TERMINAL GUIDE"
-  empty_row
+  local html="$BASE_DIR/docs/mac-terminal-guide.html"
+  local readme="$BASE_DIR/tools/mac-terminal-guide/README.md"
 
-  if [[ -f "$TERMINAL_GUIDE_HTML" ]]; then
-    row "Opening local guide:"
-    row " $TERMINAL_GUIDE_HTML"
-    print_footer
-    open "$TERMINAL_GUIDE_HTML"
+  if [[ -f "$html" ]]; then
+    open "$html"
+  elif [[ -f "$readme" ]]; then
+    open "$readme"
   else
-    row "Local guide missing, using GitHub:"
-    row " $TERMINAL_GUIDE_URL"
-    print_footer
-    open "$TERMINAL_GUIDE_URL"
+    echo "${C_ERR}No terminal guide file found.${C_RESET}"
+    pause_enter
+    return 1
   fi
 }
 
@@ -765,6 +762,38 @@ run_self_check() {
   return $status
 }
 
+run_debug_bundle() {
+  print_header
+  row_bold "DEBUG BUNDLE"
+  empty_row
+
+  local bundle_script="$BASE_DIR/tools/scripts/create-debug-bundle.sh"
+
+  if [[ ! -x "$bundle_script" ]]; then
+    echo "${C_ERR}Missing or non-executable:${C_RESET} $bundle_script"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  local outfile
+  outfile="$("$bundle_script")"
+  local status=$?
+
+  echo
+  if [[ $status -eq 0 ]]; then
+    echo "${C_OK}Debug bundle created:${C_RESET}"
+    echo " $outfile"
+    [[ -f "$outfile" ]] && open -R "$outfile" 2>/dev/null || true
+  else
+    echo "${C_ERR}Debug bundle failed.${C_RESET}"
+  fi
+
+  print_footer
+  pause_enter
+  return $status
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -795,10 +824,10 @@ print_main_menu() {
   row2 "23. Performance" "24. Dev"
   row2 "23. Performance" "24. Dev"
   row2 "25. Tools" "26. Version"
-  row "27. Self-check"
+  row2 "27. Self-check" "28. Debug bundle"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-27,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-28,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -986,6 +1015,7 @@ main_loop() {
       25) open_v1_tools_menu ;;
       26) show_version_info ;;
       27) run_self_check ;;
+      28) run_debug_bundle ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -1010,6 +1040,7 @@ Usage:
   mqlaunch perf          Open Performance Menu
   mqlaunch version       Show version information
   mqlaunch check         Run full self-check
+  mqlaunch bundle        Create debug bundle
   mqlaunch dev-v1        Compatibility alias for Dev Menu
   mqlaunch git-v1        Compatibility alias for Dev Menu
   mqlaunch tools-v1      Compatibility alias for Tools Menu
@@ -1078,6 +1109,7 @@ run_arg_command() {
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;
+    bundle|debug-bundle|support) run_debug_bundle ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;

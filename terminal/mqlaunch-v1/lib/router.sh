@@ -28,8 +28,11 @@ route_command() {
     version|ver|about)
       command_show_version
       ;;
-    health|check)
-      command_health_check
+    check|health)
+      command_run_self_check
+      ;;
+    bundle|debug-bundle|support)
+      command_run_debug_bundle
       ;;
     repo)
       command_open_repo
@@ -65,7 +68,8 @@ Usage:
   mqlaunch git            Open dev menu
   mqlaunch perf           Open performance menu
   mqlaunch version        Show version info
-  mqlaunch health         Run health check
+  mqlaunch check          Run self-check
+  mqlaunch bundle         Create debug bundle
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
   mqlaunch help           Show this help
