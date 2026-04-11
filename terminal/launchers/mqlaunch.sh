@@ -998,7 +998,6 @@ print_main_menu() {
   empty_row
   row "WORKFLOWS"
   row2 "23. Performance" "24. Dev"
-  row2 "23. Performance" "24. Dev"
   row2 "25. Tools" "26. Version"
   row2 "27. Self-check" "28. Debug bundle"
   row2 "29. Release notes" "30. About / Status"
