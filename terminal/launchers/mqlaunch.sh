@@ -1285,7 +1285,7 @@ run_arg_command() {
     repo) open_repo_browser ;;
     check|health) system_check ;;
     ai) ai_menu_loop ;;
-    dev|git) open_v1_dev_menu ;;
+    dev) open_v1_dev_menu ;;
     tweaks|tweak|tw) open_tweaks_menu ;;
     tweaks-status) show_tweaks_status ;;
     tweaks-workstation) run_tweaks_workstation ;;
