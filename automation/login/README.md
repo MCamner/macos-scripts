@@ -50,6 +50,8 @@ mqlaunch login about
 mqlaunch login check
 ```
 
+`mqlaunch login` now opens an interactive Login / Session menu by default.
+
 ## Modes
 
 `mqlogin.sh` supports three main modes:
