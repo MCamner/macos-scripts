@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/macOS-supported-black?style=for-the-badge&logo=apple">
   <img src="https://img.shields.io/badge/shell-zsh%20%7C%20bash-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/status-active-success?style=for-the-badge">
-  <img src="https://img.shields.io/badge/version-0.1.0-informational?style=for-the-badge">
+  <img src="https://img.shields.io/badge/version-0.1.1-informational?style=for-the-badge">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge">
 </p>
 
