@@ -28,6 +28,8 @@ source "$SCRIPT_DIR/commands/meta.sh"
 source "$SCRIPT_DIR/commands/check.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/bundle.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/notes.sh"
 
 # Menus
 # shellcheck source=/dev/null
