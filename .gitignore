@@ -1,1 +1,7 @@
 .DS_Store
+
+# Local debug bundles
+backups/debug-bundles/*.txt
+
+# Launcher backups
+terminal/launchers/*.bak.*
