@@ -678,7 +678,11 @@ themes_menu_loop() {
 
 open_git_menu() {
   local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
-  [[ -f "$git_script" ]] && bash "$git_script" || echo "Git menu not found."
+  if [[ -x "$git_script" ]]; then
+    "$git_script"
+  else
+    echo "Git menu not found: $git_script"
+  fi
 }
 
 open_release_menu() {
@@ -1278,8 +1282,8 @@ run_arg_command() {
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
-    release|rel) open_release_menu ;;
-    git|git-menu|gitlaunch) open_git_menu ;;
+    release|rel) open_release_menu; exit 0 ;;
+    git|git-menu|gitlaunch) open_git_menu; exit 0 ;;
     login|boot|session) run_mqlogin "$@" ;;
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;

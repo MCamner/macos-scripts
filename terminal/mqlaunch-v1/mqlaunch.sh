@@ -34,6 +34,8 @@ source "$SCRIPT_DIR/commands/notes.sh"
 source "$SCRIPT_DIR/commands/about.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/login.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/shortcuts.sh"
 
 # Menus
 # shellcheck source=/dev/null

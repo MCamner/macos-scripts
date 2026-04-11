@@ -846,6 +846,25 @@ run_mqlogin() {
   "$login_script" "$@"
 }
 
+run_mqshortcuts() {
+  local shortcuts_script="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
+
+  if [[ ! -x "$shortcuts_script" ]]; then
+    print_header
+    row_bold "SHORTCUTS"
+    empty_row
+    row "Missing or non-executable:"
+    row " $shortcuts_script"
+    row "Run:"
+    row " chmod +x $shortcuts_script"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  "$shortcuts_script" "$@"
+}
+
 show_about_dashboard() {
   print_header
   row_bold "ABOUT / STATUS"
@@ -918,6 +937,9 @@ show_command_index() {
   row " mqlaunch tools        Tools module"
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Start session boot"
+  row " mqlaunch shortcuts    Open Shortcuts helper"
+  row " mqlaunch shortcuts list"
+  row " mqlaunch shortcuts search clip"
   row " mqlaunch login menu   Session boot + full menu"
   row " mqlaunch login about  Session boot + about screen"
   row " mqlaunch login check  Session boot + self-check"
@@ -1210,6 +1232,9 @@ WORKFLOWS
   mqlaunch tools          Open Tools module
   mqlaunch release        Open Release Menu
   mqlaunch login          Start session boot
+  mqlaunch shortcuts      Open Shortcuts helper
+  mqlaunch shortcuts list
+  mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu
   mqlaunch login about    Session boot + about screen
   mqlaunch login check    Session boot + self-check
@@ -1281,6 +1306,7 @@ run_arg_command() {
     release|rel) open_release_menu ;;
     git|git-menu|gitlaunch) open_git_menu ;;
     login|boot|session) run_mqlogin "$@" ;;
+    shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;

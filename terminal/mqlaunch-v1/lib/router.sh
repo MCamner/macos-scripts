@@ -14,6 +14,9 @@ route_command() {
     tools|tools-v1|menu-tools-v1)
       menu_tools
       ;;
+    shortcuts|shortcut|sc)
+      command_run_shortcuts_helper "$@"
+      ;;
     login|boot|session)
       command_run_login_boot "$@"
       ;;
@@ -84,6 +87,9 @@ WORKFLOWS
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
   mqlaunch login          Start session boot
+  mqlaunch shortcuts      Open Shortcuts helper
+  mqlaunch shortcuts list
+  mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu
   mqlaunch login about    Session boot + about screen
   mqlaunch login check    Session boot + self-check
