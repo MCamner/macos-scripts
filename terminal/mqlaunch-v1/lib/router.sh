@@ -25,8 +25,11 @@ route_command() {
     performance|perf)
       menu_performance
       ;;
-    version|ver|about)
+    version|ver|about-version)
       command_show_version
+      ;;
+    about|status|dashboard)
+      command_show_about_dashboard
       ;;
     check|health)
       command_run_self_check
@@ -71,6 +74,7 @@ Usage:
   mqlaunch git            Open dev menu
   mqlaunch perf           Open performance menu
   mqlaunch version        Show version info
+  mqlaunch about          Show about / status dashboard
   mqlaunch check          Run self-check
   mqlaunch bundle         Create debug bundle
   mqlaunch notes          Show release notes
