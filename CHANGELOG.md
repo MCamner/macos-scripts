@@ -2,72 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
-[0.1.3]
+---
 
-Changed
-
-- Improve release script safety with dry-run support and rollback handling.
-
-## [0.1.2]
+## [0.1.3] - 2026-04-11
 
 ### Changed
-- Make release script executable.
-- Update version badge and release flow improvements.
+
+* Improve release script with dry-run support and rollback handling
+* Enhance release workflow safety and validation
+
+---
+
+## [0.1.2] - 2026-04-11
+
+### Added
+
+* Initial release automation script (`tools/release.sh`)
+
+### Changed
+
+* Improve version badge handling in README
+* Refine release preparation workflow
+
+---
 
 ## [0.1.1] - 2026-04-11
 
 ### Added
-- About / Status dashboard
-- Command index
-- Self-check and debug bundle commands
-- Release notes command
-- Main menu workflows expansion
+
+* About and status dashboard in `mqlaunch`
+* Release notes and changelog command
 
 ### Changed
-- Improved help and command alignment
-- Fixed Tweaks integration in mqlaunch
-- Unified terminal guide path references
 
-### Fixed
-- Prevented menu exits on self-check, bundle, and notes
-- Fixed zsh reserved variable issue with `status`
-- Excluded local bundles and backup launcher files from version control
+* Align README, help, command index, and menu labels
 
-## [0.1.0] - 2026-04-10
+---
+
+## [0.1.0] - Initial release
 
 ### Added
-- Modular `mqlaunch-v1` structure
-- Performance module with:
-  - overview
-  - health score
-  - CPU / memory views
-  - disk usage
-  - network overview
-  - battery status
-  - performance snapshots
-  - quick watch
-- Dev module with:
-  - repo health
-  - git status / pull / push
-  - commit history
-  - branch overview
-  - repo navigation
-- Tools module with:
-  - tools root navigation
-  - scripts / CLI access
-  - terminal guide access
-  - tools tree
-  - README discovery
-- Bridge layer from legacy launcher to v1 modules
-- Smoke tests for legacy + v1 launcher flow
-- Install-time self-check integration
-- README demo section and GIF support
 
-### Changed
-- Main menu updated with WORKFLOWS section
-- Legacy TOOLS section renamed to QUICK ACTIONS
-- Shared v1 UI helpers consolidated in `terminal/mqlaunch-v1/lib/ui.sh`
+* Base structure for macos-scripts
+* Initial mqlaunch functionality
+* Core terminal workflows
 
-### Notes
-- Legacy launcher still exists as compatibility layer
-- v1 modules are now the preferred path for core workflows
