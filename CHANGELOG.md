@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2]
+
+### Changed
+- Make release script executable.
+- Update version badge and release flow improvements.
+
 ## [0.1.1] - 2026-04-11
 
 ### Added
