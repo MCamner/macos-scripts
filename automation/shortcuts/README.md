@@ -81,11 +81,19 @@ Open a shortcut in the Shortcuts app:
 bash automation/shortcuts/mqshortcuts.sh view "Daily Briefing"
 ```
 
+Use through `mqlaunch`:
+
+```bash
+mqlaunch shortcuts
+mqlaunch shortcuts list
+mqlaunch shortcuts search clip
+```
+
 ## Notes
 
 - requires the macOS `shortcuts` command-line tool
 - uses `rg` for search if available, otherwise falls back to `grep`
-- works well as a base for future `mqlaunch` integration
+- includes an interactive menu via `mqlaunch shortcuts`
 
 ## Typical Use Cases
 

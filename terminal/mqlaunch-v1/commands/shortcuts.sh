@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 command_run_shortcuts_helper() {
+  local shortcuts_menu="$PROJECT_ROOT/terminal/menus/mq-shortcuts-menu.sh"
   local shortcuts_script="$PROJECT_ROOT/automation/shortcuts/mqshortcuts.sh"
+
+  if [[ $# -eq 0 && -x "$shortcuts_menu" ]]; then
+    "$shortcuts_menu" menu
+    return $?
+  fi
 
   if [[ ! -x "$shortcuts_script" ]]; then
     print_header

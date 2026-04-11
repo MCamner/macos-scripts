@@ -31,11 +31,17 @@ Use this folder for:
 ### `mq-tools-menu.sh`
 A reusable tools menu built on top of shared terminal UI helpers.
 
-### `mq-system-menu.sh`
-A reusable system menu for quick macOS system actions and checks.
+### `mq-git-menu.sh`
+An interactive git workspace for status, commit prep, safe push, log review, and repo navigation.
 
-### `menu-template.sh`
-A starter template for building new menu modules.
+### `mq-shortcuts-menu.sh`
+An interactive menu for listing, searching, running, and viewing macOS Shortcuts.
+
+### `mq-login-menu.sh`
+An interactive menu for session boot flows built on top of `mqlogin.sh`.
+
+### `mq-release-menu.sh`
+An interactive menu for dry-run releases, live releases, changelog review, and GitHub release creation.
 
 ## Design rules
 

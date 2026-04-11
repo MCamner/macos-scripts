@@ -684,9 +684,18 @@ open_git_menu() {
 open_release_menu() {
   local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
   if [[ -x "$release_menu" ]]; then
-    "$release_menu"
+    "$release_menu" menu
+  elif [[ -f "$release_menu" ]]; then
+    chmod +x "$release_menu" 2>/dev/null || true
+    bash "$release_menu" menu
   else
-    echo "Release menu not found: $release_menu"
+    print_header
+    row "RELEASE MENU"
+    empty_row
+    row "Release menu not found:"
+    row " $release_menu"
+    print_footer
+    pause_enter
   fi
 }
 
@@ -829,6 +838,12 @@ show_release_notes() {
 
 run_mqlogin() {
   local login_script="$BASE_DIR/automation/login/mqlogin.sh"
+  local login_menu="$BASE_DIR/terminal/menus/mq-login-menu.sh"
+
+  if [[ $# -eq 0 && -x "$login_menu" ]]; then
+    "$login_menu" menu
+    return $?
+  fi
 
   if [[ ! -x "$login_script" ]]; then
     print_header
@@ -848,6 +863,12 @@ run_mqlogin() {
 
 run_mqshortcuts() {
   local shortcuts_script="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
+  local shortcuts_menu="$BASE_DIR/terminal/menus/mq-shortcuts-menu.sh"
+
+  if [[ $# -eq 0 && -x "$shortcuts_menu" ]]; then
+    "$shortcuts_menu" menu
+    return $?
+  fi
 
   if [[ ! -x "$shortcuts_script" ]]; then
     print_header
@@ -936,8 +957,8 @@ show_command_index() {
   row " mqlaunch git          Alias for Dev"
   row " mqlaunch tools        Tools module"
   row " mqlaunch release      Open Release Menu"
-  row " mqlaunch login        Start session boot"
-  row " mqlaunch shortcuts    Open Shortcuts helper"
+  row " mqlaunch login        Open Login / Session menu"
+  row " mqlaunch shortcuts    Open Shortcuts menu"
   row " mqlaunch shortcuts list"
   row " mqlaunch shortcuts search clip"
   row " mqlaunch login menu   Session boot + full menu"
@@ -984,7 +1005,7 @@ print_main_menu() {
   empty_row
   row "SYSTEM / CONTROL"
   row3 " 8. Downloads folder" " 9. Home folder" "10. Show IP + network"
-  row3 "12. Lock screen" "13. Sleep display" ""
+  row3 "11. Git Menu" "12. Lock screen" "13. Sleep display"
 
   empty_row
   row "QUICK ACTIONS"
@@ -998,13 +1019,14 @@ print_main_menu() {
   empty_row
   row "WORKFLOWS"
   row2 "23. Performance" "24. Dev"
-  row2 "25. Tools" "26. Version"
-  row2 "27. Self-check" "28. Debug bundle"
-  row2 "29. Release notes" "30. About / Status"
-  row "31. Command index"
+  row2 "25. Tools" "26. Release"
+  row2 "27. Login / Session" "28. Shortcuts"
+  row2 "29. Version" "30. Self-check"
+  row2 "31. Debug bundle" "32. Release notes"
+  row2 "33. About / Status" "34. Command index"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-31,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-34,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -1188,6 +1210,7 @@ main_loop() {
       8) open_downloads_folder ;;
       9) open_home_folder ;;
       10) show_network_info ;;
+      11) open_git_menu ;;
       x|X) echo "Exiting ${APP_TITLE}..."; exit 0 ;;
       12) lock_screen ;;
       13) sleep_display ;;
@@ -1203,12 +1226,15 @@ main_loop() {
       23) open_v1_performance_menu ;;
       24) open_v1_dev_menu ;;
       25) open_v1_tools_menu ;;
-      26) show_version_info ;;
-      27) run_self_check || true ;;
-      28) run_debug_bundle || true ;;
-      29) show_release_notes || true ;;
-      30) show_about_dashboard || true ;;
-      31) show_command_index || true ;;
+      26) open_release_menu ;;
+      27) run_mqlogin ;;
+      28) run_mqshortcuts ;;
+      29) show_version_info ;;
+      30) run_self_check || true ;;
+      31) run_debug_bundle || true ;;
+      32) show_release_notes || true ;;
+      33) show_about_dashboard || true ;;
+      34) show_command_index || true ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -1230,8 +1256,8 @@ WORKFLOWS
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
   mqlaunch release        Open Release Menu
-  mqlaunch login          Start session boot
-  mqlaunch shortcuts      Open Shortcuts helper
+  mqlaunch login          Open Login / Session menu
+  mqlaunch shortcuts      Open Shortcuts menu
   mqlaunch shortcuts list
   mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu

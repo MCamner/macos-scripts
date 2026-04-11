@@ -87,7 +87,7 @@ WORKFLOWS
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
   mqlaunch login          Start session boot
-  mqlaunch shortcuts      Open Shortcuts helper
+  mqlaunch shortcuts      Open Shortcuts menu
   mqlaunch shortcuts list
   mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu

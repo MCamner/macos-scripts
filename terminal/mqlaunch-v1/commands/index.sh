@@ -16,7 +16,7 @@ command_show_command_index() {
   echo " mqlaunch git          Alias for Dev"
   echo " mqlaunch tools        Tools module"
   echo " mqlaunch login        Start session boot"
-  echo " mqlaunch shortcuts    Open Shortcuts helper"
+  echo " mqlaunch shortcuts    Open Shortcuts menu"
   echo " mqlaunch shortcuts list"
   echo " mqlaunch shortcuts search clip"
   echo " mqlaunch login menu   Session boot + full menu"
