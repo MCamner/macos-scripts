@@ -918,6 +918,7 @@ show_command_index() {
   row " mqlaunch tools        Tools module"
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Start session boot"
+  row " mqlaunch login menu   Session boot + full menu"
   row " mqlaunch login about  Session boot + about screen"
   row " mqlaunch login check  Session boot + self-check"
 
@@ -1209,6 +1210,7 @@ WORKFLOWS
   mqlaunch tools          Open Tools module
   mqlaunch release        Open Release Menu
   mqlaunch login          Start session boot
+  mqlaunch login menu     Session boot + full menu
   mqlaunch login about    Session boot + about screen
   mqlaunch login check    Session boot + self-check
 
@@ -1277,6 +1279,7 @@ run_arg_command() {
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     release|rel) open_release_menu ;;
+    git|git-menu|gitlaunch) open_git_menu ;;
     login|boot|session) run_mqlogin "$@" ;;
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;

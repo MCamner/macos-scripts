@@ -1,515 +1,474 @@
-#!/usr/bin/env bash
-
+#!/usr/bin/env zsh
 set -u
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Menu header
-source "$BASE_DIR/terminal/menus/mq-menu-header.sh"
-APP_SUBTITLE="Safer Git Actions"
+BASE_DIR="${HOME}/macos-scripts"
+DEFAULT_REPO="$BASE_DIR"
 
-UI_FILE="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
+[[ -f "$BASE_DIR/ui/terminal-ui/mq-ui.sh" ]] && source "$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
-if [[ -f "$UI_FILE" ]]; then
-  # shellcheck disable=SC1090
-  source "$UI_FILE"
-fi
+CURRENT_REPO="$DEFAULT_REPO"
 
-: "${C_RESET:=\033[0m}"
-: "${C_BOLD:=\033[1m}"
-: "${C_CYAN:=\033[36m}"
-: "${C_GREEN:=\033[32m}"
-: "${C_YELLOW:=\033[33m}"
-: "${C_RED:=\033[31m}"
-
-clear_screen() {
-  command -v clear >/dev/null 2>&1 && clear
-}
-
-pause_menu() {
-  echo
-  read -r -p "Press Enter to continue..."
-}
-
-confirm_action() {
-  local prompt="${1:-Are you sure?}"
-  local reply
-  read -r -p "$prompt [y/N]: " reply
-  [[ "$reply" =~ ^[Yy]$ ]]
-}
-
-print_header_mode "MQLAUNCH" "$APP_SUBTITLE" "GIT MODE"_mode "MQLAUNCH" "$APP_SUBTITLE" "GIT MODE"() {
-  clear_screen
-  echo -e "${C_BOLD}${C_CYAN}========================================${C_RESET}"
-  echo -e "${C_BOLD}${C_CYAN}               GIT MENU V3              ${C_RESET}"
-  echo -e "${C_BOLD}${C_CYAN}========================================${C_RESET}"
-  echo
-  echo "Safer Git actions for the current repository"
+print_git_header() {
+  clear
+  if typeset -f print_header >/dev/null 2>&1; then
+    print_header "GIT" "Repo workflows, risk checks, and safe actions"
+  else
+    echo "=============================="
+    echo " GIT"
+    echo " Repo workflows, risk checks, and safe actions"
+    echo "=============================="
+  fi
+  echo "Repo: $CURRENT_REPO"
   echo
 }
 
-in_git_repo() {
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1
+read_tty() {
+  local prompt="$1"
+  local var_name="$2"
+  local value
+  printf "%s" "$prompt" > /dev/tty
+  IFS= read -r value < /dev/tty
+  printf -v "$var_name" '%s' "$value"
 }
 
-require_git_repo() {
-  if ! in_git_repo; then
-    echo -e "${C_RED}Not inside a Git repository.${C_RESET}"
+pause_git() {
+  echo > /dev/tty
+  printf "Press Enter to continue..." > /dev/tty
+  IFS= read -r _ < /dev/tty
+}
+
+ensure_repo() {
+  [[ -d "$CURRENT_REPO/.git" ]] || {
+    echo "Not a git repository: $CURRENT_REPO"
+    return 1
+  }
+}
+
+repo_name() {
+  basename "$CURRENT_REPO"
+}
+
+github_remote_url() {
+  git -C "$CURRENT_REPO" remote get-url origin 2>/dev/null
+}
+
+github_web_url() {
+  local remote
+  remote="$(github_remote_url)"
+
+  if [[ -z "$remote" ]]; then
     return 1
   fi
-  return 0
+
+  if [[ "$remote" == git@github.com:* ]]; then
+    remote="${remote#git@github.com:}"
+    remote="${remote%.git}"
+    echo "https://github.com/$remote"
+    return 0
+  fi
+
+  if [[ "$remote" == https://github.com/* ]]; then
+    remote="${remote%.git}"
+    echo "$remote"
+    return 0
+  fi
+
+  return 1
 }
 
-current_branch() {
-  git branch --show-current 2>/dev/null
-}
-
-has_staged_changes() {
-  ! git diff --cached --quiet
-}
-
-has_unstaged_changes() {
-  ! git diff --quiet
-}
-
-has_untracked_files() {
-  [[ -n "$(git ls-files --others --exclude-standard 2>/dev/null)" ]]
-}
-
-has_any_local_changes() {
-  has_staged_changes || has_unstaged_changes || has_untracked_files
-}
-
-show_repo_info() {
-  local root branch upstream ahead_behind
-
-  require_git_repo || return
-
-  root="$(git rev-parse --show-toplevel)"
-  branch="$(current_branch)"
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
-  ahead_behind="$(git status --short --branch 2>/dev/null | head -n 1)"
-
-  echo -e "${C_GREEN}Repository root:${C_RESET}"
-  echo "$root"
+choose_repo() {
+  local path=""
   echo
-  echo -e "${C_GREEN}Current branch:${C_RESET}"
-  echo "${branch:-detached HEAD}"
-  echo
-  echo -e "${C_GREEN}Upstream:${C_RESET}"
-  echo "${upstream:-No upstream set}"
-  echo
-  echo -e "${C_GREEN}Branch status:${C_RESET}"
-  echo "${ahead_behind:-Unavailable}"
+  read_tty "Repo path [$CURRENT_REPO]: " path
+  [[ -z "$path" ]] && return
+  if [[ -d "$path/.git" ]]; then
+    CURRENT_REPO="$path"
+    echo "Switched repo to: $CURRENT_REPO"
+  else
+    echo "Not a git repo: $path"
+  fi
+  pause_git
 }
 
 show_status() {
-  require_git_repo || return
-  echo -e "${C_GREEN}Git status:${C_RESET}"
-  git status --short --branch
+  clear
+  ensure_repo || { pause_git; return; }
+
+  echo "=== Branch ==="
+  git -C "$CURRENT_REPO" branch --show-current
+  echo
+
+  echo "=== Status ==="
+  git -C "$CURRENT_REPO" status --short
+  echo
+
+  echo "=== Ahead / Behind ==="
+  git -C "$CURRENT_REPO" fetch origin >/dev/null 2>&1 || true
+  local branch upstream ahead behind counts
+  branch="$(git -C "$CURRENT_REPO" branch --show-current)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+
+  if [[ -n "$upstream" ]]; then
+    counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null)"
+    behind="${counts%% *}"
+    ahead="${counts##* }"
+    echo "Upstream: $upstream"
+    echo "Ahead:    ${ahead:-0}"
+    echo "Behind:   ${behind:-0}"
+  else
+    echo "No upstream branch configured."
+  fi
+
+  echo
+  pause_git
 }
 
-show_diff_summary() {
-  require_git_repo || return
-  echo -e "${C_GREEN}Diff summary:${C_RESET}"
-  git diff --stat
+analyze_diff() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local diff content risk reasons
+  diff="$(git -C "$CURRENT_REPO" diff --cached -- . 2>/dev/null)"
+  if [[ -z "$diff" ]]; then
+    diff="$(git -C "$CURRENT_REPO" diff -- . 2>/dev/null)"
+  fi
+
+  if [[ -z "$diff" ]]; then
+    echo "No diff to analyze."
+    echo
+    pause_git
+    return
+  fi
+
+  risk="LOW"
+  reasons=()
+
+  if echo "$diff" | grep -Eqi '(api[_-]?key|secret|token|password|passwd|PRIVATE KEY|BEGIN RSA|BEGIN OPENSSH)'; then
+    risk="HIGH"
+    reasons+=("Possible secret or credential content detected")
+  fi
+
+  if echo "$diff" | grep -Eqi 'rm -rf|chmod 777|curl .*\|.*sh|sudo '; then
+    risk="HIGH"
+    reasons+=("Potentially dangerous shell command pattern detected")
+  fi
+
+  if echo "$diff" | grep -Eqi '^diff --git a/.*\.(sh|zsh|bash)$'; then
+    [[ "$risk" == "LOW" ]] && risk="MEDIUM"
+    reasons+=("Shell script changes detected")
+  fi
+
+  local lines
+  lines="$(printf "%s\n" "$diff" | wc -l | tr -d ' ')"
+  if [[ "${lines:-0}" -gt 250 ]]; then
+    [[ "$risk" == "LOW" ]] && risk="MEDIUM"
+    reasons+=("Large diff (${lines} lines)")
+  fi
+
+  echo "=== Diff Risk Analysis ==="
+  echo "Risk level: $risk"
   echo
-  echo -e "${C_GREEN}Staged diff summary:${C_RESET}"
-  git diff --cached --stat
+
+  if (( ${#reasons[@]} > 0 )); then
+    echo "Reasons:"
+    for r in "${reasons[@]}"; do
+      echo "- $r"
+    done
+  else
+    echo "No obvious risk patterns detected."
+  fi
+
+  echo
+  echo "=== Changed files ==="
+  git -C "$CURRENT_REPO" diff --name-only --cached 2>/dev/null
+  git -C "$CURRENT_REPO" diff --name-only 2>/dev/null | awk '!seen[$0]++'
+
+  echo
+  pause_git
+}
+
+suggest_commit() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local files first kind msg
+  files="$(git -C "$CURRENT_REPO" diff --name-only --cached 2>/dev/null)"
+  if [[ -z "$files" ]]; then
+    files="$(git -C "$CURRENT_REPO" diff --name-only 2>/dev/null)"
+  fi
+
+  if [[ -z "$files" ]]; then
+    echo "No changed files found."
+    echo
+    pause_git
+    return
+  fi
+
+  first="$(printf "%s\n" "$files" | head -1)"
+  kind="update"
+
+  if printf "%s\n" "$files" | grep -Eq 'README|CHANGELOG|docs/'; then
+    kind="docs"
+  elif printf "%s\n" "$files" | grep -Eq '\.sh$|terminal/|tools/|ui/'; then
+    kind="improve"
+  elif printf "%s\n" "$files" | grep -Eq 'test|spec'; then
+    kind="test"
+  fi
+
+  msg="$kind: refine $(repo_name)"
+
+  if [[ -n "$first" ]]; then
+    msg="$kind: update ${first:t}"
+  fi
+
+  echo "=== Suggested Commit Message ==="
+  echo "$msg"
+  echo
+  echo "Changed files:"
+  printf "%s\n" "$files"
+  echo
+  pause_git
+}
+
+next_action() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local status branch upstream counts ahead behind
+  status="$(git -C "$CURRENT_REPO" status --short)"
+  branch="$(git -C "$CURRENT_REPO" branch --show-current)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+
+  ahead=0
+  behind=0
+
+  if [[ -n "$upstream" ]]; then
+    git -C "$CURRENT_REPO" fetch origin >/dev/null 2>&1 || true
+    counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null)"
+    behind="${counts%% *}"
+    ahead="${counts##* }"
+  fi
+
+  echo "=== Next Recommended Action ==="
+  echo
+
+  if [[ -n "$status" ]]; then
+    if echo "$status" | grep -Eq '^\?\?'; then
+      echo "1. Review untracked files before staging anything."
+      echo "2. Stage intentionally, not with blind git add ."
+    elif echo "$status" | grep -Eq '^( M|M |MM|A |AM| D|D )'; then
+      echo "1. Review diff."
+      echo "2. Stage selected changes."
+      echo "3. Commit with a clear message."
+    else
+      echo "Working tree has changes. Review before committing."
+    fi
+  else
+    if [[ "${behind:-0}" -gt 0 && "${ahead:-0}" -gt 0 ]]; then
+      echo "Branch has diverged from upstream."
+      echo "Recommended: inspect log, then pull --rebase or reconcile manually."
+    elif [[ "${behind:-0}" -gt 0 ]]; then
+      echo "You are behind upstream."
+      echo "Recommended: git pull --rebase origin $branch"
+    elif [[ "${ahead:-0}" -gt 0 ]]; then
+      echo "You are ahead of upstream."
+      echo "Recommended: git push origin $branch"
+    else
+      echo "Repo looks clean and synced."
+      echo "Recommended: no action needed."
+    fi
+  fi
+
+  echo
+  pause_git
+}
+
+stage_selected() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  echo "=== Changed / Untracked Files ==="
+  git -C "$CURRENT_REPO" status --short
+  echo
+
+  local files
+  read_tty "Enter file(s) to stage (space-separated), or leave blank to cancel: " files
+  [[ -z "$files" ]] && return
+
+  (
+    cd "$CURRENT_REPO" || exit 1
+    git add $=files
+  )
+
+  echo
+  git -C "$CURRENT_REPO" status --short
+  echo
+  pause_git
+}
+
+commit_changes() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local msg=""
+  echo "=== Staged Changes ==="
+  git -C "$CURRENT_REPO" diff --cached --name-only
+  echo
+
+  if [[ -z "$(git -C "$CURRENT_REPO" diff --cached --name-only)" ]]; then
+    echo "No staged changes to commit."
+    echo
+    pause_git
+    return
+  fi
+
+  read_tty "Commit message: " msg
+  [[ -z "$msg" ]] && return
+
+  git -C "$CURRENT_REPO" commit -m "$msg"
+  echo
+  pause_git
+}
+
+safe_push() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local branch upstream counts ahead behind confirm
+  branch="$(git -C "$CURRENT_REPO" branch --show-current)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+
+  git -C "$CURRENT_REPO" fetch origin >/dev/null 2>&1 || true
+
+  if [[ -z "$upstream" ]]; then
+    echo "No upstream branch configured."
+    echo
+    read_tty "Push and set upstream to origin/$branch? [y/N]: " confirm
+    [[ "$confirm" =~ ^[Yy]$ ]] || return
+    git -C "$CURRENT_REPO" push -u origin "$branch"
+    pause_git
+    return
+  fi
+
+  counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null)"
+  behind="${counts%% *}"
+  ahead="${counts##* }"
+
+  echo "Upstream: $upstream"
+  echo "Ahead:    ${ahead:-0}"
+  echo "Behind:   ${behind:-0}"
+  echo
+
+  if [[ "${behind:-0}" -gt 0 && "${ahead:-0}" -gt 0 ]]; then
+    echo "Branch has diverged. Push blocked."
+    echo "Recommended: inspect log and reconcile first."
+    echo
+    pause_git
+    return
+  fi
+
+  if [[ "${behind:-0}" -gt 0 ]]; then
+    echo "Remote is ahead. Push blocked."
+    echo "Recommended: git pull --rebase origin $branch"
+    echo
+    pause_git
+    return
+  fi
+
+  if [[ "${ahead:-0}" -eq 0 ]]; then
+    echo "Nothing to push."
+    echo
+    pause_git
+    return
+  fi
+
+  read_tty "Push current branch to origin? [y/N]: " confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || return
+
+  git -C "$CURRENT_REPO" push origin "$branch"
+  echo
+  pause_git
+}
+
+pull_rebase() {
+  clear
+  ensure_repo || { pause_git; return; }
+
+  local branch confirm
+  branch="$(git -C "$CURRENT_REPO" branch --show-current)"
+  echo "This will run: git pull --rebase origin $branch"
+  echo
+  read_tty "Continue? [y/N]: " confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || return
+
+  git -C "$CURRENT_REPO" pull --rebase origin "$branch"
+  echo
+  pause_git
 }
 
 show_log() {
-  require_git_repo || return
-  echo -e "${C_GREEN}Recent commits:${C_RESET}"
-  git log --oneline --decorate -n 15
-}
+  clear
+  ensure_repo || { pause_git; return; }
 
-show_branches() {
-  require_git_repo || return
-  echo -e "${C_GREEN}Branches:${C_RESET}"
-  git branch -a
-}
-
-show_upstream_status() {
-  require_git_repo || return
-  echo -e "${C_YELLOW}Fetching upstream status...${C_RESET}"
-  git fetch --all --prune
+  git -C "$CURRENT_REPO" log --oneline --decorate --graph -15
   echo
-  git status --short --branch
+  pause_git
 }
 
-show_stash_list() {
-  require_git_repo || return
-  echo -e "${C_GREEN}Stash list:${C_RESET}"
-  git stash list
-}
+open_repo_github() {
+  clear
+  ensure_repo || { pause_git; return; }
 
-git_fetch_all() {
-  require_git_repo || return
-  echo -e "${C_YELLOW}Fetching all remotes...${C_RESET}"
-  git fetch --all --prune
-}
-
-git_pull_rebase() {
-  require_git_repo || return
-
-  if has_any_local_changes; then
-    echo -e "${C_RED}Local changes detected. Commit, stash, or restore before pull --rebase.${C_RESET}"
+  local url
+  url="$(github_web_url)"
+  if [[ -z "$url" ]]; then
+    echo "Could not determine GitHub URL from origin remote."
+    echo
+    pause_git
     return
   fi
 
-  echo -e "${C_YELLOW}Pulling latest changes with rebase...${C_RESET}"
-  git pull --rebase
-}
-
-git_push_current() {
-  require_git_repo || return
-  echo -e "${C_YELLOW}Pushing current branch...${C_RESET}"
-  git push
-}
-
-git_add_all() {
-  require_git_repo || return
-  echo -e "${C_YELLOW}Staging all changes...${C_RESET}"
-  git add -A
-  echo -e "${C_GREEN}Done.${C_RESET}"
-}
-
-git_stage_one_file() {
-  local file
-
-  require_git_repo || return
-
-  echo -e "${C_GREEN}Changed/untracked files:${C_RESET}"
-  git status --short
+  echo "Opening: $url"
+  open "$url"
   echo
-
-  read -r -p "File to stage: " file
-
-  if [[ -z "${file// }" ]]; then
-    echo -e "${C_RED}File path cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git add -- "$file"
+  pause_git
 }
 
-git_commit_prompt() {
-  local msg
-
-  require_git_repo || return
-
-  if ! has_staged_changes; then
-    echo -e "${C_RED}No staged changes to commit.${C_RESET}"
-    return
-  fi
-
-  read -r -p "Commit message: " msg
-
-  if [[ -z "${msg// }" ]]; then
-    echo -e "${C_RED}Commit message cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git commit -m "$msg"
-}
-
-git_add_commit_push() {
-  local msg
-
-  require_git_repo || return
-
-  echo -e "${C_YELLOW}Staging all changes...${C_RESET}"
-  git add -A
-
-  if ! has_staged_changes; then
-    echo -e "${C_RED}No changes to commit.${C_RESET}"
-    return
-  fi
-
-  read -r -p "Commit message: " msg
-
-  if [[ -z "${msg// }" ]]; then
-    echo -e "${C_RED}Commit message cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git commit -m "$msg" && git push
-}
-
-git_stash_push() {
-  local msg
-
-  require_git_repo || return
-
-  if ! has_any_local_changes; then
-    echo -e "${C_RED}No local changes to stash.${C_RESET}"
-    return
-  fi
-
-  read -r -p "Stash message (optional): " msg
-
-  if ! confirm_action "Create stash with current local changes?"; then
-    echo -e "${C_YELLOW}Cancelled.${C_RESET}"
-    return
-  fi
-
-  if [[ -n "${msg// }" ]]; then
-    git stash push -u -m "$msg"
-  else
-    git stash push -u
-  fi
-}
-
-git_stash_pop() {
-  require_git_repo || return
-
-  if [[ -z "$(git stash list)" ]]; then
-    echo -e "${C_RED}No stash entries found.${C_RESET}"
-    return
-  fi
-
-  echo -e "${C_GREEN}Latest stash:${C_RESET}"
-  git stash list | head -n 1
-  echo
-
-  if ! confirm_action "Apply and drop the latest stash?"; then
-    echo -e "${C_YELLOW}Cancelled.${C_RESET}"
-    return
-  fi
-
-  git stash pop
-}
-
-git_switch_branch() {
-  local branch
-
-  require_git_repo || return
-
-  echo -e "${C_GREEN}Available local branches:${C_RESET}"
-  git branch --format='%(refname:short)'
-  echo
-
-  read -r -p "Branch to switch to: " branch
-
-  if [[ -z "${branch// }" ]]; then
-    echo -e "${C_RED}Branch name cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git switch "$branch"
-}
-
-git_create_branch() {
-  local branch
-
-  require_git_repo || return
-
-  read -r -p "New branch name: " branch
-
-  if [[ -z "${branch// }" ]]; then
-    echo -e "${C_RED}Branch name cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git switch -c "$branch"
-}
-
-git_delete_branch() {
-  local branch current
-
-  require_git_repo || return
-
-  current="$(current_branch)"
-
-  echo -e "${C_GREEN}Local branches:${C_RESET}"
-  git branch --format='%(refname:short)'
-  echo
-
-  read -r -p "Branch to delete: " branch
-
-  if [[ -z "${branch// }" ]]; then
-    echo -e "${C_RED}Branch name cannot be empty.${C_RESET}"
-    return
-  fi
-
-  if [[ "$branch" == "$current" ]]; then
-    echo -e "${C_RED}Cannot delete the current branch.${C_RESET}"
-    return
-  fi
-
-  if ! confirm_action "Delete local branch '$branch'?"; then
-    echo -e "${C_YELLOW}Cancelled.${C_RESET}"
-    return
-  fi
-
-  git branch -d "$branch"
-}
-
-git_restore_worktree_file() {
-  local file
-
-  require_git_repo || return
-
-  echo -e "${C_YELLOW}Modified files:${C_RESET}"
-  git status --short
-  echo
-
-  read -r -p "File to discard changes for: " file
-
-  if [[ -z "${file// }" ]]; then
-    echo -e "${C_RED}File path cannot be empty.${C_RESET}"
-    return
-  fi
-
-  if ! confirm_action "Discard unstaged changes in '$file'?"; then
-    echo -e "${C_YELLOW}Cancelled.${C_RESET}"
-    return
-  fi
-
-  git restore -- "$file"
-}
-
-git_unstage_file() {
-  local file
-
-  require_git_repo || return
-
-  echo -e "${C_YELLOW}Staged files:${C_RESET}"
-  git diff --cached --name-only
-  echo
-
-  read -r -p "File to unstage: " file
-
-  if [[ -z "${file// }" ]]; then
-    echo -e "${C_RED}File path cannot be empty.${C_RESET}"
-    return
-  fi
-
-  git restore --staged -- "$file"
-}
-
-normalize_remote_url() {
-  local remote_url="$1"
-
-  if [[ "$remote_url" =~ ^git@github\.com:(.*)$ ]]; then
-    echo "https://github.com/${BASH_REMATCH[1]}"
-    return
-  fi
-
-  if [[ "$remote_url" =~ ^https://github\.com/(.*)\.git$ ]]; then
-    echo "https://github.com/${BASH_REMATCH[1]}"
-    return
-  fi
-
-  if [[ "$remote_url" =~ ^git@([^:]+):(.*)$ ]]; then
-    echo "https://${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
-    return
-  fi
-
-  echo "${remote_url%.git}"
-}
-
-open_repo_remote() {
-  local remote_url normalized_url
-
-  require_git_repo || return
-
-  remote_url="$(git remote get-url origin 2>/dev/null || true)"
-
-  if [[ -z "$remote_url" ]]; then
-    echo -e "${C_RED}No origin remote found.${C_RESET}"
-    return
-  fi
-
-  normalized_url="$(normalize_remote_url "$remote_url")"
-
-  echo -e "${C_GREEN}Opening origin remote:${C_RESET}"
-  echo "$normalized_url"
-
-  if command -v open >/dev/null 2>&1; then
-    open "$normalized_url"
-  else
-    echo "$normalized_url"
-  fi
-}
-
-show_menu() {
-  echo "1) Repo info"
-  echo "2) Git status"
-  echo "3) Diff summary"
-  echo "4) Recent log"
-  echo "5) Show branches"
-  echo "6) Fetch all"
-  echo "7) Pull --rebase"
-  echo "8) Push"
-  echo "9) Add all"
-  echo "10) Stage one file"
-  echo "11) Commit staged changes"
-  echo "12) Add + Commit + Push"
-  echo "13) Open origin remote"
-  echo "14) Upstream status"
-  echo "15) Stash push"
-  echo "16) Stash pop"
-  echo "17) Show stash list"
-  echo "18) Switch branch"
-  echo "19) Create branch"
-  echo "20) Delete local branch"
-  echo "21) Discard changes in file"
-  echo "22) Unstage file"
-  echo "0) Back / Exit"
-  echo
-}
-
-handle_choice() {
-  local choice="$1"
-
-  case "$choice" in
-    1) show_repo_info ;;
-    2) show_status ;;
-    3) show_diff_summary ;;
-    4) show_log ;;
-    5) show_branches ;;
-    6) git_fetch_all ;;
-    7) git_pull_rebase ;;
-    8) git_push_current ;;
-    9) git_add_all ;;
-    10) git_stage_one_file ;;
-    11) git_commit_prompt ;;
-    12) git_add_commit_push ;;
-    13) open_repo_remote ;;
-    14) show_upstream_status ;;
-    15) git_stash_push ;;
-    16) git_stash_pop ;;
-    17) show_stash_list ;;
-    18) git_switch_branch ;;
-    19) git_create_branch ;;
-    20) git_delete_branch ;;
-    21) git_restore_worktree_file ;;
-    22) git_unstage_file ;;
-    0|q|quit|exit) return 1 ;;
-    *)
-      echo -e "${C_RED}Invalid selection.${C_RESET}"
-      ;;
-  esac
-
-  return 0
-}
-
-menu_loop() {
-  local choice
-
+git_menu_loop() {
+  local choice=""
   while true; do
-    print_header
-    show_menu
-    read -r -p "Choose an option: " choice
+    print_git_header
+    echo "1. Repo status"
+    echo "2. Diff risk analysis"
+    echo "3. Suggest commit message"
+    echo "4. Next recommended action"
+    echo "5. Stage selected files"
+    echo "6. Commit staged changes"
+    echo "7. Safe push"
+    echo "8. Pull with rebase"
+    echo "9. Recent git log"
+    echo "10. Open repo on GitHub"
+    echo "11. Change repo path"
+    echo "b. Back"
+    echo
 
-    if ! handle_choice "$choice"; then
-      break
-    fi
-
-    pause_menu
+    read_tty "Choose an option: " choice
+    case "$choice" in
+      1) show_status ;;
+      2) analyze_diff ;;
+      3) suggest_commit ;;
+      4) next_action ;;
+      5) stage_selected ;;
+      6) commit_changes ;;
+      7) safe_push ;;
+      8) pull_rebase ;;
+      9) show_log ;;
+      10) open_repo_github ;;
+      11) choose_repo ;;
+      b|B) break ;;
+      *) echo "Unknown option"; sleep 1 ;;
+    esac
   done
 }
 
-menu_loop
+git_menu_loop

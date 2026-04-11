@@ -84,6 +84,7 @@ WORKFLOWS
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
   mqlaunch login          Start session boot
+  mqlaunch login menu     Session boot + full menu
   mqlaunch login about    Session boot + about screen
   mqlaunch login check    Session boot + self-check
 
