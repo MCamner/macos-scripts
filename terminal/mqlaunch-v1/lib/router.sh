@@ -34,6 +34,9 @@ route_command() {
     bundle|debug-bundle|support)
       command_run_debug_bundle
       ;;
+    notes|changelog|release-notes)
+      command_show_changelog
+      ;;
     repo)
       command_open_repo
       ;;
@@ -70,6 +73,7 @@ Usage:
   mqlaunch version        Show version info
   mqlaunch check          Run self-check
   mqlaunch bundle         Create debug bundle
+  mqlaunch notes          Show release notes
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
   mqlaunch help           Show this help

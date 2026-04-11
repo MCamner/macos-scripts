@@ -794,6 +794,30 @@ run_debug_bundle() {
   return $status
 }
 
+show_release_notes() {
+  print_header
+  row_bold "RELEASE NOTES"
+  empty_row
+
+  local changelog="$BASE_DIR/CHANGELOG.md"
+
+  if [[ ! -f "$changelog" ]]; then
+    echo "${C_ERR}Missing:${C_RESET} $changelog"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  if command -v bat >/dev/null 2>&1; then
+    bat --style=plain --paging=never "$changelog" | head -n 80
+  else
+    head -n 80 "$changelog"
+  fi
+
+  print_footer
+  pause_enter
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -825,9 +849,10 @@ print_main_menu() {
   row2 "23. Performance" "24. Dev"
   row2 "25. Tools" "26. Version"
   row2 "27. Self-check" "28. Debug bundle"
+  row "29. Release notes"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-28,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-29,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -1016,6 +1041,7 @@ main_loop() {
       26) show_version_info ;;
       27) run_self_check ;;
       28) run_debug_bundle ;;
+      29) show_release_notes ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -1041,6 +1067,7 @@ Usage:
   mqlaunch version       Show version information
   mqlaunch check         Run full self-check
   mqlaunch bundle        Create debug bundle
+  mqlaunch notes         Show release notes
   mqlaunch dev-v1        Compatibility alias for Dev Menu
   mqlaunch git-v1        Compatibility alias for Dev Menu
   mqlaunch tools-v1      Compatibility alias for Tools Menu
@@ -1110,6 +1137,7 @@ run_arg_command() {
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
+    notes|changelog|release-notes) show_release_notes ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
