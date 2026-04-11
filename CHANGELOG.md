@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-04-11
+
+### Added
+- About / Status dashboard
+- Command index
+- Self-check and debug bundle commands
+- Release notes command
+- Main menu workflows expansion
+
+### Changed
+- Improved help and command alignment
+- Fixed Tweaks integration in mqlaunch
+- Unified terminal guide path references
+
+### Fixed
+- Prevented menu exits on self-check, bundle, and notes
+- Fixed zsh reserved variable issue with `status`
+- Excluded local bundles and backup launcher files from version control
+
 ## [0.1.0] - 2026-04-10
 
 ### Added
