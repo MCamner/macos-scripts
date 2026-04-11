@@ -7,6 +7,7 @@ V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 TOOLS_BRIDGE="$PROJECT_ROOT/terminal/bridges/tools-bridge.sh"
 DEV_BRIDGE="$PROJECT_ROOT/terminal/bridges/dev-bridge.sh"
 PERF_BRIDGE="$PROJECT_ROOT/terminal/bridges/performance-bridge.sh"
+GUIDE_HTML="$PROJECT_ROOT/docs/mac-terminal-guide.html"
 
 pass() {
   echo "[PASS] $1"
@@ -44,6 +45,9 @@ assert_file "$V1" "V1 launcher"
 assert_file "$TOOLS_BRIDGE" "Tools bridge"
 assert_file "$DEV_BRIDGE" "Dev bridge"
 assert_file "$PERF_BRIDGE" "Performance bridge"
+
+[[ -f "$GUIDE_HTML" ]] || fail "Terminal guide local file missing: $GUIDE_HTML"
+pass "Terminal guide local file exists"
 
 assert_cmd_ok "Legacy launcher help works" zsh "$LEGACY" help
 assert_cmd_ok "V1 launcher help works" bash "$V1" help

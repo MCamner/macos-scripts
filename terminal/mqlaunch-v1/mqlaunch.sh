@@ -32,6 +32,8 @@ source "$SCRIPT_DIR/commands/bundle.sh"
 source "$SCRIPT_DIR/commands/notes.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/about.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/index.sh"
 
 # Menus
 # shellcheck source=/dev/null

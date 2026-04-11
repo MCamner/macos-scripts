@@ -38,7 +38,7 @@ command_tools_open_guide_dir() {
 }
 
 command_tools_open_guide_file() {
-  local html="$PROJECT_ROOT/tools/mac-terminal-guide/mac-terminal-guide.html"
+  local html="$PROJECT_ROOT/docs/mac-terminal-guide.html"
   local readme="$PROJECT_ROOT/tools/mac-terminal-guide/README.md"
 
   if [[ -f "$html" ]]; then

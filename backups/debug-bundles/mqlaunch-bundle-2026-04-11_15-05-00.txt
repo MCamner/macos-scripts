@@ -1,0 +1,124 @@
+mqlaunch Debug Bundle
+Generated: lör 11 apr. 2026 15:05:00 CEST
+Version: 0.1.0
+
+=== PATHS ===
+Project root: /Users/mansys/macos-scripts
+Legacy launcher: /Users/mansys/macos-scripts/terminal/launchers/mqlaunch.sh
+V1 launcher: /Users/mansys/macos-scripts/terminal/mqlaunch-v1/mqlaunch.sh
+Guide HTML: /Users/mansys/macos-scripts/docs/mac-terminal-guide.html
+Bundle output: /Users/mansys/macos-scripts/backups/debug-bundles/mqlaunch-bundle-2026-04-11_15-05-00.txt
+
+=== FILE CHECKS ===
+[OK] Legacy launcher exists
+[OK] V1 launcher exists
+[OK] Guide HTML exists
+[OK] test-all.sh executable
+
+=== GIT ===
+Branch: main
+Last commit: 6f76797 - Add release notes and changelog command to mqlaunch (16 minutes ago)
+
+Status:
+ M terminal/launchers/mqlaunch.sh
+ M terminal/mqlaunch-v1/commands/tools.sh
+ M tools/scripts/test-mqlaunch.sh
+?? backups/debug-bundles/
+?? terminal/launchers/mqlaunch.sh.bak.bundle.20260411-143705
+?? terminal/launchers/mqlaunch.sh.bak.mainmenu-fix.20260410-230937
+?? terminal/launchers/mqlaunch.sh.bak.mainmenu-v2.20260410-225339
+?? terminal/launchers/mqlaunch.sh.bak.notes.20260411-144616
+?? terminal/launchers/mqlaunch.sh.bak.selfcheck.20260411-000611
+?? terminal/launchers/mqlaunch.sh.bak.version.20260410-235924
+
+=== SYSTEM ===
+Hostname: Zephyr
+User: mansys
+Shell: /bin/zsh
+Uptime:
+15:05  up 21:52, 2 users, load averages: 4,41 4,40 4,55
+
+Disk (/):
+/dev/disk3s1s1   228Gi    12Gi    33Gi    26%    458k  349M    0%   /
+
+Memory:
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                               16730.
+Pages active:                            356396.
+Pages inactive:                          349849.
+Pages speculative:                        11551.
+Pages throttled:                              0.
+Pages wired down:                        146154.
+Pages purgeable:                          14592.
+"Translation faults":                  86809422.
+Pages copy-on-write:                    4726083.
+
+Network:
+192.168.0.61
+
+Battery:
+Now drawing from 'Battery Power'
+ -InternalBattery-0 (id=34603107)	48%; discharging; 2:16 remaining present: true
+
+=== LAUNCHER HELP CHECKS ===
+[OK] Legacy help works
+[FAIL] V1 help failed
+
+=== SMOKE TESTS ===
+== Running mqlaunch legacy/bridge checks ==
+[PASS] Legacy launcher exists
+[PASS] V1 launcher exists
+[PASS] Tools bridge exists
+[PASS] Dev bridge exists
+[PASS] Performance bridge exists
+[PASS] Terminal guide local file exists
+[PASS] Legacy launcher help works
+[FAIL] V1 launcher help works
+
+=== MENU ROUTE CHECKS ===
+847:  row "WORKFLOWS"
+848:  row2 "23. Performance" "24. Dev"
+849:  row2 "23. Performance" "24. Dev"
+850:  row2 "25. Tools" "26. Version"
+851:  row2 "27. Self-check" "28. Debug bundle"
+
+713:show_version_info() {
+733:run_self_check() {
+765:run_debug_bundle() {
+1038:      23) open_v1_performance_menu ;;
+1039:      24) open_v1_dev_menu ;;
+1040:      25) open_v1_tools_menu ;;
+1041:      26) show_version_info ;;
+1042:      27) run_self_check || true ;;
+1043:      28) run_debug_bundle || true ;;
+1118:    dev|git) open_v1_dev_menu ;;
+1136:    perf|performance) open_v1_performance_menu ;;
+1137:    version|ver|about) show_version_info ;;
+1138:    check|health) run_self_check ;;
+1139:    bundle|debug-bundle|support) run_debug_bundle ;;
+1141:    dev-v1|git-v1) open_v1_dev_menu ;;
+1142:    tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
+1143:    tools-v1|menu-tools-v1) open_v1_tools_menu ;;
+
+=== RECENT REPORT FILES ===
+/Users/mansys/macos-scripts/backups/debug-bundles/mqlaunch-bundle-2026-04-11_14-38-05.txt
+/Users/mansys/macos-scripts/backups/debug-bundles/mqlaunch-bundle-2026-04-11_14-48-33.txt
+/Users/mansys/macos-scripts/backups/debug-bundles/mqlaunch-bundle-2026-04-11_14-59-38.txt
+/Users/mansys/macos-scripts/backups/debug-bundles/mqlaunch-bundle-2026-04-11_15-05-00.txt
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260406-025315.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260406-025453.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260406-030024.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260406-030843.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260406-193515.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260408-013344.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-20260410-022926.sh.bak
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-v2-stable.sh
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-v3-stable.sh
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-v3.1-stable.sh
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch-v3.2-stable.sh
+/Users/mansys/macos-scripts/backups/launchers/mqlaunch.sh.bak
+/Users/mansys/macos-scripts/backups/performance-reports/perf-snapshot-2026-04-10_19-21-00.txt
+/Users/mansys/macos-scripts/backups/performance-reports/perf-snapshot-2026-04-10_19-37-03.txt
+/Users/mansys/macos-scripts/backups/performance-reports/perf-snapshot-2026-04-10_20-53-56.txt
+/Users/mansys/macos-scripts/backups/performance-reports/perf-snapshot-2026-04-10_22-22-09.txt
+
