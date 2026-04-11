@@ -32,6 +32,8 @@ source "$SCRIPT_DIR/commands/bundle.sh"
 source "$SCRIPT_DIR/commands/notes.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/commands/about.sh"
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/commands/login.sh"
 
 # Menus
 # shellcheck source=/dev/null
@@ -50,8 +52,7 @@ source "$SCRIPT_DIR/menus/ai.sh"
 source "$SCRIPT_DIR/menus/performance.sh"
 
 main() {
-  local cmd="${1:-menu}"
-  route_command "$cmd"
+  route_command "$@"
 }
 
-main "${1:-}"
+main "$@"

@@ -6,7 +6,6 @@ README_FILE="README.md"
 CHANGELOG_FILE="CHANGELOG.md"
 
 DRY_RUN=0
-GH_RELEASE=0
 COMMIT_CREATED=0
 TAG_CREATED=0
 TARGET_VERSION=""
@@ -15,12 +14,11 @@ TARGET_TAG=""
 usage() {
   cat <<'EOF'
 Usage:
-  ./tools/release.sh [--dry-run] [--github-release] <version>
+  ./tools/release.sh [--dry-run] <version>
 
 Examples:
   ./tools/release.sh 0.1.2
   ./tools/release.sh --dry-run 0.1.2
-  ./tools/release.sh --github-release 0.1.2
 
 What it does:
   1. Verifies git working tree is clean
@@ -34,7 +32,6 @@ What it does:
   9. Creates a release commit
  10. Creates annotated tag v<version>
  11. Pushes main and the new tag to origin
- 12. Optionally creates a GitHub Release via gh CLI
 
 Safety:
   - --dry-run performs all checks and file updates locally, shows the diff,
@@ -85,19 +82,6 @@ require_clean_git() {
 tag_exists() {
   local tag="$1"
   git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1
-}
-
-require_gh_cli() {
-  command -v gh >/dev/null 2>&1 || die "GitHub CLI (gh) is required for --github-release"
-}
-
-create_github_release() {
-  require_gh_cli
-
-  info "Creating GitHub release $TARGET_TAG"
-  gh release create "$TARGET_TAG" \
-    --title "Release $TARGET_TAG" \
-    --notes-file "$CHANGELOG_FILE"
 }
 
 restore_worktree_changes() {
@@ -199,7 +183,6 @@ print_release_summary() {
   echo "Tag     : $tag"
   echo "Branch  : main"
   echo "Files   : $VERSION_FILE, $README_FILE, $CHANGELOG_FILE"
-  echo "GitHub  : $([[ "$GH_RELEASE" -eq 1 ]] && echo enabled || echo disabled)"
   echo
 }
 

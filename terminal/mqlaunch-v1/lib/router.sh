@@ -2,6 +2,7 @@
 
 route_command() {
   local cmd="${1:-menu}"
+  shift || true
 
   case "$cmd" in
     menu|main)
@@ -12,6 +13,9 @@ route_command() {
       ;;
     tools|tools-v1|menu-tools-v1)
       menu_tools
+      ;;
+    login|boot|session)
+      command_run_login_boot "$@"
       ;;
     automation|auto)
       menu_automation
@@ -79,6 +83,9 @@ WORKFLOWS
   mqlaunch dev            Open Dev module
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
+  mqlaunch login          Start session boot
+  mqlaunch login about    Session boot + about screen
+  mqlaunch login check    Session boot + self-check
 
 STATUS / SUPPORT
   mqlaunch about          Show about / status dashboard

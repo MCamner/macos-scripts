@@ -681,6 +681,15 @@ open_git_menu() {
   [[ -f "$git_script" ]] && bash "$git_script" || echo "Git menu not found."
 }
 
+open_release_menu() {
+  local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
+  if [[ -x "$release_menu" ]]; then
+    "$release_menu"
+  else
+    echo "Release menu not found: $release_menu"
+  fi
+}
+
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
@@ -818,6 +827,25 @@ show_release_notes() {
   pause_enter
 }
 
+run_mqlogin() {
+  local login_script="$BASE_DIR/automation/login/mqlogin.sh"
+
+  if [[ ! -x "$login_script" ]]; then
+    print_header
+    row_bold "LOGIN BOOT"
+    empty_row
+    row "Missing or non-executable:"
+    row " $login_script"
+    row "Run:"
+    row " chmod +x $login_script"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  "$login_script" "$@"
+}
+
 show_about_dashboard() {
   print_header
   row_bold "ABOUT / STATUS"
@@ -888,6 +916,10 @@ show_command_index() {
   row " mqlaunch dev          Dev module"
   row " mqlaunch git          Alias for Dev"
   row " mqlaunch tools        Tools module"
+  row " mqlaunch release      Open Release Menu"
+  row " mqlaunch login        Start session boot"
+  row " mqlaunch login about  Session boot + about screen"
+  row " mqlaunch login check  Session boot + self-check"
 
   empty_row
   row "STATUS / SUPPORT"
@@ -1175,6 +1207,10 @@ WORKFLOWS
   mqlaunch dev            Open Dev module
   mqlaunch git            Alias for Dev
   mqlaunch tools          Open Tools module
+  mqlaunch release        Open Release Menu
+  mqlaunch login          Start session boot
+  mqlaunch login about    Session boot + about screen
+  mqlaunch login check    Session boot + self-check
 
 STATUS / SUPPORT
   mqlaunch about          Show about / status dashboard
@@ -1200,6 +1236,7 @@ HELP
 
 run_arg_command() {
   local cmd="${1:l}"
+  shift || true
 
   case "$cmd" in
     finder) open_app "Finder" ;;
@@ -1239,6 +1276,8 @@ run_arg_command() {
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
+    release|rel) open_release_menu ;;
+    login|boot|session) run_mqlogin "$@" ;;
     perf|performance) open_v1_performance_menu ;;
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;
@@ -1273,8 +1312,7 @@ run_arg_command() {
 
 # --- Entry --------------------------------------------------
 if [[ $# -gt 0 ]]; then
-  run_arg_command "$1"
+  run_arg_command "$@"
 else
   main_loop
 fi
-
