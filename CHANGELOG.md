@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+[0.1.3]
+
+Changed
+
+- Improve release script safety with dry-run support and rollback handling.
+
 ## [0.1.2]
 
 ### Changed
