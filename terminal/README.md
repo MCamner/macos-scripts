@@ -23,7 +23,9 @@ It is designed for:
 
 ```text
 terminal/
-├── launchers/   # active launcher scripts
-├── menus/       # reusable or future menu modules
-├── themes/      # zsh themes and theme switching
+├── bridges/      # legacy-to-v1 routing helpers
+├── launchers/    # active launcher scripts
+├── menus/        # reusable or future menu modules
+├── mqlaunch-v1/  # modular launcher implementation
+├── themes/       # zsh themes and theme switching
 └── README.md
