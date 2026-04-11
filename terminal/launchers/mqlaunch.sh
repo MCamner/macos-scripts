@@ -748,10 +748,10 @@ run_self_check() {
   fi
 
   "$check_script"
-  local status=$?
+  local rc=$?
 
   echo
-  if [[ $status -eq 0 ]]; then
+  if [[ $rc -eq 0 ]]; then
     echo "${C_OK}All smoke checks passed.${C_RESET}"
   else
     echo "${C_ERR}Smoke checks failed.${C_RESET}"
@@ -759,7 +759,7 @@ run_self_check() {
 
   print_footer
   pause_enter
-  return $status
+  return $rc
 }
 
 run_debug_bundle() {
@@ -778,10 +778,10 @@ run_debug_bundle() {
 
   local outfile
   outfile="$("$bundle_script")"
-  local status=$?
+  local rc=$?
 
   echo
-  if [[ $status -eq 0 ]]; then
+  if [[ $rc -eq 0 ]]; then
     echo "${C_OK}Debug bundle created:${C_RESET}"
     echo " $outfile"
     [[ -f "$outfile" ]] && open -R "$outfile" 2>/dev/null || true
@@ -791,7 +791,7 @@ run_debug_bundle() {
 
   print_footer
   pause_enter
-  return $status
+  return $rc
 }
 
 show_release_notes() {
@@ -813,6 +813,60 @@ show_release_notes() {
   else
     head -n 80 "$changelog"
   fi
+
+  print_footer
+  pause_enter
+}
+
+show_about_dashboard() {
+  print_header
+  row_bold "ABOUT / STATUS"
+  empty_row
+
+  local version_file="$BASE_DIR/VERSION"
+  local version="unknown"
+  local repo_state="unknown"
+  local smoke_status="unknown"
+  local latest_bundle="none"
+  local guide_html="$BASE_DIR/docs/mac-terminal-guide.html"
+  local legacy="$BASE_DIR/terminal/launchers/mqlaunch.sh"
+  local v1="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
+  local bundle_dir="$BASE_DIR/backups/debug-bundles"
+  local test_script="$BASE_DIR/tools/scripts/test-all.sh"
+
+  [[ -f "$version_file" ]] && version="$(head -n 1 "$version_file")"
+
+  if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
+    repo_state="clean"
+  else
+    repo_state="dirty"
+  fi
+
+  if [[ -x "$test_script" ]]; then
+    if "$test_script" >/dev/null 2>&1; then
+      smoke_status="PASS"
+    else
+      smoke_status="FAIL"
+    fi
+  else
+    smoke_status="missing"
+  fi
+
+  if [[ -d "$bundle_dir" ]]; then
+    latest_bundle="$(ls -1t "$bundle_dir" 2>/dev/null | head -n 1)"
+    [[ -z "$latest_bundle" ]] && latest_bundle="none"
+  fi
+
+  row "Project:        macos-scripts"
+  row "Version:        $version"
+  row "Release stage:  baseline"
+  row "Repo state:     $repo_state"
+  row "Smoke tests:    $smoke_status"
+  row "Guide HTML:     $guide_html"
+  row "Legacy:         $legacy"
+  row "V1:             $v1"
+  row "Latest bundle:  $latest_bundle"
+  row "Modules:        perf / dev / tools"
 
   print_footer
   pause_enter
@@ -849,10 +903,10 @@ print_main_menu() {
   row2 "23. Performance" "24. Dev"
   row2 "25. Tools" "26. Version"
   row2 "27. Self-check" "28. Debug bundle"
-  row "29. Release notes"
+  row2 "29. Release notes" "30. About / Status"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-29,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-30,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -1039,9 +1093,10 @@ main_loop() {
       24) open_v1_dev_menu ;;
       25) open_v1_tools_menu ;;
       26) show_version_info ;;
-      27) run_self_check ;;
-      28) run_debug_bundle ;;
-      29) show_release_notes ;;
+      27) run_self_check || true ;;
+      28) run_debug_bundle || true ;;
+      29) show_release_notes || true ;;
+      30) show_about_dashboard || true ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -1068,6 +1123,7 @@ Usage:
   mqlaunch check         Run full self-check
   mqlaunch bundle        Create debug bundle
   mqlaunch notes         Show release notes
+  mqlaunch about         Show about / status dashboard
   mqlaunch dev-v1        Compatibility alias for Dev Menu
   mqlaunch git-v1        Compatibility alias for Dev Menu
   mqlaunch tools-v1      Compatibility alias for Tools Menu
@@ -1138,6 +1194,7 @@ run_arg_command() {
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
     notes|changelog|release-notes) show_release_notes ;;
+    about|status|dashboard) show_about_dashboard ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
