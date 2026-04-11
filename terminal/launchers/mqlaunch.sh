@@ -872,6 +872,49 @@ show_about_dashboard() {
   pause_enter
 }
 
+show_command_index() {
+  print_header
+  row_bold "COMMAND INDEX"
+  empty_row
+
+  row "CORE"
+  row " mqlaunch              Open main menu"
+  row " mqlaunch help         Show help"
+  row " mqlaunch commands     Show command index"
+
+  empty_row
+  row "WORKFLOWS"
+  row " mqlaunch perf         Performance module"
+  row " mqlaunch dev          Dev module"
+  row " mqlaunch git          Alias for Dev"
+  row " mqlaunch tools        Tools module"
+
+  empty_row
+  row "STATUS / SUPPORT"
+  row " mqlaunch about        About / status dashboard"
+  row " mqlaunch version      Version information"
+  row " mqlaunch notes        Release notes / changelog"
+  row " mqlaunch check        Run self-check"
+  row " mqlaunch bundle       Create debug bundle"
+
+  empty_row
+  row "UTILITY"
+  row " mqlaunch repo         Open repo root"
+  row " mqlaunch guide        Open terminal guide"
+
+  empty_row
+  row "ALIASES"
+  row " mqlaunch health       Alias for check"
+  row " mqlaunch support      Alias for bundle"
+  row " mqlaunch changelog    Alias for notes"
+  row " mqlaunch dashboard    Alias for about"
+  row " mqlaunch index        Alias for commands"
+  row " mqlaunch palette      Alias for commands"
+
+  print_footer
+  pause_enter
+}
+
 # --- Menus --------------------------------------------------
 print_main_menu() {
   print_header
@@ -904,9 +947,10 @@ print_main_menu() {
   row2 "25. Tools" "26. Version"
   row2 "27. Self-check" "28. Debug bundle"
   row2 "29. Release notes" "30. About / Status"
+  row "31. Command index"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-10,12-30,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,12-31,X]: ${C_RESET}"
 }
 
 print_ai_menu() {
@@ -1058,6 +1102,19 @@ dev_menu_loop() {
   done
 }
 
+
+tweaks_menu_loop() {
+  local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
+
+  if [[ -x "$tweaks_script" || -f "$tweaks_script" ]]; then
+    bash "$tweaks_script" menu || true
+  else
+    echo "${C_ERR}Tweaks script not found:${C_RESET} $tweaks_script"
+    pause_enter
+    return 1
+  fi
+}
+
 main_loop() {
   local choice
 
@@ -1097,55 +1154,48 @@ main_loop() {
       28) run_debug_bundle || true ;;
       29) show_release_notes || true ;;
       30) show_about_dashboard || true ;;
+      31) show_command_index || true ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
 }
 
 show_help() {
-  cat <<EOH
-MQLAUNCH — Branded Neon Command Surface
+  cat <<HELP
 
-Usage:
+mqlaunch — modular terminal workflow hub
+
+CORE
   mqlaunch                Open main menu
-  mqlaunch ai             Open AI submenu
+  mqlaunch help           Show help
+  mqlaunch commands       Show command index
 
-  mqlaunch tweaks         Open Tweaks menu
-  mqlaunch dashboard      Open Dashboard
-  mqlaunch theme          Open Themes menu
-  mqlaunch tools-menu     Open Tools Menu
+WORKFLOWS
+  mqlaunch perf           Open Performance module
+  mqlaunch dev            Open Dev module
+  mqlaunch git            Alias for Dev
+  mqlaunch tools          Open Tools module
 
-  mqlaunch dev           Open Dev Menu
-  mqlaunch git           Open Dev Menu
-  mqlaunch tools         Open Tools Menu
-  mqlaunch perf          Open Performance Menu
-  mqlaunch version       Show version information
-  mqlaunch check         Run full self-check
-  mqlaunch bundle        Create debug bundle
-  mqlaunch notes         Show release notes
-  mqlaunch about         Show about / status dashboard
-  mqlaunch dev-v1        Compatibility alias for Dev Menu
-  mqlaunch git-v1        Compatibility alias for Dev Menu
-  mqlaunch tools-v1      Compatibility alias for Tools Menu
-Main menu:
-  Exit is X, not 11
+STATUS / SUPPORT
+  mqlaunch about          Show about / status dashboard
+  mqlaunch version        Show version information
+  mqlaunch notes          Show release notes / changelog
+  mqlaunch check          Run self-check
+  mqlaunch bundle         Create debug bundle
 
-Direct commands:
-  finder | safari | chrome | spotify | xcode
-  settings | monitor
-  downloads | home | utilities | applications
-  ip | lock | sleep | restart-finder | date
-  repo | check | ai | dev | tweaks | dashboard | theme
-  prompts | prompt-files | edit | backup-prompts | backup-mqlaunch
-  base | launchers | guide
-  gitlaunch | git | netlaunch | net
-  tools-menu | toolsmenu | menu-tools
-  theme-current | theme-reset
-  theme-amber | theme-green | theme-minimal | theme-ice
-  tweaks-status | tweaks-workstation | tweaks-dev
-  tweaks-clean | tweaks-fast | tweaks-all | tweaks-revert
-  auto | one | atlas | decide | research | root | solve | pdebug | menu
-EOH
+UTILITY
+  mqlaunch repo           Open repo root
+  mqlaunch guide          Open terminal guide
+
+ALIASES
+  mqlaunch health         Alias for check
+  mqlaunch support        Alias for bundle
+  mqlaunch changelog      Alias for notes
+  mqlaunch dashboard      Alias for about
+  mqlaunch index          Alias for commands
+  mqlaunch palette        Alias for commands
+
+HELP
 }
 
 run_arg_command() {
@@ -1195,6 +1245,7 @@ run_arg_command() {
     bundle|debug-bundle|support) run_debug_bundle ;;
     notes|changelog|release-notes) show_release_notes ;;
     about|status|dashboard) show_about_dashboard ;;
+    commands|index|palette) show_command_index ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;

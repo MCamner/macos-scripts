@@ -40,6 +40,9 @@ route_command() {
     notes|changelog|release-notes)
       command_show_changelog
       ;;
+    commands|index|palette)
+      command_show_command_index
+      ;;
     repo)
       command_open_repo
       ;;
@@ -64,23 +67,37 @@ route_command() {
 show_help() {
   cat <<HELP
 
-Usage:
+mqlaunch — modular terminal workflow hub
+
+CORE
   mqlaunch                Open main menu
-  mqlaunch menu           Open main menu
-  mqlaunch system         Open system menu
-  mqlaunch tools          Open tools menu
-  mqlaunch automation     Open automation menu
-  mqlaunch dev            Open dev menu
-  mqlaunch git            Open dev menu
-  mqlaunch perf           Open performance menu
-  mqlaunch version        Show version info
+  mqlaunch help           Show help
+  mqlaunch commands       Show command index
+
+WORKFLOWS
+  mqlaunch perf           Open Performance module
+  mqlaunch dev            Open Dev module
+  mqlaunch git            Alias for Dev
+  mqlaunch tools          Open Tools module
+
+STATUS / SUPPORT
   mqlaunch about          Show about / status dashboard
+  mqlaunch version        Show version information
+  mqlaunch notes          Show release notes / changelog
   mqlaunch check          Run self-check
   mqlaunch bundle         Create debug bundle
-  mqlaunch notes          Show release notes
+
+UTILITY
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
-  mqlaunch help           Show this help
+
+ALIASES
+  mqlaunch health         Alias for check
+  mqlaunch support        Alias for bundle
+  mqlaunch changelog      Alias for notes
+  mqlaunch dashboard      Alias for about
+  mqlaunch index          Alias for commands
+  mqlaunch palette        Alias for commands
 
 HELP
 }
