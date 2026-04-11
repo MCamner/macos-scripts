@@ -41,11 +41,12 @@ mqlaunch
 
 ## 🧩 What you get
 
-* ⚡ **mqlaunch** — central command launcher
-* 📊 **Performance** — system health & monitoring
-* 🛠 **Dev** — git + repo workflows
-* 📦 **Tools** — scripts, CLI utilities, guides
-* 🔌 **Modular architecture** — evolve without breaking
+⚡ mqlaunch — central command launcher  
+📊 Performance — system health & monitoring  
+🛠 Dev — git + repo workflows  
+📦 Tools — scripts, CLI utilities, guides  
+🚀 Release — safe versioning with automation (dry-run + rollback)  
+🔌 Modular architecture — evolve without breaking
 
 ---
 
@@ -96,6 +97,29 @@ mqlaunch perf   # System performance
 mqlaunch dev    # Dev workflows
 mqlaunch tools  # Tools & scripts
 ```
+
+---
+
+🚀 Release workflow
+
+Safe and repeatable release process using:
+
+tools/release.sh
+
+Preview release without changes:
+
+./tools/release.sh --dry-run 0.1.3
+
+Run full release:
+
+./tools/release.sh 0.1.3
+
+Includes:
+
+- version sync (VERSION + README)
+- changelog validation
+- git commit + tag
+- safe rollback on failure
 
 ---
 
@@ -200,10 +224,12 @@ This project uses a **safe migration model**:
 
 ## 🗺️ Roadmap
 
-* unify UI helpers
-* expand automation
-* improve CLI UX
-* plugin-style modules
+🗺️ Roadmap
+
+* GitHub release integration (gh CLI)  
+* release validation tooling  
+* mqlaunch release workflow integration  
+* plugin-style modules  
 * remove legacy layer
 
 ---
