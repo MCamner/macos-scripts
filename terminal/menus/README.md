@@ -17,6 +17,8 @@ This makes the system easier to:
 - maintain
 - reuse across launchers and scripts
 
+The newer direction in this repo is to keep `mqlaunch` as a thin coordinator and move menu behavior into modules in this folder.
+
 ## What belongs here
 
 Use this folder for:

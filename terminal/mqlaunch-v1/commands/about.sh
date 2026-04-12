@@ -10,8 +10,9 @@ command_show_about_dashboard() {
   local smoke_status="unknown"
   local latest_bundle="none"
   local guide_html="$PROJECT_ROOT/docs/mac-terminal-guide.html"
-  local legacy="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
-  local v1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
+  local launcher="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
+  local main_menu="$PROJECT_ROOT/terminal/menus/mq-main-menu.sh"
+  local help_menu="$PROJECT_ROOT/terminal/menus/mq-help-menu.sh"
   local bundle_dir="$PROJECT_ROOT/backups/debug-bundles"
   local test_script="$PROJECT_ROOT/tools/scripts/test-all.sh"
 
@@ -44,10 +45,11 @@ command_show_about_dashboard() {
   print_kv "Repo state:" "$repo_state"
   print_kv "Smoke tests:" "$smoke_status"
   print_kv "Guide HTML:" "$guide_html"
-  print_kv "Legacy:" "$legacy"
-  print_kv "V1:" "$v1"
+  print_kv "Launcher:" "$launcher"
+  print_kv "Main menu:" "$main_menu"
+  print_kv "Help module:" "$help_menu"
   print_kv "Latest bundle:" "$latest_bundle"
-  print_kv "Modules:" "perf / dev / tools"
+  print_kv "Core menus:" "main / help / dev / ai / net"
 
   pause_enter
 }

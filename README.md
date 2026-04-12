@@ -45,6 +45,7 @@ mqlaunch
 📊 Performance — system health & monitoring  
 🛠 Dev — git + repo workflows  
 📦 Tools — scripts, CLI utilities, guides  
+🔁 Automation — session boot and shortcuts workflows  
 🚀 Release — safe versioning with automation (dry-run + rollback)  
 🔌 Modular architecture — evolve without breaking
 
@@ -63,6 +64,15 @@ Then:
 
 ```bash
 mqlaunch
+```
+
+Try a few focused entry points:
+
+```bash
+mqlaunch git
+mqlaunch release
+mqlaunch login
+mqlaunch shortcuts
 ```
 
 ---
@@ -95,7 +105,11 @@ mqlaunch tools
 mqlaunch        # Open launcher
 mqlaunch perf   # System performance
 mqlaunch dev    # Dev workflows
+mqlaunch git    # Git workspace
 mqlaunch tools  # Tools & scripts
+mqlaunch release   # Release menu
+mqlaunch login     # Login / session menu
+mqlaunch shortcuts # Shortcuts menu
 ```
 
 ---
@@ -147,13 +161,15 @@ b  Back
 
 ```
 macos-scripts/
+├── bin/               # user-facing entrypoints
 ├── terminal/
-│   ├── bridges/       # legacy → v1 routing
-│   ├── launchers/     # production launcher
-│   └── mqlaunch-v1/   # modular system
+│   ├── launchers/     # main launcher
+│   ├── menus/         # extracted menu modules
+│   ├── bridges/       # compatibility bridges
+│   └── mqlaunch-v1/   # legacy compatibility layer
 ├── tools/             # scripts & guides
 ├── system/            # macOS tweaks
-├── automation/        # workflows
+├── automation/        # login, shortcuts, workflows
 ├── ui/                # terminal UI
 ├── docs/              # demo + pages
 └── install.sh
@@ -163,14 +179,15 @@ macos-scripts/
 
 ## 🧠 Architecture
 
-This project uses a **safe migration model**:
+This project uses a **modular launcher model**:
 
-* legacy launcher stays stable
-* new modules built in **v1 architecture**
-* bridges connect old → new
-* no risky rewrites
+* `bin/mqlaunch` is the user-facing entrypoint
+* `terminal/launchers/mqlaunch.sh` is the main coordinator
+* interactive flows are extracted into `terminal/menus/`
+* `automation/` holds workflow scripts such as login and shortcuts
+* bridges and `mqlaunch-v1` remain for compatibility where needed
 
-👉 evolve fast without breaking workflows
+👉 evolve the product without stuffing every workflow into one giant launcher file
 
 ---
 
@@ -246,7 +263,5 @@ This project uses a **safe migration model**:
 Star ⭐
 Fork 🍴
 Build your own terminal system ⚡
-
-
 
 

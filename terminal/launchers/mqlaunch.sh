@@ -765,14 +765,18 @@ show_version_info() {
 
   local version
   version="$(get_repo_version)"
+  local launcher="$BASE_DIR/terminal/launchers/mqlaunch.sh"
+  local main_menu="$BASE_DIR/terminal/menus/mq-main-menu.sh"
+  local help_menu="$BASE_DIR/terminal/menus/mq-help-menu.sh"
 
   row "Project:        macos-scripts"
   row "Version:        $version"
   row "Release stage:  baseline"
   row "Shell:          zsh"
   row "Project root:   $BASE_DIR"
-  row "Legacy:         $BASE_DIR/terminal/launchers/mqlaunch.sh"
-  row "V1:             $BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
+  row "Launcher:       $launcher"
+  row "Main menu:      $main_menu"
+  row "Help module:    $help_menu"
 
   print_footer
   pause_enter
@@ -927,8 +931,9 @@ show_about_dashboard() {
   local smoke_status="unknown"
   local latest_bundle="none"
   local guide_html="$BASE_DIR/docs/mac-terminal-guide.html"
-  local legacy="$BASE_DIR/terminal/launchers/mqlaunch.sh"
-  local v1="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
+  local launcher="$BASE_DIR/terminal/launchers/mqlaunch.sh"
+  local main_menu="$BASE_DIR/terminal/menus/mq-main-menu.sh"
+  local help_menu="$BASE_DIR/terminal/menus/mq-help-menu.sh"
   local bundle_dir="$BASE_DIR/backups/debug-bundles"
   local test_script="$BASE_DIR/tools/scripts/test-all.sh"
 
@@ -961,10 +966,11 @@ show_about_dashboard() {
   row "Repo state:     $repo_state"
   row "Smoke tests:    $smoke_status"
   row "Guide HTML:     $guide_html"
-  row "Legacy:         $legacy"
-  row "V1:             $v1"
+  row "Launcher:       $launcher"
+  row "Main menu:      $main_menu"
+  row "Help module:    $help_menu"
   row "Latest bundle:  $latest_bundle"
-  row "Modules:        perf / dev / tools"
+  row "Core menus:     main / help / dev / ai / net"
 
   print_footer
   pause_enter

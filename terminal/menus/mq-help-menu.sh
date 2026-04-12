@@ -19,11 +19,11 @@ show_command_index() {
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Open Login / Session menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
-  row " mqlaunch shortcuts list"
-  row " mqlaunch shortcuts search clip"
-  row " mqlaunch login menu   Session boot + full menu"
-  row " mqlaunch login about  Session boot + about screen"
-  row " mqlaunch login check  Session boot + self-check"
+  row " mqlaunch login menu   Start full session boot"
+  row " mqlaunch login about  Start session in about mode"
+  row " mqlaunch login check  Start session in self-check mode"
+  row " mqlaunch shortcuts list        List shortcuts directly"
+  row " mqlaunch shortcuts search clip Search shortcuts by name"
 
   empty_row
   row "STATUS / SUPPORT"
@@ -93,6 +93,12 @@ ALIASES
   mqlaunch dashboard      Alias for about
   mqlaunch index          Alias for commands
   mqlaunch palette        Alias for commands
+
+POPULAR FLOWS
+  mqlaunch git
+  mqlaunch release
+  mqlaunch login
+  mqlaunch shortcuts
 
 HELP
 }
