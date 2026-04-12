@@ -17,9 +17,9 @@ show_command_index() {
   row " mqlaunch dev          Open Prompt Tools menu"
   row " mqlaunch git          Open Git workspace"
   row " mqlaunch tools        Open Tools module"
-  row " mqlaunch workflows    Open Project workflows menu"
+  row " mqlaunch workflows    Open Workflows menu"
   row " mqlaunch release      Open Release Menu"
-  row " mqlaunch login        Open Login / Session menu"
+  row " mqlaunch login        Open Login menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
   row " mqlaunch workflows boot       Run project boot"
   row " mqlaunch login menu   Start full session boot"
@@ -71,9 +71,9 @@ WORKFLOWS
   mqlaunch dev            Open Prompt Tools menu
   mqlaunch git            Open Git workspace
   mqlaunch tools          Open Tools module
-  mqlaunch workflows      Open Project workflows menu
+  mqlaunch workflows      Open Workflows menu
   mqlaunch release        Open Release Menu
-  mqlaunch login          Open Login / Session menu
+  mqlaunch login          Open Login menu
   mqlaunch shortcuts      Open Shortcuts menu
   mqlaunch workflows boot Run project boot
   mqlaunch shortcuts list

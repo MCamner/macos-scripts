@@ -24,7 +24,7 @@ fi
 require_project_boot() {
   if [[ ! -x "$PROJECT_BOOT_SCRIPT" ]]; then
     print_header
-    row_bold "PROJECT WORKFLOWS"
+    row_bold "WORKFLOWS"
     empty_row
     row "Missing or non-executable script:"
     row " $PROJECT_BOOT_SCRIPT"
@@ -113,7 +113,7 @@ open_workflows_readme() {
 
 show_workflows_status() {
   print_header
-  row_bold "PROJECT WORKFLOWS STATUS"
+  row_bold "WORKFLOWS STATUS"
   empty_row
 
   row "Workflows dir:  $WORKFLOWS_DIR"
@@ -131,10 +131,10 @@ show_workflows_status() {
 
 print_menu() {
   print_header
-  row_bold "PROJECT WORKFLOWS"
+  row_bold "WORKFLOWS"
   empty_row
 
-  row2 " 1. Project workflows status" " 2. Run project boot"
+  row2 " 1. Workflows status" " 2. Run project boot"
   row2 " 3. Custom project boot" " 4. Open workflows folder"
   row2 " 5. Open workflows README" " 0. Back"
 
@@ -164,7 +164,7 @@ menu_loop() {
 
 usage() {
   cat <<USAGE
-mq-workflows-menu.sh - interactive project workflows menu
+mq-workflows-menu.sh - interactive workflows menu
 
 Usage:
   mq-workflows-menu.sh [command]
