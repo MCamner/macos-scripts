@@ -1,8 +1,8 @@
 # macos-scripts
 
 <p align="center">
-  <b>Turn a folder of shell scripts into a usable macOS command system.</b><br>
-  <code>mqlaunch</code> gives you one entrypoint for workflows, system insight, project utilities, and repeatable release tasks.
+  <b>Turn scattered shell utilities into a usable macOS command system.</b><br>
+  <code>mqlaunch</code> gives you one operational surface for workflows, observability, project utilities, and repeatable release tasks.
 </p>
 
 <p align="center">
@@ -13,11 +13,20 @@
   <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge">
 </p>
 
-`macos-scripts` is a practical terminal toolkit for people who live in macOS and want faster, cleaner, more repeatable command-line workflows.
+`macos-scripts` is a practical terminal toolkit for people who live in macOS and want faster, cleaner, and more repeatable command-line workflows.
 
 At the center is `mqlaunch`: a modular launcher that brings together performance checks, repo utilities, project workflows, login helpers, shortcuts, and release automation behind a single command surface.
 
 This project is not just a collection of scripts. It is an attempt to solve a common problem: useful shell tools often grow into a messy pile of one-off commands, inconsistent entrypoints, and hard-to-maintain logic. `macos-scripts` turns that into a structured system.
+
+## Why it lands
+
+* one command surface instead of scattered scripts
+* faster daily workflows with clearer discovery
+* modular architecture that can grow without collapsing
+* safer operational tasks such as releases and snapshots
+
+**Impact:** less friction in day-to-day terminal work and a stronger foundation for repeatable automation.
 
 ---
 
@@ -48,6 +57,24 @@ Most personal script collections break down in predictable ways:
 * safer release handling with dry-run and rollback support
 
 If you like the idea of "Raycast for your terminal", that is the closest shorthand.
+
+---
+
+## Before -> After
+
+Before:
+
+* commands were spread across folders and entrypoints
+* useful workflows depended too much on memory
+* new scripts were easy to add but harder to discover and maintain
+* operational tasks like releases risked becoming manual and fragile
+
+After:
+
+* `mqlaunch` acts as one clear launcher for recurring terminal work
+* workflows are grouped into visible menus and command paths
+* the toolkit is easier to extend without becoming a shell-script pile
+* repeatable operations have clearer safety rails
 
 ---
 
@@ -150,6 +177,38 @@ The launcher follows a modular model:
 
 This keeps new capabilities from being stuffed into one oversized launcher script.
 
+### Example flow
+
+```mermaid
+flowchart LR
+    A[User Command] --> B[mqlaunch]
+    B --> C[Menu / Command Routing]
+    C --> D[Performance / Monitoring]
+    C --> E[Workflows / Utilities]
+    C --> F[Release / Repo Tasks]
+
+    D -. system insight .-> G[Repeatable Daily Work]
+    E -. structured actions .-> G
+    F -. safer change flow .-> G
+```
+
+The value is not only the scripts themselves. It is the stable command surface that makes those scripts usable as a system.
+
+---
+
+## Why it matters as a portfolio project
+
+This repo shows more than shell scripting.
+
+It demonstrates how I approach tooling in practice:
+
+* turn fragmented utilities into a product-like command surface
+* design for discoverability, not just raw functionality
+* build safety into operational workflows
+* evolve systems incrementally instead of rewriting everything
+
+That is the same mindset I apply to architecture, automation, and operational design more broadly.
+
 ---
 
 ## Release Workflow
@@ -246,8 +305,14 @@ macos-scripts/
 
 ## Author
 
-**Mattias Camner**  
-https://mcamner.github.io/macos-scripts/
+**Mattias Camner**
+
+---
+
+## Project Links
+
+* Repo: https://github.com/MCamner/macos-scripts
+* Project page: https://mcamner.github.io/macos-scripts/
 
 ---
 
