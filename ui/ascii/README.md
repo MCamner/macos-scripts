@@ -63,6 +63,21 @@ The current polished branded dashboard for **MQLAUNCH**, featuring:
 ### `mq-skull.txt`
 A raw ASCII art asset that can be reused in experimental retro / themed views.
 
+### `mq-bg-grid.txt`
+A retro CRT / neon grid background for splash screens, idle states, or static terminal backdrops.
+
+### `mq-bg-bbs.txt`
+A BBS-inspired background with bulletin-board energy and clean 80s hacker-page vibes.
+
+### `mq-bg-skullgrid.txt`
+A darker cyber-skull background for dramatic retro overlays and experimental themed views.
+
+### `mq-bg-miami-muse.txt`
+A Blade Runner-style ASCII backdrop with neon noir skyline, rain, and retro-future city energy.
+
+### `mq-bg-miami-muse.sh`
+A colorized ANSI-rendered version of the Blade Runner-style backdrop for neon terminal output.
+
 ## Recommended usage
 
 Example from `mqlaunch.sh`:
