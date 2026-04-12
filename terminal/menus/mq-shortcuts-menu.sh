@@ -168,10 +168,10 @@ print_menu() {
   row2 " 1. List shortcuts" " 2. List folders"
   row2 " 3. Search shortcuts" " 4. Run shortcut"
   row2 " 5. View shortcut" " 6. Open Shortcuts app"
-  row2 " 7. Show mqshortcuts help" " 0. Back"
+  row2 " 7. Show mqshortcuts help" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select option [0-7]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-7,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -190,7 +190,7 @@ menu_loop() {
       5) view_shortcut_menu ;;
       6) open_shortcuts_app ;;
       7) show_shortcuts_help ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

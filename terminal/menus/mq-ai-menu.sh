@@ -9,10 +9,10 @@ print_ai_menu() {
   row2 " 3. Atlas Router" " 4. Decision"
   row2 " 5. Research" " 6. Root Cause"
   row2 " 7. Problem Solving" " 8. Prompt Debugger"
-  row2 " 9. AI Menu" " 0. Back"
+  row2 " 9. AI Menu" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select AI mode [0-9]: ${C_RESET}"
+  printf "${C_TITLE}Select AI mode [1-9,b]: ${C_RESET}"
 }
 
 handle_ai_menu_choice() {
@@ -28,7 +28,7 @@ handle_ai_menu_choice() {
     7) safe_run_ai solve ;;
     8) safe_run_ai pdebug ;;
     9) safe_run_ai menu ;;
-    0) return 1 ;;
+    b|B) return 1 ;;
     *) echo "${C_ERR}Invalid AI selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

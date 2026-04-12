@@ -66,6 +66,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-apps-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-apps-menu.sh"
 fi
 
+# System menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-system-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-system-menu.sh"
+fi
+
 # Dev menu module
 if [[ -f "$BASE_DIR/terminal/menus/mq-dev-menu.sh" ]]; then
   # shellcheck disable=SC1091
@@ -680,10 +686,10 @@ print_themes_menu() {
   row2 " 1. Current theme" " 2. Apply amber"
   row2 " 3. Apply green" " 4. Apply minimal"
   row2 " 5. Apply ice" " 6. Reset theme"
-  row2 " 0. Back" ""
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select theme option [0-6]: ${C_RESET}"
+  printf "${C_TITLE}Select theme option [1-6,b]: ${C_RESET}"
 }
 
 themes_menu_loop() {
@@ -706,7 +712,7 @@ themes_menu_loop() {
       4) theme_cmd apply minimal ;;
       5) theme_cmd apply ice ;;
       6) theme_cmd reset ;;
-      0) break ;;
+      b|B) break ;;
       *) echo "${C_ERR}Invalid theme selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done

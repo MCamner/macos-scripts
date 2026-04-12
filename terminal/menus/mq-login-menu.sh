@@ -105,10 +105,10 @@ print_menu() {
   row2 " 3. Start session check" " 4. Inline menu session"
   row2 " 5. Inline about session" " 6. Quiet inline menu"
   row2 " 7. Quiet inline about" " 8. Show mqlogin help"
-  row2 " 0. Back" ""
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select option [0-8]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-8,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -128,7 +128,7 @@ menu_loop() {
       6) run_quiet_inline_menu menu ;;
       7) run_quiet_inline_menu about ;;
       8) show_login_help ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

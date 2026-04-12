@@ -11,10 +11,10 @@ print_dev_menu() {
   row2 " 7. Open launcher folder" " 8. Open mac terminal guide"
   row2 " 9. Git Menu" "10. Net Launch"
   row2 "11. Themes" "12. Tools Menu"
-  row2 " 0. Back" ""
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select dev option [0-12]: ${C_RESET}"
+  printf "${C_TITLE}Select dev option [1-12,b]: ${C_RESET}"
 }
 
 handle_dev_menu_choice() {
@@ -33,7 +33,7 @@ handle_dev_menu_choice() {
     10) net_menu_loop ;;
     11) themes_menu_loop ;;
     12) open_tools_menu ;;
-    0) return 1 ;;
+    b|B) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

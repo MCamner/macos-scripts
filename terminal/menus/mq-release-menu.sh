@@ -224,10 +224,10 @@ print_menu() {
   row2 " 3. Run release" " 4. Create GitHub release"
   row2 " 5. View changelog" " 6. Show latest tags"
   row2 " 7. Open changelog" " 8. Open release script"
-  row2 " 0. Back" ""
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select option [0-8]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-8,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -247,7 +247,7 @@ menu_loop() {
       6) show_tags ;;
       7) open_changelog_in_editor ;;
       8) open_release_script_in_editor ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

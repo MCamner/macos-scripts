@@ -134,10 +134,10 @@ print_menu() {
   row2 " 3. Open launchers folder" " 4. Open themes folder"
   row2 " 5. Open menus folder" " 6. Open dashboard"
   row2 " 7. Open terminal guide" " 8. Show key paths"
-  row2 " 9. Show git status" " 0. Exit"
+  row2 " 9. Show git status" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select option [0-9]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-9,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -158,7 +158,7 @@ menu_loop() {
       7) open_guide ;;
       8) show_paths ;;
       9) show_git_status ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

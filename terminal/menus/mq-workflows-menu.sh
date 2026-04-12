@@ -197,10 +197,10 @@ print_menu() {
   row2 " 1. Workflows status" " 2. Run project boot"
   row2 " 3. Custom project boot" " 4. Run project check"
   row2 " 5. Custom project check" " 6. Open workflows folder"
-  row2 " 7. Open workflows README" " 0. Back"
+  row2 " 7. Open workflows README" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select option [0-7]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-7,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -219,7 +219,7 @@ menu_loop() {
       5) run_project_check_custom ;;
       6) open_workflows_folder ;;
       7) open_workflows_readme ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

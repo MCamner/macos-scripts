@@ -7,10 +7,10 @@ print_net_menu() {
 
   row2 " 1. Show IP + network info" " 2. Ping test"
   row2 " 3. Show DNS + gateway" " 4. Open Network Settings"
-  row2 " 5. Copy IP info to clipboard" " 0. Back"
+  row2 " 5. Copy IP info to clipboard" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select net option [0-5]: ${C_RESET}"
+  printf "${C_TITLE}Select net option [1-5,b]: ${C_RESET}"
 }
 
 handle_net_menu_choice() {
@@ -22,7 +22,7 @@ handle_net_menu_choice() {
     3) show_dns_gateway ;;
     4) open_network_settings ;;
     5) copy_network_info ;;
-    0) return 1 ;;
+    b|B) return 1 ;;
     *) echo "${C_ERR}Invalid net selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

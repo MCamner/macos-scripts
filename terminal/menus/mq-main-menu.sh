@@ -25,7 +25,7 @@ handle_main_menu_choice() {
   case "$choice" in
     # CORE
     1) run_mqworkflows ;;
-    2) open_v1_performance_menu ;;
+    2) open_system_menu ;;
     3) open_git_menu ;;
     4) open_release_menu ;;
     5) open_v1_dev_menu ;;

@@ -501,10 +501,10 @@ print_menu() {
   row2 " 7. Safe push" " 8. Pull with rebase"
   row2 " 9. Recent git log" "10. Open repo on GitHub"
   row2 "11. Open local repo folder" "12. Change repo path"
-  row2 " 0. Back" ""
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select option [0-12]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-12,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -528,7 +528,7 @@ menu_loop() {
       10) open_repo_github ;;
       11) open_local_repo ;;
       12) choose_repo ;;
-      0) ui_ok "Exiting."; break ;;
+      b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done
