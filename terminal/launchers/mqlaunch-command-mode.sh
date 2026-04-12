@@ -138,7 +138,7 @@ dispatch_cli_command() {
           open_system_menu
           ;;
         perf|performance)
-          open_v1_performance_menu
+          open_performance_menu
           ;;
         net|network)
           show_network_info
@@ -213,7 +213,7 @@ dispatch_cli_command() {
           ai_menu_loop
           ;;
         tools)
-          open_v1_tools_menu
+          open_tools_menu
           ;;
         current)
           open_dev_menu
@@ -261,7 +261,7 @@ dispatch_cli_command() {
       ;;
 
     perf|performance)
-      open_v1_performance_menu
+      open_performance_menu
       return 0
       ;;
 

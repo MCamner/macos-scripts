@@ -35,7 +35,7 @@ open_system_menu() {
     echo
 
     case "$choice" in
-      1) open_v1_performance_menu ;;
+      1) open_performance_menu ;;
       2) show_network_info ;;
       3) system_check ;;
       4) run_self_check || true ;;

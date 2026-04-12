@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-open_v1_performance_menu() {
+open_performance_menu() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
 
   if [[ -x "$v1_launcher" ]]; then
@@ -13,7 +13,7 @@ open_v1_performance_menu() {
   fi
 }
 
-run_v1_performance_command() {
+run_performance_command() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
   local subcmd="${1:-performance}"
 
@@ -25,4 +25,13 @@ run_v1_performance_command() {
     echo "${C_ERR}mqlaunch-v1 not found:${C_RESET} $v1_launcher"
     return 1
   fi
+}
+
+# Backward-compatible aliases while call sites migrate away from v1 naming.
+open_v1_performance_menu() {
+  open_performance_menu "$@"
+}
+
+run_v1_performance_command() {
+  run_performance_command "$@"
 }

@@ -48,19 +48,17 @@ assert_file "$PERF_BRIDGE" "Performance bridge"
 assert_cmd_ok "Legacy launcher help works" zsh "$LEGACY" help
 assert_cmd_ok "V1 launcher help works" bash "$V1" help
 
-assert_grep 'perf\|performance\).*open_v1_performance_menu' "$LEGACY" "Performance route exists in legacy launcher"
-assert_grep 'dev\|git\).*open_v1_dev_menu' "$LEGACY" "Dev route exists in legacy launcher"
-assert_grep 'tools\|tools-v1\|menu-tools-v1\).*open_v1_tools_menu' "$LEGACY" "Tools route exists in legacy launcher"
+assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance route exists in launcher"
+assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
+assert_grep 'tools\|tools-menu\|toolsmenu\|menu-tools\).*open_tools_menu' "$LEGACY" "Tools route exists in launcher"
+assert_grep 'tools-v1\|menu-tools-v1\).*open_v1_tools_menu' "$LEGACY" "Legacy Tools fallback route exists"
 
-assert_grep 'WORKFLOWS' "$LEGACY" "Main menu contains WORKFLOWS section"
-assert_grep '23\. Performance' "$LEGACY" "Main menu contains Performance entry"
-assert_grep '24\. Dev' "$LEGACY" "Main menu contains Dev entry"
-assert_grep '25\. Tools' "$LEGACY" "Main menu contains Tools entry"
-
-assert_grep 'QUICK ACTIONS' "$LEGACY" "Legacy TOOLS section renamed to QUICK ACTIONS"
-assert_grep '23\) open_v1_performance_menu' "$LEGACY" "Numeric route 23 exists"
-assert_grep '24\) open_v1_dev_menu' "$LEGACY" "Numeric route 24 exists"
-assert_grep '25\) open_v1_tools_menu' "$LEGACY" "Numeric route 25 exists"
+assert_grep 'row_bold "MAIN MENU"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu module exists"
+assert_grep 'row2 " 1\. Workflows" " 2\. System"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Workflows and System"
+assert_grep 'row2 " 3\. Git" " 4\. Release"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Git and Release"
+assert_grep 'row2 " 5\. Dev" " 6\. Help"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Dev and Help"
+assert_grep 'row2 " p\. Performance" " n\. Network"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Performance and Network quick access"
+assert_grep 'row2 " h\. Health Check" " a\. Apps"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Health Check and Apps quick access"
 
 echo
 echo "All legacy + bridge checks passed."

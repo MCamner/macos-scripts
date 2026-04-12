@@ -85,7 +85,7 @@ version="unknown"
   echo "=== MENU ROUTE CHECKS ==="
   grep -nE 'WORKFLOWS|23\. Performance|24\. Dev|25\. Tools|26\. Version|27\. Self-check|28\. Debug bundle' "$LEGACY" 2>/dev/null || true
   echo
-  grep -nE 'open_v1_performance_menu|open_v1_dev_menu|open_v1_tools_menu|show_version_info|run_self_check|run_debug_bundle' "$LEGACY" 2>/dev/null || true
+  grep -nE 'open_performance_menu|open_dev_menu|open_tools_menu|open_v1_tools_menu|show_version_info|run_self_check|run_debug_bundle' "$LEGACY" 2>/dev/null || true
   echo
 
   echo "=== RECENT REPORT FILES ==="

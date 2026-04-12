@@ -32,7 +32,7 @@ handle_main_menu_choice() {
     6) open_help_center_menu ;;
 
     # QUICK ACCESS
-    p|P) open_v1_performance_menu ;;
+    p|P) open_performance_menu ;;
     n|N) show_network_info ;;
     h|H) system_check ;;
     a|A) open_apps_menu ;;

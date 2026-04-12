@@ -1,26 +1,30 @@
 # Bridges
 
-This folder contains bridge scripts that connect the legacy `mqlaunch` entry points to the newer `mqlaunch-v1` command system.
+This folder contains compatibility bridge scripts between the main `mqlaunch` launcher and `terminal/mqlaunch-v1`.
 
-They exist to support a safe migration path:
+They exist to support incremental migration:
 
 - keep the current launcher usable
-- route selected commands into v1 modules
-- avoid a risky full rewrite
+- route selected commands into v1 where no newer replacement exists yet
+- preserve stable entrypoints during cleanup
 
-## Purpose
+## Current status
 
-The bridge layer lets the legacy launcher hand off work to the newer modular launcher without forcing the whole system to switch at once.
+Migration is now mixed rather than all-in:
 
-That means old command paths can stay stable while newer features live in `terminal/mqlaunch-v1/`.
+- `dev` uses the newer main-menu implementation
+- `tools` now uses the newer main-menu implementation
+- `performance` still routes through `mqlaunch-v1`
+
+So the bridge layer is now mostly a compatibility/fallback layer, not the primary path for every migrated area.
 
 ## Files
 
 ```text
 terminal/bridges/
-├── dev-bridge.sh           # routes Dev commands into mqlaunch-v1
-├── performance-bridge.sh   # routes Performance commands into mqlaunch-v1
-├── tools-bridge.sh         # routes Tools commands into mqlaunch-v1
+├── dev-bridge.sh           # legacy fallback for old Dev routing
+├── performance-bridge.sh   # active bridge for Performance
+├── tools-bridge.sh         # legacy fallback for old Tools routing
 └── README.md
 ```
 
@@ -40,23 +44,25 @@ Examples from the current files:
 
 - `open_v1_dev_menu()`
 - `run_v1_dev_command()`
-- `open_v1_performance_menu()`
-- `run_v1_performance_command()`
+- `open_performance_menu()`
+- `run_performance_command()`
+- `open_v1_performance_menu()` (compatibility alias)
+- `run_v1_performance_command()` (compatibility alias)
 - `open_v1_tools_menu()`
 - `run_v1_tools_command()`
 
-These functions are sourced into the main launcher and used as routing helpers.
+These functions are sourced into the main launcher and used as routing helpers when an area still depends on v1 or when an explicit legacy path is retained.
 
 ## Why This Layer Matters
 
-Without bridges, moving functionality into `mqlaunch-v1` would require changing the whole launcher at once.
+Without bridges, migration would require changing the whole launcher in one pass.
 
 With bridges:
 
-- the legacy launcher can stay stable
-- new modules can be developed separately
-- commands can migrate one area at a time
-- testing is easier because routing is explicit
+- migrated areas can move over one at a time
+- non-migrated areas can keep working
+- legacy aliases can remain available temporarily
+- testing is easier because routing stays explicit
 
 ## Design Philosophy
 
@@ -74,11 +80,14 @@ They should:
 In simple terms:
 
 - `launchers/` = user-facing entry points
-- `mqlaunch-v1/` = newer modular implementation
-- `bridges/` = compatibility handoff between the two
+- `mqlaunch-v1/` = older modular compatibility layer still used by some routes
+- `bridges/` = explicit handoff between the primary launcher and v1
 
 ## Future Direction
 
-If more modules move into `mqlaunch-v1`, additional bridge scripts can be added temporarily.
+As more routes move fully into the main launcher, the bridge layer should shrink.
 
-Once the migration is complete, the bridge layer can be reduced or removed entirely.
+Long term:
+
+- keep only bridges that still serve a real compatibility purpose
+- remove dead bridge paths once no command uses them

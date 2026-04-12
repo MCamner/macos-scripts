@@ -1230,7 +1230,7 @@ run_arg_command() {
     git|git-menu|gitmenu|menu-git|gitlaunch) open_git_menu ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
-    perf|performance) open_v1_performance_menu ;;
+    perf|performance) open_performance_menu ;;
     demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;
@@ -1240,7 +1240,7 @@ run_arg_command() {
     commands|index) show_command_index ;;
     palette|fzf|search) run_command_palette ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
-    tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
+    tools|tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
