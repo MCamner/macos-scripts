@@ -22,6 +22,7 @@ show_command_index() {
   row " mqlaunch login        Open Login menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
   row " mqlaunch workflows boot       Run project boot"
+  row " mqlaunch workflows check      Run project check"
   row " mqlaunch login menu   Start full session boot"
   row " mqlaunch login about  Start session in about mode"
   row " mqlaunch login check  Start session in self-check mode"
@@ -76,6 +77,7 @@ WORKFLOWS
   mqlaunch login          Open Login menu
   mqlaunch shortcuts      Open Shortcuts menu
   mqlaunch workflows boot Run project boot
+  mqlaunch workflows check Run project check
   mqlaunch shortcuts list
   mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu
