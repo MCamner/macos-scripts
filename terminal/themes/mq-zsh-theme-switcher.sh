@@ -26,6 +26,7 @@ amber
 green
 minimal
 ice
+macos
 LIST
 }
 
@@ -35,6 +36,7 @@ theme_description() {
     green)   echo "Classic green terminal vibe" ;;
     minimal) echo "Cleaner low-noise prompt" ;;
     ice)     echo "Cool cyan / blue look" ;;
+    macos)   echo "Clean Apple-inspired blue/gray theme" ;;
     *)       return 1 ;;
   esac
 }
@@ -166,10 +168,11 @@ print_menu() {
   row2 " 1. Show current theme" " 2. List themes"
   row2 " 3. Apply amber" " 4. Apply green"
   row2 " 5. Apply minimal" " 6. Apply ice"
-  row2 " 7. Reset theme" " 0. Exit"
+  row2 " 7. Apply macos" " 8. Reset theme"
+  row2 " 0. Exit" ""
 
   print_footer
-  printf "${C_TITLE}Select option [0-7]: ${C_RESET}"
+  printf "${C_TITLE}Select option [0-8]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -186,7 +189,8 @@ menu_loop() {
       4) apply_theme green ;;
       5) apply_theme minimal ;;
       6) apply_theme ice ;;
-      7) reset_theme ;;
+      7) apply_theme macos ;;
+      8) reset_theme ;;
       0) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -201,7 +205,7 @@ Usage:
   mq-zsh-theme-switcher.sh menu
   mq-zsh-theme-switcher.sh list
   mq-zsh-theme-switcher.sh current
-  mq-zsh-theme-switcher.sh apply <amber|green|minimal|ice>
+  mq-zsh-theme-switcher.sh apply <amber|green|minimal|ice|macos>
   mq-zsh-theme-switcher.sh reset
 
 Examples:

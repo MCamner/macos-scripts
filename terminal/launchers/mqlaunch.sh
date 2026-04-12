@@ -697,11 +697,11 @@ print_themes_menu() {
 
   row2 " 1. Current theme" " 2. Apply amber"
   row2 " 3. Apply green" " 4. Apply minimal"
-  row2 " 5. Apply ice" " 6. Reset theme"
-  row2 " b. Back" ""
+  row2 " 5. Apply ice" " 6. Apply macos"
+  row2 " 7. Reset theme" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select theme option [1-6,b]: ${C_RESET}"
+  printf "${C_TITLE}Select theme option [1-7,b]: ${C_RESET}"
 }
 
 themes_menu_loop() {
@@ -723,8 +723,9 @@ themes_menu_loop() {
       3) theme_cmd apply green ;;
       4) theme_cmd apply minimal ;;
       5) theme_cmd apply ice ;;
-      6) theme_cmd reset ;;
-      b|B) break ;;
+      6) theme_cmd apply macos ;;
+      7) theme_cmd reset ;;
+      b|B|0) break ;;
       *) echo "${C_ERR}Invalid theme selection:${C_RESET} $choice"; pause_enter ;;
     esac
   done
@@ -1222,6 +1223,7 @@ run_arg_command() {
     theme-green) theme_cmd apply green ;;
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
+    theme-macos) theme_cmd apply macos ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     release|rel) open_release_menu ;;
     workflows|workflow|wf) run_mqworkflows "$@" ;;
@@ -1265,8 +1267,8 @@ if [[ $# -gt 0 ]]; then
   if dispatch_cli_command "$@"; then
     exit 0
   else
-    status=$?
-    if [[ $status -eq 2 ]]; then
+    cmd_status=$?
+    if [[ $cmd_status -eq 2 ]]; then
       exit 2
     fi
   fi

@@ -7,6 +7,7 @@
 #   green
 #   minimal
 #   ice
+#   macos
 
 [[ -n "${MQ_ZSH_THEME_V3_LOADED:-}" ]] && return 0
 export MQ_ZSH_THEME_V3_LOADED=1
@@ -69,6 +70,18 @@ mq_theme_palette() {
       typeset -g MQC_TIME="%F{244}"
       typeset -g MQC_DIM="%F{240}"
       typeset -g MQC_ACCENT="%F{81}"
+      ;;
+    macos)
+      typeset -g MQC_USER="%F{75}"
+      typeset -g MQC_HOST="%F{250}"
+      typeset -g MQC_PATH="%F{110}"
+      typeset -g MQC_GIT="%F{81}"
+      typeset -g MQC_OK="%F{78}"
+      typeset -g MQC_ERR="%F{203}"
+      typeset -g MQC_WARN="%F{220}"
+      typeset -g MQC_TIME="%F{244}"
+      typeset -g MQC_DIM="%F{245}"
+      typeset -g MQC_ACCENT="%F{39}"
       ;;
     *)
       export MQ_ZSH_VARIANT="amber"
