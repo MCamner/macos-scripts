@@ -42,7 +42,7 @@ BIN_LINK="$HOME/bin/mqlaunch"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
 
-TERMINAL_GUIDE_HTML="$BASE_DIR/tools/mac terminal_guide/mac-terminal-guide.html"
+TERMINAL_GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 TERMINAL_GUIDE_URL="https://mcamner.github.io/macos-scripts/"
 
 if [[ -f "$UI_LIB" ]]; then
@@ -76,6 +76,12 @@ fi
 if [[ -f "$BASE_DIR/terminal/menus/mq-help-center-menu.sh" ]]; then
   # shellcheck disable=SC1091
   source "$BASE_DIR/terminal/menus/mq-help-center-menu.sh"
+fi
+
+# Command mode module
+if [[ -f "$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"
 fi
 
 # Dev menu module
@@ -726,7 +732,20 @@ themes_menu_loop() {
 
 open_git_menu() {
   local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
-  [[ -f "$git_script" ]] && bash "$git_script" || echo "Git menu not found."
+
+  if [[ -x "$git_script" ]]; then
+    "$git_script" menu
+  elif [[ -f "$git_script" ]]; then
+    bash "$git_script" menu
+  else
+    print_header
+    row "GIT MENU"
+    empty_row
+    row "Git menu not found:"
+    row " $git_script"
+    print_footer
+    pause_enter
+  fi
 }
 
 open_release_menu() {
@@ -1155,7 +1174,7 @@ run_arg_command() {
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
     *)
-      echo "${C_ERR}Unknown command:${C_RESET} $1"
+      echo "${C_ERR}Unknown command:${C_RESET} $cmd"
       echo
       show_help
       exit 1
@@ -1165,7 +1184,20 @@ run_arg_command() {
 
 # --- Entry --------------------------------------------------
 if [[ $# -gt 0 ]]; then
-  run_arg_command "$@"
+  if dispatch_cli_command "$@"; then
+    exit 0
+  else
+    status=$?
+    if [[ $status -eq 2 ]]; then
+      exit 2
+    fi
+  fi
+
+  if [[ "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" == "menu" ]]; then
+    main_loop
+  else
+    run_arg_command "$@"
+  fi
 else
   main_loop
 fi

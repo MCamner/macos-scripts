@@ -10,10 +10,13 @@ show_command_index() {
   row " mqlaunch help         Show help"
   row " mqlaunch commands     Show command index"
   row " mqlaunch palette      Open fuzzy command palette"
+  row " mqlaunch system       Open System menu"
 
   empty_row
   row "WORKFLOWS"
   row " mqlaunch perf         Open Performance module"
+  row " mqlaunch system check Run system check"
+  row " mqlaunch system debug Create debug bundle"
   row " mqlaunch dev          Open Prompt Tools menu"
   row " mqlaunch git          Open Git workspace"
   row " mqlaunch tools        Open Tools module"
@@ -88,15 +91,17 @@ STATUS / SUPPORT
   mqlaunch about          Show about / status dashboard
   mqlaunch version        Show version information
   mqlaunch notes          Show release notes / changelog
-  mqlaunch check          Run self-check
+  mqlaunch check          Run system check
+  mqlaunch self-check     Run smoke self-check
   mqlaunch bundle         Create debug bundle
 
 UTILITY
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
+  mqlaunch system time    Show date and time
 
 ALIASES
-  mqlaunch health         Alias for check
+  mqlaunch health         Alias for system check
   mqlaunch support        Alias for bundle
   mqlaunch changelog      Alias for notes
   mqlaunch dashboard      Alias for about
