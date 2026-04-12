@@ -28,7 +28,7 @@ handle_main_menu_choice() {
     2) open_system_menu ;;
     3) open_git_menu ;;
     4) open_release_menu ;;
-    5) open_v1_dev_menu ;;
+    5) open_dev_menu ;;
     6) open_help_center_menu ;;
 
     # QUICK ACCESS

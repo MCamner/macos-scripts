@@ -200,7 +200,7 @@ dispatch_cli_command() {
     dev)
       case "$sub" in
         ""|menu)
-          open_v1_dev_menu
+          open_dev_menu
           ;;
         ai)
           ai_menu_loop
