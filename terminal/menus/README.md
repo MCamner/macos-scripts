@@ -31,6 +31,21 @@ Use this folder for:
 ### `mq-tools-menu.sh`
 A reusable tools menu built on top of shared terminal UI helpers.
 
+### `mq-main-menu.sh`
+The extracted main menu renderer and top-level selection router used by `mqlaunch`.
+
+### `mq-help-menu.sh`
+The extracted help and command index module used by `mqlaunch`.
+
+### `mq-dev-menu.sh`
+The extracted Dev / Prompts menu used by `mqlaunch` for repo-adjacent editing and navigation tasks.
+
+### `mq-ai-menu.sh`
+The extracted AI modes menu used by `mqlaunch` for prompt and assistant entrypoints.
+
+### `mq-net-menu.sh`
+The extracted network menu used by `mqlaunch` for quick connectivity and network utilities.
+
 ### `mq-git-menu.sh`
 An interactive git workspace for status, commit prep, safe push, log review, and repo navigation.
 

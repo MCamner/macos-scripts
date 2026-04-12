@@ -54,6 +54,36 @@ fi
 
 BOX_INNER=88
 
+# Main menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-main-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-main-menu.sh"
+fi
+
+# Dev menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-dev-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-dev-menu.sh"
+fi
+
+# AI menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-ai-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-ai-menu.sh"
+fi
+
+# Net menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-net-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-net-menu.sh"
+fi
+
+# Help/index module
+if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-help-menu.sh"
+fi
+
 print_header() {
   clear
   if [[ -f "$DASHBOARD_V71" ]]; then
@@ -940,245 +970,6 @@ show_about_dashboard() {
   pause_enter
 }
 
-show_command_index() {
-  print_header
-  row_bold "COMMAND INDEX"
-  empty_row
-
-  row "CORE"
-  row " mqlaunch              Open main menu"
-  row " mqlaunch help         Show help"
-  row " mqlaunch commands     Show command index"
-
-  empty_row
-  row "WORKFLOWS"
-  row " mqlaunch perf         Performance module"
-  row " mqlaunch dev          Dev module"
-  row " mqlaunch git          Alias for Dev"
-  row " mqlaunch tools        Tools module"
-  row " mqlaunch release      Open Release Menu"
-  row " mqlaunch login        Open Login / Session menu"
-  row " mqlaunch shortcuts    Open Shortcuts menu"
-  row " mqlaunch shortcuts list"
-  row " mqlaunch shortcuts search clip"
-  row " mqlaunch login menu   Session boot + full menu"
-  row " mqlaunch login about  Session boot + about screen"
-  row " mqlaunch login check  Session boot + self-check"
-
-  empty_row
-  row "STATUS / SUPPORT"
-  row " mqlaunch about        About / status dashboard"
-  row " mqlaunch version      Version information"
-  row " mqlaunch notes        Release notes / changelog"
-  row " mqlaunch check        Run self-check"
-  row " mqlaunch bundle       Create debug bundle"
-
-  empty_row
-  row "UTILITY"
-  row " mqlaunch repo         Open repo root"
-  row " mqlaunch guide        Open terminal guide"
-
-  empty_row
-  row "ALIASES"
-  row " mqlaunch health       Alias for check"
-  row " mqlaunch support      Alias for bundle"
-  row " mqlaunch changelog    Alias for notes"
-  row " mqlaunch dashboard    Alias for about"
-  row " mqlaunch index        Alias for commands"
-  row " mqlaunch palette      Alias for commands"
-
-  print_footer
-  pause_enter
-}
-
-# --- Menus --------------------------------------------------
-print_main_menu() {
-  print_header
-  row_bold "MAIN MENU"
-  empty_row
-
-  row "APPS"
-  row3 " 1. Finder" " 2. Safari" " 3. Google Chrome"
-  row3 " 4. Spotify" " 5. Xcode" " 6. System Settings"
-  row3 " 7. Activity Monitor" "" ""
-
-  empty_row
-  row "SYSTEM / CONTROL"
-  row3 " 8. Downloads folder" " 9. Home folder" "10. Show IP + network"
-  row3 "11. Git Menu" "12. Lock screen" "13. Sleep display"
-
-  empty_row
-  row "QUICK ACTIONS"
-  row3 "14. Utilities folder" "15. Applications folder" "16. Restart Finder"
-  row3 "17. Show date and time" "18. Open repo in browser" "19. Run system check"
-
-  empty_row
-  row "MENUS"
-  row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
-
-  empty_row
-  row "WORKFLOWS"
-  row2 "23. Performance" "24. Dev"
-  row2 "25. Tools" "26. Release"
-  row2 "27. Login / Session" "28. Shortcuts"
-  row2 "29. Version" "30. Self-check"
-  row2 "31. Debug bundle" "32. Release notes"
-  row2 "33. About / Status" "34. Command index"
-
-  print_main_footer
-  printf "${C_TITLE}Select option [1-34,X]: ${C_RESET}"
-}
-
-print_ai_menu() {
-  print_header
-  row "AI MODES"
-  empty_row
-
-  row2 " 1. Auto Mode" " 2. Atlas One"
-  row2 " 3. Atlas Router" " 4. Decision"
-  row2 " 5. Research" " 6. Root Cause"
-  row2 " 7. Problem Solving" " 8. Prompt Debugger"
-  row2 " 9. AI Menu" " 0. Back"
-
-  print_footer
-  printf "${C_TITLE}Select AI mode [0-9]: ${C_RESET}"
-}
-
-print_dev_menu() {
-  print_header
-  row "DEV / PROMPTS"
-  empty_row
-
-  row2 " 1. Open AI Prompts folder" " 2. Show prompt files"
-  row2 " 3. Edit mqlaunch" " 4. Backup prompts"
-  row2 " 5. Backup mqlaunch" " 6. Open macos-scripts folder"
-  row2 " 7. Open launcher folder" " 8. Open mac terminal guide"
-  row2 " 9. Git Launch" "10. Net Launch"
-  row2 "11. Themes" "12. Tools Menu"
-  row2 " 0. Back" ""
-
-  print_footer
-  printf "${C_TITLE}Select dev option [0-12]: ${C_RESET}"
-}
-
-print_git_menu() {
-  print_header
-  row "GIT LAUNCH"
-  empty_row
-
-  row2 " 1. Git status" " 2. Git pull"
-  row2 " 3. Git push" " 4. Open repo in browser"
-  row2 " 5. Open local repo folder" " 0. Back"
-
-  print_footer
-  printf "${C_TITLE}Select git option [0-5]: ${C_RESET}"
-}
-
-print_net_menu() {
-  print_header
-  row "NET LAUNCH"
-  empty_row
-
-  row2 " 1. Show IP + network info" " 2. Ping test"
-  row2 " 3. Show DNS + gateway" " 4. Open Network Settings"
-  row2 " 5. Copy IP info to clipboard" " 0. Back"
-
-  print_footer
-  printf "${C_TITLE}Select net option [0-5]: ${C_RESET}"
-}
-
-ai_menu_loop() {
-  local choice
-
-  while true; do
-    print_ai_menu
-    read -r choice
-    echo
-
-    case "$choice" in
-      1) safe_run_ai auto ;;
-      2) safe_run_ai one ;;
-      3) safe_run_ai atlas ;;
-      4) safe_run_ai decide ;;
-      5) safe_run_ai research ;;
-      6) safe_run_ai root ;;
-      7) safe_run_ai solve ;;
-      8) safe_run_ai pdebug ;;
-      9) safe_run_ai menu ;;
-      0) break ;;
-      *) echo "${C_ERR}Invalid AI selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
-}
-
-git_menu_loop() {
-  local choice
-
-  while true; do
-    print_git_menu
-    read -r choice
-    echo
-
-    case "$choice" in
-      1) run_git_screen "GIT STATUS" "git status --short --branch" ;;
-      2) run_git_screen "GIT PULL" "git pull" ;;
-      3) run_git_screen "GIT PUSH" "git push" ;;
-      4) open_repo_browser ;;
-      5) open_base_dir ;;
-      0) break ;;
-      *) echo "${C_ERR}Invalid git selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
-}
-
-net_menu_loop() {
-  local choice
-
-  while true; do
-    print_net_menu
-    read -r choice
-    echo
-
-    case "$choice" in
-      1) show_network_info ;;
-      2) ping_test ;;
-      3) show_dns_gateway ;;
-      4) open_network_settings ;;
-      5) copy_network_info ;;
-      0) break ;;
-      *) echo "${C_ERR}Invalid net selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
-}
-
-dev_menu_loop() {
-  local choice
-
-  while true; do
-    print_dev_menu
-    read -r choice
-    echo
-
-    case "$choice" in
-      1) open_ai_prompts_folder ;;
-      2) show_prompt_files ;;
-      3) edit_mqlaunch ;;
-      4) backup_prompts ;;
-      5) backup_mqlaunch ;;
-      6) open_base_dir ;;
-      7) open_launcher_folder ;;
-      8) open_terminal_guide ;;
-      9) open_git_menu ;;
-      10) net_menu_loop ;;
-      11) themes_menu_loop ;;
-      12) open_tools_menu ;;
-      0) break ;;
-      *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
-}
-
-
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
 
@@ -1189,101 +980,6 @@ tweaks_menu_loop() {
     pause_enter
     return 1
   fi
-}
-
-main_loop() {
-  local choice
-
-  while true; do
-    print_main_menu
-    read -r choice
-    echo
-
-    case "$choice" in
-      1) open_app "Finder" ;;
-      2) open_app "Safari" ;;
-      3) open_app "Google Chrome" ;;
-      4) open_app "Spotify" ;;
-      5) open_app "Xcode" ;;
-      6) open_app "System Settings" ;;
-      7) open_app "Activity Monitor" ;;
-      8) open_downloads_folder ;;
-      9) open_home_folder ;;
-      10) show_network_info ;;
-      11) open_git_menu ;;
-      x|X) echo "Exiting ${APP_TITLE}..."; exit 0 ;;
-      12) lock_screen ;;
-      13) sleep_display ;;
-      14) open_utilities_folder ;;
-      15) open_applications_folder ;;
-      16) restart_finder ;;
-      17) show_date_time ;;
-      18) open_repo_browser ;;
-      19) system_check ;;
-      20) ai_menu_loop ;;
-      21) dev_menu_loop ;;
-      22) tweaks_menu_loop ;;
-      23) open_v1_performance_menu ;;
-      24) open_v1_dev_menu ;;
-      25) open_v1_tools_menu ;;
-      26) open_release_menu ;;
-      27) run_mqlogin ;;
-      28) run_mqshortcuts ;;
-      29) show_version_info ;;
-      30) run_self_check || true ;;
-      31) run_debug_bundle || true ;;
-      32) show_release_notes || true ;;
-      33) show_about_dashboard || true ;;
-      34) show_command_index || true ;;
-      *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
-}
-
-show_help() {
-  cat <<HELP
-
-mqlaunch — modular terminal workflow hub
-
-CORE
-  mqlaunch                Open main menu
-  mqlaunch help           Show help
-  mqlaunch commands       Show command index
-
-WORKFLOWS
-  mqlaunch perf           Open Performance module
-  mqlaunch dev            Open Dev module
-  mqlaunch git            Alias for Dev
-  mqlaunch tools          Open Tools module
-  mqlaunch release        Open Release Menu
-  mqlaunch login          Open Login / Session menu
-  mqlaunch shortcuts      Open Shortcuts menu
-  mqlaunch shortcuts list
-  mqlaunch shortcuts search clip
-  mqlaunch login menu     Session boot + full menu
-  mqlaunch login about    Session boot + about screen
-  mqlaunch login check    Session boot + self-check
-
-STATUS / SUPPORT
-  mqlaunch about          Show about / status dashboard
-  mqlaunch version        Show version information
-  mqlaunch notes          Show release notes / changelog
-  mqlaunch check          Run self-check
-  mqlaunch bundle         Create debug bundle
-
-UTILITY
-  mqlaunch repo           Open repo root
-  mqlaunch guide          Open terminal guide
-
-ALIASES
-  mqlaunch health         Alias for check
-  mqlaunch support        Alias for bundle
-  mqlaunch changelog      Alias for notes
-  mqlaunch dashboard      Alias for about
-  mqlaunch index          Alias for commands
-  mqlaunch palette        Alias for commands
-
-HELP
 }
 
 run_arg_command() {
@@ -1309,8 +1005,8 @@ run_arg_command() {
     date|time) show_date_time ;;
     repo) open_repo_browser ;;
     check|health) system_check ;;
-    ai) ai_menu_loop ;;
-    dev) open_v1_dev_menu ;;
+    ai) open_ai_menu ;;
+    dev) open_dev_menu ;;
     tweaks|tweak|tw) open_tweaks_menu ;;
     tweaks-status) show_tweaks_status ;;
     tweaks-workstation) run_tweaks_workstation ;;
@@ -1329,7 +1025,7 @@ run_arg_command() {
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     release|rel) open_release_menu ;;
-    git|git-menu|gitlaunch) open_git_menu ;;
+    git|git-menu|gitmenu|menu-git|gitlaunch) open_git_menu ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
     perf|performance) open_v1_performance_menu ;;
@@ -1342,7 +1038,6 @@ run_arg_command() {
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
-    git-menu|gitmenu|menu-git|git) open_git_menu ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;
@@ -1351,8 +1046,7 @@ run_arg_command() {
     base|macos-scripts) open_base_dir ;;
     launchers|launcher-folder) open_launcher_folder ;;
     guide|terminal-guide) open_terminal_guide ;;
-    gitlaunch) git_menu_loop ;;
-    netlaunch|net) net_menu_loop ;;
+    netlaunch|net) open_net_menu ;;
     auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     help|-h|--help) show_help ;;
     *)
