@@ -1,7 +1,17 @@
+# macOS metadata
 .DS_Store
+**/.DS_Store
+
+# Editor temp files
+*.swp
+*.tmp
+*~
 
 # Local debug bundles
 backups/debug-bundles/*.txt
 
-# Launcher backups
+# Local backup files
+backups/launchers/*.bak
 terminal/launchers/*.bak.*
+terminal/menus/*.bak.*
+tools/*.bak.*
