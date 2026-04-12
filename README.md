@@ -240,20 +240,11 @@ macos-scripts/
 
 ## 🧩 Design Principles
 
-**Practical over clever**
-Focus on real workflows.
-
-**Structure over sprawl**
-Everything fits into a system.
-
-**Repeatability matters**
-Do it once, reuse it forever.
-
-**Usability is part of engineering**
-If it's hard to use, it's not done.
-
-**Growth without monolith**
-Scale without breaking structure.
+* Practical over clever — focus on real workflows
+* Structure over sprawl — everything fits into a system
+* Repeatability matters — do it once, reuse it forever
+* Usability is part of engineering — if it's hard to use, it's not done
+* Growth without monolith — scale without breaking structure
 
 ---
 
