@@ -6,7 +6,7 @@ UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 LOGIN_SCRIPT="$BASE_DIR/automation/login/mqlogin.sh"
 
 APP_TITLE="MQ Login"
-APP_SUBTITLE="Session Boot Menu"
+APP_SUBTITLE="Login and Session Boot"
 APP_AUTHOR="Author Mattias Camner"
 BOX_INNER=88
 
@@ -98,7 +98,7 @@ show_login_help() {
 
 print_menu() {
   print_header
-  row_bold "LOGIN / SESSION MENU"
+  row_bold "LOGIN / SESSION"
   empty_row
 
   row2 " 1. Start session menu" " 2. Start session about"

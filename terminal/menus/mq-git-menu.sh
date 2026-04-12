@@ -5,7 +5,7 @@ BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
 APP_TITLE="MQ Git"
-APP_SUBTITLE="Repo Workflows and Safe Git Actions"
+APP_SUBTITLE="Git Workspace and Safe Repo Actions"
 APP_AUTHOR="Author Mattias Camner"
 BOX_INNER=88
 
@@ -22,7 +22,7 @@ CURRENT_REPO="$BASE_DIR"
 ensure_repo() {
   if [[ ! -d "$CURRENT_REPO/.git" ]]; then
     print_header
-    row_bold "GIT MENU"
+    row_bold "GIT WORKSPACE"
     empty_row
     row "Not a git repository:"
     row " $CURRENT_REPO"

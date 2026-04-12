@@ -13,7 +13,7 @@ print_main_menu() {
   empty_row
   row "SYSTEM / CONTROL"
   row3 " 8. Downloads folder" " 9. Home folder" "10. Show IP + network"
-  row3 "11. Git Menu" "12. Lock screen" "13. Sleep display"
+  row3 "11. Repo folder" "12. Lock screen" "13. Sleep display"
 
   empty_row
   row "QUICK ACTIONS"
@@ -22,20 +22,20 @@ print_main_menu() {
 
   empty_row
   row "MENUS"
-  row3 "20. AI Modes" "21. Dev / Prompts" "22. Tweaks"
+  row3 "20. AI Modes" "21. Prompt Tools" "22. Tweaks"
 
   empty_row
   row "WORKFLOWS"
-  row2 "23. Performance" "24. Dev"
-  row2 "25. Tools" "26. Workflows"
-  row2 "27. Release" "28. Login / Session"
-  row2 "29. Shortcuts" "30. Version"
-  row2 "31. Self-check" "32. Debug bundle"
-  row2 "33. Release notes" "34. About / Status"
-  row2 "35. Command index" ""
+  row2 "23. Git" "24. Performance"
+  row2 "25. Dev Tools" "26. Tools"
+  row2 "27. Project workflows" "28. Release"
+  row2 "29. Login / Session" "30. Shortcuts"
+  row2 "31. Version" "32. Self-check"
+  row2 "33. Debug bundle" "34. Release Notes"
+  row2 "35. About / Status" "36. Command index"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-35,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-36,X]: ${C_RESET}"
 }
 
 handle_main_menu_choice() {
@@ -52,7 +52,7 @@ handle_main_menu_choice() {
     8) open_downloads_folder ;;
     9) open_home_folder ;;
     10) show_network_info ;;
-    11) open_git_menu ;;
+    11) open_base_dir ;;
     x|X) echo "Exiting ${APP_TITLE}..."; exit 0 ;;
     12) lock_screen ;;
     13) sleep_display ;;
@@ -65,19 +65,20 @@ handle_main_menu_choice() {
     20) ai_menu_loop ;;
     21) dev_menu_loop ;;
     22) tweaks_menu_loop ;;
-    23) open_v1_performance_menu ;;
-    24) open_v1_dev_menu ;;
-    25) open_v1_tools_menu ;;
-    26) run_mqworkflows ;;
-    27) open_release_menu ;;
-    28) run_mqlogin ;;
-    29) run_mqshortcuts ;;
-    30) show_version_info ;;
-    31) run_self_check || true ;;
-    32) run_debug_bundle || true ;;
-    33) show_release_notes || true ;;
-    34) show_about_dashboard || true ;;
-    35) show_command_index || true ;;
+    23) open_git_menu ;;
+    24) open_v1_performance_menu ;;
+    25) open_v1_dev_menu ;;
+    26) open_v1_tools_menu ;;
+    27) run_mqworkflows ;;
+    28) open_release_menu ;;
+    29) run_mqlogin ;;
+    30) run_mqshortcuts ;;
+    31) show_version_info ;;
+    32) run_self_check || true ;;
+    33) run_debug_bundle || true ;;
+    34) show_release_notes || true ;;
+    35) show_about_dashboard || true ;;
+    36) show_command_index || true ;;
     *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
   esac
 }

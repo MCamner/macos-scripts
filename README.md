@@ -43,9 +43,9 @@ mqlaunch
 
 ⚡ mqlaunch — central command launcher  
 📊 Performance — system health & monitoring  
-🛠 Dev — git + repo workflows  
+🛠 Prompt Tools — prompts, launcher maintenance, and repo helpers  
 📦 Tools — scripts, CLI utilities, guides  
-🔁 Automation — session boot and shortcuts workflows  
+🔁 Automation — login, shortcuts, and project workflows  
 🚀 Release — safe versioning with automation (dry-run + rollback)  
 🔌 Modular architecture — evolve without breaking
 
@@ -70,6 +70,7 @@ Try a few focused entry points:
 
 ```bash
 mqlaunch git
+mqlaunch workflows
 mqlaunch release
 mqlaunch login
 mqlaunch shortcuts
@@ -95,6 +96,7 @@ Then:
 ```bash
 mqlaunch dev
 mqlaunch tools
+mqlaunch workflows
 ```
 
 ---
@@ -104,9 +106,10 @@ mqlaunch tools
 ```bash
 mqlaunch        # Open launcher
 mqlaunch perf   # System performance
-mqlaunch dev    # Dev workflows
+mqlaunch dev    # Prompt tools
 mqlaunch git    # Git workspace
 mqlaunch tools  # Tools & scripts
+mqlaunch workflows # Project workflows
 mqlaunch release   # Release menu
 mqlaunch login     # Login / session menu
 mqlaunch shortcuts # Shortcuts menu
@@ -263,5 +266,4 @@ This project uses a **modular launcher model**:
 Star ⭐
 Fork 🍴
 Build your own terminal system ⚡
-
 

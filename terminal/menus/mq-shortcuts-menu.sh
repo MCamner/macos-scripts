@@ -6,7 +6,7 @@ UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 SHORTCUTS_SCRIPT="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
 
 APP_TITLE="MQ Shortcuts"
-APP_SUBTITLE="macOS Shortcuts Terminal Menu"
+APP_SUBTITLE="macOS Shortcuts Workspace"
 APP_AUTHOR="Author Mattias Camner"
 BOX_INNER=88
 
@@ -21,7 +21,7 @@ fi
 require_shortcuts_script() {
   if [[ ! -x "$SHORTCUTS_SCRIPT" ]]; then
     print_header
-    row_bold "SHORTCUTS MENU"
+    row_bold "SHORTCUTS"
     empty_row
     row "Missing or non-executable script:"
     row " $SHORTCUTS_SCRIPT"
@@ -162,7 +162,7 @@ show_shortcuts_help() {
 
 print_menu() {
   print_header
-  row_bold "SHORTCUTS MENU"
+  row_bold "SHORTCUTS"
   empty_row
 
   row2 " 1. List shortcuts" " 2. List folders"

@@ -40,7 +40,7 @@ The extracted main menu renderer and top-level selection router used by `mqlaunc
 The extracted help and command index module used by `mqlaunch`.
 
 ### `mq-dev-menu.sh`
-The extracted Dev / Prompts menu used by `mqlaunch` for repo-adjacent editing and navigation tasks.
+The extracted Prompt Tools menu used by `mqlaunch` for prompts, launcher maintenance, and repo-adjacent editing tasks.
 
 ### `mq-ai-menu.sh`
 The extracted AI modes menu used by `mqlaunch` for prompt and assistant entrypoints.

@@ -2,7 +2,7 @@
 
 print_dev_menu() {
   print_header
-  row "DEV / PROMPTS"
+  row "PROMPT TOOLS"
   empty_row
 
   row2 " 1. Open AI Prompts folder" " 2. Show prompt files"

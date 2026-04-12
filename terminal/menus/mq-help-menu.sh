@@ -9,14 +9,15 @@ show_command_index() {
   row " mqlaunch              Open main menu"
   row " mqlaunch help         Show help"
   row " mqlaunch commands     Show command index"
+  row " mqlaunch palette      Open fuzzy command palette"
 
   empty_row
   row "WORKFLOWS"
   row " mqlaunch perf         Open Performance module"
-  row " mqlaunch dev          Open Dev module"
-  row " mqlaunch git          Open Git menu"
+  row " mqlaunch dev          Open Prompt Tools menu"
+  row " mqlaunch git          Open Git workspace"
   row " mqlaunch tools        Open Tools module"
-  row " mqlaunch workflows    Open Workflows menu"
+  row " mqlaunch workflows    Open Project workflows menu"
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Open Login / Session menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
@@ -47,7 +48,8 @@ show_command_index() {
   row " mqlaunch changelog    Alias for notes"
   row " mqlaunch dashboard    Alias for about"
   row " mqlaunch index        Alias for commands"
-  row " mqlaunch palette      Alias for commands"
+  row " mqlaunch fzf          Alias for palette"
+  row " mqlaunch search       Alias for palette"
 
   print_footer
   pause_enter
@@ -62,13 +64,14 @@ CORE
   mqlaunch                Open main menu
   mqlaunch help           Show help
   mqlaunch commands       Show command index
+  mqlaunch palette        Open fuzzy command palette
 
 WORKFLOWS
   mqlaunch perf           Open Performance module
-  mqlaunch dev            Open Dev module
-  mqlaunch git            Open Git menu
+  mqlaunch dev            Open Prompt Tools menu
+  mqlaunch git            Open Git workspace
   mqlaunch tools          Open Tools module
-  mqlaunch workflows      Open Workflows menu
+  mqlaunch workflows      Open Project workflows menu
   mqlaunch release        Open Release Menu
   mqlaunch login          Open Login / Session menu
   mqlaunch shortcuts      Open Shortcuts menu
@@ -96,7 +99,8 @@ ALIASES
   mqlaunch changelog      Alias for notes
   mqlaunch dashboard      Alias for about
   mqlaunch index          Alias for commands
-  mqlaunch palette        Alias for commands
+  mqlaunch fzf            Alias for palette
+  mqlaunch search         Alias for palette
 
 POPULAR FLOWS
   mqlaunch git

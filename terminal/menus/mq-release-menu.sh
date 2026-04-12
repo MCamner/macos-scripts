@@ -8,7 +8,7 @@ CHANGELOG_FILE="$BASE_DIR/CHANGELOG.md"
 VERSION_FILE="$BASE_DIR/VERSION"
 
 APP_TITLE="MQ Release"
-APP_SUBTITLE="Versioning and Release Automation"
+APP_SUBTITLE="Release Automation and Versioning"
 APP_AUTHOR="Author Mattias Camner"
 BOX_INNER=88
 
@@ -23,7 +23,7 @@ fi
 require_release_script() {
   if [[ ! -x "$RELEASE_SCRIPT" ]]; then
     print_header
-    row_bold "RELEASE MENU"
+    row_bold "RELEASE"
     empty_row
     row "Missing or non-executable script:"
     row " $RELEASE_SCRIPT"
@@ -217,7 +217,7 @@ create_github_release_only() {
 
 print_menu() {
   print_header
-  row_bold "RELEASE MENU"
+  row_bold "RELEASE"
   empty_row
 
   row2 " 1. Release status" " 2. Dry run release"

@@ -7,7 +7,7 @@ set -u
 # Adds:
 # - MAIN MENU in bold
 # - Author line in header
-# - Git Launch + Net Launch in Dev / Prompts
+# - Git Launch + Net Launch in Prompt Tools
 # ============================================================
 
 APP_TITLE="MQLAUNCH"
@@ -996,6 +996,65 @@ show_about_dashboard() {
   pause_enter
 }
 
+run_command_palette() {
+  local fzf_bin selected selected_cmd
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+
+  if [[ -z "$fzf_bin" ]]; then
+    print_header
+    row_bold "COMMAND PALETTE"
+    empty_row
+    row "fzf is not installed."
+    row "Falling back to command index."
+    print_footer
+    pause_enter
+    show_command_index
+    return 0
+  fi
+
+  selected="$(
+    cat <<'EOF' | "$fzf_bin" --height=70% --layout=reverse --border --prompt='mqlaunch > ' --with-nth=2.. --delimiter=$'\t' --preview-window=hidden
+main	Open main menu
+git	Open Git workspace
+perf	Open Performance module
+dev	Open Prompt Tools menu
+tools	Open Tools module
+workflows	Open Project workflows menu
+workflows boot	Run project boot
+release	Open Release menu
+login	Open Login / Session menu
+login menu	Start full session boot
+login about	Start session about mode
+login check	Start session self-check mode
+shortcuts	Open Shortcuts menu
+shortcuts list	List shortcuts directly
+shortcuts search clip	Search shortcuts by name
+version	Show version information
+about	Show about / status dashboard
+notes	Show release notes
+check	Run self-check
+bundle	Create debug bundle
+repo	Open repo root in browser
+guide	Open terminal guide
+commands	Show command index
+EOF
+  )"
+
+  [[ -n "$selected" ]] || return 0
+
+  selected_cmd="${selected%%$'\t'*}"
+
+  case "$selected_cmd" in
+    main)
+      main_loop
+      ;;
+    *)
+      # shellcheck disable=SC2086
+      run_arg_command ${=selected_cmd}
+      ;;
+  esac
+}
+
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
 
@@ -1061,7 +1120,8 @@ run_arg_command() {
     bundle|debug-bundle|support) run_debug_bundle ;;
     notes|changelog|release-notes) show_release_notes ;;
     about|status|dashboard) show_about_dashboard ;;
-    commands|index|palette) show_command_index ;;
+    commands|index) show_command_index ;;
+    palette|fzf|search) run_command_palette ;;
     dev-v1|git-v1) open_v1_dev_menu ;;
     tools|tools-v1|menu-tools-v1) open_v1_tools_menu ;;
     tools-v1|menu-tools-v1) open_v1_tools_menu ;;
