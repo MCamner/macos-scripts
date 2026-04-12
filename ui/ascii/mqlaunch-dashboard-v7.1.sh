@@ -416,32 +416,32 @@ mqlaunch_dashboard_v71() {
   if [[ "$mode" =~ GIT ]]; then
     if (( compact == 1 )); then
       mq_box_single "git status / git pull --rebase / git push" "$width"
-      mq_box_single "stash push / stash pop / switch branch" "$width"
-      mq_box_single "mqlaunch git / mqlaunch dev / mqlaunch tools" "$width"
+      mq_box_single "mqlaunch workflows / mqlaunch system / mqlaunch git" "$width"
+      mq_box_single "Try: mqlaunch system check / release notes / git" "$width"
     else
       mq_box_row "git status / git pull --rebase" "git push / git fetch --all" "$width"
-      mq_box_row "stash push / stash pop" "switch branch / create branch" "$width"
-      mq_box_row "mqlaunch git / dev / tools" "legacy: mqlaunch gitlaunch" "$width"
+      mq_box_row "mqlaunch workflows / system / git" "mqlaunch release / dev / help" "$width"
+      mq_box_row "Try: mqlaunch system check" "Try: mqlaunch release notes" "$width"
     fi
   elif [[ "$mode" =~ DEV ]]; then
     if (( compact == 1 )); then
-      mq_box_single "mqlaunch dev / mqlaunch git / mqlaunch tools" "$width"
-      mq_box_single "edit mqlaunch / search menus / open repo" "$width"
-      mq_box_single "install.sh / system-check.sh" "$width"
+      mq_box_single "mqlaunch workflows / mqlaunch system / mqlaunch git" "$width"
+      mq_box_single "mqlaunch release / mqlaunch dev / mqlaunch help" "$width"
+      mq_box_single "Try: mqlaunch system check / release notes / git" "$width"
     else
-      mq_box_row "mqlaunch dev / git / tools" "open repo / open GitHub / VS Code" "$width"
-      mq_box_row "search mqlaunch / search menus" "edit dev menu / git menu / mqlaunch" "$width"
-      mq_box_row "run install.sh" "run system-check.sh" "$width"
+      mq_box_row "mqlaunch workflows / system / git" "mqlaunch release / dev / help" "$width"
+      mq_box_row "Try: mqlaunch system check" "Try: mqlaunch release notes" "$width"
+      mq_box_row "Try: mqlaunch git" "direct command mode enabled" "$width"
     fi
   else
     if (( compact == 1 )); then
-      mq_box_single "mqlaunch git / mqlaunch dev / mqlaunch tools" "$width"
-      mq_box_single "gitlaunch for legacy git menu" "$width"
-      mq_box_single "modular launcher system online" "$width"
+      mq_box_single "mqlaunch workflows / mqlaunch system / mqlaunch git" "$width"
+      mq_box_single "mqlaunch release / mqlaunch dev / mqlaunch help" "$width"
+      mq_box_single "Try: mqlaunch system check / release notes / git" "$width"
     else
-      mq_box_row "mqlaunch git  -> modular git menu" "mqlaunch dev   -> dev tools" "$width"
-      mq_box_row "mqlaunch tools -> tools menu" "mqlaunch gitlaunch -> legacy" "$width"
-      mq_box_row "adaptive layout + severity meter" "brand: MQLAUNCH" "$width"
+      mq_box_row "mqlaunch workflows / system / git" "mqlaunch release / dev / help" "$width"
+      mq_box_row "Try: mqlaunch system check" "Try: mqlaunch release notes" "$width"
+      mq_box_row "Try: mqlaunch git" "direct command mode enabled" "$width"
     fi
   fi
   mq_box_bottom "$width"
