@@ -21,7 +21,7 @@
   <img src="docs/demo.gif" alt="mqlaunch demo" width="800">
 </p>
 
-> 👉 Shows `mqlaunch perf`, live system overview, and navigation flow
+> 👉 Shows the `mqlaunch` command surface and main workflow menu
 
 ---
 
@@ -246,8 +246,6 @@ This project uses a **safe migration model**:
 Star ⭐
 Fork 🍴
 Build your own terminal system ⚡
-
-
 
 
 
