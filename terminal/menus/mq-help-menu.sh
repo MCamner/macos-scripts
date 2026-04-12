@@ -20,7 +20,7 @@ show_command_index() {
   row " mqlaunch system debug Create debug bundle"
   row " mqlaunch dev          Open Prompt Tools menu"
   row " mqlaunch git          Open Git workspace"
-  row " mqlaunch tools        Open Tools module"
+  row " mqlaunch tools        Open Tools menu"
   row " mqlaunch workflows    Open Workflows menu"
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Open Login menu"
@@ -76,7 +76,7 @@ WORKFLOWS
   mqlaunch perf           Open Performance module
   mqlaunch dev            Open Prompt Tools menu
   mqlaunch git            Open Git workspace
-  mqlaunch tools          Open Tools module
+  mqlaunch tools          Open Tools menu
   mqlaunch workflows      Open Workflows menu
   mqlaunch release        Open Release Menu
   mqlaunch login          Open Login menu

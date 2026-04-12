@@ -1,26 +1,45 @@
 # Launchers
 
-Launcher scripts for macOS terminal workflows.
+Launcher entrypoints for the `mqlaunch` command surface.
 
 ## Current launcher
 
-- `mqlaunch.sh` — a menu-based macOS launcher for apps, folders and quick actions
+- `mqlaunch.sh` — the primary launcher behind `bin/mqlaunch`
 
-## Features
+It supports both:
 
-- Open common apps and folders
-- Show network information
-- Show date and time
-- Open the repository in the browser
-- Lock screen, sleep display and restart Finder
+- menu mode via `mqlaunch`
+- command mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
+
+## What lives here
+
+- main launcher flow and entry bootstrap
+- command routing and aliases
+- dashboard / header integration
+- shared actions used by menus
+- demo mode
+- theme menu integration
+
+## Common commands
+
+```bash
+mqlaunch
+mqlaunch demo
+mqlaunch system
+mqlaunch system check
+mqlaunch dev
+mqlaunch tools
+mqlaunch release notes
+```
 
 ## Run locally
 
 ```bash
 chmod +x mqlaunch.sh
 ./mqlaunch.sh
+./mqlaunch.sh demo
 ```
 
 ## Goal
 
-Build simple launchers that make macOS faster, cleaner and more fun to use.
+Keep `mqlaunch` as one coherent entrypoint: easy to navigate, easy to script, and easy to evolve without losing consistency.
