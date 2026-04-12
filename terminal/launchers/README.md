@@ -43,3 +43,14 @@ chmod +x mqlaunch.sh
 ## Goal
 
 Keep `mqlaunch` as one coherent entrypoint: easy to navigate, easy to script, and easy to evolve without losing consistency.
+
+## Maintainer Note
+
+Current routing is intentionally mixed:
+
+- `dev` and `tools` are primary in the main launcher flow
+- `performance` is still user-facing as a primary command, but its implementation currently lives behind the compatibility bridge
+
+This is a deliberate choice.
+
+`performance` already has a richer implementation in `terminal/mqlaunch-v1`, so it stays there until a first-class replacement in the main launcher is worth doing as a focused migration rather than a partial rewrite.

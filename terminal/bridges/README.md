@@ -18,6 +18,23 @@ Migration is now mixed rather than all-in:
 
 So the bridge layer is now mostly a compatibility/fallback layer, not the primary path for every migrated area.
 
+## Performance Decision
+
+`performance` is the one intentional exception right now.
+
+Why it remains behind the bridge:
+
+- the existing v1 performance module is already the most complete implementation
+- it includes overview, health scoring, process views, disk/network checks, battery status, snapshots, and quick watch
+- replacing it incrementally in the main launcher would likely create a worse in-between state
+
+Current policy:
+
+- keep `mqlaunch perf` and related entrypoints stable
+- route them through `open_performance_menu()` / `run_performance_command()`
+- treat the bridge as an implementation detail, not a user-facing concept
+- revisit migration only when performance can move as a complete feature slice
+
 ## Files
 
 ```text
@@ -91,3 +108,4 @@ Long term:
 
 - keep only bridges that still serve a real compatibility purpose
 - remove dead bridge paths once no command uses them
+- migrate `performance` only when the main launcher can match or improve the current v1 experience end-to-end
