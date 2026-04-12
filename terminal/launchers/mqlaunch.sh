@@ -72,6 +72,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-system-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-system-menu.sh"
 fi
 
+# Help center menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-help-center-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-help-center-menu.sh"
+fi
+
 # Dev menu module
 if [[ -f "$BASE_DIR/terminal/menus/mq-dev-menu.sh" ]]; then
   # shellcheck disable=SC1091

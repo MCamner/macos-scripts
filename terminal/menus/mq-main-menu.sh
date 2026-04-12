@@ -13,10 +13,10 @@ print_main_menu() {
   empty_row
   row "QUICK ACCESS"
   row2 " p. Performance" " n. Network"
-  row2 " d. Doctor" " a. Apps / Shortcuts"
+  row2 " h. Health Check" " a. Apps"
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-6,p,n,d,a,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-6,p,n,h,a,X]: ${C_RESET}"
 }
 
 handle_main_menu_choice() {
@@ -29,12 +29,12 @@ handle_main_menu_choice() {
     3) open_git_menu ;;
     4) open_release_menu ;;
     5) open_v1_dev_menu ;;
-    6) show_command_index ;;
+    6) open_help_center_menu ;;
 
     # QUICK ACCESS
     p|P) open_v1_performance_menu ;;
     n|N) show_network_info ;;
-    d|D) system_check ;;
+    h|H) system_check ;;
     a|A) open_apps_menu ;;
 
     # EXIT
