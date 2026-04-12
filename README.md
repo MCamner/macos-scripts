@@ -1,246 +1,63 @@
 # macos-scripts
 
-<p align="center">
-  <b>Turn scattered shell utilities into a usable macOS command system.</b><br>
-  <code>mqlaunch</code> gives you one operational surface for workflows, observability, project utilities, and repeatable release tasks.
-</p>
+**Turn scattered shell utilities into a usable macOS command system.**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/macOS-supported-black?style=for-the-badge&logo=apple">
-  <img src="https://img.shields.io/badge/shell-zsh%20%7C%20bash-blue?style=for-the-badge">
-  <img src="https://img.shields.io/badge/status-active-success?style=for-the-badge">
-  <img src="https://img.shields.io/badge/version-0.1.3-informational?style=for-the-badge">
-  <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge">
-</p>
+`macos-scripts` is a practical terminal toolkit for macOS that organizes workflows, automation, and system tools into a structured command interface.
 
-`macos-scripts` is a practical terminal toolkit for people who live in macOS and want faster, cleaner, and more repeatable command-line workflows.
-
-At the center is `mqlaunch`: a modular launcher that brings together performance checks, repo utilities, project workflows, login helpers, shortcuts, and release automation behind a single command surface.
-
-This project is not just a collection of scripts. It is an attempt to solve a common problem: useful shell tools often grow into a messy pile of one-off commands, inconsistent entrypoints, and hard-to-maintain logic. `macos-scripts` turns that into a structured system.
-
-## Why it lands
-
-* one command surface instead of scattered scripts
-* faster daily workflows with clearer discovery
-* modular architecture that can grow without collapsing
-* safer operational tasks such as releases and snapshots
-
-**Impact:** less friction in day-to-day terminal work and a stronger foundation for repeatable automation.
+At the center is **`mqlaunch`** — a modular CLI that gives you one operational surface for everyday terminal work.
 
 ---
 
-## Demo
+## 🚀 What this is
 
-<p align="center">
-  <img src="docs/demo.gif" alt="mqlaunch demo" width="800">
-</p>
+This is not a collection of random scripts.
 
-> Shows the `mqlaunch` command surface and main workflow menu.
+It is a **structured command system** for:
 
----
+* terminal workflows
+* repeatable automation
+* system observability
+* project and repo utilities
+* release and operational tasks
 
-## Why this project exists
+The goal is simple:
 
-Most personal script collections break down in predictable ways:
-
-* commands are scattered across folders
-* workflows live in memory instead of in tooling
-* one useful script turns into twenty unrelated ones
-* maintenance becomes harder than the automation itself
-
-`macos-scripts` addresses that by giving the toolset:
-
-* one clear entrypoint
-* modular menus instead of one giant shell file
-* reusable workflows for recurring tasks
-* safer release handling with dry-run and rollback support
-
-If you like the idea of "Raycast for your terminal", that is the closest shorthand.
+> make useful scripts easier to use, extend, and trust.
 
 ---
 
-## Before -> After
+## ⚡ Quick Example
 
-Before:
-
-* commands were spread across folders and entrypoints
-* useful workflows depended too much on memory
-* new scripts were easy to add but harder to discover and maintain
-* operational tasks like releases risked becoming manual and fragile
-
-After:
-
-* `mqlaunch` acts as one clear launcher for recurring terminal work
-* workflows are grouped into visible menus and command paths
-* the toolkit is easier to extend without becoming a shell-script pile
-* repeatable operations have clearer safety rails
-
----
-
-## What it gives you
-
-* `mqlaunch` as a central launcher for day-to-day terminal work
-* performance and system observability from the command line
-* structured menus for workflows, tools, repo operations, and automation
-* release tooling built for repeatability instead of manual version juggling
-* a modular shell architecture that can grow without collapsing into script sprawl
-
----
-
-## Quick Start
+Instead of this:
 
 ```bash
-git clone https://github.com/MCamner/macos-scripts.git
-cd macos-scripts
-chmod +x install.sh
-./install.sh
-mqlaunch
+top
+df -h
+ps aux | sort -nrk 3 | head
+./tools/scripts/system-check.sh
 ```
 
-Useful entry points:
-
-```bash
-mqlaunch perf
-mqlaunch git
-mqlaunch workflows
-mqlaunch release
-mqlaunch login
-mqlaunch shortcuts
-```
-
----
-
-## Try this first
-
-Start with performance mode:
+You use:
 
 ```bash
 mqlaunch perf
 ```
 
-Good first actions:
+And get a structured interface for diagnostics, monitoring, and snapshots.
 
-* `1` for overview
-* `2` for health score
-* `8` for a snapshot
-* `9` for live monitoring
+---
 
-Then explore:
+## ⚡ Try this in 30 seconds
+
+Run:
 
 ```bash
-mqlaunch dev
-mqlaunch tools
-mqlaunch workflows
+mqlaunch perf
 ```
 
----
-
-## Core Commands
-
-```bash
-mqlaunch            # open launcher
-mqlaunch perf       # system performance and monitoring
-mqlaunch dev        # prompt tools and repo helpers
-mqlaunch git        # git workspace actions
-mqlaunch tools      # tools, scripts, and guides
-mqlaunch workflows  # project workflows
-mqlaunch release    # release menu
-mqlaunch login      # login and session helpers
-mqlaunch shortcuts  # shortcut-related actions
-```
-
----
-
-## What this shows technically
-
-This repo is useful on its own, but it is also intended to demonstrate how I build operational tooling:
-
-* turn fragmented utilities into a coherent product surface
-* design for repeatability, not just convenience
-* keep shell tooling modular enough to evolve safely
-* make terminal UX discoverable instead of relying on tribal knowledge
-
-That matters because the real challenge is usually not writing one script. It is making many small tools work together cleanly over time.
-
----
-
-## Architecture
-
-The launcher follows a modular model:
-
-* `bin/mqlaunch` is the user-facing entrypoint
-* `terminal/launchers/mqlaunch.sh` coordinates the experience
-* `terminal/menus/` contains extracted interactive flows
-* `automation/` holds workflow scripts such as login and shortcuts
-* bridges and `mqlaunch-v1` remain where compatibility still matters
-
-This keeps new capabilities from being stuffed into one oversized launcher script.
-
-### Example flow
-
-```mermaid
-flowchart LR
-    A[User Command] --> B[mqlaunch]
-    B --> C[Menu / Command Routing]
-    C --> D[Performance / Monitoring]
-    C --> E[Workflows / Utilities]
-    C --> F[Release / Repo Tasks]
-
-    D -. system insight .-> G[Repeatable Daily Work]
-    E -. structured actions .-> G
-    F -. safer change flow .-> G
-```
-
-The value is not only the scripts themselves. It is the stable command surface that makes those scripts usable as a system.
-
----
-
-## Why it matters as a portfolio project
-
-This repo shows more than shell scripting.
-
-It demonstrates how I approach tooling in practice:
-
-* turn fragmented utilities into a product-like command surface
-* design for discoverability, not just raw functionality
-* build safety into operational workflows
-* evolve systems incrementally instead of rewriting everything
-
-That is the same mindset I apply to architecture, automation, and operational design more broadly.
-
----
-
-## Release Workflow
-
-Release handling is built around `tools/release.sh` so versioning is safer and more repeatable.
-
-Preview a release:
-
-```bash
-./tools/release.sh --dry-run 0.1.3
-```
-
-Run a release:
-
-```bash
-./tools/release.sh 0.1.3
-```
-
-Included in the flow:
-
-* version sync across `VERSION` and `README`
-* changelog validation
-* git commit and tag creation
-* rollback support on failure
-
----
-
-## Preview
+You’ll land here:
 
 ```text
-mqlaunch perf
-
 Performance Menu
 1  Overview
 2  Health score
@@ -254,70 +71,241 @@ Performance Menu
 b  Back
 ```
 
+### What you get
+
+* instant system visibility
+* repeatable diagnostics
+* structured command workflows
+
+👉 This is the core idea:
+**turn everyday terminal tasks into clean, reusable workflows**
+
 ---
 
-## Project Structure
+## 🎬 Demo
+
+![mqlaunch demo](docs/demo.gif)
+
+Shows the `mqlaunch` command surface and navigation.
+
+---
+
+## 🎯 Demo Flow
+
+```text
+mqlaunch
+  ↓
+Select: Performance
+  ↓
+Run: Health → Snapshot → Monitor
+  ↓
+Jump to: Dev / Tools / Workflows
+  ↓
+Execute repeatable actions from one interface
+```
+
+👉 One entrypoint
+👉 Multiple workflows
+👉 No scattered commands
+
+---
+
+## 🖥️ Screenshots
+
+### Main Menu
+
+![Main Menu](docs/screenshots/main-menu.png)
+
+### Performance Menu
+
+![Performance](docs/screenshots/performance-menu.png)
+
+### Release Flow
+
+![Release](docs/screenshots/release-flow.png)
+
+---
+
+## 🧠 Why this exists
+
+Most script collections break down over time:
+
+* commands are scattered
+* workflows live in memory
+* scripts grow without structure
+* maintenance becomes harder than the automation
+
+This repo solves that by introducing:
+
+* one clear entrypoint (`mqlaunch`)
+* modular menus instead of script sprawl
+* reusable workflows
+* safer operational patterns
+
+---
+
+## 🔥 What you get
+
+* `mqlaunch` as a central launcher
+* structured workflows for daily terminal work
+* system observability tools
+* repo and automation utilities
+* repeatable release flows
+* modular architecture that scales
+
+---
+
+## 📌 Case: From Scripts to System
+
+This project started as separate shell utilities.
+
+It evolved into a **modular CLI system** centered around `mqlaunch`.
+
+### Result
+
+* consolidated scattered scripts into one command system
+* introduced a clear entrypoint
+* improved usability through menus
+* enabled safer operations (dry-run, debug, rollback)
+* made the system easier to extend
+
+### Impact
+
+Reduced friction in daily terminal workflows and created a foundation for scalable, repeatable automation.
+
+📖 Full case:
+https://github.com/MCamner/MCamner/blob/main/cases/macos-scripts.md
+
+---
+
+## 🔧 Getting Started
+
+Clone:
+
+```bash
+git clone https://github.com/MCamner/macos-scripts.git
+cd macos-scripts
+```
+
+Install:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+Run:
+
+```bash
+mqlaunch
+```
+
+---
+
+## ⚙️ Useful Commands
+
+```bash
+mqlaunch
+mqlaunch perf
+mqlaunch dev
+mqlaunch git
+mqlaunch tools
+mqlaunch workflows
+mqlaunch release
+mqlaunch login
+mqlaunch shortcuts
+```
+
+---
+
+## 🧱 Architecture
 
 ```text
 macos-scripts/
-├── bin/               # user-facing entrypoints
+├── bin/               # CLI entrypoints (mqlaunch)
 ├── terminal/
-│   ├── launchers/     # main launcher
-│   ├── menus/         # extracted menu modules
+│   ├── launchers/     # main launcher logic
+│   ├── menus/         # modular menu system
 │   ├── bridges/       # compatibility bridges
-│   └── mqlaunch-v1/   # legacy compatibility layer
-├── tools/             # scripts and guides
+│   └── mqlaunch-v1/   # legacy support
+├── tools/             # scripts and utilities
 ├── system/            # macOS tweaks
-├── automation/        # login, shortcuts, workflows
-├── ui/                # terminal UI
-├── docs/              # demo and pages
+├── automation/        # workflows (login, shortcuts)
+├── ui/                # terminal UI components
+├── docs/              # demo and screenshots
 └── install.sh
 ```
 
 ---
 
-## Good Fit For
+## 🧩 Design Principles
 
-* people building a personal command-line workspace on macOS
-* developers or operators who want one command surface for recurring tasks
-* anyone tired of maintaining a growing pile of disconnected shell scripts
+**Practical over clever**
+Focus on real workflows.
 
----
+**Structure over sprawl**
+Everything fits into a system.
 
-## Philosophy
+**Repeatability matters**
+Do it once, reuse it forever.
 
-* simple over clever
-* practical over theoretical
-* repeatable over fragile
-* modular evolution over rewrites
+**Usability is part of engineering**
+If it's hard to use, it's not done.
 
----
-
-## Roadmap
-
-* GitHub release integration with `gh`
-* stronger release validation
-* deeper `mqlaunch release` integration
-* plugin-style modules
-* continued cleanup of legacy compatibility paths
+**Growth without monolith**
+Scale without breaking structure.
 
 ---
 
-## Author
+## 🔍 Example Use Cases
 
-**Mattias Camner**
+* build a personal terminal workspace
+* organize automation workflows
+* reduce repeated command overhead
+* create reusable CLI-driven tools
+* improve discoverability of scripts
 
 ---
 
-## Project Links
+## 📈 Current Focus
+
+* improving `mqlaunch` UX and structure
+* refining menus and command discovery
+* strengthening debug and release flows
+* documenting patterns and workflows
+* evolving toward a modular CLI system
+
+---
+
+## 🧠 What this demonstrates
+
+This project shows how I approach system design:
+
+* turning fragmented tools into cohesive systems
+* designing for usability, not just execution
+* building modular CLI architecture
+* structuring workflows instead of scripts
+* balancing speed, clarity, and maintainability
+
+---
+
+## 🧭 Philosophy
+
+> Build things that work. Then make them easier to use. Then make them harder to break.
+
+---
+
+## 🌐 Links
 
 * Repo: https://github.com/MCamner/macos-scripts
-* Project page: https://mcamner.github.io/macos-scripts/
+* Profile: https://github.com/MCamner
+* Project Page: https://mcamner.github.io/macos-scripts/
 
 ---
 
 ## ⭐️ If you like it
 
-Star ⭐
-Fork 🍴
-Build your own terminal system ⚡
+* Star ⭐
+* Fork 🍴
+* Build your own terminal system ⚡
+
