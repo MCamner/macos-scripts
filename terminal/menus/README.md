@@ -60,6 +60,9 @@ An interactive menu for session boot flows built on top of `mqlogin.sh`.
 ### `mq-release-menu.sh`
 An interactive menu for dry-run releases, live releases, changelog review, and GitHub release creation.
 
+### `mq-workflows-menu.sh`
+An interactive menu for project workflows, including `project-boot.sh` and workflow documentation entrypoints.
+
 ## Design rules
 
 Each menu module should:

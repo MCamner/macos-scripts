@@ -729,6 +729,26 @@ open_release_menu() {
   fi
 }
 
+run_mqworkflows() {
+  local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
+
+  if [[ -x "$workflows_menu" ]]; then
+    "$workflows_menu" "${@:-menu}"
+  elif [[ -f "$workflows_menu" ]]; then
+    chmod +x "$workflows_menu" 2>/dev/null || true
+    bash "$workflows_menu" "${@:-menu}"
+  else
+    print_header
+    row_bold "WORKFLOWS"
+    empty_row
+    row "Workflows menu not found:"
+    row " $workflows_menu"
+    print_footer
+    pause_enter
+    return 1
+  fi
+}
+
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
@@ -1031,6 +1051,7 @@ run_arg_command() {
     theme-ice) theme_cmd apply ice ;;
     tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     release|rel) open_release_menu ;;
+    workflows|workflow|wf) run_mqworkflows "$@" ;;
     git|git-menu|gitmenu|menu-git|gitlaunch) open_git_menu ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;

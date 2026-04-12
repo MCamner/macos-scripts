@@ -27,14 +27,15 @@ print_main_menu() {
   empty_row
   row "WORKFLOWS"
   row2 "23. Performance" "24. Dev"
-  row2 "25. Tools" "26. Release"
-  row2 "27. Login / Session" "28. Shortcuts"
-  row2 "29. Version" "30. Self-check"
-  row2 "31. Debug bundle" "32. Release notes"
-  row2 "33. About / Status" "34. Command index"
+  row2 "25. Tools" "26. Workflows"
+  row2 "27. Release" "28. Login / Session"
+  row2 "29. Shortcuts" "30. Version"
+  row2 "31. Self-check" "32. Debug bundle"
+  row2 "33. Release notes" "34. About / Status"
+  row2 "35. Command index" ""
 
   print_main_footer
-  printf "${C_TITLE}Select option [1-34,X]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-35,X]: ${C_RESET}"
 }
 
 handle_main_menu_choice() {
@@ -67,15 +68,16 @@ handle_main_menu_choice() {
     23) open_v1_performance_menu ;;
     24) open_v1_dev_menu ;;
     25) open_v1_tools_menu ;;
-    26) open_release_menu ;;
-    27) run_mqlogin ;;
-    28) run_mqshortcuts ;;
-    29) show_version_info ;;
-    30) run_self_check || true ;;
-    31) run_debug_bundle || true ;;
-    32) show_release_notes || true ;;
-    33) show_about_dashboard || true ;;
-    34) show_command_index || true ;;
+    26) run_mqworkflows ;;
+    27) open_release_menu ;;
+    28) run_mqlogin ;;
+    29) run_mqshortcuts ;;
+    30) show_version_info ;;
+    31) run_self_check || true ;;
+    32) run_debug_bundle || true ;;
+    33) show_release_notes || true ;;
+    34) show_about_dashboard || true ;;
+    35) show_command_index || true ;;
     *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
   esac
 }

@@ -16,9 +16,11 @@ show_command_index() {
   row " mqlaunch dev          Open Dev module"
   row " mqlaunch git          Open Git menu"
   row " mqlaunch tools        Open Tools module"
+  row " mqlaunch workflows    Open Workflows menu"
   row " mqlaunch release      Open Release Menu"
   row " mqlaunch login        Open Login / Session menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
+  row " mqlaunch workflows boot       Run project boot"
   row " mqlaunch login menu   Start full session boot"
   row " mqlaunch login about  Start session in about mode"
   row " mqlaunch login check  Start session in self-check mode"
@@ -66,9 +68,11 @@ WORKFLOWS
   mqlaunch dev            Open Dev module
   mqlaunch git            Open Git menu
   mqlaunch tools          Open Tools module
+  mqlaunch workflows      Open Workflows menu
   mqlaunch release        Open Release Menu
   mqlaunch login          Open Login / Session menu
   mqlaunch shortcuts      Open Shortcuts menu
+  mqlaunch workflows boot Run project boot
   mqlaunch shortcuts list
   mqlaunch shortcuts search clip
   mqlaunch login menu     Session boot + full menu
@@ -96,6 +100,7 @@ ALIASES
 
 POPULAR FLOWS
   mqlaunch git
+  mqlaunch workflows
   mqlaunch release
   mqlaunch login
   mqlaunch shortcuts

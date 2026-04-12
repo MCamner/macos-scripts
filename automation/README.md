@@ -1,64 +1,73 @@
-# Workflows
+# Automation
 
-Reusable workflow scripts for macOS tasks and project automation.
+Automation scripts and workflow surfaces for `macos-scripts`.
 
-This directory contains higher-level scripts that orchestrate multiple steps into a single command.
-While `mqlogin` focuses on starting a personal session, workflows are designed to automate repeatable tasks across projects.
+This directory contains higher-level automation that sits above one-off tools.
+Some automation is personal and session-oriented, while some is project-oriented and repeatable across repos.
 
 ---
 
 ## Purpose
 
-Workflows provide:
+The `automation/` layer provides:
 
 * structured automation for common tasks
 * repeatable project setup routines
+* session boot helpers
+* macOS Shortcuts integration
 * a place for multi-step scripts that don’t belong in simple tools
 
-They sit between:
+It sits between:
 
 * `tools/` → small, reusable utilities
-* `automation/login/` → personal session boot
-* `automation/shortcuts/` → macOS Shortcuts integration
+* `terminal/menus/` → interactive entry surfaces
+* `mqlaunch` → top-level command launcher
 
 ---
 
-## Included
+## Structure
 
-### `project-boot.sh`
+### `login/`
 
-Bootstraps a project workspace.
+Personal session boot workflows.
 
-Typical responsibilities:
+Current entrypoint:
 
-* detect or validate project root
-* open project folder
-* open editor (e.g. VS Code)
-* prepare terminal context
-* optionally run setup or checks
+* `mqlogin.sh`
+
+### `shortcuts/`
+
+macOS Shortcuts automation and wrapper commands.
+
+Current entrypoint:
+
+* `mqshortcuts.sh`
+
+### `workflows/`
+
+Project-oriented automation flows.
+
+Current entrypoint:
+
+* `project-boot.sh`
 
 ---
 
 ## Usage
 
-Run directly from repo root:
+Run scripts directly from the repo root:
 
 ```bash
+bash automation/login/mqlogin.sh
+bash automation/shortcuts/mqshortcuts.sh list
 bash automation/workflows/project-boot.sh
-```
-
-Make executable:
-
-```bash
-chmod +x automation/workflows/project-boot.sh
-./automation/workflows/project-boot.sh
 ```
 
 ---
 
 ## Design Principles
 
-Workflows should:
+Automation scripts should:
 
 * be idempotent (safe to run multiple times)
 * fail gracefully if dependencies are missing
@@ -69,15 +78,16 @@ Workflows should:
 
 ## Relationship to mqlaunch
 
-Workflows can be:
+Automation can be:
 
 * run directly from the terminal
-* integrated into `mqlaunch` menus later
+* exposed via `mqlaunch` menus and commands
 
-Recommended pattern:
+Current launcher-facing entrypoints include:
 
-* keep logic in `automation/workflows/`
-* expose via `mqlaunch` when stable
+* `mqlaunch login`
+* `mqlaunch shortcuts`
+* `mqlaunch workflows`
 
 ---
 
@@ -93,8 +103,8 @@ Recommended pattern:
 ## Summary
 
 * `login` = start your session
-* `workflows` = automate your work
+* `shortcuts` = automate Shortcuts from the terminal
+* `workflows` = automate project flows
 * `tools` = build the pieces
 
 Together they form a structured command system rather than a loose script collection.
-
