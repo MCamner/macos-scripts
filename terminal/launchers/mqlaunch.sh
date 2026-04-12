@@ -1056,8 +1056,8 @@ main	Open main menu
 demo	Run guided demo mode
 git	Open Git workspace
 perf	Open Performance module
-dev	Open Prompt Tools menu
-tools	Open Tools module
+dev	Open Dev menu
+tools	Open Tools menu
 workflows	Open Project workflows menu
 workflows boot	Run project boot
 release	Open Release menu
@@ -1170,6 +1170,18 @@ run_demo_mode() {
   row "Demo complete."
 }
 
+legacy_alias_notice() {
+  local old_cmd="$1"
+  local new_cmd="$2"
+  print_header
+  row_bold "LEGACY ALIAS"
+  empty_row
+  row "Redirecting:"
+  row " $old_cmd"
+  row " -> $new_cmd"
+  print_footer
+}
+
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
 
@@ -1224,10 +1236,13 @@ run_arg_command() {
     theme-minimal) theme_cmd apply minimal ;;
     theme-ice) theme_cmd apply ice ;;
     theme-macos) theme_cmd apply macos ;;
-    tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
     release|rel) open_release_menu ;;
     workflows|workflow|wf) run_mqworkflows "$@" ;;
-    git|git-menu|gitmenu|menu-git|gitlaunch) open_git_menu ;;
+    git|git-menu|gitmenu|menu-git) open_git_menu ;;
+    gitlaunch)
+      legacy_alias_notice "mqlaunch gitlaunch" "mqlaunch git"
+      open_git_menu
+      ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
     perf|performance) open_performance_menu ;;
@@ -1239,9 +1254,15 @@ run_arg_command() {
     about|status|dashboard) show_about_dashboard ;;
     commands|index) show_command_index ;;
     palette|fzf|search) run_command_palette ;;
-    dev-v1|git-v1) open_v1_dev_menu ;;
-    tools|tools-menu|toolsmenu|menu-tools) open_tools_menu ;;
-    tools-v1|menu-tools-v1) open_v1_tools_menu ;;
+    dev-v1|git-v1)
+      legacy_alias_notice "mqlaunch $cmd" "mqlaunch dev"
+      open_dev_menu
+      ;;
+    tools) open_tools_menu ;;
+    tools-menu|toolsmenu|menu-tools|tools-v1|menu-tools-v1)
+      legacy_alias_notice "mqlaunch $cmd" "mqlaunch tools"
+      open_tools_menu
+      ;;
     prompts|prompt-folder) open_ai_prompts_folder ;;
     prompt-files|files) show_prompt_files ;;
     edit|edit-mqlaunch) edit_mqlaunch ;;

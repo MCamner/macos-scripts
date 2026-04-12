@@ -18,7 +18,7 @@ show_command_index() {
   row " mqlaunch perf         Open Performance module"
   row " mqlaunch system check Run system check"
   row " mqlaunch system debug Create debug bundle"
-  row " mqlaunch dev          Open Prompt Tools menu"
+  row " mqlaunch dev          Open Dev menu"
   row " mqlaunch git          Open Git workspace"
   row " mqlaunch tools        Open Tools menu"
   row " mqlaunch workflows    Open Workflows menu"
@@ -35,7 +35,7 @@ show_command_index() {
 
   empty_row
   row "STATUS / SUPPORT"
-  row " mqlaunch about        About / status dashboard"
+  row " mqlaunch about        Open About / Status"
   row " mqlaunch version      Version information"
   row " mqlaunch notes        Release notes / changelog"
   row " mqlaunch check        Run self-check"
@@ -45,16 +45,6 @@ show_command_index() {
   row "UTILITY"
   row " mqlaunch repo         Open repo root"
   row " mqlaunch guide        Open terminal guide"
-
-  empty_row
-  row "ALIASES"
-  row " mqlaunch health       Alias for check"
-  row " mqlaunch support      Alias for bundle"
-  row " mqlaunch changelog    Alias for notes"
-  row " mqlaunch dashboard    Alias for about"
-  row " mqlaunch index        Alias for commands"
-  row " mqlaunch fzf          Alias for palette"
-  row " mqlaunch search       Alias for palette"
 
   print_footer
   pause_enter
@@ -74,7 +64,7 @@ CORE
 
 WORKFLOWS
   mqlaunch perf           Open Performance module
-  mqlaunch dev            Open Prompt Tools menu
+  mqlaunch dev            Open Dev menu
   mqlaunch git            Open Git workspace
   mqlaunch tools          Open Tools menu
   mqlaunch workflows      Open Workflows menu
@@ -90,7 +80,7 @@ WORKFLOWS
   mqlaunch login check    Session boot + self-check
 
 STATUS / SUPPORT
-  mqlaunch about          Show about / status dashboard
+  mqlaunch about          Open About / Status
   mqlaunch version        Show version information
   mqlaunch notes          Show release notes / changelog
   mqlaunch check          Run system check
@@ -101,15 +91,6 @@ UTILITY
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
   mqlaunch system time    Show date and time
-
-ALIASES
-  mqlaunch health         Alias for system check
-  mqlaunch support        Alias for bundle
-  mqlaunch changelog      Alias for notes
-  mqlaunch dashboard      Alias for about
-  mqlaunch index          Alias for commands
-  mqlaunch fzf            Alias for palette
-  mqlaunch search         Alias for palette
 
 POPULAR FLOWS
   mqlaunch git
