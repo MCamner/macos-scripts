@@ -31,25 +31,37 @@ It sits between:
 
 Personal session boot workflows.
 
-Current entrypoint:
+Script:
 
 * `mqlogin.sh`
+
+Via `mqlaunch`:
+
+* `mqlaunch login`
 
 ### `shortcuts/`
 
 macOS Shortcuts automation and wrapper commands.
 
-Current entrypoint:
+Script:
 
 * `mqshortcuts.sh`
+
+Via `mqlaunch`:
+
+* `mqlaunch shortcuts`
 
 ### `workflows/`
 
 Project-oriented automation flows.
 
-Current entrypoint:
+Script:
 
 * `project-boot.sh`
+
+Via `mqlaunch`:
+
+* `mqlaunch workflows`
 
 ---
 
@@ -91,7 +103,7 @@ Current launcher-facing entrypoints include:
 
 ---
 
-## Future Ideas
+## Planned Workflow Expansions
 
 * `project-check.sh` → validate project health
 * `project-sync.sh` → pull, rebase, clean state
