@@ -7,6 +7,7 @@ show_command_index() {
 
   row "CORE"
   row " mqlaunch              Open main menu"
+  row " mqlaunch demo         Run guided demo mode"
   row " mqlaunch help         Show help"
   row " mqlaunch commands     Show command index"
   row " mqlaunch palette      Open fuzzy command palette"
@@ -66,6 +67,7 @@ mqlaunch — modular terminal workflow hub
 
 CORE
   mqlaunch                Open main menu
+  mqlaunch demo           Run guided demo mode
   mqlaunch help           Show help
   mqlaunch commands       Show command index
   mqlaunch palette        Open fuzzy command palette

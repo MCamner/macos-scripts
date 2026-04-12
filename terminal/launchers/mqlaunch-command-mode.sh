@@ -55,6 +55,7 @@ HELP
       cat <<'HELP'
 Usage:
   mqlaunch
+  mqlaunch demo
   mqlaunch workflows
   mqlaunch system
   mqlaunch git
@@ -63,6 +64,7 @@ Usage:
   mqlaunch help
 
 Quick commands:
+  mqlaunch demo
   mqlaunch perf
   mqlaunch network
   mqlaunch check
@@ -122,6 +124,11 @@ dispatch_cli_command() {
       else
         run_mqworkflows
       fi
+      return 0
+      ;;
+
+    demo)
+      run_demo_mode
       return 0
       ;;
 

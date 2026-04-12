@@ -200,12 +200,19 @@ Run:
 mqlaunch
 ```
 
+Or try demo mode:
+
+```bash
+mqlaunch demo
+```
+
 ---
 
 ## ⚙️ Useful Commands
 
 ```bash
 mqlaunch
+mqlaunch demo
 mqlaunch perf
 mqlaunch dev
 mqlaunch git
@@ -227,7 +234,10 @@ macos-scripts/
 │   ├── launchers/     # main launcher logic
 │   ├── menus/         # modular menu system
 │   ├── bridges/       # compatibility bridges
-│   └── mqlaunch-v1/   # legacy support
+│   └── mqlaunch-v1/   # compatibility layer and reusable modules
+│       ├── commands/  # v1 command handlers
+│       ├── lib/       # shared v1 core + UI helpers
+│       └── menus/     # v1 menu definitions
 ├── tools/             # scripts and utilities
 ├── system/            # macOS tweaks
 ├── automation/        # workflows (login, shortcuts)
@@ -299,4 +309,3 @@ This project shows how I approach system design:
 * Star ⭐
 * Fork 🍴
 * Build your own terminal system ⚡
-

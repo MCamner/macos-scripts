@@ -1052,6 +1052,7 @@ run_command_palette() {
   selected="$(
     cat <<'EOF' | "$fzf_bin" --height=70% --layout=reverse --border --prompt='mqlaunch > ' --with-nth=2.. --delimiter=$'\t' --preview-window=hidden
 main	Open main menu
+demo	Run guided demo mode
 git	Open Git workspace
 perf	Open Performance module
 dev	Open Prompt Tools menu
@@ -1090,6 +1091,82 @@ EOF
       run_arg_command ${=selected_cmd}
       ;;
   esac
+}
+
+run_demo_mode() {
+  local delay version prompt_dir prompt_count repo_state load_line disk_line ip_addr battery_line active_cmd
+  delay="${MQLAUNCH_DEMO_DELAY:-1}"
+  version="$(get_repo_version)"
+  prompt_dir="$(resolve_prompt_dir 2>/dev/null || true)"
+  prompt_count=0
+  load_line="$(uptime 2>/dev/null || echo "uptime unavailable")"
+  disk_line="$(df -h / 2>/dev/null | tail -1 || echo "disk usage unavailable")"
+  ip_addr="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "Unavailable")"
+  battery_line="$(pmset -g batt 2>/dev/null | tail -1 || echo "Battery info unavailable")"
+  active_cmd="$(command -v mqlaunch 2>/dev/null || echo "$BIN_LINK")"
+
+  if [[ -n "$prompt_dir" ]]; then
+    prompt_count="$(find "$prompt_dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
+  fi
+
+  if git -C "$BASE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
+      repo_state="clean"
+    else
+      repo_state="dirty"
+    fi
+  else
+    repo_state="not-a-git-repo"
+  fi
+
+  print_header
+  row_bold "DEMO MODE"
+  empty_row
+  row "A quick scripted tour of the current mqlaunch surface."
+  row "Delay between steps: ${delay}s"
+  print_footer
+  sleep "$delay"
+
+  print_header
+  row_bold "STEP 1 / SYSTEM CHECK"
+  empty_row
+  row "[OK]   Base dir: $BASE_DIR"
+  row "[OK]   Active command: $active_cmd"
+  row "[OK]   Repo state: $repo_state"
+  row "[OK]   Prompt files: $prompt_count"
+  print_footer
+  sleep "$delay"
+
+  print_header
+  row_bold "STEP 2 / PERFORMANCE SNAPSHOT"
+  empty_row
+  row "Load:    $load_line"
+  row "Disk /:  $disk_line"
+  row "Network: $ip_addr"
+  row "Battery: $battery_line"
+  print_footer
+  sleep "$delay"
+
+  print_header
+  row_bold "STEP 3 / VERSION"
+  empty_row
+  row "Project:        macos-scripts"
+  row "Version:        $version"
+  row "Launcher:       $MQ_SCRIPT"
+  row "Current mode:   command-driven + menu-backed"
+  print_footer
+  sleep "$delay"
+
+  print_header
+  row_bold "STEP 4 / TRY THESE COMMANDS"
+  empty_row
+  row " mqlaunch system check"
+  row " mqlaunch release notes"
+  row " mqlaunch dev"
+  row " mqlaunch workflows"
+  print_footer
+  echo
+  row "Demo complete."
 }
 
 tweaks_menu_loop() {
@@ -1152,6 +1229,7 @@ run_arg_command() {
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
     perf|performance) open_v1_performance_menu ;;
+    demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
