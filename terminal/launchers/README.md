@@ -32,6 +32,18 @@ mqlaunch tools
 mqlaunch release notes
 ```
 
+## Themes
+
+Theme management is available directly from the launcher.
+
+```bash
+mqlaunch theme
+mqlaunch theme-macos
+mqlaunch theme-reset
+```
+
+Use `mqlaunch theme` to open the menu, `mqlaunch theme-macos` to apply the macOS-inspired palette, and `mqlaunch theme-reset` to remove the launcher-managed theme lines from `.zshrc`.
+
 ## Run locally
 
 ```bash

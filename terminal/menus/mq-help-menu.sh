@@ -45,6 +45,9 @@ show_command_index() {
   row "UTILITY"
   row " mqlaunch repo         Open repo root"
   row " mqlaunch guide        Open terminal guide"
+  row " mqlaunch theme        Open Themes menu"
+  row " mqlaunch theme-macos  Apply macOS theme"
+  row " mqlaunch theme-reset  Reset theme"
 
   print_footer
   pause_enter
@@ -91,6 +94,9 @@ UTILITY
   mqlaunch repo           Open repo root
   mqlaunch guide          Open terminal guide
   mqlaunch system time    Show date and time
+  mqlaunch theme          Open Themes menu
+  mqlaunch theme-macos    Apply macOS theme
+  mqlaunch theme-reset    Reset theme
 
 POPULAR FLOWS
   mqlaunch git
