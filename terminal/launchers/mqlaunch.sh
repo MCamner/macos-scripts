@@ -690,6 +690,26 @@ theme_cmd() {
   fi
 }
 
+theme_current_variant() {
+  local zshrc="$HOME/.zshrc"
+
+  if [[ -f "$zshrc" ]] && grep -Eq '^export MQ_ZSH_VARIANT=' "$zshrc" 2>/dev/null; then
+    grep -E '^export MQ_ZSH_VARIANT=' "$zshrc" | tail -n 1 | sed -E 's/^export MQ_ZSH_VARIANT="?([^"]+)"?/\1/'
+  else
+    echo "not-set"
+  fi
+}
+
+theme_source_state() {
+  local zshrc="$HOME/.zshrc"
+
+  if [[ -f "$zshrc" ]] && grep -Fq 'source "$HOME/macos-scripts/terminal/themes/mq-zsh-theme-v3.zsh"' "$zshrc" 2>/dev/null; then
+    echo "PRESENT"
+  else
+    echo "MISSING"
+  fi
+}
+
 print_themes_menu() {
   print_header
   row "THEMES"
@@ -1096,6 +1116,7 @@ EOF
 
 run_demo_mode() {
   local delay version prompt_dir prompt_count repo_state load_line disk_line ip_addr battery_line active_cmd
+  local theme_variant theme_state
   delay="${MQLAUNCH_DEMO_DELAY:-1}"
   version="$(get_repo_version)"
   prompt_dir="$(resolve_prompt_dir 2>/dev/null || true)"
@@ -1105,6 +1126,8 @@ run_demo_mode() {
   ip_addr="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "Unavailable")"
   battery_line="$(pmset -g batt 2>/dev/null | tail -1 || echo "Battery info unavailable")"
   active_cmd="$(command -v mqlaunch 2>/dev/null || echo "$BIN_LINK")"
+  theme_variant="$(theme_current_variant)"
+  theme_state="$(theme_source_state)"
 
   if [[ -n "$prompt_dir" ]]; then
     prompt_count="$(find "$prompt_dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
@@ -1149,7 +1172,18 @@ run_demo_mode() {
   sleep "$delay"
 
   print_header
-  row_bold "STEP 3 / VERSION"
+  row_bold "STEP 3 / THEME STATUS"
+  empty_row
+  row "Current theme: $theme_variant"
+  row "Theme source:  $theme_state"
+  row "Try:           mqlaunch theme"
+  row "Apply macOS:   mqlaunch theme-macos"
+  row "Reset theme:   mqlaunch theme-reset"
+  print_footer
+  sleep "$delay"
+
+  print_header
+  row_bold "STEP 4 / VERSION"
   empty_row
   row "Project:        macos-scripts"
   row "Version:        $version"
@@ -1159,10 +1193,11 @@ run_demo_mode() {
   sleep "$delay"
 
   print_header
-  row_bold "STEP 4 / TRY THESE COMMANDS"
+  row_bold "STEP 5 / TRY THESE COMMANDS"
   empty_row
   row " mqlaunch system check"
   row " mqlaunch release notes"
+  row " mqlaunch theme-macos"
   row " mqlaunch dev"
   row " mqlaunch workflows"
   print_footer
