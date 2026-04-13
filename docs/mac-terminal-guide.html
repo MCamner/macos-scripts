@@ -1246,7 +1246,7 @@ const COMMANDS = [
       { code: "date '+%Y-%m-%d'", desc: "Formaterat datum: 2025-01-15" }
     ]
   },
-  { cat: "System", cmd: "history", short: "Visa tidigare körda kommandon", tags: ["safe"],
+  { cat: "System", cmd: "history", short: "Visa tidigare körda kommandon", shortEn: "Show previously run commands", tags: ["safe"],
     examples: [
       { code: "history", desc: "Visar kommandohistorik" },
       { code: "history | grep git", desc: "Filtrerar historik efter 'git'" },
@@ -1254,25 +1254,25 @@ const COMMANDS = [
       { code: "!!", desc: "Kör föregående kommando igen" }
     ]
   },
-  { cat: "System", cmd: "env", short: "Visa alla miljövariabler", tags: ["safe"],
+  { cat: "System", cmd: "env", short: "Visa alla miljövariabler", shortEn: "Show all environment variables", tags: ["safe"],
     examples: [
       { code: "env", desc: "Skriver ut alla miljövariabler" },
       { code: "env | grep PATH", desc: "Visar PATH-variabeln" }
     ]
   },
-  { cat: "System", cmd: "export", short: "Sätt eller exportera miljövariabler", tags: ["safe"],
+  { cat: "System", cmd: "export", short: "Sätt eller exportera miljövariabler", shortEn: "Set or export environment variables", tags: ["safe"],
     examples: [
       { code: "export VAR=värde", desc: "Sätter en miljövariabel" },
       { code: "export PATH=$PATH:/ny/path", desc: "Lägger till sökväg till PATH" }
     ]
   },
-  { cat: "System", cmd: "alias", short: "Skapa kortkommandon för längre kommandon", tags: ["safe"],
+  { cat: "System", cmd: "alias", short: "Skapa kortkommandon för längre kommandon", shortEn: "Create shortcuts for longer commands", tags: ["safe"],
     examples: [
       { code: "alias ll='ls -la'", desc: "Skapar alias 'll' för 'ls -la'" },
       { code: "alias", desc: "Listar alla aktiva alias" }
     ]
   },
-  { cat: "System", cmd: "which", short: "Visa sökväg till ett program", tags: ["safe"],
+  { cat: "System", cmd: "which", short: "Visa sökväg till ett program", shortEn: "Show the path to a program", tags: ["safe"],
     examples: [
       { code: "which python3", desc: "Visar var python3 är installerat" },
       { code: "which -a node", desc: "Visar alla installationer av node" }
@@ -1292,7 +1292,7 @@ const COMMANDS = [
       { code: "whence -a node", desc: "Visar alla träffar som zsh kan använda", descEn: "Shows every match that zsh can use" }
     ]
   },
-  { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", tags: ["safe"],
+  { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", shortEn: "Show the manual page for a command", tags: ["safe"],
     examples: [
       { code: "man ls", desc: "Öppnar manualen för ls (q = avsluta)" },
       { code: "man -k sökord", desc: "Söker efter kommando via nyckelord" }
@@ -1467,13 +1467,13 @@ const COMMANDS = [
       { code: "git che[Tab]", desc: "Fyller i 'git checkout'" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "&&  och  ||", short: "Villkorlig körning av kommandon", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "&&  och  ||", short: "Villkorlig körning av kommandon", shortEn: "Conditional command execution", tags: ["safe"],
     examples: [
       { code: "mkdir ny && cd ny", desc: "Kör cd bara om mkdir lyckas" },
       { code: "git push || echo 'Push misslyckades'", desc: "Kör echo om push misslyckas" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "!!  och  !$", short: "Återanvänd förra kommandot eller argument", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "!!  och  !$", short: "Återanvänd förra kommandot eller argument", shortEn: "Reuse the previous command or its last argument", tags: ["safe"],
     examples: [
       { code: "sudo !!", desc: "Kör föregående kommando som sudo" },
       { code: "mkdir mapp && cd !$", desc: "!$ = sista argumentet (mapp)" }
@@ -1493,13 +1493,13 @@ const COMMANDS = [
       { code: "bindkey -L", desc: "Visar bindningar i ett format som kan återanvändas", descEn: "Shows bindings in a reusable format" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "clear", short: "Rensa terminalfönstret", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "clear", short: "Rensa terminalfönstret", shortEn: "Clear the terminal window", tags: ["safe"],
     examples: [
       { code: "clear", desc: "Rensar skärmen" },
       { code: "Ctrl + L", desc: "Snabbtangent för clear" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "echo", short: "Skriv ut text eller variabelvärde", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "echo", short: "Skriv ut text eller variabelvärde", shortEn: "Print text or variable values", tags: ["safe"],
     examples: [
       { code: "echo 'Hej världen'", desc: "Skriver ut texten" },
       { code: "echo $HOME", desc: "Skriver ut hemkatalogvariabeln" },
@@ -1653,7 +1653,7 @@ const COMMANDS = [
   },
 
   // ── FELSÖKNING ──
-  { cat: "Felsökning", cmd: "log show", short: "Visa macOS systemloggar (unified logging)", tags: ["safe"],
+  { cat: "Felsökning", cmd: "log show", short: "Visa macOS systemloggar (unified logging)", shortEn: "Show macOS system logs (unified logging)", tags: ["safe"],
     examples: [
       { code: "log show --last 1h", desc: "Visar loggar från senaste timmen" },
       { code: "log show --predicate 'process == \"Safari\"' --last 30m", desc: "Filtrerar på process" },
@@ -1661,21 +1661,21 @@ const COMMANDS = [
       { code: "log show --style syslog --last 10m", desc: "Visar i klassiskt syslog-format" }
     ]
   },
-  { cat: "Felsökning", cmd: "log stream", short: "Streama systemloggar live i realtid", tags: ["safe"],
+  { cat: "Felsökning", cmd: "log stream", short: "Streama systemloggar live i realtid", shortEn: "Stream system logs live in real time", tags: ["safe"],
     examples: [
       { code: "log stream", desc: "Strömmar alla systemloggar live" },
       { code: "log stream --level error", desc: "Visar bara fel i realtid" },
       { code: "log stream --predicate 'process == \"kernel\"'", desc: "Filtrerar kernel-loggar" }
     ]
   },
-  { cat: "Felsökning", cmd: "dmesg", short: "Visa kernel-ring-buffer (hårdvaru- och bootmeddelanden)", tags: ["safe"],
+  { cat: "Felsökning", cmd: "dmesg", short: "Visa kernel-ring-buffer (hårdvaru- och bootmeddelanden)", shortEn: "Show the kernel ring buffer for hardware and boot messages", tags: ["safe"],
     examples: [
       { code: "dmesg", desc: "Visar kernel-meddelanden sedan boot" },
       { code: "dmesg | grep -i error", desc: "Filtrerar efter felmeddelanden" },
       { code: "dmesg | tail -50", desc: "Visar de 50 senaste kernel-meddelandena" }
     ]
   },
-  { cat: "Felsökning", cmd: "system_profiler", short: "Detaljerad systeminformation om hårdvara och mjukvara", tags: ["safe"],
+  { cat: "Felsökning", cmd: "system_profiler", short: "Detaljerad systeminformation om hårdvara och mjukvara", shortEn: "Detailed system information about hardware and software", tags: ["safe"],
     examples: [
       { code: "system_profiler SPHardwareDataType", desc: "Visar hårdvaruinfo (CPU, RAM, serienummer)" },
       { code: "system_profiler SPSoftwareDataType", desc: "Visar mjukvaruinfo och OS-version" },
@@ -1684,14 +1684,14 @@ const COMMANDS = [
       { code: "system_profiler -detailLevel mini", desc: "Snabb oversikt av allt" }
     ]
   },
-  { cat: "Felsökning", cmd: "ioreg", short: "Visa I/O Registry — hårdvaruträd och drivrutiner", tags: ["safe"],
+  { cat: "Felsökning", cmd: "ioreg", short: "Visa I/O Registry — hårdvaruträd och drivrutiner", shortEn: "Show the I/O Registry: hardware tree and drivers", tags: ["safe"],
     examples: [
       { code: "ioreg -l | grep -i battery", desc: "Visar batteriinformation" },
       { code: "ioreg -p IOUSBHostDevice", desc: "Visar USB-enheter" },
       { code: "ioreg -l | grep -i 'product name'", desc: "Visar produktnamn för enheter" }
     ]
   },
-  { cat: "Felsökning", cmd: "pmset", short: "Ström- och energihantering — diagnostik och inställningar", tags: ["sudo"],
+  { cat: "Felsökning", cmd: "pmset", short: "Ström- och energihantering — diagnostik och inställningar", shortEn: "Power management diagnostics and settings", tags: ["sudo"],
     examples: [
       { code: "pmset -g", desc: "Visar aktuella energiinställningar" },
       { code: "pmset -g log | tail -50", desc: "Visar strömsloggar (sömn/uppvak)" },
@@ -1711,7 +1711,7 @@ const COMMANDS = [
       { code: "sudo sample -wait Safari", desc: "Väntar på att processen startar" }
     ]
   },
-  { cat: "Felsökning", cmd: "lsof", short: "Lista alla öppna filer och processer som använder dem", tags: ["safe"],
+  { cat: "Felsökning", cmd: "lsof", short: "Lista alla öppna filer och processer som använder dem", shortEn: "List open files and the processes using them", tags: ["safe"],
     examples: [
       { code: "lsof +D /Applications", desc: "Visar vad som håller filer öppna i Applications" },
       { code: "lsof -p 1234", desc: "Visar alla filer öppnade av process 1234" },
@@ -1732,7 +1732,7 @@ const COMMANDS = [
       { code: "otool -hv /usr/bin/ls", desc: "Visar Mach-O-header" }
     ]
   },
-  { cat: "Felsökning", cmd: "launchctl", short: "Hantera macOS-tjänster och bakgrundsprocesser (launchd)", tags: ["sudo"],
+  { cat: "Felsökning", cmd: "launchctl", short: "Hantera macOS-tjänster och bakgrundsprocesser (launchd)", shortEn: "Manage macOS services and background processes (launchd)", tags: ["sudo"],
     examples: [
       { code: "launchctl list", desc: "Listar alla körande tjänster" },
       { code: "launchctl list | grep -i apache", desc: "Söker efter specifik tjänst" },
@@ -1747,7 +1747,7 @@ const COMMANDS = [
       { code: "vm_stat 2", desc: "Uppdaterar var 2:a sekund" }
     ]
   },
-  { cat: "Felsökning", cmd: "sysctl", short: "Läs och ändra kernel-parametrar", tags: ["sudo"],
+  { cat: "Felsökning", cmd: "sysctl", short: "Läs och ändra kernel-parametrar", shortEn: "Read and change kernel parameters", tags: ["sudo"],
     examples: [
       { code: "sysctl -a", desc: "Visar alla kernel-parametrar" },
       { code: "sysctl hw.memsize", desc: "Visar installerat RAM i bytes" },
@@ -2063,7 +2063,7 @@ const COMMANDS = [
   },
 
   // ── SKRIPT & AUTOMATISERING ──
-  { cat: "Skript & Automatisering", cmd: "crontab", short: "Schemalägg kommandon att köra automatiskt", tags: ["safe"],
+  { cat: "Skript & Automatisering", cmd: "crontab", short: "Schemalägg kommandon att köra automatiskt", shortEn: "Schedule commands to run automatically", tags: ["safe"],
     examples: [
       { code: "crontab -e", desc: "Redigera cron-schemat (öppnar editor)" },
       { code: "crontab -l", desc: "Visa aktuella cron-jobb" },
@@ -2073,7 +2073,7 @@ const COMMANDS = [
       { code: "0 0 * * 0 backup.sh", desc: "Kör backup varje söndag midnatt" }
     ]
   },
-  { cat: "Skript & Automatisering", cmd: "at", short: "Schemalägg ett kommando att köra en gång vid given tid", tags: ["safe"],
+  { cat: "Skript & Automatisering", cmd: "at", short: "Schemalägg ett kommando att köra en gång vid given tid", shortEn: "Schedule a command to run once at a specific time", tags: ["safe"],
     examples: [
       { code: "at 14:30 <<< 'say Mötet börjar!'", desc: "Talar om mötet kl 14:30" },
       { code: "at now + 30 minutes <<< 'kommando'", desc: "Kör om 30 minuter" },
@@ -2100,12 +2100,12 @@ const COMMANDS = [
       { code: "zsh -x skript.zsh", desc: "Visa varje rad som körs i ett zsh-skript", descEn: "Print every line as a zsh script runs" }
     ]
   },
-  { cat: "Skript & Automatisering", cmd: "osascript", short: "Kör AppleScript eller JavaScript for Automation (JXA)", tags: ["safe"],
+  { cat: "Skript & Automatisering", cmd: "osascript", short: "Kör AppleScript eller JavaScript for Automation (JXA)", shortEn: "Run AppleScript or JavaScript for Automation (JXA)", tags: ["safe"],
     examples: [
-      { code: "osascript -e 'say \"Hej!\"'", desc: "Talar text med macOS röst" },
-      { code: "osascript -e 'display dialog \"Meddelande\"'", desc: "Visar en dialogruta" },
-      { code: "osascript skript.scpt", desc: "Kör en AppleScript-fil" },
-      { code: "osascript -l JavaScript -e 'Application(\"Finder\").activate()'", desc: "JXA: aktivera Finder" }
+      { code: "osascript -e 'say \"Hej!\"'", desc: "Talar text med macOS röst", descEn: "Speak text using a macOS voice" },
+      { code: "osascript -e 'display dialog \"Meddelande\"'", desc: "Visar en dialogruta", descEn: "Show a dialog box" },
+      { code: "osascript skript.scpt", desc: "Kör en AppleScript-fil", descEn: "Run an AppleScript file" },
+      { code: "osascript -l JavaScript -e 'Application(\"Finder\").activate()'", desc: "JXA: aktivera Finder", descEn: "JXA: activate Finder" }
     ]
   },
   { cat: "Skript & Automatisering", cmd: "say", short: "Text-till-tal med macOS inbyggda röster", tags: ["safe"],
@@ -3224,12 +3224,109 @@ function translateCategory(cat) {
   return (CATEGORY_LABELS[currentLang] && CATEGORY_LABELS[currentLang][cat]) || cat;
 }
 
+function translateText(text) {
+  if (currentLang !== 'en' || !text) return text;
+
+  const replacements = [
+    ['m.fl.', 'and more'],
+    ['t.ex.', 'e.g.'],
+    ['standard i macOS', 'default on macOS'],
+    ['macOS-verktyg', 'macOS tools'],
+    ['Systeminformation', 'System information'],
+    ['Utveckling', 'Development'],
+    ['Nätverk & säkerhet', 'Network & security'],
+    ['Terminal-verktyg', 'Terminal tools'],
+    ['Moderna ersättare för klassiska kommandon', 'Modern replacements for classic commands'],
+    ['Essentiella verktyg', 'Essential tools'],
+    ['Användbara zsh-specifika genvägar', 'Useful zsh-specific shortcuts'],
+    ['Skärmkontroll i Terminal.app', 'Screen control in Terminal.app'],
+    ['Skärmkontroll i iTerm2', 'Screen control in iTerm2'],
+    ['Processkontroll', 'Process control'],
+    ['Autokomplettering', 'Autocompletion'],
+    ['Historik & sökning', 'History & search'],
+    ['Redigering av kommandoraden', 'Command line editing'],
+    ['Visar ', 'Shows '],
+    ['Visa ', 'Show '],
+    ['Listar ', 'Lists '],
+    ['Lista ', 'List '],
+    ['Kör ', 'Run '],
+    ['Startar ', 'Starts '],
+    ['Starta ', 'Start '],
+    ['Stoppar ', 'Stops '],
+    ['Stänger av ', 'Turns off '],
+    ['Öppnar ', 'Opens '],
+    ['Öppna ', 'Open '],
+    ['Skapar ', 'Creates '],
+    ['Skapa ', 'Create '],
+    ['Tar bort ', 'Removes '],
+    ['Lägger till ', 'Adds '],
+    ['Ladda om ', 'Reload '],
+    ['Redigera ', 'Edit '],
+    ['Byt ', 'Switch '],
+    ['Byter ', 'Switches '],
+    ['Kontrollera ', 'Check '],
+    ['Kontrollera ', 'Checks '],
+    ['Hitta ', 'Find '],
+    ['Hämtar ', 'Fetches '],
+    ['Hämta ', 'Fetch '],
+    ['Söker ', 'Searches '],
+    ['Sök ', 'Search '],
+    ['Testa ', 'Test '],
+    ['Mäter ', 'Measures '],
+    ['Mäta ', 'Measure '],
+    ['Komprimerar ', 'Compresses '],
+    ['Dekomprimerar ', 'Decompresses '],
+    ['Kopierar ', 'Copies '],
+    ['Kopiera ', 'Copy '],
+    ['Förklarar ', 'Explains '],
+    ['Uppdaterar ', 'Refreshes '],
+    ['Tillåter att du ', 'Lets you '],
+    ['utan att köra', 'without executing'],
+    ['utan att starta om', 'without restarting'],
+    ['för felsökning', 'for troubleshooting'],
+    ['i aktuell mapp', 'in the current folder'],
+    ['i terminalen', 'in the terminal'],
+    ['i historiken', 'in history'],
+    ['i samma terminalfönster', 'in the same terminal window'],
+    ['hela mappen', 'the entire folder'],
+    ['hela sökvägen', 'the full path'],
+    ['dolda filer', 'hidden files'],
+    ['nuvarande', 'current'],
+    ['aktuell', 'current'],
+    ['senaste', 'latest'],
+    ['föregående', 'previous'],
+    ['bakåt-sökning', 'backward search'],
+    ['kommandohistoriken', 'command history'],
+    ['shell-konfigurationen', 'shell configuration'],
+    ['login-shellens konfiguration', 'login shell configuration'],
+    ['tangentbindningar', 'key bindings'],
+    ['shellen', 'the shell'],
+    ['interaktiv', 'interactive'],
+    ['interaktivt', 'interactively'],
+    ['miljö', 'environment'],
+    ['sökväg', 'path'],
+    ['mapp', 'folder'],
+    ['fil', 'file'],
+    ['skript', 'script'],
+    ['kommandot', 'the command'],
+    ['kommandon', 'commands'],
+    ['kommando', 'command'],
+    ['och', 'and']
+  ];
+
+  let result = text;
+  replacements.forEach(([sv, en]) => {
+    result = result.split(sv).join(en);
+  });
+  return result;
+}
+
 function getCommandShort(c) {
-  return currentLang === 'en' ? (c.shortEn || c.short) : c.short;
+  return currentLang === 'en' ? (c.shortEn || translateText(c.short)) : c.short;
 }
 
 function getExampleDesc(e) {
-  return currentLang === 'en' ? (e.descEn || e.desc) : e.desc;
+  return currentLang === 'en' ? (e.descEn || translateText(e.desc)) : e.desc;
 }
 
 function commandCountText(n) {
@@ -3338,11 +3435,11 @@ function renderKbdPanel() {
 
   sections.forEach(s => {
     html += `<div class="kb-section">
-      <div class="kb-section-title">${s.title}</div>
+      <div class="kb-section-title">${translateText(s.title)}</div>
       <div class="kb-grid">`;
     s.rows.forEach(r => {
       html += `<div class="kb-row">
-        <span class="kb-desc">${r.desc}</span>
+        <span class="kb-desc">${translateText(r.desc)}</span>
         <span class="kb-keys">${r.keys.join('')}</span>
       </div>`;
     });
@@ -3376,28 +3473,28 @@ function brewCopyBlock(id, label, code) {
 function renderStartPanel() {
   const step1Html = `<span class="cmd-keyword">/bin/bash</span> -c <span class="pkg">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>`;
 
-  const step2Html = `<span class="comment"># Essentiella verktyg</span>
+  const step2Html = `<span class="comment"># ${currentLang === 'en' ? 'Essential tools' : 'Essentiella verktyg'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">wget curl git</span>
 
-<span class="comment"># Moderna ersättare för klassiska kommandon</span>
+<span class="comment"># ${currentLang === 'en' ? 'Modern replacements for classic commands' : 'Moderna ersättare för klassiska kommandon'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">ripgrep fd bat eza zoxide</span>
 
-<span class="comment"># Terminal-verktyg</span>
+<span class="comment"># ${currentLang === 'en' ? 'Terminal tools' : 'Terminal-verktyg'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">fzf pv mtr entr watch tree parallel</span>
 
-<span class="comment"># Nätverk & säkerhet</span>
+<span class="comment"># ${currentLang === 'en' ? 'Network & security' : 'Nätverk & säkerhet'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">nmap socat moreutils</span>
 
-<span class="comment"># Utveckling</span>
+<span class="comment"># ${currentLang === 'en' ? 'Development' : 'Utveckling'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">gh shellcheck shfmt jq</span>
 
-<span class="comment"># Systeminformation</span>
+<span class="comment"># ${currentLang === 'en' ? 'System information' : 'Systeminformation'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">btop htop</span>
 
-<span class="comment"># macOS-verktyg</span>
+<span class="comment"># ${currentLang === 'en' ? 'macOS tools' : 'macOS-verktyg'}</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">mas dockutil renameutils</span>`;
 
-  const step3Html = `<span class="comment"># Installerar Command Line Tools (git, clang, make, xcrun...)</span>
+  const step3Html = `<span class="comment"># ${currentLang === 'en' ? 'Installs Command Line Tools (git, clang, make, xcrun...)' : 'Installerar Command Line Tools (git, clang, make, xcrun...)'}</span>
 <span class="cmd-keyword">xcode-select</span> --install`;
 
   const builtins = [
@@ -3448,7 +3545,7 @@ function renderStartPanel() {
         <div class="install-dot dot-${b.type}"></div>
         <span class="install-name">${b.name}</span>
       </div>
-      <div class="install-desc">${b.desc}</div>
+      <div class="install-desc">${translateText(b.desc)}</div>
     </div>`).join('')
   }</div>`;
 
@@ -3510,8 +3607,8 @@ function filteredCommands() {
     const matchCat = activeCategory === 'Alla' || c.cat === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || c.cmd.toLowerCase().includes(q) || c.short.toLowerCase().includes(q) ||
-      (c.shortEn||'').toLowerCase().includes(q) ||
-      (c.examples||[]).some(e => e.code.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || (e.descEn||'').toLowerCase().includes(q));
+      (c.shortEn||'').toLowerCase().includes(q) || translateText(c.short).toLowerCase().includes(q) ||
+      (c.examples||[]).some(e => e.code.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || (e.descEn||'').toLowerCase().includes(q) || translateText(e.desc).toLowerCase().includes(q));
     return matchCat && matchSearch;
   });
 }
