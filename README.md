@@ -69,27 +69,16 @@ This gives you:
 
 ---
 
-## 🧰 Commands
+## 🧰 Common commands
 
 ```bash
-mqlaunch
-mqlaunch system check
-mqlaunch perf
-mqlaunch dev
-mqlaunch tools
-mqlaunch workflows
-mqlaunch release notes
-mqlaunch theme
-mqlaunch demo
+mqlaunch              # open the main menu
+mqlaunch perf         # performance tools
+mqlaunch system check # run a system health check
+mqlaunch dev          # developer workflows
+mqlaunch tools        # utility commands
+mqlaunch demo         # demo mode
 ```
-
----
-
-## 🖥️ What It Is
-
-`macos-scripts` is a practical macOS terminal toolkit built around `mqlaunch`, a modular CLI for workflows, diagnostics, automation, and system utilities.
-
-It turns separate shell scripts into one structured command surface that is easier to use, extend, and trust.
 
 ---
 
