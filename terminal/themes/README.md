@@ -19,10 +19,20 @@ There are two separate theme tracks here.
 The following theme variants are available via the theme switcher:
 
 - `macos` — Clean Apple-inspired blue/gray theme (recommended)
-- `minimal` — Low-noise, clean terminal
+- `minimal` — Low-noise, distraction-free terminal
 - `ice` — Cool cyan/blue look
 - `amber` — Warm classic terminal tone
 - `green` — Traditional green-on-dark style
+
+The current fallback default in `mq-zsh-theme-v3.zsh` is `amber`, while `macos` is the recommended starting point.
+
+## Usage
+
+Open the interactive theme menu:
+
+```bash
+mqlaunch theme
+```
 
 Apply a theme directly:
 
@@ -30,10 +40,10 @@ Apply a theme directly:
 mqlaunch theme-macos
 ```
 
-Or open the interactive theme menu:
+Check current theme:
 
 ```bash
-mqlaunch theme
+mqlaunch theme-current
 ```
 
 Reset the launcher-managed theme lines from `.zshrc`:
