@@ -16,7 +16,7 @@ autoload -Uz colors vcs_info add-zsh-hook
 colors
 setopt prompt_subst
 
-: "${MQ_ZSH_VARIANT:=amber}"
+: "${MQ_ZSH_VARIANT:=macos}"
 
 # ------------------------------------------------------------
 # Variant palette
@@ -217,11 +217,6 @@ mq_prompt_right() {
 # ------------------------------------------------------------
 # Prompt layout
 # ------------------------------------------------------------
-PROMPT='
-${MQC_ACCENT}┌─${MQC_RESET}${MQC_USER}%n${MQC_RESET}${MQC_DIM}@${MQC_RESET}${MQC_HOST}%m${MQC_RESET} ${MQC_DIM}in${MQC_RESET} ${MQC_PATH}$(mq_short_path)${MQC_RESET}
-${MQC_ACCENT}└─${MQC_RESET}$(mq_prompt_symbol ${MQ_LAST_STATUS:-0}) '
-
-RPROMPT='$(mq_prompt_right ${MQ_LAST_STATUS:-0})'
 
 # ------------------------------------------------------------
 # Quality-of-life defaults
@@ -239,3 +234,74 @@ setopt NO_BEEP
 setopt PROMPT_SUBST
 
 zmodload zsh/complist 2>/dev/null || true
+
+# ------------------------------------------------------------
+# Prompt helpers (macOS style)
+# ------------------------------------------------------------
+
+mq_prompt_path() {
+  print -P "%~"
+}
+
+mq_prompt_git() {
+  local branch dirty ahead behind git_info
+
+  branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null) || return 0
+
+  git diff --quiet --ignore-submodules HEAD 2>/dev/null
+  if [[ $? -eq 0 ]]; then
+    dirty=""
+  else
+    dirty="*"
+  fi
+
+  ahead=$(git rev-list --count @{upstream}..HEAD 2>/dev/null)
+  behind=$(git rev-list --count HEAD..@{upstream} 2>/dev/null)
+
+  git_info="$branch$dirty"
+
+  if [[ -n "$ahead" && "$ahead" != "0" ]]; then
+    git_info="$git_info ↑$ahead"
+  fi
+  if [[ -n "$behind" && "$behind" != "0" ]]; then
+    git_info="$git_info ↓$behind"
+  fi
+
+  print -r -- "$git_info"
+}
+
+
+# ------------------------------------------------------------
+# macOS-style prompt (clean, 2-line)
+# ------------------------------------------------------------
+
+mq_build_prompt() {
+  local exit_code="$?"
+  local status_icon
+  local git_part=""
+  local path_part
+  local user_host
+
+  if [[ "$exit_code" -eq 0 ]]; then
+    status_icon="${MQC_ACCENT}❯%f"
+  else
+    status_icon="${MQC_ERR}❯%f"
+  fi
+
+  user_host="${MQC_USER}%n%f ${MQC_DIM}·%f ${MQC_HOST}%m%f"
+  path_part="${MQC_PATH}$(mq_prompt_path)%f"
+
+  local git_info
+  git_info="$(mq_prompt_git)"
+  if [[ -n "$git_info" ]]; then
+    git_part=" ${MQC_DIM}•%f ${MQC_GIT} ${git_info}%f"
+  fi
+
+  PROMPT=$'\n'"${user_host} ${MQC_DIM}•%f ${path_part}${git_part}"$'\n'"${status_icon} "
+  RPROMPT=""
+}
+
+# Hook prompt
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd mq_build_prompt
+
