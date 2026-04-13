@@ -31,7 +31,8 @@ mqlaunch perf
 git clone https://github.com/MCamner/macos-scripts.git
 cd macos-scripts
 chmod +x install.sh
-./install.sh && mqlaunch
+./install.sh
+mqlaunch
 ```
 
 ---
