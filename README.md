@@ -52,10 +52,22 @@ And get a structured interface for diagnostics, monitoring, and snapshots.
 Run:
 
 ```bash
-mqlaunch perf
+mqlaunch
+mqlaunch system check
+mqlaunch release notes
+mqlaunch theme-macos
 ```
 
-You’ll land here:
+You can use it in both menu mode and direct command mode:
+
+```text
+mqlaunch                  -> open the main menu
+mqlaunch system check     -> run a check directly
+mqlaunch release notes    -> open release notes directly
+mqlaunch theme-macos      -> apply the macOS theme
+```
+
+One quick performance example still looks like this:
 
 ```text
 Performance Menu
@@ -206,6 +218,14 @@ Or try demo mode:
 mqlaunch demo
 ```
 
+Or jump straight into command mode:
+
+```bash
+mqlaunch system check
+mqlaunch release notes
+mqlaunch theme-macos
+```
+
 ---
 
 ## ⚙️ Useful Commands
@@ -213,12 +233,16 @@ mqlaunch demo
 ```bash
 mqlaunch
 mqlaunch demo
+mqlaunch system
+mqlaunch system check
 mqlaunch perf
 mqlaunch dev
 mqlaunch git
 mqlaunch tools
 mqlaunch workflows
-mqlaunch release
+mqlaunch release notes
+mqlaunch theme
+mqlaunch theme-macos
 mqlaunch login
 mqlaunch shortcuts
 ```

@@ -27,9 +27,11 @@ mqlaunch
 mqlaunch demo
 mqlaunch system
 mqlaunch system check
+mqlaunch help
 mqlaunch dev
 mqlaunch tools
 mqlaunch release notes
+mqlaunch theme-macos
 ```
 
 ## Themes
@@ -43,6 +45,14 @@ mqlaunch theme-reset
 ```
 
 Use `mqlaunch theme` to open the menu, `mqlaunch theme-macos` to apply the macOS-inspired palette, and `mqlaunch theme-reset` to remove the launcher-managed theme lines from `.zshrc`.
+
+## Recommended flow
+
+Use the launcher in three ways:
+
+- start in menu mode with `mqlaunch`
+- jump straight into a task with direct commands like `mqlaunch system check` or `mqlaunch release notes`
+- showcase the command surface with `mqlaunch demo`
 
 ## Run locally
 

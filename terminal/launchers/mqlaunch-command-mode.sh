@@ -71,6 +71,8 @@ Quick commands:
   mqlaunch self-check
   mqlaunch debug
   mqlaunch apps
+  mqlaunch theme
+  mqlaunch theme-macos
   mqlaunch version
   mqlaunch notes
   mqlaunch about
@@ -99,7 +101,7 @@ Subcommands:
   mqlaunch dev ai
   mqlaunch dev tools
 
-Legacy commands still work:
+Compatibility routes still work:
   mqlaunch login menu
   mqlaunch shortcuts list
   mqlaunch palette

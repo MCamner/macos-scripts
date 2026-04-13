@@ -13,6 +13,7 @@ The `terminal/` section is where the project becomes a usable terminal environme
 It is designed for:
 
 - launcher-driven workflows
+- direct command mode
 - menu-based terminal tools
 - reusable terminal UI patterns
 - modular expansion over time
@@ -23,9 +24,31 @@ It is designed for:
 
 ```text
 terminal/
-├── bridges/      # legacy-to-v1 routing helpers
-├── launchers/    # active launcher scripts
-├── menus/        # reusable or future menu modules
-├── mqlaunch-v1/  # modular launcher implementation
+├── bridges/      # compatibility handoff to v1 where needed
+├── launchers/    # primary mqlaunch entrypoints and routing
+├── menus/        # shared menu modules used by the launcher
+├── mqlaunch-v1/  # compatibility implementation still used by performance
 ├── themes/       # zsh themes and theme switching
 └── README.md
+```
+
+## Recommended entrypoints
+
+The current `mqlaunch` surface is built around one launcher with two modes:
+
+- menu mode via `mqlaunch`
+- direct mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
+
+Primary commands to know:
+
+```bash
+mqlaunch
+mqlaunch demo
+mqlaunch system
+mqlaunch system check
+mqlaunch perf
+mqlaunch dev
+mqlaunch git
+mqlaunch tools
+mqlaunch release notes
+mqlaunch theme-macos

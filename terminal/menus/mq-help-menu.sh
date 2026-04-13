@@ -15,14 +15,14 @@ show_command_index() {
 
   empty_row
   row "WORKFLOWS"
-  row " mqlaunch perf         Open Performance module"
+  row " mqlaunch perf         Open Performance menu"
   row " mqlaunch system check Run system check"
   row " mqlaunch system debug Create debug bundle"
   row " mqlaunch dev          Open Dev menu"
-  row " mqlaunch git          Open Git workspace"
+  row " mqlaunch git          Open Git menu"
   row " mqlaunch tools        Open Tools menu"
   row " mqlaunch workflows    Open Workflows menu"
-  row " mqlaunch release      Open Release Menu"
+  row " mqlaunch release      Open Release menu"
   row " mqlaunch login        Open Login menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
   row " mqlaunch workflows boot       Run project boot"
@@ -66,12 +66,14 @@ CORE
   mqlaunch palette        Open fuzzy command palette
 
 WORKFLOWS
-  mqlaunch perf           Open Performance module
+  mqlaunch system         Open System menu
+  mqlaunch perf           Open Performance menu
   mqlaunch dev            Open Dev menu
-  mqlaunch git            Open Git workspace
+  mqlaunch git            Open Git menu
   mqlaunch tools          Open Tools menu
   mqlaunch workflows      Open Workflows menu
-  mqlaunch release        Open Release Menu
+  mqlaunch release        Open Release menu
+  mqlaunch release notes  Show release notes directly
   mqlaunch login          Open Login menu
   mqlaunch shortcuts      Open Shortcuts menu
   mqlaunch workflows boot Run project boot
