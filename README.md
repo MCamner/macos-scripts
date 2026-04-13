@@ -61,11 +61,12 @@ mqlaunch demo
 
 Scripts get messy fast.
 
-This gives you:
+`mqlaunch` gives you:
 
 * structure
 * reuse
 * clarity
+* repeatable workflows
 
 ---
 
@@ -79,19 +80,6 @@ mqlaunch dev          # developer workflows
 mqlaunch tools        # utility commands
 mqlaunch demo         # demo mode
 ```
-
----
-
-## 🎯 Why It Exists
-
-Most script collections break down over time:
-
-* commands get scattered
-* workflows live in memory
-* useful scripts become harder to discover
-* maintenance gets harder than the automation
-
-This repo solves that with one clear entrypoint, modular menus, and repeatable workflows.
 
 ---
 
