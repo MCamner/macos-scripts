@@ -1,13 +1,5 @@
 #!/usr/bin/env zsh
-
 set -euo pipefail
 
 PROJECT_ROOT="$HOME/macos-scripts"
-LAUNCHER="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
-
-if [[ ! -x "$LAUNCHER" ]]; then
-  echo "mqlaunch launcher not found or not executable: $LAUNCHER" >&2
-  exit 1
-fi
-
-exec "$LAUNCHER" "$@"
+exec "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" "$@"
