@@ -36,6 +36,26 @@ chmod +x install.sh
 
 ---
 
+## 🔥 Highlight: System check
+
+```bash
+mqlaunch system check
+```
+
+Run a full system overview in one command:
+
+* CPU usage
+* memory usage
+* disk status
+* network info
+* environment checks
+
+No need to remember multiple commands.
+
+One command -> full visibility.
+
+---
+
 ## 🎬 Demo
 
 ```bash
