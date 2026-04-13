@@ -14,6 +14,34 @@ This folder contains both:
 
 There are two separate theme tracks here.
 
+## Available ZSH Themes
+
+The following theme variants are available via the theme switcher:
+
+- `macos` — Clean Apple-inspired blue/gray theme (recommended)
+- `minimal` — Low-noise, clean terminal
+- `ice` — Cool cyan/blue look
+- `amber` — Warm classic terminal tone
+- `green` — Traditional green-on-dark style
+
+Apply a theme directly:
+
+```bash
+mqlaunch theme-macos
+```
+
+Or open the interactive theme menu:
+
+```bash
+mqlaunch theme
+```
+
+Reset the launcher-managed theme lines from `.zshrc`:
+
+```bash
+mqlaunch theme-reset
+```
+
 ### 1. ZSH shell themes
 
 These change the actual shell prompt in `zsh`, including:
