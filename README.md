@@ -1,5 +1,5 @@
 # macos-scripts
-> ⚡ A modular CLI to structure and automate terminal workflows on macOS
+> ⚡ A modular CLI for structured terminal workflows on macOS
 
 > Turn scattered macOS shell scripts into one clean command system.
 
