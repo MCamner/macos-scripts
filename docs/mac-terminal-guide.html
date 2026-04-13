@@ -205,6 +205,46 @@
     font-weight: 700;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.18rem;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 999px;
+  }
+
+  .lang-btn {
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .lang-btn:hover {
+    color: var(--text);
+  }
+
+  .lang-btn.active {
+    background: rgba(0,255,135,0.12);
+    color: var(--green);
+  }
+
   /* ── LAYOUT ── */
   .layout {
     display: grid;
@@ -772,6 +812,7 @@
     .grid { grid-template-columns: 1fr; }
     header { gap: 1rem; }
     .count-badge { display: none; }
+    .header-actions { margin-left: 0; }
   }
 </style>
 </head>
@@ -786,7 +827,13 @@
     <span class="search-icon">⌕</span>
     <input type="text" id="searchInput" placeholder="Sök kommando eller beskrivning…" autocomplete="off">
   </div>
-  <div class="count-badge">Visar <span id="visibleCount">0</span> kommandon</div>
+  <div class="header-actions">
+    <div class="lang-switch" aria-label="Language switch">
+      <button class="lang-btn active" id="langSvBtn" onclick="setLanguage('sv')">SV</button>
+      <button class="lang-btn" id="langEnBtn" onclick="setLanguage('en')">EN</button>
+    </div>
+    <div class="count-badge"><span id="visibleCountLabel">Visar</span> <span id="visibleCount">0</span> <span id="visibleCountSuffix">kommandon</span></div>
+  </div>
 </header>
 
 <div class="layout">
@@ -1231,18 +1278,18 @@ const COMMANDS = [
       { code: "which -a node", desc: "Visar alla installationer av node" }
     ]
   },
-  { cat: "System", cmd: "command -v / type", short: "Visa vad ett kommando faktiskt är: binär, alias, funktion eller builtin", tags: ["safe"],
+  { cat: "System", cmd: "command -v / type", short: "Visa vad ett kommando faktiskt är: binär, alias, funktion eller builtin", shortEn: "Show what a command actually is: binary, alias, function, or builtin", tags: ["safe"],
     examples: [
-      { code: "command -v python3", desc: "Visar hur shellen hittar kommandot" },
-      { code: "type git", desc: "Visar om git är extern binär, alias eller funktion" },
-      { code: "type -a python", desc: "Visar alla träffar i ordning, inklusive alias och PATH" }
+      { code: "command -v python3", desc: "Visar hur shellen hittar kommandot", descEn: "Shows how the shell resolves the command" },
+      { code: "type git", desc: "Visar om git är extern binär, alias eller funktion", descEn: "Shows whether git is an external binary, alias, or function" },
+      { code: "type -a python", desc: "Visar alla träffar i ordning, inklusive alias och PATH", descEn: "Shows every match in order, including aliases and PATH entries" }
     ]
   },
-  { cat: "System", cmd: "whence", short: "zsh:s eget sätt att visa vad ett kommando är och var det hittas", tags: ["safe"],
+  { cat: "System", cmd: "whence", short: "zsh:s eget sätt att visa vad ett kommando är och var det hittas", shortEn: "zsh's own way to show what a command is and where it is found", tags: ["safe"],
     examples: [
-      { code: "whence git", desc: "Visar hur zsh hittar kommandot" },
-      { code: "whence -v python3", desc: "Förklarar om det är alias, funktion eller extern fil" },
-      { code: "whence -a node", desc: "Visar alla träffar som zsh kan använda" }
+      { code: "whence git", desc: "Visar hur zsh hittar kommandot", descEn: "Shows how zsh resolves the command" },
+      { code: "whence -v python3", desc: "Förklarar om det är alias, funktion eller extern fil", descEn: "Explains whether it is an alias, function, or external file" },
+      { code: "whence -a node", desc: "Visar alla träffar som zsh kan använda", descEn: "Shows every match that zsh can use" }
     ]
   },
   { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", tags: ["safe"],
@@ -1432,18 +1479,18 @@ const COMMANDS = [
       { code: "mkdir mapp && cd !$", desc: "!$ = sista argumentet (mapp)" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "fc", short: "Visa, redigera och kör om kommandon från zsh-historiken", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "fc", short: "Visa, redigera och kör om kommandon från zsh-historiken", shortEn: "List, edit, and rerun commands from zsh history", tags: ["safe"],
     examples: [
-      { code: "fc -l -10", desc: "Visar de 10 senaste kommandona i historiken" },
-      { code: "fc -e nano", desc: "Öppnar senaste kommandot i nano för redigering och körning" },
-      { code: "fc -l 1 20", desc: "Visar historikposter 1 till 20" }
+      { code: "fc -l -10", desc: "Visar de 10 senaste kommandona i historiken", descEn: "Shows the 10 most recent commands in history" },
+      { code: "fc -e nano", desc: "Öppnar senaste kommandot i nano för redigering och körning", descEn: "Opens the latest command in nano for editing and reruns it" },
+      { code: "fc -l 1 20", desc: "Visar historikposter 1 till 20", descEn: "Shows history entries 1 through 20" }
     ]
   },
-  { cat: "Shell-tricks", cmd: "bindkey", short: "Visa eller ändra tangentbindningar i zsh", tags: ["safe"],
+  { cat: "Shell-tricks", cmd: "bindkey", short: "Visa eller ändra tangentbindningar i zsh", shortEn: "Show or change key bindings in zsh", tags: ["safe"],
     examples: [
-      { code: "bindkey", desc: "Listar aktiva tangentbindningar i zsh" },
-      { code: "bindkey '^R' history-incremental-search-backward", desc: "Binder Ctrl+R till bakåt-sökning i historiken" },
-      { code: "bindkey -L", desc: "Visar bindningar i ett format som kan återanvändas" }
+      { code: "bindkey", desc: "Listar aktiva tangentbindningar i zsh", descEn: "Lists active key bindings in zsh" },
+      { code: "bindkey '^R' history-incremental-search-backward", desc: "Binder Ctrl+R till bakåt-sökning i historiken", descEn: "Binds Ctrl+R to backward history search" },
+      { code: "bindkey -L", desc: "Visar bindningar i ett format som kan återanvändas", descEn: "Shows bindings in a reusable format" }
     ]
   },
   { cat: "Shell-tricks", cmd: "clear", short: "Rensa terminalfönstret", tags: ["safe"],
@@ -2034,23 +2081,23 @@ const COMMANDS = [
       { code: "atrm 3", desc: "Tar bort at-jobb nummer 3" }
     ]
   },
-  { cat: "Skript & Automatisering", cmd: "bash / zsh", short: "Kör ett shell-skript eller starta ett nytt shell", tags: ["safe"],
+  { cat: "Skript & Automatisering", cmd: "bash / zsh", short: "Kör ett shell-skript eller starta ett nytt shell", shortEn: "Run a shell script or start a new shell", tags: ["safe"],
     examples: [
-      { code: "bash skript.sh", desc: "Kör ett bash-skript" },
-      { code: "zsh skript.sh", desc: "Kör skript med zsh (standard i macOS)" },
-      { code: "bash -x skript.sh", desc: "Debug-läge: visar varje kommando som körs" },
-      { code: "bash -n skript.sh", desc: "Kontrollera syntax utan att köra" },
-      { code: "source ~/.zshrc", desc: "Ladda om shell-konfigurationen" },
-      { code: ". ~/.zshrc", desc: "Kortform för source" }
+      { code: "bash skript.sh", desc: "Kör ett bash-skript", descEn: "Run a bash script" },
+      { code: "zsh skript.sh", desc: "Kör skript med zsh (standard i macOS)", descEn: "Run a script with zsh (default on macOS)" },
+      { code: "bash -x skript.sh", desc: "Debug-läge: visar varje kommando som körs", descEn: "Debug mode: prints each command as it runs" },
+      { code: "bash -n skript.sh", desc: "Kontrollera syntax utan att köra", descEn: "Check syntax without executing the script" },
+      { code: "source ~/.zshrc", desc: "Ladda om shell-konfigurationen", descEn: "Reload shell configuration" },
+      { code: ". ~/.zshrc", desc: "Kortform för source", descEn: "Short form of source" }
     ]
   },
-  { cat: "Skript & Automatisering", cmd: "zsh -lc / -ic / -ilc / -f / -x", short: "Starta zsh i login-, interaktivt, rent eller debug-läge", tags: ["safe"],
+  { cat: "Skript & Automatisering", cmd: "zsh -lc / -ic / -ilc / -f / -x", short: "Starta zsh i login-, interaktivt, rent eller debug-läge", shortEn: "Start zsh in login, interactive, clean, or debug mode", tags: ["safe"],
     examples: [
-      { code: "zsh -lc 'echo $PATH'", desc: "Kör med login-zsh och laddar t.ex. .zprofile" },
-      { code: "zsh -ic 'alias gs; gs'", desc: "Kör interaktiv zsh och laddar .zshrc med alias/funktioner" },
-      { code: "zsh -ilc 'node -v'", desc: "Kör med både login- och interaktiv miljö" },
-      { code: "zsh -f", desc: "Starta ren zsh utan rc-filer - bra för felsökning" },
-      { code: "zsh -x skript.zsh", desc: "Visa varje rad som körs i ett zsh-skript" }
+      { code: "zsh -lc 'echo $PATH'", desc: "Kör med login-zsh och laddar t.ex. .zprofile", descEn: "Run with login zsh and load files such as .zprofile" },
+      { code: "zsh -ic 'alias gs; gs'", desc: "Kör interaktiv zsh och laddar .zshrc med alias/funktioner", descEn: "Run interactive zsh and load .zshrc with aliases and functions" },
+      { code: "zsh -ilc 'node -v'", desc: "Kör med både login- och interaktiv miljö", descEn: "Run with both login and interactive environment" },
+      { code: "zsh -f", desc: "Starta ren zsh utan rc-filer - bra för felsökning", descEn: "Start a clean zsh without rc files, useful for troubleshooting" },
+      { code: "zsh -x skript.zsh", desc: "Visa varje rad som körs i ett zsh-skript", descEn: "Print every line as a zsh script runs" }
     ]
   },
   { cat: "Skript & Automatisering", cmd: "osascript", short: "Kör AppleScript eller JavaScript for Automation (JXA)", tags: ["safe"],
@@ -2351,14 +2398,14 @@ const COMMANDS = [
   },
 
   // ── MILJÖ & SHELL-KONFIGURATION ──
-  { cat: "Miljö & Shell-konfiguration", cmd: ".zshrc / .zprofile / .bashrc", short: "Shell-konfigurationsfiler för interaktiva och login-sessioner", tags: ["safe"],
+  { cat: "Miljö & Shell-konfiguration", cmd: ".zshrc / .zprofile / .bashrc", short: "Shell-konfigurationsfiler för interaktiva och login-sessioner", shortEn: "Shell config files for interactive and login sessions", tags: ["safe"],
     examples: [
-      { code: "nano ~/.zshrc", desc: "Redigera zsh-konfigurationen (standard macOS)" },
-      { code: "nano ~/.zprofile", desc: "Redigera login-shellens konfiguration, t.ex. PATH på macOS" },
-      { code: "source ~/.zshrc", desc: "Ladda om konfigurationen utan att starta om" },
-      { code: "exec zsh", desc: "Starta om zsh rent i samma terminalfönster" },
-      { code: "echo $SHELL", desc: "Visar vilket shell du använder" },
-      { code: "cat ~/.zsh_history", desc: "Visar zsh-kommandohistoriken" }
+      { code: "nano ~/.zshrc", desc: "Redigera zsh-konfigurationen (standard macOS)", descEn: "Edit zsh configuration (default on macOS)" },
+      { code: "nano ~/.zprofile", desc: "Redigera login-shellens konfiguration, t.ex. PATH på macOS", descEn: "Edit login shell configuration, for example PATH on macOS" },
+      { code: "source ~/.zshrc", desc: "Ladda om konfigurationen utan att starta om", descEn: "Reload configuration without restarting the shell" },
+      { code: "exec zsh", desc: "Starta om zsh rent i samma terminalfönster", descEn: "Restart zsh cleanly in the same terminal window" },
+      { code: "echo $SHELL", desc: "Visar vilket shell du använder", descEn: "Show which shell you are using" },
+      { code: "cat ~/.zsh_history", desc: "Visar zsh-kommandohistoriken", descEn: "Show zsh command history" }
     ]
   },
   { cat: "Miljö & Shell-konfiguration", cmd: "export PATH", short: "Lägg till program i systemets sökväg", tags: ["safe"],
@@ -2377,10 +2424,10 @@ const COMMANDS = [
       { code: "env VAR=värde kommando", desc: "Kör kommando med tillfällig variabel" }
     ]
   },
-  { cat: "Miljö & Shell-konfiguration", cmd: "rehash", short: "Låt zsh uppdatera sin kommandocache efter nya installationer eller PATH-ändringar", tags: ["safe"],
+  { cat: "Miljö & Shell-konfiguration", cmd: "rehash", short: "Låt zsh uppdatera sin kommandocache efter nya installationer eller PATH-ändringar", shortEn: "Refresh zsh's command cache after new installs or PATH changes", tags: ["safe"],
     examples: [
-      { code: "rehash", desc: "Uppdaterar zsh så nya kommandon hittas direkt" },
-      { code: "brew install jq && rehash", desc: "Praktiskt när ett nytt CLI precis installerats" }
+      { code: "rehash", desc: "Uppdaterar zsh så nya kommandon hittas direkt", descEn: "Refreshes zsh so new commands are found immediately" },
+      { code: "brew install jq && rehash", desc: "Praktiskt när ett nytt CLI precis installerats", descEn: "Useful right after installing a new CLI tool" }
     ]
   },
   { cat: "Miljö & Shell-konfiguration", cmd: "$(  ) och ${ }", short: "Kommandosubstitution och variabelexpansion", tags: ["safe"],
@@ -2401,11 +2448,11 @@ const COMMANDS = [
       { code: "unset VARIABEL", desc: "Tar bort en miljövariabel" }
     ]
   },
-  { cat: "Miljö & Shell-konfiguration", cmd: "setopt / unsetopt", short: "Slå på eller av zsh-specifika shell-alternativ", tags: ["safe"],
+  { cat: "Miljö & Shell-konfiguration", cmd: "setopt / unsetopt", short: "Slå på eller av zsh-specifika shell-alternativ", shortEn: "Enable or disable zsh-specific shell options", tags: ["safe"],
     examples: [
-      { code: "setopt", desc: "Visar aktiva zsh-optioner" },
-      { code: "setopt autocd", desc: "Tillåter att du byter mapp bara genom att skriva katalognamnet" },
-      { code: "unsetopt beep", desc: "Stänger av terminalpip från zsh" }
+      { code: "setopt", desc: "Visar aktiva zsh-optioner", descEn: "Show active zsh options" },
+      { code: "setopt autocd", desc: "Tillåter att du byter mapp bara genom att skriva katalognamnet", descEn: "Lets you change directory just by typing the folder name" },
+      { code: "unsetopt beep", desc: "Stänger av terminalpip från zsh", descEn: "Turn off the zsh terminal bell" }
     ]
   },
   { cat: "Miljö & Shell-konfiguration", cmd: "chsh", short: "Byt standardshell för din användare", tags: ["sudo"],
@@ -3072,14 +3119,134 @@ const COMMANDS = [
 
 // ── SETUP ──
 const categories = [...new Set(COMMANDS.map(c => c.cat))];
-const TAG_LABELS = { danger: '⚠ Farligt', net: '⬡ Nätverk', sudo: '⬆ Root', safe: '✔ Säkert' };
+const I18N = {
+  sv: {
+    searchPlaceholder: 'Sök kommando eller beskrivning…',
+    countLabel: 'Visar',
+    commandSingular: 'kommando',
+    commandPlural: 'kommandon',
+    quickActions: 'Snabbval',
+    getStarted: 'Kom igång',
+    keyboard: 'Tangentbord',
+    categories: 'Kategorier',
+    allCommands: 'Alla kommandon',
+    examples: 'Exempel',
+    noCommands: 'Inga kommandon hittades för',
+    copy: 'Kopiera',
+    copied: 'Kopierat',
+    startTitle: '⬢ Kom igång med macOS Terminal',
+    startSub: 'Många kommandon är inbyggda i macOS och fungerar direkt. Övriga installeras enkelt med <strong style="color:var(--green)">Homebrew</strong> — macOS motsvarighet till <code style="color:var(--cyan);font-family:var(--font-mono);font-size:0.85em">apt</code> på Linux/Ubuntu.',
+    step1: 'Steg 1 — Installera Homebrew (körs en gång)',
+    step2: 'Steg 2 — Installera rekommenderade verktyg',
+    step3: 'Steg 3 — Installera Xcode Command Line Tools',
+    installWhat: 'Vad behöver installeras?',
+    pasteTerminal: '🍺 Klistra in i terminalen',
+    installAll: '📦 Installera allt på en gång',
+    xcodeHelp: '🛠 Ger dig clang, make, git, xcrun, swift m.fl.',
+    builtinLegend: 'Inbyggt i macOS',
+    brewLegend: 'Kräver brew install',
+    xcodeLegend: 'Kräver xcode-select --install',
+    kbdTitle: '⌨ Tangentbordsgenvägar',
+    kbdSub: 'Alla viktiga snabbtangenter för macOS Terminal, zsh och iTerm2. <span style="color:var(--green)">Ctrl-kombinationer</span> gäller inne i terminalen. <span style="color:var(--green)">⌘-kombinationer</span> gäller i Terminal.app/iTerm2-fönstret.'
+  },
+  en: {
+    searchPlaceholder: 'Search command or description…',
+    countLabel: 'Showing',
+    commandSingular: 'command',
+    commandPlural: 'commands',
+    quickActions: 'Quick actions',
+    getStarted: 'Get started',
+    keyboard: 'Keyboard',
+    categories: 'Categories',
+    allCommands: 'All commands',
+    examples: 'Examples',
+    noCommands: 'No commands found for',
+    copy: 'Copy',
+    copied: 'Copied',
+    startTitle: '⬢ Get Started with macOS Terminal',
+    startSub: 'Many commands are built into macOS and work right away. The rest can be installed easily with <strong style="color:var(--green)">Homebrew</strong> — roughly the macOS equivalent of <code style="color:var(--cyan);font-family:var(--font-mono);font-size:0.85em">apt</code> on Linux/Ubuntu.',
+    step1: 'Step 1 — Install Homebrew (run once)',
+    step2: 'Step 2 — Install recommended tools',
+    step3: 'Step 3 — Install Xcode Command Line Tools',
+    installWhat: 'What needs to be installed?',
+    pasteTerminal: '🍺 Paste into Terminal',
+    installAll: '📦 Install everything at once',
+    xcodeHelp: '🛠 Gives you clang, make, git, xcrun, swift, and more',
+    builtinLegend: 'Built into macOS',
+    brewLegend: 'Requires brew install',
+    xcodeLegend: 'Requires xcode-select --install',
+    kbdTitle: '⌨ Keyboard Shortcuts',
+    kbdSub: 'Key shortcuts for macOS Terminal, zsh, and iTerm2. <span style="color:var(--green)">Ctrl combinations</span> work inside the terminal. <span style="color:var(--green)">⌘ combinations</span> work in the Terminal.app/iTerm2 window.'
+  }
+};
+const CATEGORY_LABELS = {
+  en: {
+    'Filer & Mappar': 'Files & Folders',
+    'Texthantering': 'Text Processing',
+    'Nätverk': 'Network',
+    'Pakethanterare': 'Package Managers',
+    'Pipes & Omdirigering': 'Pipes & Redirection',
+    'Shell-tricks': 'Shell Tricks',
+    'Telnet & Fjärranslutning': 'Telnet & Remote Access',
+    'Disk & Lagring': 'Disk & Storage',
+    'Felsökning': 'Troubleshooting',
+    'Säkerhet & Kryptering': 'Security & Encryption',
+    'Komprimering & Arkiv': 'Compression & Archives',
+    'Skript & Automatisering': 'Scripting & Automation',
+    'Användare & Grupper': 'Users & Groups',
+    'Prestanda & Benchmarking': 'Performance & Benchmarking',
+    'Avancerad Text': 'Advanced Text',
+    'Xcode & Utvecklarverktyg': 'Xcode & Dev Tools',
+    'Miljö & Shell-konfiguration': 'Environment & Shell Config',
+    'Miljö & Shell': 'Environment & Shell',
+    'Versionshantering': 'Version Management',
+    'Media & Bilder': 'Media & Images',
+    'Certifikat & PKI': 'Certificates & PKI',
+    'Moderna CLI-verktyg': 'Modern CLI Tools',
+    'Dolda pärlor': 'Hidden Gems'
+  }
+};
+const TAG_LABELS = {
+  sv: { danger: '⚠ Farligt', net: '⬡ Nätverk', sudo: '⬆ Root', safe: '✔ Säkert' },
+  en: { danger: '⚠ Dangerous', net: '⬡ Network', sudo: '⬆ Root', safe: '✔ Safe' }
+};
 
 let activeCategory = 'Alla';
 let activeView = 'commands'; // 'commands' | 'start' | 'kbd'
 let searchQuery = '';
+let currentLang = localStorage.getItem('macTerminalGuideLang') || 'sv';
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.sv[key] || key;
+}
+
+function translateCategory(cat) {
+  return (CATEGORY_LABELS[currentLang] && CATEGORY_LABELS[currentLang][cat]) || cat;
+}
+
+function getCommandShort(c) {
+  return currentLang === 'en' ? (c.shortEn || c.short) : c.short;
+}
+
+function getExampleDesc(e) {
+  return currentLang === 'en' ? (e.descEn || e.desc) : e.desc;
+}
+
+function commandCountText(n) {
+  return n === 1 ? t('commandSingular') : t('commandPlural');
+}
+
+function updateChrome() {
+  document.documentElement.lang = currentLang;
+  document.getElementById('searchInput').placeholder = t('searchPlaceholder');
+  document.getElementById('visibleCountLabel').textContent = t('countLabel');
+  document.getElementById('visibleCountSuffix').textContent = commandCountText(Number(document.getElementById('visibleCount').textContent || 0));
+  document.getElementById('langSvBtn').classList.toggle('active', currentLang === 'sv');
+  document.getElementById('langEnBtn').classList.toggle('active', currentLang === 'en');
+}
 
 function tagHtml(tags) {
-  return (tags||[]).map(t => `<span class="tag tag-${t}">${TAG_LABELS[t]||t}</span>`).join('');
+  return (tags||[]).map(tg => `<span class="tag tag-${tg}">${(TAG_LABELS[currentLang] && TAG_LABELS[currentLang][tg]) || tg}</span>`).join('');
 }
 
 function key(label, special=false) {
@@ -3166,8 +3333,8 @@ function renderKbdPanel() {
   ];
 
   let html = `<div class="panel">
-    <div class="panel-title">⌨ Tangentbordsgenvägar</div>
-    <div class="panel-sub">Alla viktiga snabbtangenter för macOS Terminal, zsh och iTerm2. <span style="color:var(--green)">Ctrl-kombinationer</span> gäller inne i terminalen. <span style="color:var(--green)">⌘-kombinationer</span> gäller i Terminal.app/iTerm2-fönstret.</div>`;
+    <div class="panel-title">${t('kbdTitle')}</div>
+    <div class="panel-sub">${t('kbdSub')}</div>`;
 
   sections.forEach(s => {
     html += `<div class="kb-section">
@@ -3190,9 +3357,9 @@ function brewCopy(btn, id) {
   const el = document.getElementById(id);
   const text = el.innerText;
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '✓ Kopierat';
+    btn.textContent = `✓ ${t('copied')}`;
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '⎘ Kopiera'; btn.classList.remove('copied'); }, 2000);
+    setTimeout(() => { btn.textContent = `⎘ ${t('copy')}`; btn.classList.remove('copied'); }, 2000);
   });
 }
 
@@ -3200,36 +3367,14 @@ function brewCopyBlock(id, label, code) {
   return `<div class="brew-block">
     <div class="brew-block-header">
       <span class="brew-block-title">${label}</span>
-      <button class="brew-copy-btn" onclick="brewCopy(this,'${id}')">⎘ Kopiera</button>
+      <button class="brew-copy-btn" onclick="brewCopy(this,'${id}')">⎘ ${t('copy')}</button>
     </div>
     <div class="brew-code" id="${id}">${code}</div>
   </div>`;
 }
 
 function renderStartPanel() {
-  const step1 = `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`;
   const step1Html = `<span class="cmd-keyword">/bin/bash</span> -c <span class="pkg">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>`;
-
-  const step2Text = `# Essentiella verktyg
-brew install wget curl git
-
-# Moderna ersättare för klassiska kommandon
-brew install ripgrep fd bat eza zoxide
-
-# Terminal-verktyg
-brew install fzf pv mtr entr watch tree parallel
-
-# Nätverk & säkerhet
-brew install nmap socat moreutils
-
-# Utveckling
-brew install gh shellcheck shfmt jq
-
-# Systeminformation
-brew install btop htop
-
-# macOS-verktyg
-brew install mas dockutil renameutils`;
 
   const step2Html = `<span class="comment"># Essentiella verktyg</span>
 <span class="cmd-keyword">brew install</span> <span class="pkg">wget curl git</span>
@@ -3292,9 +3437,9 @@ brew install mas dockutil renameutils`;
   ];
 
   const legendHtml = `<div class="install-legend">
-    <span><div class="install-dot dot-builtin"></div> Inbyggt i macOS</span>
-    <span><div class="install-dot dot-brew"></div> Kräver brew install</span>
-    <span><div class="install-dot dot-xcode"></div> Kräver xcode-select --install</span>
+    <span><div class="install-dot dot-builtin"></div> ${t('builtinLegend')}</span>
+    <span><div class="install-dot dot-brew"></div> ${t('brewLegend')}</span>
+    <span><div class="install-dot dot-xcode"></div> ${t('xcodeLegend')}</span>
   </div>`;
 
   const gridHtml = `<div class="install-grid">${
@@ -3310,19 +3455,19 @@ brew install mas dockutil renameutils`;
   const sectionLabel = (t) => `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:0.75rem;margin-top:1.75rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border)">${t}</div>`;
 
   return `<div class="panel">
-    <div class="panel-title">⬢ Kom igång med macOS Terminal</div>
-    <div class="panel-sub">Många kommandon är inbyggda i macOS och fungerar direkt. Övriga installeras enkelt med <strong style="color:var(--green)">Homebrew</strong> — macOS motsvarighet till <code style="color:var(--cyan);font-family:var(--font-mono);font-size:0.85em">apt</code> på Linux/Ubuntu.</div>
+    <div class="panel-title">${t('startTitle')}</div>
+    <div class="panel-sub">${t('startSub')}</div>
 
-    ${sectionLabel('Steg 1 — Installera Homebrew (körs en gång)')}
-    ${brewCopyBlock('brew-install-cmd', '🍺 Klistra in i terminalen', step1Html)}
+    ${sectionLabel(t('step1'))}
+    ${brewCopyBlock('brew-install-cmd', t('pasteTerminal'), step1Html)}
 
-    ${sectionLabel('Steg 2 — Installera rekommenderade verktyg')}
-    ${brewCopyBlock('brew-all-cmd', '📦 Installera allt på en gång', step2Html)}
+    ${sectionLabel(t('step2'))}
+    ${brewCopyBlock('brew-all-cmd', t('installAll'), step2Html)}
 
-    ${sectionLabel('Steg 3 — Installera Xcode Command Line Tools')}
-    ${brewCopyBlock('xcode-cmd', '🛠 Ger dig clang, make, git, xcrun, swift m.fl.', step3Html)}
+    ${sectionLabel(t('step3'))}
+    ${brewCopyBlock('xcode-cmd', t('xcodeHelp'), step3Html)}
 
-    ${sectionLabel('Vad behöver installeras?')}
+    ${sectionLabel(t('installWhat'))}
     ${legendHtml}
     ${gridHtml}
   </div>`;
@@ -3333,16 +3478,16 @@ function renderSidebar() {
   const allCount = COMMANDS.length;
 
   let html = `
-    <div class="sidebar-label">Snabbval</div>
+    <div class="sidebar-label">${t('quickActions')}</div>
     <button class="cat-btn ${activeView==='start'?'active':''}" onclick="setView('start')">
-      <span class="cat-icon">⬢</span> Kom igång
+      <span class="cat-icon">⬢</span> ${t('getStarted')}
     </button>
     <button class="cat-btn ${activeView==='kbd'?'active':''}" onclick="setView('kbd')">
-      <span class="cat-icon">⌨</span> Tangentbord
+      <span class="cat-icon">⌨</span> ${t('keyboard')}
     </button>
-    <div class="sidebar-label">Kategorier</div>
+    <div class="sidebar-label">${t('categories')}</div>
     <button class="cat-btn ${activeView==='commands' && activeCategory==='Alla'?'active':''}" onclick="setCategory('Alla')">
-      <span class="cat-icon">◈</span> Alla kommandon
+      <span class="cat-icon">◈</span> ${t('allCommands')}
       <span class="cat-count">${allCount}</span>
     </button>`;
 
@@ -3352,7 +3497,7 @@ function renderSidebar() {
     const icon = icons[cat] || '◆';
     const isActive = activeView === 'commands' && activeCategory === cat;
     html += `<button class="cat-btn ${isActive?'active':''}" onclick="setCategory('${cat}')">
-      <span class="cat-icon">${icon}</span> ${cat}
+      <span class="cat-icon">${icon}</span> ${translateCategory(cat)}
       <span class="cat-count">${count}</span>
     </button>`;
   });
@@ -3365,7 +3510,8 @@ function filteredCommands() {
     const matchCat = activeCategory === 'Alla' || c.cat === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || c.cmd.toLowerCase().includes(q) || c.short.toLowerCase().includes(q) ||
-      (c.examples||[]).some(e => e.code.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q));
+      (c.shortEn||'').toLowerCase().includes(q) ||
+      (c.examples||[]).some(e => e.code.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || (e.descEn||'').toLowerCase().includes(q));
     return matchCat && matchSearch;
   });
 }
@@ -3384,9 +3530,10 @@ function renderMain() {
 
   const cmds = filteredCommands();
   document.getElementById('visibleCount').textContent = cmds.length;
+  document.getElementById('visibleCountSuffix').textContent = commandCountText(cmds.length);
 
   if (cmds.length === 0) {
-    main.innerHTML = `<div class="empty"><div class="big">◌</div>Inga kommandon hittades för "${searchQuery}"</div>`;
+    main.innerHTML = `<div class="empty"><div class="big">◌</div>${t('noCommands')} "${searchQuery}"</div>`;
     return;
   }
 
@@ -3399,14 +3546,15 @@ function renderMain() {
   let html = '';
   Object.entries(groups).forEach(([cat, cmds]) => {
     html += `<div class="section-header">
-      <span class="section-title">${cat}</span>
-      <span class="section-sub">${cmds.length} kommando${cmds.length!==1?'n':''}</span>
+      <span class="section-title">${translateCategory(cat)}</span>
+      <span class="section-sub">${cmds.length} ${commandCountText(cmds.length)}</span>
     </div>
     <div class="grid">`;
 
     cmds.forEach(c => {
       const exHtml = (c.examples||[]).map(e => {
-        const isSep = e.desc.startsWith('──');
+        const exDesc = getExampleDesc(e);
+        const isSep = exDesc.startsWith('──');
         const escaped = e.code.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         if (isSep) {
           return `<div class="example-line is-separator">
@@ -3414,26 +3562,26 @@ function renderMain() {
               <span class="example-code">${e.code}</span>
               <button class="copy-btn" style="display:none">⎘</button>
             </div>
-            <span class="example-desc">${e.desc}</span>
+            <span class="example-desc">${exDesc}</span>
           </div>`;
         }
         return `<div class="example-line">
           <div class="example-code-wrap">
             <span class="example-code" title="${escaped}">${e.code}</span>
-            <button class="copy-btn" onclick="copyCode(event, '${escaped}')" title="Kopiera">⎘</button>
+            <button class="copy-btn" onclick="copyCode(event, '${escaped}')" title="${t('copy')}">⎘</button>
           </div>
-          <span class="example-desc">${e.desc}</span>
+          <span class="example-desc">${exDesc}</span>
         </div>`;
       }).join('');
 
       html += `<div class="cmd-card" onclick="toggleCard(this)">
         <div class="cmd-top">
           <span class="cmd-name">${c.cmd}</span>
-          <span class="cmd-short">${c.short}</span>
+          <span class="cmd-short">${getCommandShort(c)}</span>
           <span class="cmd-expand-btn">▾</span>
         </div>
         <div class="cmd-detail">
-          <div class="examples-label">Exempel</div>
+          <div class="examples-label">${t('examples')}</div>
           ${exHtml}
           ${tagHtml(c.tags)}
         </div>
@@ -3468,6 +3616,14 @@ function copyCode(event, code) {
   });
 }
 
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('macTerminalGuideLang', lang);
+  updateChrome();
+  renderSidebar();
+  renderMain();
+}
+
 function setView(view) {
   activeView = view;
   activeCategory = 'Alla';
@@ -3494,6 +3650,7 @@ document.getElementById('searchInput').addEventListener('input', e => {
 });
 
 // Init
+updateChrome();
 renderSidebar();
 renderMain();
 </script>
