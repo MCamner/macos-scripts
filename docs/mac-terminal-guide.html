@@ -1231,6 +1231,13 @@ const COMMANDS = [
       { code: "which -a node", desc: "Visar alla installationer av node" }
     ]
   },
+  { cat: "System", cmd: "command -v / type", short: "Visa vad ett kommando faktiskt är: binär, alias, funktion eller builtin", tags: ["safe"],
+    examples: [
+      { code: "command -v python3", desc: "Visar hur shellen hittar kommandot" },
+      { code: "type git", desc: "Visar om git är extern binär, alias eller funktion" },
+      { code: "type -a python", desc: "Visar alla träffar i ordning, inklusive alias och PATH" }
+    ]
+  },
   { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", tags: ["safe"],
     examples: [
       { code: "man ls", desc: "Öppnar manualen för ls (q = avsluta)" },
@@ -2016,6 +2023,15 @@ const COMMANDS = [
       { code: ". ~/.zshrc", desc: "Kortform för source" }
     ]
   },
+  { cat: "Skript & Automatisering", cmd: "zsh -lc / -ic / -ilc / -f / -x", short: "Starta zsh i login-, interaktivt, rent eller debug-läge", tags: ["safe"],
+    examples: [
+      { code: "zsh -lc 'echo $PATH'", desc: "Kör med login-zsh och laddar t.ex. .zprofile" },
+      { code: "zsh -ic 'alias gs; gs'", desc: "Kör interaktiv zsh och laddar .zshrc med alias/funktioner" },
+      { code: "zsh -ilc 'node -v'", desc: "Kör med både login- och interaktiv miljö" },
+      { code: "zsh -f", desc: "Starta ren zsh utan rc-filer - bra för felsökning" },
+      { code: "zsh -x skript.zsh", desc: "Visa varje rad som körs i ett zsh-skript" }
+    ]
+  },
   { cat: "Skript & Automatisering", cmd: "osascript", short: "Kör AppleScript eller JavaScript for Automation (JXA)", tags: ["safe"],
     examples: [
       { code: "osascript -e 'say \"Hej!\"'", desc: "Talar text med macOS röst" },
@@ -2314,10 +2330,12 @@ const COMMANDS = [
   },
 
   // ── MILJÖ & SHELL-KONFIGURATION ──
-  { cat: "Miljö & Shell-konfiguration", cmd: ".zshrc / .bashrc", short: "Shell-konfigurationsfiler som körs vid varje session", tags: ["safe"],
+  { cat: "Miljö & Shell-konfiguration", cmd: ".zshrc / .zprofile / .bashrc", short: "Shell-konfigurationsfiler för interaktiva och login-sessioner", tags: ["safe"],
     examples: [
       { code: "nano ~/.zshrc", desc: "Redigera zsh-konfigurationen (standard macOS)" },
+      { code: "nano ~/.zprofile", desc: "Redigera login-shellens konfiguration, t.ex. PATH på macOS" },
       { code: "source ~/.zshrc", desc: "Ladda om konfigurationen utan att starta om" },
+      { code: "exec zsh", desc: "Starta om zsh rent i samma terminalfönster" },
       { code: "echo $SHELL", desc: "Visar vilket shell du använder" },
       { code: "cat ~/.zsh_history", desc: "Visar zsh-kommandohistoriken" }
     ]
@@ -2336,6 +2354,12 @@ const COMMANDS = [
       { code: "printenv HOME", desc: "Visar värdet av HOME-variabeln" },
       { code: "printenv | sort", desc: "Sorterad lista av alla variabler" },
       { code: "env VAR=värde kommando", desc: "Kör kommando med tillfällig variabel" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "rehash", short: "Låt zsh uppdatera sin kommandocache efter nya installationer eller PATH-ändringar", tags: ["safe"],
+    examples: [
+      { code: "rehash", desc: "Uppdaterar zsh så nya kommandon hittas direkt" },
+      { code: "brew install jq && rehash", desc: "Praktiskt när ett nytt CLI precis installerats" }
     ]
   },
   { cat: "Miljö & Shell-konfiguration", cmd: "$(  ) och ${ }", short: "Kommandosubstitution och variabelexpansion", tags: ["safe"],
@@ -3447,4 +3471,3 @@ renderMain();
 </script>
 </body>
 </html>
-
