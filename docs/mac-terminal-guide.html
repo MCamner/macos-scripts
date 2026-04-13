@@ -1238,6 +1238,13 @@ const COMMANDS = [
       { code: "type -a python", desc: "Visar alla träffar i ordning, inklusive alias och PATH" }
     ]
   },
+  { cat: "System", cmd: "whence", short: "zsh:s eget sätt att visa vad ett kommando är och var det hittas", tags: ["safe"],
+    examples: [
+      { code: "whence git", desc: "Visar hur zsh hittar kommandot" },
+      { code: "whence -v python3", desc: "Förklarar om det är alias, funktion eller extern fil" },
+      { code: "whence -a node", desc: "Visar alla träffar som zsh kan använda" }
+    ]
+  },
   { cat: "System", cmd: "man", short: "Visa manualsida för ett kommando", tags: ["safe"],
     examples: [
       { code: "man ls", desc: "Öppnar manualen för ls (q = avsluta)" },
@@ -1423,6 +1430,20 @@ const COMMANDS = [
     examples: [
       { code: "sudo !!", desc: "Kör föregående kommando som sudo" },
       { code: "mkdir mapp && cd !$", desc: "!$ = sista argumentet (mapp)" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "fc", short: "Visa, redigera och kör om kommandon från zsh-historiken", tags: ["safe"],
+    examples: [
+      { code: "fc -l -10", desc: "Visar de 10 senaste kommandona i historiken" },
+      { code: "fc -e nano", desc: "Öppnar senaste kommandot i nano för redigering och körning" },
+      { code: "fc -l 1 20", desc: "Visar historikposter 1 till 20" }
+    ]
+  },
+  { cat: "Shell-tricks", cmd: "bindkey", short: "Visa eller ändra tangentbindningar i zsh", tags: ["safe"],
+    examples: [
+      { code: "bindkey", desc: "Listar aktiva tangentbindningar i zsh" },
+      { code: "bindkey '^R' history-incremental-search-backward", desc: "Binder Ctrl+R till bakåt-sökning i historiken" },
+      { code: "bindkey -L", desc: "Visar bindningar i ett format som kan återanvändas" }
     ]
   },
   { cat: "Shell-tricks", cmd: "clear", short: "Rensa terminalfönstret", tags: ["safe"],
@@ -2378,6 +2399,13 @@ const COMMANDS = [
       { code: "set -u", desc: "Behandla odefinierade variabler som fel" },
       { code: "set -euo pipefail", desc: "Kombination för robusta skript" },
       { code: "unset VARIABEL", desc: "Tar bort en miljövariabel" }
+    ]
+  },
+  { cat: "Miljö & Shell-konfiguration", cmd: "setopt / unsetopt", short: "Slå på eller av zsh-specifika shell-alternativ", tags: ["safe"],
+    examples: [
+      { code: "setopt", desc: "Visar aktiva zsh-optioner" },
+      { code: "setopt autocd", desc: "Tillåter att du byter mapp bara genom att skriva katalognamnet" },
+      { code: "unsetopt beep", desc: "Stänger av terminalpip från zsh" }
     ]
   },
   { cat: "Miljö & Shell-konfiguration", cmd: "chsh", short: "Byt standardshell för din användare", tags: ["sudo"],
