@@ -1298,11 +1298,11 @@ const COMMANDS = [
       { code: "man -k sökord", desc: "Söker efter kommando via nyckelord" }
     ]
   },
-  { cat: "System", cmd: "shutdown", short: "Stäng av eller starta om Mac", tags: ["sudo", "danger"],
+  { cat: "System", cmd: "shutdown", short: "Stäng av eller starta om Mac", shortEn: "Shut down or restart the Mac", tags: ["sudo", "danger"],
     examples: [
-      { code: "sudo shutdown -h now", desc: "Stänger av datorn omedelbart" },
-      { code: "sudo shutdown -r now", desc: "Startar om datorn omedelbart" },
-      { code: "sudo shutdown -h +60", desc: "Stänger av om 60 minuter" }
+      { code: "sudo shutdown -h now", desc: "Stänger av datorn omedelbart", descEn: "Shuts down the computer immediately" },
+      { code: "sudo shutdown -r now", desc: "Startar om datorn omedelbart", descEn: "Restarts the computer immediately" },
+      { code: "sudo shutdown -h +60", desc: "Stänger av om 60 minuter", descEn: "Shuts down in 60 minutes" }
     ]
   },
   { cat: "System", cmd: "defaults", short: "Läs/skriv macOS-inställningar (plist)", tags: ["sudo"],
@@ -3181,10 +3181,14 @@ const I18N = {
 };
 const CATEGORY_LABELS = {
   en: {
+    'Navigation': 'Navigation',
     'Filer & Mappar': 'Files & Folders',
     'Texthantering': 'Text Processing',
+    'Processer': 'Processes',
     'Nätverk': 'Network',
+    'System': 'System',
     'Pakethanterare': 'Package Managers',
+    'Git': 'Git',
     'Pipes & Omdirigering': 'Pipes & Redirection',
     'Shell-tricks': 'Shell Tricks',
     'Telnet & Fjärranslutning': 'Telnet & Remote Access',
@@ -3321,6 +3325,13 @@ function translateText(text) {
   return result;
 }
 
+function localizedText(value) {
+  if (value && typeof value === 'object') {
+    return value[currentLang] || value.sv || value.en || '';
+  }
+  return value;
+}
+
 function getCommandShort(c) {
   return currentLang === 'en' ? (c.shortEn || translateText(c.short)) : c.short;
 }
@@ -3353,79 +3364,79 @@ function plus() { return `<span class="key key-plus">+</span>`; }
 
 function renderKbdPanel() {
   const sections = [
-    { title: 'Redigering av kommandoraden', rows: [
-      { desc: 'Flytta markören till rad-start', keys: [key('Ctrl'),plus(),key('A')] },
-      { desc: 'Flytta markören till rad-slut', keys: [key('Ctrl'),plus(),key('E')] },
-      { desc: 'Hoppa ett ord framåt', keys: [key('Esc'),plus(),key('F')] },
-      { desc: 'Hoppa ett ord bakåt', keys: [key('Esc'),plus(),key('B')] },
-      { desc: 'Ta bort tecken framför markören (delete)', keys: [key('Ctrl'),plus(),key('D')] },
-      { desc: 'Ta bort tecken bakom markören (backspace)', keys: [key('⌫')] },
-      { desc: 'Ta bort från markör till rad-slut', keys: [key('Ctrl'),plus(),key('K')] },
-      { desc: 'Ta bort från markör till rad-start', keys: [key('Ctrl'),plus(),key('U')] },
-      { desc: 'Ta bort föregående ord', keys: [key('Ctrl'),plus(),key('W')] },
-      { desc: 'Ta bort nästa ord', keys: [key('Esc'),plus(),key('D')] },
-      { desc: 'Klistra in senast borttagna text', keys: [key('Ctrl'),plus(),key('Y')] },
-      { desc: 'Transponera (byt) två tecken vid markören', keys: [key('Ctrl'),plus(),key('T')] },
-      { desc: 'Ändra ord till VERSALER', keys: [key('Esc'),plus(),key('U')] },
-      { desc: 'Ändra ord till gemener', keys: [key('Esc'),plus(),key('L')] },
-      { desc: 'Kommentera bort raden (lägg till #)', keys: [key('Esc'),plus(),key('#')] },
+    { title: { sv: 'Redigering av kommandoraden', en: 'Command Line Editing' }, rows: [
+      { desc: { sv: 'Flytta markören till rad-start', en: 'Move the cursor to the start of the line' }, keys: [key('Ctrl'),plus(),key('A')] },
+      { desc: { sv: 'Flytta markören till rad-slut', en: 'Move the cursor to the end of the line' }, keys: [key('Ctrl'),plus(),key('E')] },
+      { desc: { sv: 'Hoppa ett ord framåt', en: 'Jump forward one word' }, keys: [key('Esc'),plus(),key('F')] },
+      { desc: { sv: 'Hoppa ett ord bakåt', en: 'Jump backward one word' }, keys: [key('Esc'),plus(),key('B')] },
+      { desc: { sv: 'Ta bort tecken framför markören (delete)', en: 'Delete the character in front of the cursor' }, keys: [key('Ctrl'),plus(),key('D')] },
+      { desc: { sv: 'Ta bort tecken bakom markören (backspace)', en: 'Delete the character behind the cursor' }, keys: [key('⌫')] },
+      { desc: { sv: 'Ta bort från markör till rad-slut', en: 'Delete from the cursor to the end of the line' }, keys: [key('Ctrl'),plus(),key('K')] },
+      { desc: { sv: 'Ta bort från markör till rad-start', en: 'Delete from the cursor to the start of the line' }, keys: [key('Ctrl'),plus(),key('U')] },
+      { desc: { sv: 'Ta bort föregående ord', en: 'Delete the previous word' }, keys: [key('Ctrl'),plus(),key('W')] },
+      { desc: { sv: 'Ta bort nästa ord', en: 'Delete the next word' }, keys: [key('Esc'),plus(),key('D')] },
+      { desc: { sv: 'Klistra in senast borttagna text', en: 'Paste the most recently deleted text' }, keys: [key('Ctrl'),plus(),key('Y')] },
+      { desc: { sv: 'Transponera (byt) två tecken vid markören', en: 'Transpose the two characters at the cursor' }, keys: [key('Ctrl'),plus(),key('T')] },
+      { desc: { sv: 'Ändra ord till VERSALER', en: 'Convert the word to UPPERCASE' }, keys: [key('Esc'),plus(),key('U')] },
+      { desc: { sv: 'Ändra ord till gemener', en: 'Convert the word to lowercase' }, keys: [key('Esc'),plus(),key('L')] },
+      { desc: { sv: 'Kommentera bort raden (lägg till #)', en: 'Comment out the line by adding #' }, keys: [key('Esc'),plus(),key('#')] },
     ]},
-    { title: 'Historik & sökning', rows: [
-      { desc: 'Föregående kommando i historiken', keys: [key('↑')] },
-      { desc: 'Nästa kommando i historiken', keys: [key('↓')] },
-      { desc: 'Inkrementell sökning bakåt i historik', keys: [key('Ctrl'),plus(),key('R')] },
-      { desc: 'Inkrementell sökning framåt i historik', keys: [key('Ctrl'),plus(),key('S')] },
-      { desc: 'Avbryt sökning, behåll aktuell rad', keys: [key('Ctrl'),plus(),key('G')] },
-      { desc: 'Hoppa till äldsta kommandot i historik', keys: [key('Esc'),plus(),key('<')] },
-      { desc: 'Hoppa till nyaste kommandot i historik', keys: [key('Esc'),plus(),key('>')] },
-      { desc: 'Expandera !! (senaste kommando) inline', keys: [key('Esc'),plus(),key('↑')] },
+    { title: { sv: 'Historik & sökning', en: 'History & Search' }, rows: [
+      { desc: { sv: 'Föregående kommando i historiken', en: 'Previous command in history' }, keys: [key('↑')] },
+      { desc: { sv: 'Nästa kommando i historiken', en: 'Next command in history' }, keys: [key('↓')] },
+      { desc: { sv: 'Inkrementell sökning bakåt i historik', en: 'Incremental backward search in history' }, keys: [key('Ctrl'),plus(),key('R')] },
+      { desc: { sv: 'Inkrementell sökning framåt i historik', en: 'Incremental forward search in history' }, keys: [key('Ctrl'),plus(),key('S')] },
+      { desc: { sv: 'Avbryt sökning, behåll aktuell rad', en: 'Cancel the search and keep the current line' }, keys: [key('Ctrl'),plus(),key('G')] },
+      { desc: { sv: 'Hoppa till äldsta kommandot i historik', en: 'Jump to the oldest command in history' }, keys: [key('Esc'),plus(),key('<')] },
+      { desc: { sv: 'Hoppa till nyaste kommandot i historik', en: 'Jump to the newest command in history' }, keys: [key('Esc'),plus(),key('>')] },
+      { desc: { sv: 'Expandera !! (senaste kommando) inline', en: 'Expand !! inline to the latest command' }, keys: [key('Esc'),plus(),key('↑')] },
     ]},
-    { title: 'Autokomplettering', rows: [
-      { desc: 'Autofyll kommando, fil eller argument', keys: [key('Tab',true)] },
-      { desc: 'Visa alla möjliga kompletteringar', keys: [key('Tab',true),key('Tab',true)] },
-      { desc: 'Komplettera filnamn med wildcards', keys: [key('Esc'),plus(),key('*')] },
-      { desc: 'Lista möjliga kompletteringar utan att fylla i', keys: [key('Esc'),plus(),key('=')] },
+    { title: { sv: 'Autokomplettering', en: 'Autocompletion' }, rows: [
+      { desc: { sv: 'Autofyll kommando, fil eller argument', en: 'Autocomplete a command, file, or argument' }, keys: [key('Tab',true)] },
+      { desc: { sv: 'Visa alla möjliga kompletteringar', en: 'Show all available completions' }, keys: [key('Tab',true),key('Tab',true)] },
+      { desc: { sv: 'Komplettera filnamn med wildcards', en: 'Complete filenames using wildcards' }, keys: [key('Esc'),plus(),key('*')] },
+      { desc: { sv: 'Lista möjliga kompletteringar utan att fylla i', en: 'List possible completions without inserting them' }, keys: [key('Esc'),plus(),key('=')] },
     ]},
-    { title: 'Processkontroll', rows: [
-      { desc: 'Avbryt körande kommando (SIGINT)', keys: [key('Ctrl',true),plus(),key('C')] },
-      { desc: 'Pausa/stoppa process (SIGTSTP)', keys: [key('Ctrl',true),plus(),key('Z')] },
-      { desc: 'Avsluta shell / skicka EOF', keys: [key('Ctrl',true),plus(),key('D')] },
-      { desc: 'Frys output till skärmen', keys: [key('Ctrl'),plus(),key('S')] },
-      { desc: 'Återuppta fryst output', keys: [key('Ctrl'),plus(),key('Q')] },
-      { desc: 'Skicka process till bakgrunden', keys: [key('Ctrl'),plus(),key('Z'),plus(),key('bg')] },
+    { title: { sv: 'Processkontroll', en: 'Process Control' }, rows: [
+      { desc: { sv: 'Avbryt körande kommando (SIGINT)', en: 'Interrupt the running command (SIGINT)' }, keys: [key('Ctrl',true),plus(),key('C')] },
+      { desc: { sv: 'Pausa/stoppa process (SIGTSTP)', en: 'Pause or stop the process (SIGTSTP)' }, keys: [key('Ctrl',true),plus(),key('Z')] },
+      { desc: { sv: 'Avsluta shell / skicka EOF', en: 'Exit the shell / send EOF' }, keys: [key('Ctrl',true),plus(),key('D')] },
+      { desc: { sv: 'Frys output till skärmen', en: 'Freeze output to the screen' }, keys: [key('Ctrl'),plus(),key('S')] },
+      { desc: { sv: 'Återuppta fryst output', en: 'Resume frozen output' }, keys: [key('Ctrl'),plus(),key('Q')] },
+      { desc: { sv: 'Skicka process till bakgrunden', en: 'Send the process to the background' }, keys: [key('Ctrl'),plus(),key('Z'),plus(),key('bg')] },
     ]},
-    { title: 'Skärmkontroll i Terminal.app', rows: [
-      { desc: 'Rensa skärmen (som kommandot clear)', keys: [key('Ctrl'),plus(),key('L')] },
-      { desc: 'Rensa scrollback-buffert', keys: [key('⌘',true),plus(),key('K')] },
-      { desc: 'Nytt terminalfönster', keys: [key('⌘',true),plus(),key('N')] },
-      { desc: 'Ny flik', keys: [key('⌘',true),plus(),key('T')] },
-      { desc: 'Stäng flik', keys: [key('⌘',true),plus(),key('W')] },
-      { desc: 'Nästa flik', keys: [key('⌘',true),plus(),key('}')] },
-      { desc: 'Föregående flik', keys: [key('⌘',true),plus(),key('{')] },
-      { desc: 'Öka textstorlek', keys: [key('⌘',true),plus(),key('+')] },
-      { desc: 'Minska textstorlek', keys: [key('⌘',true),plus(),key('-')] },
-      { desc: 'Återställ textstorlek', keys: [key('⌘',true),plus(),key('0')] },
-      { desc: 'Kopiera markerad text', keys: [key('⌘',true),plus(),key('C')] },
-      { desc: 'Klistra in', keys: [key('⌘',true),plus(),key('V')] },
-      { desc: 'Välj all text i terminalen', keys: [key('⌘',true),plus(),key('A')] },
-      { desc: 'Sök i terminalens output', keys: [key('⌘',true),plus(),key('F')] },
+    { title: { sv: 'Skärmkontroll i Terminal.app', en: 'Terminal.app Screen Control' }, rows: [
+      { desc: { sv: 'Rensa skärmen (som kommandot clear)', en: 'Clear the screen (like the clear command)' }, keys: [key('Ctrl'),plus(),key('L')] },
+      { desc: { sv: 'Rensa scrollback-buffert', en: 'Clear the scrollback buffer' }, keys: [key('⌘',true),plus(),key('K')] },
+      { desc: { sv: 'Nytt terminalfönster', en: 'Open a new terminal window' }, keys: [key('⌘',true),plus(),key('N')] },
+      { desc: { sv: 'Ny flik', en: 'Open a new tab' }, keys: [key('⌘',true),plus(),key('T')] },
+      { desc: { sv: 'Stäng flik', en: 'Close the tab' }, keys: [key('⌘',true),plus(),key('W')] },
+      { desc: { sv: 'Nästa flik', en: 'Next tab' }, keys: [key('⌘',true),plus(),key('}')] },
+      { desc: { sv: 'Föregående flik', en: 'Previous tab' }, keys: [key('⌘',true),plus(),key('{')] },
+      { desc: { sv: 'Öka textstorlek', en: 'Increase text size' }, keys: [key('⌘',true),plus(),key('+')] },
+      { desc: { sv: 'Minska textstorlek', en: 'Decrease text size' }, keys: [key('⌘',true),plus(),key('-')] },
+      { desc: { sv: 'Återställ textstorlek', en: 'Reset text size' }, keys: [key('⌘',true),plus(),key('0')] },
+      { desc: { sv: 'Kopiera markerad text', en: 'Copy selected text' }, keys: [key('⌘',true),plus(),key('C')] },
+      { desc: { sv: 'Klistra in', en: 'Paste' }, keys: [key('⌘',true),plus(),key('V')] },
+      { desc: { sv: 'Välj all text i terminalen', en: 'Select all terminal text' }, keys: [key('⌘',true),plus(),key('A')] },
+      { desc: { sv: 'Sök i terminalens output', en: 'Search terminal output' }, keys: [key('⌘',true),plus(),key('F')] },
     ]},
-    { title: 'Skärmkontroll i iTerm2', rows: [
-      { desc: 'Dela fönster horisontellt', keys: [key('⌘',true),plus(),key('D')] },
-      { desc: 'Dela fönster vertikalt', keys: [key('⌘',true),plus(),key('⇧'),plus(),key('D')] },
-      { desc: 'Byt delat fönster', keys: [key('⌘',true),plus(),key('[')] },
-      { desc: 'Visa kommandohistorik (visuellt)', keys: [key('⌘',true),plus(),key(';')] },
-      { desc: 'Autoplettering med popup', keys: [key('⌘',true),plus(),key('/')] },
-      { desc: 'Instant Replay (se vad som hände)', keys: [key('⌘',true),plus(),key('⌥'),plus(),key('B')] },
-      { desc: 'Öppna Toolbelt', keys: [key('⌘',true),plus(),key('⇧'),plus(),key('T')] },
-      { desc: 'Viloläge / Expose för flikar', keys: [key('⌘',true),plus(),key('⌥'),plus(),key('E')] },
+    { title: { sv: 'Skärmkontroll i iTerm2', en: 'iTerm2 Screen Control' }, rows: [
+      { desc: { sv: 'Dela fönster horisontellt', en: 'Split the pane horizontally' }, keys: [key('⌘',true),plus(),key('D')] },
+      { desc: { sv: 'Dela fönster vertikalt', en: 'Split the pane vertically' }, keys: [key('⌘',true),plus(),key('⇧'),plus(),key('D')] },
+      { desc: { sv: 'Byt delat fönster', en: 'Switch between split panes' }, keys: [key('⌘',true),plus(),key('[')] },
+      { desc: { sv: 'Visa kommandohistorik (visuellt)', en: 'Show command history visually' }, keys: [key('⌘',true),plus(),key(';')] },
+      { desc: { sv: 'Autoplettering med popup', en: 'Show popup autocompletion' }, keys: [key('⌘',true),plus(),key('/')] },
+      { desc: { sv: 'Instant Replay (se vad som hände)', en: 'Instant Replay to review what happened' }, keys: [key('⌘',true),plus(),key('⌥'),plus(),key('B')] },
+      { desc: { sv: 'Öppna Toolbelt', en: 'Open the Toolbelt' }, keys: [key('⌘',true),plus(),key('⇧'),plus(),key('T')] },
+      { desc: { sv: 'Viloläge / Expose för flikar', en: 'Open Expose for tabs' }, keys: [key('⌘',true),plus(),key('⌥'),plus(),key('E')] },
     ]},
-    { title: 'Användbara zsh-specifika genvägar', rows: [
-      { desc: 'Expandera alias inline (visa vad alias gör)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('A')] },
-      { desc: 'Redigera kommandot i $EDITOR (vim/nano)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('E')] },
-      { desc: 'Byt ut föregående ord i kommandot', keys: [key('Esc'),plus(),key('.')] },
-      { desc: 'Upprepa senaste argument från historik', keys: [key('Esc'),plus(),key('_')] },
-      { desc: 'Växla senaste kommandon (byt ordning)', keys: [key('Ctrl'),plus(),key('X'),plus(),key('Ctrl'),plus(),key('X')] },
+    { title: { sv: 'Användbara zsh-specifika genvägar', en: 'Useful zsh-Specific Shortcuts' }, rows: [
+      { desc: { sv: 'Expandera alias inline (visa vad alias gör)', en: 'Expand an alias inline to reveal what it does' }, keys: [key('Ctrl'),plus(),key('X'),plus(),key('A')] },
+      { desc: { sv: 'Redigera kommandot i $EDITOR (vim/nano)', en: 'Edit the command in $EDITOR (vim/nano)' }, keys: [key('Ctrl'),plus(),key('X'),plus(),key('E')] },
+      { desc: { sv: 'Byt ut föregående ord i kommandot', en: 'Insert the previous word in the command' }, keys: [key('Esc'),plus(),key('.')] },
+      { desc: { sv: 'Upprepa senaste argument från historik', en: 'Repeat the latest argument from history' }, keys: [key('Esc'),plus(),key('_')] },
+      { desc: { sv: 'Växla senaste kommandon (byt ordning)', en: 'Swap the latest commands' }, keys: [key('Ctrl'),plus(),key('X'),plus(),key('Ctrl'),plus(),key('X')] },
     ]},
   ];
 
@@ -3435,11 +3446,11 @@ function renderKbdPanel() {
 
   sections.forEach(s => {
     html += `<div class="kb-section">
-      <div class="kb-section-title">${translateText(s.title)}</div>
+      <div class="kb-section-title">${localizedText(s.title)}</div>
       <div class="kb-grid">`;
     s.rows.forEach(r => {
       html += `<div class="kb-row">
-        <span class="kb-desc">${translateText(r.desc)}</span>
+        <span class="kb-desc">${localizedText(r.desc)}</span>
         <span class="kb-keys">${r.keys.join('')}</span>
       </div>`;
     });
@@ -3498,39 +3509,39 @@ function renderStartPanel() {
 <span class="cmd-keyword">xcode-select</span> --install`;
 
   const builtins = [
-    { name:'curl', desc:'HTTP-klient & filnedladdning', type:'builtin' },
-    { name:'ssh / scp', desc:'Säker fjärranslutning & kopiering', type:'builtin' },
-    { name:'git', desc:'Versionshantering', type:'builtin' },
-    { name:'python3', desc:'Python-tolk', type:'builtin' },
-    { name:'openssl', desc:'TLS, certifikat & kryptering', type:'builtin' },
-    { name:'nano / vim', desc:'Textredigerare', type:'builtin' },
-    { name:'grep / find / awk', desc:'Sökning och textbearbetning', type:'builtin' },
-    { name:'tcpdump', desc:'Nätverkspacketfångst', type:'builtin' },
-    { name:'say / pbcopy', desc:'Text-till-tal & urklipp', type:'builtin' },
-    { name:'diskutil / hdiutil', desc:'Disk- och avbildningshantering', type:'builtin' },
-    { name:'screencapture', desc:'Skärmdumpar & skärminspelning', type:'builtin' },
-    { name:'launchctl', desc:'Systemtjänster (launchd)', type:'builtin' },
-    { name:'networkQuality', desc:'Nätverkskvalitetstest (macOS 12+)', type:'builtin' },
-    { name:'brctl / tmutil', desc:'iCloud Drive & Time Machine', type:'builtin' },
-    { name:'system_profiler', desc:'Hårdvaru- och mjukvaruinfo', type:'builtin' },
-    { name:'ripgrep (rg)', desc:'Snabb textsökning — ersätter grep', type:'brew' },
-    { name:'fd', desc:'Snabb filsökning — ersätter find', type:'brew' },
-    { name:'bat', desc:'cat med syntaxfärgning och Git', type:'brew' },
-    { name:'eza', desc:'Modernare ls med ikoner', type:'brew' },
-    { name:'fzf', desc:'Interaktiv fuzzy-sökare', type:'brew' },
-    { name:'btop / htop', desc:'Grafisk resursmonitor', type:'brew' },
-    { name:'gh', desc:'GitHub CLI — PRs, issues, releases', type:'brew' },
-    { name:'mtr', desc:'ping + traceroute live', type:'brew' },
-    { name:'jq', desc:'JSON-processor och pretty-printer', type:'brew' },
-    { name:'watch', desc:'Upprepa kommando med live-uppdatering', type:'brew' },
-    { name:'entr', desc:'Kör om vid filändring', type:'brew' },
-    { name:'parallel', desc:'Parallell körning av kommandon', type:'brew' },
-    { name:'nmap', desc:'Nätverksskanner och portskanning', type:'brew' },
-    { name:'wget', desc:'Filnedladdning med återupptagning', type:'brew' },
-    { name:'clang / make / ld', desc:'Kompilator och byggverktyg', type:'xcode' },
-    { name:'xcrun / xcodebuild', desc:'Xcode-byggverktyg', type:'xcode' },
-    { name:'simctl', desc:'iOS/watchOS Simulator-hantering', type:'xcode' },
-    { name:'swift / swiftc', desc:'Swift-tolk och kompilator', type:'xcode' },
+    { name:'curl', desc:{ sv:'HTTP-klient & filnedladdning', en:'HTTP client and file downloads' }, type:'builtin' },
+    { name:'ssh / scp', desc:{ sv:'Säker fjärranslutning & kopiering', en:'Secure remote access and copying' }, type:'builtin' },
+    { name:'git', desc:{ sv:'Versionshantering', en:'Version control' }, type:'builtin' },
+    { name:'python3', desc:{ sv:'Python-tolk', en:'Python interpreter' }, type:'builtin' },
+    { name:'openssl', desc:{ sv:'TLS, certifikat & kryptering', en:'TLS, certificates, and encryption' }, type:'builtin' },
+    { name:'nano / vim', desc:{ sv:'Textredigerare', en:'Text editors' }, type:'builtin' },
+    { name:'grep / find / awk', desc:{ sv:'Sökning och textbearbetning', en:'Search and text processing' }, type:'builtin' },
+    { name:'tcpdump', desc:{ sv:'Nätverkspacketfångst', en:'Network packet capture' }, type:'builtin' },
+    { name:'say / pbcopy', desc:{ sv:'Text-till-tal & urklipp', en:'Text-to-speech and clipboard tools' }, type:'builtin' },
+    { name:'diskutil / hdiutil', desc:{ sv:'Disk- och avbildningshantering', en:'Disk and image management' }, type:'builtin' },
+    { name:'screencapture', desc:{ sv:'Skärmdumpar & skärminspelning', en:'Screenshots and screen recording' }, type:'builtin' },
+    { name:'launchctl', desc:{ sv:'Systemtjänster (launchd)', en:'System services (launchd)' }, type:'builtin' },
+    { name:'networkQuality', desc:{ sv:'Nätverkskvalitetstest (macOS 12+)', en:'Network quality test (macOS 12+)' }, type:'builtin' },
+    { name:'brctl / tmutil', desc:{ sv:'iCloud Drive & Time Machine', en:'iCloud Drive and Time Machine' }, type:'builtin' },
+    { name:'system_profiler', desc:{ sv:'Hårdvaru- och mjukvaruinfo', en:'Hardware and software info' }, type:'builtin' },
+    { name:'ripgrep (rg)', desc:{ sv:'Snabb textsökning — ersätter grep', en:'Fast text search that replaces grep' }, type:'brew' },
+    { name:'fd', desc:{ sv:'Snabb filsökning — ersätter find', en:'Fast file search that replaces find' }, type:'brew' },
+    { name:'bat', desc:{ sv:'cat med syntaxfärgning och Git', en:'cat with syntax highlighting and Git context' }, type:'brew' },
+    { name:'eza', desc:{ sv:'Modernare ls med ikoner', en:'A more modern ls with icons' }, type:'brew' },
+    { name:'fzf', desc:{ sv:'Interaktiv fuzzy-sökare', en:'Interactive fuzzy finder' }, type:'brew' },
+    { name:'btop / htop', desc:{ sv:'Grafisk resursmonitor', en:'Graphical resource monitor' }, type:'brew' },
+    { name:'gh', desc:{ sv:'GitHub CLI — PRs, issues, releases', en:'GitHub CLI for PRs, issues, and releases' }, type:'brew' },
+    { name:'mtr', desc:{ sv:'ping + traceroute live', en:'Live ping and traceroute combined' }, type:'brew' },
+    { name:'jq', desc:{ sv:'JSON-processor och pretty-printer', en:'JSON processor and pretty-printer' }, type:'brew' },
+    { name:'watch', desc:{ sv:'Upprepa kommando med live-uppdatering', en:'Repeat a command with live updates' }, type:'brew' },
+    { name:'entr', desc:{ sv:'Kör om vid filändring', en:'Rerun when files change' }, type:'brew' },
+    { name:'parallel', desc:{ sv:'Parallell körning av kommandon', en:'Parallel command execution' }, type:'brew' },
+    { name:'nmap', desc:{ sv:'Nätverksskanner och portskanning', en:'Network scanner and port scanner' }, type:'brew' },
+    { name:'wget', desc:{ sv:'Filnedladdning med återupptagning', en:'File downloads with resume support' }, type:'brew' },
+    { name:'clang / make / ld', desc:{ sv:'Kompilator och byggverktyg', en:'Compiler and build tools' }, type:'xcode' },
+    { name:'xcrun / xcodebuild', desc:{ sv:'Xcode-byggverktyg', en:'Xcode build tools' }, type:'xcode' },
+    { name:'simctl', desc:{ sv:'iOS/watchOS Simulator-hantering', en:'iOS and watchOS simulator management' }, type:'xcode' },
+    { name:'swift / swiftc', desc:{ sv:'Swift-tolk och kompilator', en:'Swift interpreter and compiler' }, type:'xcode' },
   ];
 
   const legendHtml = `<div class="install-legend">
@@ -3545,7 +3556,7 @@ function renderStartPanel() {
         <div class="install-dot dot-${b.type}"></div>
         <span class="install-name">${b.name}</span>
       </div>
-      <div class="install-desc">${translateText(b.desc)}</div>
+      <div class="install-desc">${localizedText(b.desc)}</div>
     </div>`).join('')
   }</div>`;
 
