@@ -888,33 +888,33 @@ const COMMANDS = [
   },
 
   // ── FILER & MAPPAR ──
-  { cat: "Filer & Mappar", cmd: "mkdir", short: "Skapa en ny katalog (Make Directory)", tags: ["safe"],
+  { cat: "Filer & Mappar", cmd: "mkdir", short: "Skapa en ny katalog (Make Directory)", shortEn: "Create a new directory", tags: ["safe"],
     examples: [
       { code: "mkdir projekt", desc: "Skapar mappen 'projekt'" },
       { code: "mkdir -p a/b/c", desc: "Skapar hela sökvägen inkl. mellanliggande" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "touch", short: "Skapa en tom fil eller uppdatera tidsstämpel", tags: ["safe"],
+  { cat: "Filer & Mappar", cmd: "touch", short: "Skapa en tom fil eller uppdatera tidsstämpel", shortEn: "Create an empty file or update its timestamp", tags: ["safe"],
     examples: [
       { code: "touch fil.txt", desc: "Skapar en tom fil om den inte finns" },
       { code: "touch a.txt b.txt c.txt", desc: "Skapar flera filer på en gång" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "cp", short: "Kopiera filer eller mappar", tags: ["safe"],
+  { cat: "Filer & Mappar", cmd: "cp", short: "Kopiera filer eller mappar", shortEn: "Copy files or folders", tags: ["safe"],
     examples: [
       { code: "cp fil.txt kopia.txt", desc: "Kopierar fil.txt till kopia.txt" },
       { code: "cp -r mapp/ nymapp/", desc: "Kopierar en hel mapp rekursivt" },
       { code: "cp *.jpg ~/Bilder/", desc: "Kopierar alla JPG till Bilder" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "mv", short: "Flytta eller byta namn på filer och mappar", tags: ["safe"],
+  { cat: "Filer & Mappar", cmd: "mv", short: "Flytta eller byta namn på filer och mappar", shortEn: "Move or rename files and folders", tags: ["safe"],
     examples: [
       { code: "mv gammal.txt ny.txt", desc: "Byter namn på filen" },
       { code: "mv fil.txt ~/Documents/", desc: "Flyttar filen till Documents" },
       { code: "mv mapp/ ~/Desktop/", desc: "Flyttar en hel mapp" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "rm", short: "Ta bort filer och mappar (permanent!)", tags: ["danger"],
+  { cat: "Filer & Mappar", cmd: "rm", short: "Ta bort filer och mappar (permanent!)", shortEn: "Remove files and folders permanently", tags: ["danger"],
     examples: [
       { code: "rm fil.txt", desc: "Tar bort fil.txt permanent" },
       { code: "rm -r mapp/", desc: "Tar bort en hel mapp rekursivt" },
@@ -922,13 +922,13 @@ const COMMANDS = [
       { code: "rm *.tmp", desc: "Tar bort alla .tmp-filer" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "ln", short: "Skapa symboliska eller hårda länkar", tags: ["safe"],
+  { cat: "Filer & Mappar", cmd: "ln", short: "Skapa symboliska eller hårda länkar", shortEn: "Create symbolic or hard links", tags: ["safe"],
     examples: [
       { code: "ln -s /path/fil länk", desc: "Skapar en symbolisk länk (genväg)" },
       { code: "ln fil hård-länk", desc: "Skapar en hård länk till filen" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "chmod", short: "Ändra filrättigheter (läs/skriv/kör)", tags: ["sudo"],
+  { cat: "Filer & Mappar", cmd: "chmod", short: "Ändra filrättigheter (läs/skriv/kör)", shortEn: "Change file permissions (read, write, execute)", tags: ["sudo"],
     examples: [
       { code: "chmod +x script.sh", desc: "Gör filen körbar" },
       { code: "chmod 755 fil", desc: "rwxr-xr-x — standard för skript" },
@@ -936,7 +936,7 @@ const COMMANDS = [
       { code: "chmod -R 755 mapp/", desc: "Sätter rättigheter rekursivt" }
     ]
   },
-  { cat: "Filer & Mappar", cmd: "chown", short: "Ändra ägare av fil eller mapp", tags: ["sudo"],
+  { cat: "Filer & Mappar", cmd: "chown", short: "Ändra ägare av fil eller mapp", shortEn: "Change the owner of a file or folder", tags: ["sudo"],
     examples: [
       { code: "chown user fil.txt", desc: "Sätter user som ägare" },
       { code: "sudo chown -R user:group mapp/", desc: "Ändrar ägare rekursivt" }
@@ -944,33 +944,33 @@ const COMMANDS = [
   },
 
   // ── TEXTHANTERING ──
-  { cat: "Texthantering", cmd: "cat", short: "Visa innehållet i en eller flera filer", tags: ["safe"],
+  { cat: "Texthantering", cmd: "cat", short: "Visa innehållet i en eller flera filer", shortEn: "Show the contents of one or more files", tags: ["safe"],
     examples: [
       { code: "cat fil.txt", desc: "Skriver ut hela filens innehåll" },
       { code: "cat a.txt b.txt > c.txt", desc: "Slår ihop filer till c.txt" },
       { code: "cat -n fil.txt", desc: "Visar innehållet med radnummer" }
     ]
   },
-  { cat: "Texthantering", cmd: "less", short: "Bläddra i filer sida för sida (q = avsluta)", tags: ["safe"],
+  { cat: "Texthantering", cmd: "less", short: "Bläddra i filer sida för sida (q = avsluta)", shortEn: "Browse files page by page (q to quit)", tags: ["safe"],
     examples: [
       { code: "less fil.txt", desc: "Öppnar filen för bläddring. q = avsluta, / = sök" },
       { code: "less +G fil.txt", desc: "Hoppar direkt till slutet av filen" }
     ]
   },
-  { cat: "Texthantering", cmd: "head", short: "Visa de första raderna i en fil", tags: ["safe"],
+  { cat: "Texthantering", cmd: "head", short: "Visa de första raderna i en fil", shortEn: "Show the first lines of a file", tags: ["safe"],
     examples: [
       { code: "head fil.txt", desc: "Visar de 10 första raderna" },
       { code: "head -20 fil.txt", desc: "Visar de 20 första raderna" }
     ]
   },
-  { cat: "Texthantering", cmd: "tail", short: "Visa de sista raderna i en fil", tags: ["safe"],
+  { cat: "Texthantering", cmd: "tail", short: "Visa de sista raderna i en fil", shortEn: "Show the last lines of a file", tags: ["safe"],
     examples: [
       { code: "tail fil.txt", desc: "Visar de 10 sista raderna" },
       { code: "tail -f app.log", desc: "Följer filen live (loggar m.m.)" },
       { code: "tail -50 fil.txt", desc: "Visar de 50 sista raderna" }
     ]
   },
-  { cat: "Texthantering", cmd: "grep", short: "Sök efter text-mönster i filer", tags: ["safe"],
+  { cat: "Texthantering", cmd: "grep", short: "Sök efter text-mönster i filer", shortEn: "Search for text patterns in files", tags: ["safe"],
     examples: [
       { code: "grep 'fel' logg.txt", desc: "Hittar rader med ordet 'fel'" },
       { code: "grep -r 'TODO' ./src", desc: "Söker rekursivt i alla filer" },
@@ -978,28 +978,28 @@ const COMMANDS = [
       { code: "grep -n 'pattern' fil", desc: "Visar radnummer för träffar" }
     ]
   },
-  { cat: "Texthantering", cmd: "sed", short: "Strömredigera och ersätt text", tags: ["safe"],
+  { cat: "Texthantering", cmd: "sed", short: "Strömredigera och ersätt text", shortEn: "Stream-edit and replace text", tags: ["safe"],
     examples: [
       { code: "sed 's/gammalt/nytt/g' fil.txt", desc: "Ersätter alla förekomster" },
       { code: "sed -i '' 's/foo/bar/g' fil", desc: "Ändrar filen direkt (macOS syntax)" },
       { code: "sed '5d' fil.txt", desc: "Tar bort rad 5" }
     ]
   },
-  { cat: "Texthantering", cmd: "awk", short: "Kraftfullt textbearbetningsverktyg per kolumn", tags: ["safe"],
+  { cat: "Texthantering", cmd: "awk", short: "Kraftfullt textbearbetningsverktyg per kolumn", shortEn: "Powerful column-based text processing tool", tags: ["safe"],
     examples: [
       { code: "awk '{print $1}' fil.txt", desc: "Skriver ut första kolumnen" },
       { code: "awk -F: '{print $1}' /etc/passwd", desc: "Väljer kolumn med : som separator" },
       { code: "awk 'NR>5' fil.txt", desc: "Hoppar över de 5 första raderna" }
     ]
   },
-  { cat: "Texthantering", cmd: "wc", short: "Räkna rader, ord och tecken i en fil", tags: ["safe"],
+  { cat: "Texthantering", cmd: "wc", short: "Räkna rader, ord och tecken i en fil", shortEn: "Count lines, words, and characters in a file", tags: ["safe"],
     examples: [
       { code: "wc -l fil.txt", desc: "Räknar antal rader" },
       { code: "wc -w fil.txt", desc: "Räknar antal ord" },
       { code: "wc -c fil.txt", desc: "Räknar antal bytes" }
     ]
   },
-  { cat: "Texthantering", cmd: "sort", short: "Sortera rader i en fil", tags: ["safe"],
+  { cat: "Texthantering", cmd: "sort", short: "Sortera rader i en fil", shortEn: "Sort lines in a file", tags: ["safe"],
     examples: [
       { code: "sort fil.txt", desc: "Sorterar alfabetiskt" },
       { code: "sort -r fil.txt", desc: "Sorterar i omvänd ordning" },
@@ -1007,20 +1007,20 @@ const COMMANDS = [
       { code: "sort -u fil.txt", desc: "Sorterar och tar bort dubbletter" }
     ]
   },
-  { cat: "Texthantering", cmd: "uniq", short: "Filtrera bort duplicerade rader", tags: ["safe"],
+  { cat: "Texthantering", cmd: "uniq", short: "Filtrera bort duplicerade rader", shortEn: "Filter out duplicate lines", tags: ["safe"],
     examples: [
       { code: "uniq fil.txt", desc: "Tar bort på varandra följande dubbletter" },
       { code: "sort fil.txt | uniq", desc: "Tar bort alla dubbletter" },
       { code: "uniq -c fil.txt", desc: "Räknar förekomster av varje rad" }
     ]
   },
-  { cat: "Texthantering", cmd: "diff", short: "Jämför skillnader mellan två filer", tags: ["safe"],
+  { cat: "Texthantering", cmd: "diff", short: "Jämför skillnader mellan två filer", shortEn: "Compare differences between two files", tags: ["safe"],
     examples: [
       { code: "diff fil1.txt fil2.txt", desc: "Visar skillnader rad för rad" },
       { code: "diff -u fil1 fil2", desc: "Visar unified diff-format" }
     ]
   },
-  { cat: "Texthantering", cmd: "nano", short: "Enkelt textredigeringsprogram i terminalen — nybörjarvänligt", tags: ["safe"],
+  { cat: "Texthantering", cmd: "nano", short: "Enkelt textredigeringsprogram i terminalen — nybörjarvänligt", shortEn: "Simple terminal text editor for beginners", tags: ["safe"],
     examples: [
       { code: "nano fil.txt", desc: "Öppnar eller skapar filen för redigering" },
       { code: "nano +42 fil.txt", desc: "Öppnar filen direkt vid rad 42" },
@@ -1042,7 +1042,7 @@ const COMMANDS = [
       { code: "Alt+\\  /  Alt+/", desc: "⬆️⬇️ Hoppa till filens start / filens slut" }
     ]
   },
-  { cat: "Texthantering", cmd: "vim", short: "Kraftfull modbaserad textredigerare — tre lägen: Normal, Insert, Visual", tags: ["safe"],
+  { cat: "Texthantering", cmd: "vim", short: "Kraftfull modbaserad textredigerare — tre lägen: Normal, Insert, Visual", shortEn: "Powerful modal text editor with Normal, Insert, and Visual modes", tags: ["safe"],
     examples: [
       { code: "vim fil.txt", desc: "Öppnar filen i Normal-läge" },
       { code: "vim +42 fil.txt", desc: "Öppnar filen direkt vid rad 42" },
@@ -1093,45 +1093,45 @@ const COMMANDS = [
   },
 
   // ── PROCESSER ──
-  { cat: "Processer", cmd: "ps", short: "Visa pågående processer", tags: ["safe"],
+  { cat: "Processer", cmd: "ps", short: "Visa pågående processer", shortEn: "Show running processes", tags: ["safe"],
     examples: [
       { code: "ps aux", desc: "Listar alla processer för alla användare" },
       { code: "ps aux | grep node", desc: "Filtrerar processer med node" }
     ]
   },
-  { cat: "Processer", cmd: "top", short: "Visa processor- och minnesanvändning live", tags: ["safe"],
+  { cat: "Processer", cmd: "top", short: "Visa processor- och minnesanvändning live", shortEn: "Show live CPU and memory usage", tags: ["safe"],
     examples: [
       { code: "top", desc: "Startar live processövervakning (q = avsluta)" },
       { code: "top -o cpu", desc: "Sorterar efter CPU-användning" }
     ]
   },
-  { cat: "Processer", cmd: "kill", short: "Skicka signal till en process (avsluta m.m.)", tags: ["danger"],
+  { cat: "Processer", cmd: "kill", short: "Skicka signal till en process (avsluta m.m.)", shortEn: "Send a signal to a process", tags: ["danger"],
     examples: [
       { code: "kill 1234", desc: "Skickar SIGTERM (snällt avslut) till PID 1234" },
       { code: "kill -9 1234", desc: "Tvångsavslutar processen (SIGKILL)" },
       { code: "kill -l", desc: "Listar alla tillgängliga signaler" }
     ]
   },
-  { cat: "Processer", cmd: "pkill", short: "Avsluta processer via namn istället för PID", tags: ["danger"],
+  { cat: "Processer", cmd: "pkill", short: "Avsluta processer via namn istället för PID", shortEn: "Kill processes by name instead of PID", tags: ["danger"],
     examples: [
       { code: "pkill Safari", desc: "Avslutar alla Safari-processer" },
       { code: "pkill -9 node", desc: "Tvångsavslutar alla node-processer" }
     ]
   },
-  { cat: "Processer", cmd: "killall", short: "Avsluta alla processer med ett visst namn", tags: ["danger"],
+  { cat: "Processer", cmd: "killall", short: "Avsluta alla processer with a specific name", shortEn: "Kill all processes with a given name", tags: ["danger"],
     examples: [
       { code: "killall Finder", desc: "Startar om Finder" },
       { code: "killall -9 Chrome", desc: "Tvångsavslutar Chrome" }
     ]
   },
-  { cat: "Processer", cmd: "bg / fg", short: "Kör process i bakgrunden eller förgrunden", tags: ["safe"],
+  { cat: "Processer", cmd: "bg / fg", short: "Kör process i bakgrunden eller förgrunden", shortEn: "Move a process to the background or foreground", tags: ["safe"],
     examples: [
       { code: "Ctrl+Z", desc: "Pausa aktuell process" },
       { code: "bg", desc: "Fortsätt pausad process i bakgrunden" },
       { code: "fg", desc: "Ta tillbaka bakgrundsprocess till förgrunden" }
     ]
   },
-  { cat: "Processer", cmd: "jobs", short: "Lista bakgrundsjobb i aktuell session", tags: ["safe"],
+  { cat: "Processer", cmd: "jobs", short: "Lista bakgrundsjobb i aktuell session", shortEn: "List background jobs in the current session", tags: ["safe"],
     examples: [
       { code: "jobs", desc: "Visar alla aktiva bakgrundsjobb" },
       { code: "jobs -l", desc: "Visar med process-ID" }
@@ -1139,13 +1139,13 @@ const COMMANDS = [
   },
 
   // ── NÄTVERK ──
-  { cat: "Nätverk", cmd: "ping", short: "Testa nätverksanslutning till en host", tags: ["net"],
+  { cat: "Nätverk", cmd: "ping", short: "Testa nätverksanslutning till en host", shortEn: "Test network connectivity to a host", tags: ["net"],
     examples: [
       { code: "ping google.com", desc: "Pingar Google (Ctrl+C för att avsluta)" },
       { code: "ping -c 5 google.com", desc: "Skickar exakt 5 paketer" }
     ]
   },
-  { cat: "Nätverk", cmd: "curl", short: "Hämta data från URL eller testa API:er", tags: ["net"],
+  { cat: "Nätverk", cmd: "curl", short: "Hämta data från URL eller testa API:er", shortEn: "Fetch data from URLs or test APIs", tags: ["net"],
     examples: [
       { code: "curl https://api.example.com", desc: "Gör en GET-förfrågan" },
       { code: "curl -O https://example.com/fil.zip", desc: "Laddar ner en fil" },
@@ -1153,39 +1153,39 @@ const COMMANDS = [
       { code: "curl -I https://example.com", desc: "Visar HTTP-headers" }
     ]
   },
-  { cat: "Nätverk", cmd: "wget", short: "Ladda ner filer från internet", tags: ["net"],
+  { cat: "Nätverk", cmd: "wget", short: "Ladda ner filer från internet", shortEn: "Download files from the internet", tags: ["net"],
     examples: [
       { code: "wget https://example.com/fil.zip", desc: "Laddar ner en fil" },
       { code: "wget -c URL", desc: "Fortsätter en avbruten nedladdning" }
     ]
   },
-  { cat: "Nätverk", cmd: "ssh", short: "Anslut säkert till fjärrserver (Secure Shell)", tags: ["net"],
+  { cat: "Nätverk", cmd: "ssh", short: "Anslut säkert till fjärrserver (Secure Shell)", shortEn: "Connect securely to a remote server (Secure Shell)", tags: ["net"],
     examples: [
       { code: "ssh user@server.com", desc: "Ansluter till server" },
       { code: "ssh -p 2222 user@host", desc: "Ansluter på port 2222" },
       { code: "ssh -i ~/.ssh/key user@host", desc: "Ansluter med SSH-nyckel" }
     ]
   },
-  { cat: "Nätverk", cmd: "scp", short: "Kopiera filer säkert via SSH", tags: ["net"],
+  { cat: "Nätverk", cmd: "scp", short: "Kopiera filer säkert via SSH", shortEn: "Copy files securely over SSH", tags: ["net"],
     examples: [
       { code: "scp fil.txt user@host:~/", desc: "Kopierar fil till fjärrservern" },
       { code: "scp user@host:~/fil.txt .", desc: "Hämtar fil från fjärrservern" },
       { code: "scp -r mapp/ user@host:~/", desc: "Kopierar hel mapp" }
     ]
   },
-  { cat: "Nätverk", cmd: "ifconfig", short: "Visa nätverksgränssnitt och IP-adresser", tags: ["net"],
+  { cat: "Nätverk", cmd: "ifconfig", short: "Visa nätverksgränssnitt och IP-adresser", shortEn: "Show network interfaces and IP addresses", tags: ["net"],
     examples: [
       { code: "ifconfig", desc: "Visar alla nätverksgränssnitt" },
       { code: "ifconfig en0", desc: "Visar info om WiFi-gränssnittet" }
     ]
   },
-  { cat: "Nätverk", cmd: "netstat", short: "Visa aktiva nätverksanslutningar", tags: ["net"],
+  { cat: "Nätverk", cmd: "netstat", short: "Visa aktiva nätverksanslutningar", shortEn: "Show active network connections", tags: ["net"],
     examples: [
       { code: "netstat -an", desc: "Visar alla anslutningar" },
       { code: "netstat -tulpn", desc: "Visar lyssnade portar" }
     ]
   },
-  { cat: "Nätverk", cmd: "nslookup", short: "Slå upp DNS-information för en domän", tags: ["net"],
+  { cat: "Nätverk", cmd: "nslookup", short: "Slå upp DNS-information för en domän", shortEn: "Look up DNS information for a domain", tags: ["net"],
     examples: [
       { code: "nslookup google.com", desc: "Slår upp IP-adress för domänen" },
       { code: "nslookup -type=MX gmail.com", desc: "Hämtar MX-poster" }
@@ -1417,33 +1417,33 @@ const COMMANDS = [
   },
 
   // ── OMDIRIGERING & PIPES ──
-  { cat: "Pipes & Omdirigering", cmd: "| (pipe)", short: "Skicka output från ett kommando till nästa", tags: ["safe"],
+  { cat: "Pipes & Omdirigering", cmd: "| (pipe)", short: "Skicka output från ett kommando till nästa", shortEn: "Send output from one command to the next", tags: ["safe"],
     examples: [
       { code: "ls | grep .txt", desc: "Filtrerar ls-output efter .txt" },
       { code: "ps aux | grep node | head -5", desc: "Kedjar tre kommandon" },
       { code: "cat fil.txt | wc -l", desc: "Räknar rader i en fil" }
     ]
   },
-  { cat: "Pipes & Omdirigering", cmd: "> och >>", short: "Omdirigera output till fil", tags: ["safe"],
+  { cat: "Pipes & Omdirigering", cmd: "> och >>", short: "Omdirigera output till fil", shortEn: "Redirect output to a file", tags: ["safe"],
     examples: [
       { code: "echo 'hej' > fil.txt", desc: "Skriver (ersätter) output till fil" },
       { code: "echo 'hej' >> fil.txt", desc: "Lägger till output i slutet av fil" },
       { code: "ls > lista.txt", desc: "Sparar ls-output till fil" }
     ]
   },
-  { cat: "Pipes & Omdirigering", cmd: "< och <<", short: "Skicka fil som input till kommando", tags: ["safe"],
+  { cat: "Pipes & Omdirigering", cmd: "< och <<", short: "Skicka fil som input till kommando", shortEn: "Use a file as input to a command", tags: ["safe"],
     examples: [
       { code: "sort < osorterad.txt", desc: "Sorterar innehållet i filen" },
       { code: "wc -l < fil.txt", desc: "Räknar rader via input" }
     ]
   },
-  { cat: "Pipes & Omdirigering", cmd: "tee", short: "Läs från stdin och skriv till fil OCH stdout", tags: ["safe"],
+  { cat: "Pipes & Omdirigering", cmd: "tee", short: "Läs från stdin och skriv till fil OCH stdout", shortEn: "Read from stdin and write to both a file and stdout", tags: ["safe"],
     examples: [
       { code: "ls | tee lista.txt", desc: "Sparar output till fil OCH visar i terminalen" },
       { code: "kommando | tee -a logg.txt", desc: "Lägger till i fil och visar output" }
     ]
   },
-  { cat: "Pipes & Omdirigering", cmd: "xargs", short: "Bygg och kör kommandon från stdin", tags: ["safe"],
+  { cat: "Pipes & Omdirigering", cmd: "xargs", short: "Bygg och kör kommandon från stdin", shortEn: "Build and run commands from stdin", tags: ["safe"],
     examples: [
       { code: "find . -name '*.tmp' | xargs rm", desc: "Tar bort alla .tmp-filer" },
       { code: "cat urls.txt | xargs curl -O", desc: "Laddar ner alla URL:er i filen" }
@@ -1574,45 +1574,45 @@ const COMMANDS = [
   },
 
   // ── DISK & LAGRINGSMEDIA ──
-  { cat: "Disk & Lagring", cmd: "diskutil list", short: "Lista alla diskar och partitioner på systemet", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "diskutil list", short: "Lista alla diskar och partitioner på systemet", shortEn: "List all disks and partitions on the system", tags: ["safe"],
     examples: [
       { code: "diskutil list", desc: "Visar alla diskar, partitioner och volymer" },
       { code: "diskutil list /dev/disk2", desc: "Visar info om specifik disk" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "diskutil info", short: "Detaljerad information om en disk eller partition", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "diskutil info", short: "Detaljerad information om en disk eller partition", shortEn: "Show detailed information about a disk or partition", tags: ["safe"],
     examples: [
       { code: "diskutil info /dev/disk0", desc: "Visar detaljerad diskinfo" },
       { code: "diskutil info /", desc: "Info om startdisken" },
       { code: "diskutil info disk0s1", desc: "Info om en specifik partition" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "diskutil eject", short: "Mata ut en extern disk säkert", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "diskutil eject", short: "Mata ut en extern disk säkert", shortEn: "Safely eject an external disk", tags: ["safe"],
     examples: [
       { code: "diskutil eject /dev/disk2", desc: "Matar ut disken säkert" },
       { code: "diskutil eject /Volumes/MinDisk", desc: "Matar ut via volymnamn" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "diskutil eraseDisk", short: "Formatera om en disk helt (FÖRSTÖR ALL DATA!)", tags: ["danger", "sudo"],
+  { cat: "Disk & Lagring", cmd: "diskutil eraseDisk", short: "Formatera om en disk helt (FÖRSTÖR ALL DATA!)", shortEn: "Completely erase and reformat a disk (DESTROYS ALL DATA)", tags: ["danger", "sudo"],
     examples: [
       { code: "diskutil eraseDisk APFS NyDisk /dev/disk2", desc: "Formaterar disk som APFS" },
       { code: "diskutil eraseDisk ExFAT USBDisk /dev/disk2", desc: "Formaterar som ExFAT (Windows-kompatibelt)" },
       { code: "diskutil eraseDisk FAT32 FAT /dev/disk2", desc: "Formaterar som FAT32" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "diskutil repairVolume", short: "Reparera filsystemsfel på en volym", tags: ["sudo"],
+  { cat: "Disk & Lagring", cmd: "diskutil repairVolume", short: "Reparera filsystemsfel på en volym", shortEn: "Repair filesystem errors on a volume", tags: ["sudo"],
     examples: [
       { code: "diskutil repairVolume /dev/disk1s1", desc: "Försöker reparera volymen" },
       { code: "diskutil repairVolume /Volumes/MinDisk", desc: "Reparerar via volymnamn" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "diskutil verifyVolume", short: "Kontrollera om en volym har fel", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "diskutil verifyVolume", short: "Kontrollera om en volym har fel", shortEn: "Check whether a volume has errors", tags: ["safe"],
     examples: [
       { code: "diskutil verifyVolume /dev/disk1s1", desc: "Verifierar volymens integritet" },
       { code: "diskutil verifyVolume /", desc: "Verifierar startvolymen" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "hdiutil", short: "Hantera diskavbildningar (.dmg-filer)", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "hdiutil", short: "Hantera diskavbildningar (.dmg-filer)", shortEn: "Manage disk image files (.dmg)", tags: ["safe"],
     examples: [
       { code: "hdiutil attach fil.dmg", desc: "Monterar en DMG-fil" },
       { code: "hdiutil detach /Volumes/MittDMG", desc: "Avmonterar en DMG-volym" },
@@ -1620,7 +1620,7 @@ const COMMANDS = [
       { code: "hdiutil convert input.dmg -format UDZO -o output.dmg", desc: "Komprimerar en DMG-fil" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "mount / umount", short: "Montera och avmontera filsystem manuellt", tags: ["sudo"],
+  { cat: "Disk & Lagring", cmd: "mount / umount", short: "Montera och avmontera filsystem manuellt", shortEn: "Mount and unmount filesystems manually", tags: ["sudo"],
     examples: [
       { code: "mount", desc: "Visar alla monterade filsystem" },
       { code: "sudo mount -t apfs /dev/disk1s1 /mnt", desc: "Monterar en APFS-partition" },
@@ -1628,21 +1628,21 @@ const COMMANDS = [
       { code: "sudo diskutil unmount /dev/disk2s1", desc: "Avmonterar via diskutil (macOS-sätt)" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "dd", short: "Lågnivå-kopiering av disk/partition (byte för byte)", tags: ["danger", "sudo"],
+  { cat: "Disk & Lagring", cmd: "dd", short: "Lågnivå-kopiering av disk/partition (byte för byte)", shortEn: "Low-level disk or partition copying byte by byte", tags: ["danger", "sudo"],
     examples: [
       { code: "sudo dd if=/dev/disk2 of=backup.img bs=4m", desc: "Skapar en exakt avbild av disk2" },
       { code: "sudo dd if=backup.img of=/dev/disk2 bs=4m", desc: "⚠️ Återställer avbild till disk" },
       { code: "sudo dd if=/dev/urandom of=/dev/disk2 bs=1m", desc: "⚠️ Skriver slumpmässig data (säker radering)" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "fsck", short: "Kontrollera och reparera filsystem (kör från Recovery)", tags: ["danger", "sudo"],
+  { cat: "Disk & Lagring", cmd: "fsck", short: "Kontrollera och reparera filsystem (kör från Recovery)", shortEn: "Check and repair filesystems (usually from Recovery)", tags: ["danger", "sudo"],
     examples: [
       { code: "sudo fsck -fy /dev/disk1s1", desc: "Kontrollerar och reparerar automatiskt" },
       { code: "sudo fsck_apfs -y /dev/disk1s1", desc: "Reparerar APFS-volym" },
       { code: "sudo fsck_hfs -rf /dev/disk1s1", desc: "Reparerar HFS+-volym" }
     ]
   },
-  { cat: "Disk & Lagring", cmd: "tmutil", short: "Hantera Time Machine-säkerhetskopior via terminal", tags: ["safe"],
+  { cat: "Disk & Lagring", cmd: "tmutil", short: "Hantera Time Machine-säkerhetskopior via terminal", shortEn: "Manage Time Machine backups from the terminal", tags: ["safe"],
     examples: [
       { code: "tmutil status", desc: "Visar aktuell status för Time Machine" },
       { code: "tmutil startbackup", desc: "Startar en säkerhetskopia manuellt" },
@@ -2691,7 +2691,7 @@ const COMMANDS = [
   },
 
   // ── MODERNA CLI-VERKTYG ──
-  { cat: "Moderna CLI-verktyg", cmd: "ripgrep (rg)", short: "Blixtsnabb textsökning — modernare ersättare för grep", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "ripgrep (rg)", short: "Blixtsnabb textsökning — modernare ersättare för grep", shortEn: "Blazing fast text search, a modern grep replacement", tags: ["safe"],
     examples: [
       { code: "brew install ripgrep", desc: "Installera via Homebrew" },
       { code: "rg 'sökterm'", desc: "Sök rekursivt i aktuell mapp (ignorerar .gitignore automatiskt)" },
@@ -2705,7 +2705,7 @@ const COMMANDS = [
       { code: "rg -C 3 'pattern'", desc: "Visa 3 rader kontext runt varje träff" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "fd", short: "Snabb och användarvänlig ersättare för find", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "fd", short: "Snabb och användarvänlig ersättare för find", shortEn: "Fast and user-friendly replacement for find", tags: ["safe"],
     examples: [
       { code: "brew install fd", desc: "Installera via Homebrew" },
       { code: "fd pattern", desc: "Sök efter filer med namn som matchar pattern" },
@@ -2718,7 +2718,7 @@ const COMMANDS = [
       { code: "fd -tf --changed-within 1d", desc: "Hitta filer ändrade de senaste 24 timmarna" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "bat", short: "cat med syntaxmarkering, radnummer och Git-integration", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "bat", short: "cat med syntaxmarkering, radnummer och Git-integration", shortEn: "cat with syntax highlighting, line numbers, and Git integration", tags: ["safe"],
     examples: [
       { code: "brew install bat", desc: "Installera via Homebrew" },
       { code: "bat fil.txt", desc: "Visa fil med syntaxmarkering och radnummer" },
@@ -2732,7 +2732,7 @@ const COMMANDS = [
       { code: "man ls | bat -l man", desc: "Visa man-sidor med syntaxmarkering" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "eza", short: "Modernare ls med färger, ikoner och Git-status", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "eza", short: "Modernare ls med färger, ikoner och Git-status", shortEn: "Modern ls with colors, icons, and Git status", tags: ["safe"],
     examples: [
       { code: "brew install eza", desc: "Installera via Homebrew" },
       { code: "eza", desc: "Lista filer med färger (ersätter ls)" },
@@ -2746,7 +2746,7 @@ const COMMANDS = [
       { code: "eza --sort=modified", desc: "Sortera efter senast ändrad" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "zoxide", short: "Smart cd som lär sig dina vanligaste kataloger", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "zoxide", short: "Smart cd som lär sig dina vanligaste kataloger", shortEn: "Smart cd that learns your most-used directories", tags: ["safe"],
     examples: [
       { code: "brew install zoxide", desc: "Installera via Homebrew" },
       { code: "echo 'eval \"$(zoxide init zsh)\"' >> ~/.zshrc", desc: "Aktivera i zsh (lägg till i .zshrc)" },
@@ -2758,7 +2758,7 @@ const COMMANDS = [
       { code: "zoxide remove ~/gammal", desc: "Ta bort en mapp ur databasen" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "tree", short: "Visa katalogstruktur som ett träd", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "tree", short: "Visa katalogstruktur som ett träd", shortEn: "Show directory structure as a tree", tags: ["safe"],
     examples: [
       { code: "brew install tree", desc: "Installera via Homebrew" },
       { code: "tree", desc: "Visa katalogträd från aktuell mapp" },
@@ -2771,7 +2771,7 @@ const COMMANDS = [
       { code: "tree -o struktur.txt", desc: "Spara trädet till en textfil" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "gh", short: "GitHub CLI — hantera repos, PRs och issues direkt i terminalen", tags: ["net"],
+  { cat: "Moderna CLI-verktyg", cmd: "gh", short: "GitHub CLI — hantera repos, PRs och issues direkt i terminalen", shortEn: "GitHub CLI for managing repos, PRs, and issues from the terminal", tags: ["net"],
     examples: [
       { code: "brew install gh", desc: "Installera via Homebrew" },
       { code: "gh auth login", desc: "Logga in på GitHub (öppnar browser)" },
@@ -2788,7 +2788,7 @@ const COMMANDS = [
       { code: "gh release create v1.0.0 --notes 'Release notes'", desc: "Skapa en ny release på GitHub" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "shellcheck", short: "Statisk analysator för bash/sh-skript — hittar buggar och fallgropar", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "shellcheck", short: "Statisk analysator för bash/sh-skript — hittar buggar och fallgropar", shortEn: "Static analyzer for bash and sh scripts that finds bugs and pitfalls", tags: ["safe"],
     examples: [
       { code: "brew install shellcheck", desc: "Installera via Homebrew" },
       { code: "shellcheck skript.sh", desc: "Analysera ett shell-skript och visa varningar" },
@@ -2799,7 +2799,7 @@ const COMMANDS = [
       { code: "find . -name '*.sh' | xargs shellcheck", desc: "Rekursiv analys av alla skript" }
     ]
   },
-  { cat: "Moderna CLI-verktyg", cmd: "shfmt", short: "Formatera och indragskorrigera shell-skript automatiskt", tags: ["safe"],
+  { cat: "Moderna CLI-verktyg", cmd: "shfmt", short: "Formatera och indragskorrigera shell-skript automatiskt", shortEn: "Automatically format and reindent shell scripts", tags: ["safe"],
     examples: [
       { code: "brew install shfmt", desc: "Installera via Homebrew" },
       { code: "shfmt skript.sh", desc: "Visa formaterat skript (ändrar inte filen)" },
@@ -2867,14 +2867,14 @@ const COMMANDS = [
   },
 
   // ── DOLDA PÄRLOR ──
-  { cat: "Dolda pärlor", cmd: "caffeinate + ssh", short: "Håll en SSH-session levande och förhindra timeout", tags: ["net"],
+  { cat: "Dolda pärlor", cmd: "caffeinate + ssh", short: "Håll en SSH-session levande och förhindra timeout", shortEn: "Keep an SSH session alive and prevent sleep timeouts", tags: ["net"],
     examples: [
       { code: "caffeinate -i ssh user@server", desc: "Förhindrar att Mac sover och tappar SSH-sessionen" },
       { code: "ssh -o ServerAliveInterval=60 user@server", desc: "Skickar keepalive-paket var 60:e sekund" },
       { code: "ssh -o ServerAliveCountMax=3 user@server", desc: "Kopplar ner efter 3 missade keepalives" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "tput", short: "Styr terminalen — färger, markören och skärmrensning i skript", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "tput", short: "Styr terminalen — färger, markören och skärmrensning i skript", shortEn: "Control the terminal: colors, cursor, and screen handling in scripts", tags: ["safe"],
     examples: [
       { code: "tput cols", desc: "Visa terminalens bredd i antal tecken" },
       { code: "tput lines", desc: "Visa terminalens höjd i antal rader" },
@@ -2886,7 +2886,7 @@ const COMMANDS = [
       { code: "tput smul; echo 'Understruken'; tput rmul", desc: "Understruken text" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "column -t", short: "Formatera kommandooutput som en snygg tabell automatiskt", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "column -t", short: "Formatera kommandooutput som en snygg tabell automatiskt", shortEn: "Format command output into a clean table automatically", tags: ["safe"],
     examples: [
       { code: "ps aux | column -t", desc: "Formaterar ps-output i justerade kolumner" },
       { code: "cat /etc/passwd | column -t -s ':'", desc: "Parsar : som separator och visar som tabell" },
@@ -2894,7 +2894,7 @@ const COMMANDS = [
       { code: "{ echo 'NAMN ÅLDER STAD'; echo 'Anna 28 Stockholm'; echo 'Erik 34 Göteborg'; } | column -t", desc: "Skapa en snygg tabell inline i terminalen" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "script", short: "Spela in allt som händer i terminalen till en fil", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "script", short: "Spela in allt som händer i terminalen till en fil", shortEn: "Record everything that happens in the terminal to a file", tags: ["safe"],
     examples: [
       { code: "script session.log", desc: "Börja spela in — allt sparas i session.log (exit för att stoppa)" },
       { code: "script -q /dev/null", desc: "Undertryck 'Script started'-meddelandet" },
@@ -2902,7 +2902,7 @@ const COMMANDS = [
       { code: "cat session.log", desc: "Visa den inspelade sessionen som text" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "fold", short: "Bryt långa rader vid given bredd — bra för skript och mail", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "fold", short: "Bryt långa rader vid given bredd — bra för skript och mail", shortEn: "Wrap long lines at a given width, useful for scripts and email", tags: ["safe"],
     examples: [
       { code: "fold -w 80 lång_fil.txt", desc: "Bryt rader vid 80 tecken" },
       { code: "fold -s -w 72 text.txt", desc: "Bryt vid ordgränser (s=space) för läsbarhet" },
@@ -2910,7 +2910,7 @@ const COMMANDS = [
       { code: "cat meddelande.txt | fold -s -w 72 | mail -s 'Ämne' user@example.com", desc: "Formatera text korrekt för e-post" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "yes", short: "Skriv ut 'y' i en oändlig ström — automatisera bekräftelser", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "yes", short: "Skriv ut 'y' i en oändlig ström — automatisera bekräftelser", shortEn: "Print 'y' endlessly to automate confirmations", tags: ["safe"],
     examples: [
       { code: "yes | rm -ri mapp/", desc: "Automatiskt svara 'y' på alla bekräftelsefrågor" },
       { code: "yes 'ja' | kommando", desc: "Svara 'ja' på varje prompt" },
@@ -2918,7 +2918,7 @@ const COMMANDS = [
       { code: "yes > /dev/null &", desc: "CPU-stresstest (kör i bakgrunden, avsluta med kill)" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "watch", short: "Kör ett kommando upprepat och visa output live — saknas i macOS men finns via brew", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "watch", short: "Kör ett kommando upprepat och visa output live — saknas i macOS men finns via brew", shortEn: "Run a command repeatedly and show live output (via brew on macOS)", tags: ["safe"],
     examples: [
       { code: "brew install watch", desc: "Installera (watch finns ej inbyggt på macOS)" },
       { code: "watch -n 2 df -h", desc: "Visa diskutrymme uppdaterat var 2:a sekund" },
@@ -2927,7 +2927,7 @@ const COMMANDS = [
       { code: "watch -n 0.5 date", desc: "Visa klockan med 0.5 sekunders uppdatering" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "parallel", short: "Kör kommandon parallellt och utnyttja alla CPU-kärnor", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "parallel", short: "Kör kommandon parallellt och utnyttja alla CPU-kärnor", shortEn: "Run commands in parallel across CPU cores", tags: ["safe"],
     examples: [
       { code: "brew install parallel", desc: "Installera via Homebrew" },
       { code: "cat urls.txt | parallel curl -O", desc: "Ladda ner alla URL:er parallellt" },
@@ -2937,7 +2937,7 @@ const COMMANDS = [
       { code: "seq 1 10 | parallel -j4 'echo Jobbet {}; sleep 1'", desc: "Kör 10 jobb med 4 parallella workers" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "pv", short: "Pipe Viewer — visa progress och hastighet för dataöverföringar", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "pv", short: "Pipe Viewer — visa progress och hastighet för dataöverföringar", shortEn: "Pipe Viewer: show progress and speed for data transfers", tags: ["safe"],
     examples: [
       { code: "brew install pv", desc: "Installera via Homebrew" },
       { code: "pv stor_fil.iso > /dev/null", desc: "Visa hastighet och progress för läsning" },
@@ -2947,7 +2947,7 @@ const COMMANDS = [
       { code: "pv -s 1G fil.bin | gzip > fil.bin.gz", desc: "Komprimera med känd storlek för progress-bar" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "mtr", short: "Kombinerar ping och traceroute i ett live-verktyg", tags: ["net"],
+  { cat: "Dolda pärlor", cmd: "mtr", short: "Kombinerar ping och traceroute i ett live-verktyg", shortEn: "Combine ping and traceroute in one live tool", tags: ["net"],
     examples: [
       { code: "brew install mtr", desc: "Installera via Homebrew" },
       { code: "mtr google.com", desc: "Live-spårning av nätverksvägen med paketförlust och latens" },
@@ -2956,7 +2956,7 @@ const COMMANDS = [
       { code: "mtr --tcp --port 443 example.com", desc: "Spåra med TCP istället för ICMP (bra om ICMP blockeras)" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "entr", short: "Kör ett kommando automatiskt när en fil ändras", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "entr", short: "Kör ett kommando automatiskt när en fil ändras", shortEn: "Run a command automatically when a file changes", tags: ["safe"],
     examples: [
       { code: "brew install entr", desc: "Installera via Homebrew" },
       { code: "ls *.py | entr python3 app.py", desc: "Starta om Python-appen när en .py-fil ändras" },
@@ -2966,7 +2966,7 @@ const COMMANDS = [
       { code: "echo 'fil.txt' | entr -p cat fil.txt", desc: "Visa filens innehåll live vid varje ändring" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "fzf", short: "Fuzzy-sökare — interaktiv filtrering av allt i terminalen", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "fzf", short: "Fuzzy-sökare — interaktiv filtrering av allt i terminalen", shortEn: "Fuzzy finder for interactive filtering in the terminal", tags: ["safe"],
     examples: [
       { code: "brew install fzf", desc: "Installera via Homebrew" },
       { code: "$(fzf)", desc: "Interaktivt välj en fil via fuzzy-sökning" },
@@ -2978,7 +2978,7 @@ const COMMANDS = [
       { code: "ls | fzf --preview 'cat {}'", desc: "Förhandsgranska filer medan du söker" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "expect", short: "Automatisera interaktiva program som frågar efter input", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "expect", short: "Automatisera interaktiva program som frågar efter input", shortEn: "Automate interactive programs that ask for input", tags: ["safe"],
     examples: [
       { code: "brew install expect", desc: "Installera via Homebrew" },
       { code: "expect -c 'spawn ssh user@host; expect \"password:\"; send \"lösenord\\n\"; interact'", desc: "Automatisera SSH-inloggning" },
@@ -2986,7 +2986,7 @@ const COMMANDS = [
       { code: "expect skript.exp", desc: "Kör ett färdigt expect-skript" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "nohup", short: "Kör ett kommando som överlever även när terminalen stängs", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "nohup", short: "Kör ett kommando som överlever även när terminalen stängs", shortEn: "Run a command that survives after the terminal closes", tags: ["safe"],
     examples: [
       { code: "nohup python3 server.py &", desc: "Kör server i bakgrunden — fortsätter efter utloggning" },
       { code: "nohup ./backup.sh > backup.log 2>&1 &", desc: "Kör med loggning av stdout och stderr" },
@@ -2994,7 +2994,7 @@ const COMMANDS = [
       { code: "jobs -l", desc: "Kontrollera att jobbet körs i bakgrunden" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "socat", short: "Avancerad nätverks-relay — tunnlar, proxies och port-forwarding", tags: ["net"],
+  { cat: "Dolda pärlor", cmd: "socat", short: "Avancerad nätverks-relay — tunnlar, proxies och port-forwarding", shortEn: "Advanced network relay for tunnels, proxies, and port forwarding", tags: ["net"],
     examples: [
       { code: "brew install socat", desc: "Installera via Homebrew" },
       { code: "socat TCP-LISTEN:8080,fork TCP:intern-server:80", desc: "Vidarebefordra port 8080 till intern server:80" },
@@ -3003,14 +3003,14 @@ const COMMANDS = [
       { code: "socat UNIX-LISTEN:/tmp/myapp.sock,fork TCP:localhost:3000", desc: "Unix socket → TCP proxy" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "stdbuf", short: "Styr buffring av stdin/stdout/stderr för ett kommando", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "stdbuf", short: "Styr buffring av stdin/stdout/stderr för ett kommando", shortEn: "Control stdin, stdout, and stderr buffering for a command", tags: ["safe"],
     examples: [
       { code: "stdbuf -oL tail -f app.log | grep ERROR", desc: "Inaktivera buffring — grep ser varje rad direkt" },
       { code: "stdbuf -o0 kommando | tee logg.txt", desc: "Unbuffrad output till pipe och fil simultant" },
       { code: "stdbuf -i0 -o0 -e0 ./program", desc: "Inaktivera all buffring för stdin, stdout och stderr" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "tee -a", short: "Skriv output till både skärm och fil — utan att avbryta pipen", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "tee -a", short: "Skriv output till både skärm och fil — utan att avbryta pipen", shortEn: "Write output to both screen and file without breaking the pipe", tags: ["safe"],
     examples: [
       { code: "kommando | tee output.log", desc: "Visa output OCH spara till fil samtidigt" },
       { code: "kommando | tee -a logg.txt", desc: "Lägg till output i befintlig fil (append)" },
@@ -3018,7 +3018,7 @@ const COMMANDS = [
       { code: "sudo tee /etc/konfig.conf << 'EOF'\nrad1\nrad2\nEOF", desc: "Skriv flera rader till root-ägd fil via sudo" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "install", short: "Kopiera filer OCH sätt rättigheter i ett enda kommando", tags: ["sudo"],
+  { cat: "Dolda pärlor", cmd: "install", short: "Kopiera filer OCH sätt rättigheter i ett enda kommando", shortEn: "Copy files and set permissions in one command", tags: ["sudo"],
     examples: [
       { code: "install -m 755 skript.sh /usr/local/bin/", desc: "Kopiera och sätt körbar (ingen separat chmod)" },
       { code: "install -m 644 config.conf /etc/myapp/", desc: "Kopiera konfigfil med korrekta rättigheter" },
@@ -3026,7 +3026,7 @@ const COMMANDS = [
       { code: "install -o root -g wheel -m 750 bin /usr/local/bin/", desc: "Sätt ägare, grupp och rättigheter på en gång" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "comm", short: "Jämför två sorterade filer och visa gemensamma/unika rader", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "comm", short: "Jämför två sorterade filer och visa gemensamma/unika rader", shortEn: "Compare two sorted files and show common or unique lines", tags: ["safe"],
     examples: [
       { code: "comm fil1.txt fil2.txt", desc: "Tre kolumner: bara i fil1 | bara i fil2 | i båda" },
       { code: "comm -12 fil1.txt fil2.txt", desc: "Visa bara rader som finns i BÅDA filerna" },
@@ -3035,7 +3035,7 @@ const COMMANDS = [
       { code: "comm <(sort lista_a.txt) <(sort lista_b.txt)", desc: "Sortera automatiskt med process substitution" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "mktemp", short: "Skapa en unik temporär fil eller katalog säkert", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "mktemp", short: "Skapa en unik temporär fil eller katalog säkert", shortEn: "Safely create a unique temporary file or directory", tags: ["safe"],
     examples: [
       { code: "tmpfil=$(mktemp)", desc: "Skapar /tmp/tmp.XXXXXXXX och sparar sökvägen" },
       { code: "tmpdir=$(mktemp -d)", desc: "Skapar en temporär katalog" },
@@ -3043,7 +3043,7 @@ const COMMANDS = [
       { code: "trap 'rm -f $tmpfil' EXIT", desc: "Städa automatiskt upp temp-filen när skriptet avslutas" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "sponge", short: "Samla in hela stdin innan skrivning — undviker överskrivningsfällan", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "sponge", short: "Samla in hela stdin innan skrivning — undviker överskrivningsfällan", shortEn: "Read all stdin before writing to avoid overwrite traps", tags: ["safe"],
     examples: [
       { code: "brew install moreutils", desc: "Installera sponge via moreutils" },
       { code: "sort fil.txt | sponge fil.txt", desc: "Sortera och skriv tillbaka till SAMMA fil (fungerar, till skillnad från > fil.txt)" },
@@ -3051,7 +3051,7 @@ const COMMANDS = [
       { code: "jq '.' data.json | sponge data.json", desc: "Pretty-printa JSON och spara tillbaka på plats" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "vidir", short: "Redigera filnamn i bulk med din textredigerare", tags: ["safe"],
+  { cat: "Dolda pärlor", cmd: "vidir", short: "Redigera filnamn i bulk med din textredigerare", shortEn: "Bulk edit file names in your text editor", tags: ["safe"],
     examples: [
       { code: "brew install renameutils", desc: "Installera via Homebrew" },
       { code: "vidir .", desc: "Öppnar alla filnamn i $EDITOR — spara för att döpa om/ta bort" },
@@ -3059,7 +3059,7 @@ const COMMANDS = [
       { code: "find . -name '*.txt' | vidir -", desc: "Batch-rename via find och pipe" }
     ]
   },
-  { cat: "Dolda pärlor", cmd: "lsregister", short: "Hantera macOS Launch Services-databasen (standardprogram)", tags: ["sudo"],
+  { cat: "Dolda pärlor", cmd: "lsregister", short: "Hantera macOS Launch Services-databasen (standardprogram)", shortEn: "Manage the macOS Launch Services database for default apps", tags: ["sudo"],
     examples: [
       { code: "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | grep -i 'handler'", desc: "Visa alla registrerade filhanterare" },
       { code: "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user", desc: "Återskapa Launch Services-databasen — fixar trasiga standardprogram" },
