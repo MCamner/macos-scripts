@@ -849,41 +849,41 @@
 <script>
 const COMMANDS = [
   // ── NAVIGATION ──
-  { cat: "Navigation", cmd: "pwd", short: "Visa aktuell mapp (Print Working Directory)", tags: ["safe"],
+  { cat: "Navigation", cmd: "pwd", short: "Visa aktuell mapp (Print Working Directory)", shortEn: "Show the current folder (Print Working Directory)", tags: ["safe"],
     examples: [
-      { code: "pwd", desc: "Skriver ut sökvägen till mappen du befinner dig i" }
+      { code: "pwd", desc: "Skriver ut sökvägen till mappen du befinner dig i", descEn: "Prints the path to the folder you are currently in" }
     ]
   },
-  { cat: "Navigation", cmd: "ls", short: "Lista filer och mappar i aktuell katalog", tags: ["safe"],
+  { cat: "Navigation", cmd: "ls", short: "Lista filer och mappar i aktuell katalog", shortEn: "List files and folders in the current directory", tags: ["safe"],
     examples: [
-      { code: "ls", desc: "Listar filer och mappar" },
-      { code: "ls -la", desc: "Listar ALLT inkl. dolda filer med detaljer" },
-      { code: "ls -lh", desc: "Listar med läsbar filstorlek (KB, MB)" },
-      { code: "ls ~/Desktop", desc: "Listar skrivbordets innehåll" }
+      { code: "ls", desc: "Listar filer och mappar", descEn: "Lists files and folders" },
+      { code: "ls -la", desc: "Listar ALLT inkl. dolda filer med detaljer", descEn: "Lists everything, including hidden files, with details" },
+      { code: "ls -lh", desc: "Listar med läsbar filstorlek (KB, MB)", descEn: "Lists items with human-readable file sizes (KB, MB)" },
+      { code: "ls ~/Desktop", desc: "Listar skrivbordets innehåll", descEn: "Lists the contents of the Desktop folder" }
     ]
   },
-  { cat: "Navigation", cmd: "cd", short: "Byt aktiv katalog (Change Directory)", tags: ["safe"],
+  { cat: "Navigation", cmd: "cd", short: "Byt aktiv katalog (Change Directory)", shortEn: "Change the current directory", tags: ["safe"],
     examples: [
-      { code: "cd Documents", desc: "Gå in i mappen Documents" },
-      { code: "cd ..", desc: "Gå upp en nivå" },
-      { code: "cd ~", desc: "Gå till hemkatalogen" },
-      { code: "cd /", desc: "Gå till rotkatalogen" },
-      { code: "cd -", desc: "Gå tillbaka till förra katalogen" }
+      { code: "cd Documents", desc: "Gå in i mappen Documents", descEn: "Go into the Documents folder" },
+      { code: "cd ..", desc: "Gå upp en nivå", descEn: "Go up one level" },
+      { code: "cd ~", desc: "Gå till hemkatalogen", descEn: "Go to your home directory" },
+      { code: "cd /", desc: "Gå till rotkatalogen", descEn: "Go to the root directory" },
+      { code: "cd -", desc: "Gå tillbaka till förra katalogen", descEn: "Go back to the previous directory" }
     ]
   },
-  { cat: "Navigation", cmd: "open", short: "Öppna fil, mapp eller URL med standardprogram", tags: ["safe"],
+  { cat: "Navigation", cmd: "open", short: "Öppna fil, mapp eller URL med standardprogram", shortEn: "Open a file, folder, or URL with the default app", tags: ["safe"],
     examples: [
-      { code: "open .", desc: "Öppna aktuell mapp i Finder" },
-      { code: "open fil.pdf", desc: "Öppna PDF med Preview" },
-      { code: "open https://apple.com", desc: "Öppna URL i webbläsare" },
-      { code: "open -a TextEdit fil.txt", desc: "Öppna med specifikt program" }
+      { code: "open .", desc: "Öppna aktuell mapp i Finder", descEn: "Open the current folder in Finder" },
+      { code: "open fil.pdf", desc: "Öppna PDF med Preview", descEn: "Open a PDF in Preview" },
+      { code: "open https://apple.com", desc: "Öppna URL i webbläsare", descEn: "Open a URL in the browser" },
+      { code: "open -a TextEdit fil.txt", desc: "Öppna med specifikt program", descEn: "Open a file with a specific app" }
     ]
   },
-  { cat: "Navigation", cmd: "find", short: "Sök efter filer och mappar i filsystemet", tags: ["safe"],
+  { cat: "Navigation", cmd: "find", short: "Sök efter filer och mappar i filsystemet", shortEn: "Search for files and folders in the filesystem", tags: ["safe"],
     examples: [
-      { code: "find . -name '*.log'", desc: "Hitta alla .log-filer i aktuell mapp" },
-      { code: "find ~ -name foto.jpg", desc: "Hitta foto.jpg i hemkatalogen" },
-      { code: "find /tmp -newer file.txt", desc: "Hitta filer nyare än file.txt" }
+      { code: "find . -name '*.log'", desc: "Hitta alla .log-filer i aktuell mapp", descEn: "Find all .log files in the current folder" },
+      { code: "find ~ -name foto.jpg", desc: "Hitta foto.jpg i hemkatalogen", descEn: "Find foto.jpg in your home directory" },
+      { code: "find /tmp -newer file.txt", desc: "Hitta filer nyare än file.txt", descEn: "Find files newer than file.txt" }
     ]
   },
 
@@ -1198,52 +1198,52 @@ const COMMANDS = [
   },
 
   // ── SYSTEM ──
-  { cat: "System", cmd: "sudo", short: "Kör kommando som superanvändare (root)", tags: ["sudo", "danger"],
+  { cat: "System", cmd: "sudo", short: "Kör kommando som superanvändare (root)", shortEn: "Run a command as the superuser (root)", tags: ["sudo", "danger"],
     examples: [
-      { code: "sudo kommando", desc: "Kör kommandot med administratörsrättigheter" },
-      { code: "sudo -i", desc: "Starta en root-shell" },
-      { code: "sudo !!", desc: "Kör föregående kommando som sudo" }
+      { code: "sudo kommando", desc: "Kör kommandot med administratörsrättigheter", descEn: "Run the command with administrator privileges" },
+      { code: "sudo -i", desc: "Starta en root-shell", descEn: "Start a root shell" },
+      { code: "sudo !!", desc: "Kör föregående kommando som sudo", descEn: "Run the previous command with sudo" }
     ]
   },
-  { cat: "System", cmd: "whoami", short: "Visa vilket användarkonto du är inloggad som", tags: ["safe"],
+  { cat: "System", cmd: "whoami", short: "Visa vilket användarkonto du är inloggad som", shortEn: "Show which user account you are logged in as", tags: ["safe"],
     examples: [
-      { code: "whoami", desc: "Skriver ut användarnamnet" }
+      { code: "whoami", desc: "Skriver ut användarnamnet", descEn: "Prints your username" }
     ]
   },
-  { cat: "System", cmd: "uname", short: "Visa information om operativsystemet", tags: ["safe"],
+  { cat: "System", cmd: "uname", short: "Visa information om operativsystemet", shortEn: "Show information about the operating system", tags: ["safe"],
     examples: [
-      { code: "uname -a", desc: "Visar all systeminformation" },
-      { code: "uname -m", desc: "Visar processorarkitektur (arm64 / x86_64)" }
+      { code: "uname -a", desc: "Visar all systeminformation", descEn: "Shows full system information" },
+      { code: "uname -m", desc: "Visar processorarkitektur (arm64 / x86_64)", descEn: "Shows the CPU architecture (arm64 / x86_64)" }
     ]
   },
-  { cat: "System", cmd: "sw_vers", short: "Visa macOS-version och build", tags: ["safe"],
+  { cat: "System", cmd: "sw_vers", short: "Visa macOS-version och build", shortEn: "Show the macOS version and build", tags: ["safe"],
     examples: [
-      { code: "sw_vers", desc: "Visar produktnamn, version och build" },
-      { code: "sw_vers -productVersion", desc: "Visar bara versionsnumret" }
+      { code: "sw_vers", desc: "Visar produktnamn, version och build", descEn: "Shows the product name, version, and build" },
+      { code: "sw_vers -productVersion", desc: "Visar bara versionsnumret", descEn: "Shows only the version number" }
     ]
   },
-  { cat: "System", cmd: "df", short: "Visa diskutrymme på monterade enheter", tags: ["safe"],
+  { cat: "System", cmd: "df", short: "Visa diskutrymme på monterade enheter", shortEn: "Show disk space on mounted volumes", tags: ["safe"],
     examples: [
-      { code: "df -h", desc: "Visar diskutrymme i läsbart format" },
-      { code: "df -H .", desc: "Visar för aktuell diskenhet" }
+      { code: "df -h", desc: "Visar diskutrymme i läsbart format", descEn: "Shows disk space in a human-readable format" },
+      { code: "df -H .", desc: "Visar för aktuell diskenhet", descEn: "Shows disk space for the current disk volume" }
     ]
   },
-  { cat: "System", cmd: "du", short: "Visa diskutrymme per mapp/fil", tags: ["safe"],
+  { cat: "System", cmd: "du", short: "Visa diskutrymme per mapp/fil", shortEn: "Show disk usage per folder or file", tags: ["safe"],
     examples: [
-      { code: "du -sh mapp/", desc: "Visar total storlek av mapp" },
-      { code: "du -sh *", desc: "Visar storlek på allt i aktuell mapp" },
-      { code: "du -d1 -h ~", desc: "Visar hemkatalog-mappars storlek" }
+      { code: "du -sh mapp/", desc: "Visar total storlek av mapp", descEn: "Shows the total size of a folder" },
+      { code: "du -sh *", desc: "Visar storlek på allt i aktuell mapp", descEn: "Shows the size of everything in the current folder" },
+      { code: "du -d1 -h ~", desc: "Visar hemkatalog-mappars storlek", descEn: "Shows the size of folders in your home directory" }
     ]
   },
-  { cat: "System", cmd: "uptime", short: "Visa hur länge systemet kört och belastning", tags: ["safe"],
+  { cat: "System", cmd: "uptime", short: "Visa hur länge systemet kört och belastning", shortEn: "Show system uptime and load", tags: ["safe"],
     examples: [
-      { code: "uptime", desc: "Visar drifttid och CPU-belastning" }
+      { code: "uptime", desc: "Visar drifttid och CPU-belastning", descEn: "Shows uptime and CPU load" }
     ]
   },
-  { cat: "System", cmd: "date", short: "Visa eller ändra systemets datum och tid", tags: ["safe"],
+  { cat: "System", cmd: "date", short: "Visa eller ändra systemets datum och tid", shortEn: "Show or change the system date and time", tags: ["safe"],
     examples: [
-      { code: "date", desc: "Visar aktuellt datum och tid" },
-      { code: "date '+%Y-%m-%d'", desc: "Formaterat datum: 2025-01-15" }
+      { code: "date", desc: "Visar aktuellt datum och tid", descEn: "Shows the current date and time" },
+      { code: "date '+%Y-%m-%d'", desc: "Formaterat datum: 2025-01-15", descEn: "Formatted date: 2025-01-15" }
     ]
   },
   { cat: "System", cmd: "history", short: "Visa tidigare körda kommandon", shortEn: "Show previously run commands", tags: ["safe"],
@@ -1305,10 +1305,10 @@ const COMMANDS = [
       { code: "sudo shutdown -h +60", desc: "Stänger av om 60 minuter", descEn: "Shuts down in 60 minutes" }
     ]
   },
-  { cat: "System", cmd: "defaults", short: "Läs/skriv macOS-inställningar (plist)", tags: ["sudo"],
+  { cat: "System", cmd: "defaults", short: "Läs/skriv macOS-inställningar (plist)", shortEn: "Read or write macOS settings (plist)", tags: ["sudo"],
     examples: [
-      { code: "defaults read com.apple.finder", desc: "Läser Finder-inställningar" },
-      { code: "defaults write com.apple.dock autohide -bool true", desc: "Göm Dock automatiskt" }
+      { code: "defaults read com.apple.finder", desc: "Läser Finder-inställningar", descEn: "Reads Finder settings" },
+      { code: "defaults write com.apple.dock autohide -bool true", desc: "Göm Dock automatiskt", descEn: "Enable automatic Dock hiding" }
     ]
   },
 
@@ -1343,76 +1343,76 @@ const COMMANDS = [
   },
 
   // ── GIT ──
-  { cat: "Git", cmd: "git clone", short: "Klona ett fjärr-repository lokalt", tags: ["safe"],
+  { cat: "Git", cmd: "git clone", short: "Klona ett fjärr-repository lokalt", shortEn: "Clone a remote repository locally", tags: ["safe"],
     examples: [
-      { code: "git clone https://github.com/user/repo.git", desc: "Klonar repository" },
-      { code: "git clone URL mapp", desc: "Klonar till specifik mapp" }
+      { code: "git clone https://github.com/user/repo.git", desc: "Klonar repository", descEn: "Clones the repository" },
+      { code: "git clone URL mapp", desc: "Klonar till specifik mapp", descEn: "Clones into a specific folder" }
     ]
   },
-  { cat: "Git", cmd: "git status", short: "Visa status för filer i repository", tags: ["safe"],
+  { cat: "Git", cmd: "git status", short: "Visa status för filer i repository", shortEn: "Show the status of files in the repository", tags: ["safe"],
     examples: [
-      { code: "git status", desc: "Visar ändrade, staged och untracked filer" }
+      { code: "git status", desc: "Visar ändrade, staged och untracked filer", descEn: "Shows modified, staged, and untracked files" }
     ]
   },
-  { cat: "Git", cmd: "git add", short: "Förbered (stage) filer för commit", tags: ["safe"],
+  { cat: "Git", cmd: "git add", short: "Förbered (stage) filer för commit", shortEn: "Stage files for commit", tags: ["safe"],
     examples: [
-      { code: "git add fil.txt", desc: "Stagear en specifik fil" },
-      { code: "git add .", desc: "Stagear alla ändrade filer" },
-      { code: "git add -p", desc: "Interaktivt välj delar att stagea" }
+      { code: "git add fil.txt", desc: "Stagear en specifik fil", descEn: "Stages a specific file" },
+      { code: "git add .", desc: "Stagear alla ändrade filer", descEn: "Stages all changed files" },
+      { code: "git add -p", desc: "Interaktivt välj delar att stagea", descEn: "Interactively choose which changes to stage" }
     ]
   },
-  { cat: "Git", cmd: "git commit", short: "Spara staged ändringar med ett meddelande", tags: ["safe"],
+  { cat: "Git", cmd: "git commit", short: "Spara staged ändringar med ett meddelande", shortEn: "Save staged changes with a commit message", tags: ["safe"],
     examples: [
-      { code: "git commit -m 'Ändrade X'", desc: "Skapar en commit" },
-      { code: "git commit -am 'fix'", desc: "Stagear + committar alla ändrade filer" },
-      { code: "git commit --amend", desc: "Ändra senaste commit" }
+      { code: "git commit -m 'Ändrade X'", desc: "Skapar en commit", descEn: "Creates a commit" },
+      { code: "git commit -am 'fix'", desc: "Stagear + committar alla ändrade filer", descEn: "Stages and commits all modified tracked files" },
+      { code: "git commit --amend", desc: "Ändra senaste commit", descEn: "Modify the latest commit" }
     ]
   },
-  { cat: "Git", cmd: "git push", short: "Pusha lokala commits till fjärrserver", tags: ["safe"],
+  { cat: "Git", cmd: "git push", short: "Pusha lokala commits till fjärrserver", shortEn: "Push local commits to the remote", tags: ["safe"],
     examples: [
-      { code: "git push", desc: "Pushar till spårad branch" },
-      { code: "git push origin main", desc: "Pushar main-branchen till origin" },
-      { code: "git push -u origin ny-branch", desc: "Pushar ny branch och sätter upstream" }
+      { code: "git push", desc: "Pushar till spårad branch", descEn: "Pushes to the tracked branch" },
+      { code: "git push origin main", desc: "Pushar main-branchen till origin", descEn: "Pushes the main branch to origin" },
+      { code: "git push -u origin ny-branch", desc: "Pushar ny branch och sätter upstream", descEn: "Pushes a new branch and sets the upstream" }
     ]
   },
-  { cat: "Git", cmd: "git pull", short: "Hämta och merga ändringar från fjärrserver", tags: ["safe"],
+  { cat: "Git", cmd: "git pull", short: "Hämta och merga ändringar från fjärrserver", shortEn: "Fetch and merge changes from the remote", tags: ["safe"],
     examples: [
-      { code: "git pull", desc: "Hämtar och mergar från spårad branch" },
-      { code: "git pull origin main", desc: "Hämtar från origin/main" }
+      { code: "git pull", desc: "Hämtar och mergar från spårad branch", descEn: "Fetches and merges from the tracked branch" },
+      { code: "git pull origin main", desc: "Hämtar från origin/main", descEn: "Fetches and merges from origin/main" }
     ]
   },
-  { cat: "Git", cmd: "git log", short: "Visa commit-historik", tags: ["safe"],
+  { cat: "Git", cmd: "git log", short: "Visa commit-historik", shortEn: "Show commit history", tags: ["safe"],
     examples: [
-      { code: "git log", desc: "Visar commits i detalj" },
-      { code: "git log --oneline", desc: "Kompakt en-rad per commit" },
-      { code: "git log --graph --oneline", desc: "Visar branch-graf" }
+      { code: "git log", desc: "Visar commits i detalj", descEn: "Shows detailed commits" },
+      { code: "git log --oneline", desc: "Kompakt en-rad per commit", descEn: "Shows one compact line per commit" },
+      { code: "git log --graph --oneline", desc: "Visar branch-graf", descEn: "Shows the branch graph" }
     ]
   },
-  { cat: "Git", cmd: "git branch", short: "Hantera brancher", tags: ["safe"],
+  { cat: "Git", cmd: "git branch", short: "Hantera brancher", shortEn: "Manage branches", tags: ["safe"],
     examples: [
-      { code: "git branch", desc: "Listar alla lokala brancher" },
-      { code: "git branch ny-branch", desc: "Skapar en ny branch" },
-      { code: "git branch -d branch", desc: "Tar bort en branch (safe)" },
-      { code: "git branch -D branch", desc: "Tvångsborttagning av branch" }
+      { code: "git branch", desc: "Listar alla lokala brancher", descEn: "Lists all local branches" },
+      { code: "git branch ny-branch", desc: "Skapar en ny branch", descEn: "Creates a new branch" },
+      { code: "git branch -d branch", desc: "Tar bort en branch (safe)", descEn: "Deletes a branch safely" },
+      { code: "git branch -D branch", desc: "Tvångsborttagning av branch", descEn: "Force-deletes a branch" }
     ]
   },
-  { cat: "Git", cmd: "git checkout / switch", short: "Byt branch eller återställ filer", tags: ["safe"],
+  { cat: "Git", cmd: "git checkout / switch", short: "Byt branch eller återställ filer", shortEn: "Switch branches or restore files", tags: ["safe"],
     examples: [
-      { code: "git switch main", desc: "Byt till main-branchen" },
-      { code: "git checkout -b ny-branch", desc: "Skapa och byt till ny branch" },
-      { code: "git checkout -- fil.txt", desc: "Återställ fil till senaste commit" }
+      { code: "git switch main", desc: "Byt till main-branchen", descEn: "Switch to the main branch" },
+      { code: "git checkout -b ny-branch", desc: "Skapa och byt till ny branch", descEn: "Create and switch to a new branch" },
+      { code: "git checkout -- fil.txt", desc: "Återställ fil till senaste commit", descEn: "Restore a file to the latest commit state" }
     ]
   },
-  { cat: "Git", cmd: "git merge", short: "Slå ihop en branch med aktuell branch", tags: ["safe"],
+  { cat: "Git", cmd: "git merge", short: "Slå ihop en branch med aktuell branch", shortEn: "Merge a branch into the current branch", tags: ["safe"],
     examples: [
-      { code: "git merge feature-branch", desc: "Mergar feature-branch till aktuell" }
+      { code: "git merge feature-branch", desc: "Mergar feature-branch till aktuell", descEn: "Merges feature-branch into the current branch" }
     ]
   },
-  { cat: "Git", cmd: "git stash", short: "Tillfälligt spara undan ändringar", tags: ["safe"],
+  { cat: "Git", cmd: "git stash", short: "Tillfälligt spara undan ändringar", shortEn: "Temporarily stash changes", tags: ["safe"],
     examples: [
-      { code: "git stash", desc: "Sparar undan alla ändringar" },
-      { code: "git stash pop", desc: "Återställer senast sparade ändringar" },
-      { code: "git stash list", desc: "Visar alla sparade stashes" }
+      { code: "git stash", desc: "Sparar undan alla ändringar", descEn: "Stashes all current changes" },
+      { code: "git stash pop", desc: "Återställer senast sparade ändringar", descEn: "Restores the latest stashed changes" },
+      { code: "git stash list", desc: "Visar alla sparade stashes", descEn: "Shows all saved stashes" }
     ]
   },
 
@@ -3228,9 +3228,8 @@ function translateCategory(cat) {
   return (CATEGORY_LABELS[currentLang] && CATEGORY_LABELS[currentLang][cat]) || cat;
 }
 
-function translateText(text) {
-  if (currentLang !== 'en' || !text) return text;
-
+function translateTextToEn(text) {
+  if (!text) return text;
   const replacements = [
     ['m.fl.', 'and more'],
     ['t.ex.', 'e.g.'],
@@ -3325,6 +3324,11 @@ function translateText(text) {
   return result;
 }
 
+function translateText(text) {
+  if (currentLang !== 'en' || !text) return text;
+  return translateTextToEn(text);
+}
+
 function localizedText(value) {
   if (value && typeof value === 'object') {
     return value[currentLang] || value.sv || value.en || '';
@@ -3339,6 +3343,21 @@ function getCommandShort(c) {
 function getExampleDesc(e) {
   return currentLang === 'en' ? (e.descEn || translateText(e.desc)) : e.desc;
 }
+
+function hydrateEnglishTranslations() {
+  COMMANDS.forEach(cmd => {
+    if (!cmd.shortEn) {
+      cmd.shortEn = translateTextToEn(cmd.short);
+    }
+    (cmd.examples || []).forEach(example => {
+      if (!example.descEn) {
+        example.descEn = translateTextToEn(example.desc);
+      }
+    });
+  });
+}
+
+hydrateEnglishTranslations();
 
 function commandCountText(n) {
   return n === 1 ? t('commandSingular') : t('commandPlural');
