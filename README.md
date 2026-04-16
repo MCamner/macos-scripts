@@ -17,13 +17,20 @@
 
 ---
 
-## 🚀 Install (30 sec)
+## 🚀 Install
+
+### Option 1 — Quick install (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
+```
+
+### Option 2 — Clone
 
 ```bash
 git clone https://github.com/MCamner/macos-scripts.git
 cd macos-scripts
 ./install.sh
-mqlaunch
 ```
 
 ---
