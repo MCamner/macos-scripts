@@ -6,7 +6,7 @@
 ---
 
 <p align="center">
-  <img src="docs/demo.gif" alt="mqlaunch demo" width="900"/>
+  <img src="mqlaunch.png" alt="mqlaunch demo" width="800"/>
 </p>
 
 <p align="center">
