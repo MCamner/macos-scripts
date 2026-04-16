@@ -1,15 +1,22 @@
 # macos-scripts
-> ⚡ A modular CLI for structured terminal workflows on macOS
 
-> Turn scattered macOS shell scripts into one clean command system.
+⚡ A modular CLI for structured terminal workflows on macOS
 
-[![Platform](https://img.shields.io/badge/platform-macOS-black)](#)
-[![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)](#)
-[![License](https://img.shields.io/badge/license-MIT-2ea44f)](#)
+Turn scattered shell scripts into one clean command system.
 
 ---
 
-## ⚡ One command instead of many
+<p align="center">
+  <img src="docs/demo.gif" alt="mqlaunch demo" width="900"/>
+</p>
+
+---
+
+## 💡 What this is
+
+**macos-scripts** is a lightweight CLI toolkit that organizes terminal workflows into a structured, repeatable system.
+
+Instead of remembering multiple commands:
 
 ```bash
 top
@@ -18,7 +25,7 @@ ps aux | sort -nrk 3 | head
 ./tools/scripts/system-check.sh
 ```
 
-becomes:
+You run:
 
 ```bash
 mqlaunch perf
@@ -26,7 +33,7 @@ mqlaunch perf
 
 ---
 
-## 🚀 Quick start (30 seconds)
+## 🚀 Quick start
 
 ```bash
 git clone https://github.com/MCamner/macos-scripts.git
@@ -38,116 +45,118 @@ mqlaunch
 
 ---
 
-## 🎬 Demo
+## 🎯 Core idea
 
-```bash
-mqlaunch demo
-```
+> One command → structured workflows → repeatable execution
 
-![mqlaunch demo](docs/demo.gif)
-
----
-
-## 🔥 Highlight: System check
-
-```bash
-mqlaunch system check
-```
-
-Run a full system overview in one command:
-
-* CPU usage
-* memory usage
-* disk status
-* network info
-* environment checks
-
-No need to remember multiple commands.
-
-👉 One command → full visibility.
+- One entrypoint: `mqlaunch`
+- Clear workflow categories (Dev, System, Performance, Tools)
+- Works both as menu and direct CLI
+- Built for real-world terminal usage
 
 ---
 
-## 🧠 What you get
+## 🧠 Why this exists
 
-* One entrypoint: `mqlaunch`
-* Structured workflows
-* Repeatable diagnostics
-* Menu + command mode
-* Modular CLI system
-* Faster discovery than separate scripts
+Most environments don’t lack tools —  
+they lack structure.
+
+Typical problems:
+
+- scripts scattered across folders  
+- commands hard to discover  
+- inconsistent execution  
+- reliance on memory or tribal knowledge  
+
+This project solves that by turning:
+
+> **useful chaos → usable system**
+
+---
+
+## 🧩 How it works
+
+```text
+User → mqlaunch → Workflows → Scripts → System
+```
+
+- `mqlaunch` = control layer  
+- workflows = structure  
+- scripts = execution  
+- system = environment  
 
 ---
 
 ## 🧰 Common commands
 
 ```bash
-mqlaunch                 # open main menu
-mqlaunch perf            # performance tools
-mqlaunch system check    # system health check
-mqlaunch dev             # developer workflows
-mqlaunch tools           # utility commands
-mqlaunch demo            # demo mode
+mqlaunch              # open main menu
+mqlaunch perf         # performance tools
+mqlaunch system check # system health check
+mqlaunch dev          # developer workflows
+mqlaunch tools        # utilities
+mqlaunch demo         # demo mode
 ```
 
 ---
 
-## 🔍 More examples
+## 🎬 Demo
 
 ```bash
-mqlaunch
-mqlaunch system check
-mqlaunch release notes
-mqlaunch theme-macos
+mqlaunch demo
 ```
-
-Works both as:
-
-* interactive menu
-* direct command interface
 
 ---
 
 ## 🖼️ Screenshots
 
 ### Main Menu
-
-![Main Menu](docs/screenshots/main-menu.png)
+<p align="center">
+  <img src="docs/screenshots/main-menu.png" alt="Main Menu" width="700"/>
+</p>
 
 ### Performance Menu
-
-![Performance](docs/screenshots/performance-menu.png)
+<p align="center">
+  <img src="docs/screenshots/performance-menu.png" alt="Performance" width="700"/>
+</p>
 
 ### Release Flow
-
-![Release](docs/screenshots/release-flow.png)
+<p align="center">
+  <img src="docs/screenshots/release-flow.png" alt="Release Flow" width="700"/>
+</p>
 
 ---
 
-## 🧱 Architecture
+## 🧱 Project structure
 
 ```text
 macos-scripts/
 ├── bin/               # CLI entrypoints
-├── terminal/          # launchers, menus, themes, bridges
-├── tools/             # scripts and CLI utilities
-├── system/            # macOS-focused helpers and tweaks
+├── terminal/          # menus, launchers, themes
+├── tools/             # scripts and utilities
+├── system/            # macOS helpers
 ├── automation/        # repeatable workflows
-└── ui/                # terminal UI building blocks
+└── ui/                # terminal UI components
 ```
 
 ---
 
-## 🧭 Why
+## ⚖️ Design principles
 
-Scripts get messy fast.
+- Keep it simple  
+- Prefer structure over more tools  
+- Optimize for real usage, not theory  
+- Make workflows repeatable  
+- Reduce cognitive load  
 
-`mqlaunch` gives you:
+---
 
-* structure
-* reuse
-* clarity
-* repeatable workflows
+## 📈 What you get
+
+- Faster access to useful commands  
+- Consistent execution  
+- Better discoverability  
+- Foundation for automation  
 
 ---
 
