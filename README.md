@@ -35,6 +35,36 @@ cd macos-scripts
 
 ---
 
+## 🚀 First run
+
+After installing, start here:
+
+mqlaunch doctor
+
+This will:
+
+- verify your environment
+- check required dependencies
+- validate your setup
+- highlight issues with clear fixes
+
+Then explore:
+
+mqlaunch
+
+→ browse workflows via the interactive menu  
+→ or run commands directly (perf, system, dev, tools)
+
+💡 Recommended flow
+
+1. mqlaunch doctor   → validate setup  
+2. mqlaunch          → explore workflows  
+3. mqlaunch perf     → try a real workflow  
+
+→ from zero to productive in under a minute
+
+---
+
 ## ⚡ One command instead of many
 
 Instead of:
