@@ -19,6 +19,7 @@ To use these scripts, clone the repository and ensure the files have execution p
 # Clone the repository
 git clone [https://github.com/MCamner/macos-scripts.git](https://github.com/MCamner/macos-scripts.git)
 cd macos-scripts
+```
 
 # Make the scripts executable
 chmod +x tools/scripts/*.sh
