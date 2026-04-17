@@ -1,29 +1,25 @@
 # macos-scripts
 
-> ⚡ A modular CLI for structured terminal workflows on macOS  
-> Turn scattered shell commands into one clean, repeatable system.
+![macOS](https://img.shields.io/badge/platform-macOS-black)
+![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
+![License](https://img.shields.io/badge/license-MIT-2ea44f)
+![Status](https://img.shields.io/badge/status-active-success)
+
+⚡ Turn scattered shell commands into structured workflows.
+
+**Stop memorizing commands. Start running workflows.**
+
+Turn scattered shell commands into a clean, repeatable workflow system.
 
 ---
 
-<p align="center">
-  <img src="docs/mqlaunch.png" alt="mqlaunch demo" width="800"/>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS-black" />
-  <img src="https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb" />
-  <img src="https://img.shields.io/badge/license-MIT-2ea44f" />
-</p>
-
----
-
-## 🚀 Install
-
-### Option 1 — Quick install (recommended)
+## 🚀 Quick start
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
-```
+
+mqlaunch doctor
+mqlaunch
 
 ### Option 2 — Clone
 
