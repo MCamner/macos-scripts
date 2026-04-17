@@ -13,7 +13,7 @@ open_system_menu() {
 
     empty_row
     row "HEALTH / SAFETY"
-    row2 " 3. Doctor / Check" " 4. Self-check"
+    row2 " 3. Doctor"         " 4. Self-check"
     row2 " 5. Debug bundle"   " 6. System check"
 
     empty_row
@@ -37,10 +37,10 @@ open_system_menu() {
     case "$choice" in
       1) open_performance_menu ;;
       2) show_network_info ;;
-      3) system_check ;;
-      4) run_self_check || true ;;
-      5) run_debug_bundle || true ;;
-      6) system_check ;;
+      3) "$BASE_DIR/tools/scripts/doctor.sh"; pause_enter ;;
+      4) run_self_check || true; pause_enter ;;
+      5) run_debug_bundle || true; pause_enter ;;
+      6) system_check; pause_enter ;;
       7) lock_screen ;;
       8) sleep_display ;;
       9) restart_finder ;;
