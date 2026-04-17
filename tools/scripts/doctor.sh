@@ -10,7 +10,7 @@ command_exists() {
 print_header() {
   printf '\n'
   printf '════════════════════════════════════════════════════════════\n'
-  printf '  MQ DOCTOR\n'
+  printf ' MQ DOCTOR — Environment Readiness Check\n'
   printf '════════════════════════════════════════════════════════════\n'
 }
 
@@ -41,21 +41,21 @@ git_branch() {
   git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "n/a"
 }
 
-git_dirty() {
-  if ! git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "n/a"
-    return
-  fi
-
-  if [[ -n "$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null)" ]]; then
+repo_detected() {
+  if git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "yes"
   else
     echo "no"
   fi
 }
 
-repo_detected() {
-  if git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+git_dirty() {
+  if [[ "$(repo_detected)" != "yes" ]]; then
+    echo "n/a"
+    return
+  fi
+
+  if [[ -n "$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null)" ]]; then
     echo "yes"
   else
     echo "no"
@@ -93,6 +93,7 @@ workflow_release() {
     && command_exists git \
     && [[ "$(file_present VERSION)" == "yes" ]] \
     && [[ "$(file_present CHANGELOG.md)" == "yes" ]]; then
+
     if [[ "$(git_dirty)" == "no" ]]; then
       echo "READY"
     else
@@ -121,6 +122,8 @@ workflow_system() {
 
 print_recommendations() {
   local repo_state git_state gh_state brew_state python_state node_state jq_state dirty_state
+  local printed=0
+
   repo_state="$(repo_detected)"
   git_state="$(dependency_status git)"
   gh_state="$(dependency_status gh)"
@@ -132,45 +135,43 @@ print_recommendations() {
 
   print_section "Recommendations"
 
-  local printed=0
-
   if [[ "$git_state" == "missing" ]]; then
-    printf -- '- Install git to enable repo workflows\n'
+    printf -- '- Install git\n'
     printed=1
   fi
 
   if [[ "$gh_state" == "missing" ]]; then
-    printf -- '- Install GitHub CLI (gh) for repo/release operations\n'
+    printf -- '- Install GitHub CLI (gh)\n'
     printed=1
   fi
 
   if [[ "$brew_state" == "missing" ]]; then
-    printf -- '- Install Homebrew to simplify dependency management\n'
+    printf -- '- Install Homebrew\n'
     printed=1
   fi
 
   if [[ "$python_state" == "missing" ]]; then
-    printf -- '- Install python3 for scripting and automation workflows\n'
+    printf -- '- Install python3\n'
     printed=1
   fi
 
   if [[ "$node_state" == "missing" ]]; then
-    printf -- '- Install Node.js if your dev workflows depend on JS tooling\n'
+    printf -- '- Install Node.js\n'
     printed=1
   fi
 
   if [[ "$jq_state" == "missing" ]]; then
-    printf -- '- Install jq for JSON-oriented tooling and scripts\n'
+    printf -- '- Install jq\n'
     printed=1
   fi
 
   if [[ "$repo_state" == "yes" && "$dirty_state" == "yes" ]]; then
-    printf -- '- Clean or commit local changes before running release-oriented workflows\n'
+    printf -- '- Commit or stash changes before release workflows\n'
     printed=1
   fi
 
   if [[ "$printed" -eq 0 ]]; then
-    printf -- 'No immediate recommendations. Environment looks healthy.\n'
+    printf 'Environment looks healthy.\n'
   fi
 }
 
@@ -179,9 +180,8 @@ main() {
 
   print_section "Environment"
   status_line "OS" "$(detect_os)"
-  status_line "OS Version" "$(detect_os_version)"
+  status_line "Version" "$(detect_os_version)"
   status_line "Shell" "$(detect_shell_name)"
-  status_line "Project Root" "$PROJECT_ROOT"
 
   print_section "Dependencies"
   status_line "git" "$(dependency_status git)"
@@ -192,17 +192,15 @@ main() {
   status_line "jq" "$(dependency_status jq)"
 
   print_section "Repository"
-  status_line "Repo detected" "$(repo_detected)"
+  status_line "Repo" "$(repo_detected)"
   status_line "Branch" "$(git_branch)"
-  status_line "Dirty tree" "$(git_dirty)"
-  status_line "VERSION file" "$(file_present VERSION)"
-  status_line "CHANGELOG.md" "$(file_present CHANGELOG.md)"
+  status_line "Dirty" "$(git_dirty)"
 
-  print_section "Workflow Readiness"
-  status_line "Git workflow" "$(workflow_git)"
-  status_line "Release workflow" "$(workflow_release)"
-  status_line "Dev workflow" "$(workflow_dev)"
-  status_line "System workflow" "$(workflow_system)"
+  print_section "Workflows"
+  status_line "Git" "$(workflow_git)"
+  status_line "Release" "$(workflow_release)"
+  status_line "Dev" "$(workflow_dev)"
+  status_line "System" "$(workflow_system)"
 
   print_recommendations
 
