@@ -107,6 +107,33 @@ mqlaunch demo         # demo mode
 ```
 
 ---
+## 🩺 Health check
+
+Before diving into workflows, verify your environment.
+
+Run:
+
+mqlaunch doctor
+
+What it does:
+
+- checks required tools (git, brew, node, python, jq)
+- validates repo state (branch, dirty tree, required files)
+- evaluates workflow readiness (Git, Release, Dev, System)
+- highlights issues and gives actionable recommendations
+
+Example use:
+
+mqlaunch doctor
+
+→ quickly understand if your environment is ready  
+→ fix issues before running workflows  
+→ reduce debugging time and surprises
+
+💡 Tip  
+Run this after install or when something feels off.
+
+---
 
 ## 🎬 Demo
 
