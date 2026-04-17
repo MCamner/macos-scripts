@@ -1,6 +1,29 @@
-# Scripts
+# macos-scripts 🚀
 
-Standalone helper scripts for the `macos-scripts` project.
+A curated collection of utility scripts designed to automate system tweaks, manage installations, and enhance the macOS power-user experience.
+
+## 📁 Repository Structure
+
+The core logic of this repository is located in the `tools/scripts` directory:
+
+- `tools/scripts/boot-maker.sh`: A powerful utility to create bootable Linux USB drives. Automatically detects system architecture (Intel vs. Apple Silicon) and supports Asahi Linux installation for M-series Macs.
+- `tools/scripts/mqlaunch_desktop.sh`: Custom launcher/desktop integration script.
+- `tools/scripts/patch-*.sh`: A series of specialized patching scripts for UI tweaks, theme management, and dashboard enhancements.
+- `tools/scripts/system-check.sh`: Basic health and environment verification.
+
+## 🛠 Installation & Usage
+
+To use these scripts, clone the repository and ensure the files have execution permissions:
+
+```bash
+# Clone the repository
+git clone [https://github.com/MCamner/macos-scripts.git](https://github.com/MCamner/macos-scripts.git)
+cd macos-scripts
+
+# Make the scripts executable
+chmod +x tools/scripts/*.sh
+
+---
 
 ## Purpose
 
