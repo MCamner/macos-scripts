@@ -34,6 +34,14 @@ show_command_index() {
   row " mqlaunch shortcuts search clip Search shortcuts by name"
 
   empty_row
+  row "SECURITY & OPS"
+  row " mqlaunch ghost        Run network cloaking (MAC/DNS spoof)"
+  row " mqlaunch pulse        Diagnostic for network latency & WiFi"
+  row " mqlaunch scan         Matrix-style system & port scan"
+  row " mqlaunch reap         Overseer process reaper (CPU/MEM focus)"
+  row " mqlaunch guard        Perimeter watchdog (USB/Power monitor)"
+  row " mqlaunch mc           Open advanced system dashboard"
+
   row "STATUS / SUPPORT"
   row " mqlaunch about        Open About / Status"
   row " mqlaunch version      Version information"
@@ -83,6 +91,14 @@ WORKFLOWS
   mqlaunch login menu     Session boot + full menu
   mqlaunch login about    Session boot + about screen
   mqlaunch login check    Session boot + self-check
+
+SECURITY & OPS
+  mqlaunch ghost          Run network cloaking (MAC/DNS spoof)
+  mqlaunch pulse          Diagnostic for network latency & WiFi
+  mqlaunch scan           Matrix-style system & port scan
+  mqlaunch reap           Overseer process reaper (CPU/MEM focus)
+  mqlaunch guard          Perimeter watchdog (USB/Power monitor)
+  mqlaunch mc             Open advanced system dashboard
 
 STATUS / SUPPORT
   mqlaunch about          Open About / Status
