@@ -188,6 +188,9 @@ macos-scripts/
 
 ## 📈 Real use case
 
+👉 **View case study:**  
+https://mcamner.github.io/macos-scripts/case.html
+
 Example:
 
 Instead of remembering 5–10 system commands during troubleshooting:
