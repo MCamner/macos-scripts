@@ -62,6 +62,72 @@ bash tools/scripts/network-ghost.sh
 
 ---
 
+## 🚦 Start here
+
+If you're new to `tools/scripts/`, start with these:
+
+### 1. `doctor.sh`
+Best first step.
+
+Use it to:
+- verify your environment  
+- detect missing tools  
+- check repo readiness  
+
+```bash
+bash tools/scripts/doctor.sh
+```
+
+---
+
+### 2. `mission-control.sh`
+Best overview tool.
+
+Use it to:
+- get a live system snapshot  
+- review CPU, memory, disk, network, battery, and git status  
+
+```bash
+bash tools/scripts/mission-control.sh
+```
+
+---
+
+### 3. `network-ghost.sh`
+Best for connectivity checks.
+
+Use it to:
+- inspect network basics  
+- troubleshoot IP, gateway, and connectivity issues  
+
+```bash
+bash tools/scripts/network-ghost.sh
+```
+
+---
+
+### 4. `vault-scan.sh`
+Best before sharing or committing.
+
+Use it to:
+- detect sensitive files or risky config patterns  
+- reduce the chance of leaking secrets  
+
+```bash
+bash tools/scripts/vault-scan.sh
+```
+
+---
+
+### 5. `create-debug-bundle.sh`
+Best when something is broken.
+
+Use it to:
+- capture a troubleshooting snapshot  
+- gather useful system and environment context
+
+---
+
 ## 🧠 Key Tools
 
 ### 🩺 doctor
