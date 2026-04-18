@@ -1,23 +1,19 @@
-#!/usr/bin/env bash
-
 show_command_index() {
   print_header
   row_bold "COMMAND INDEX"
   empty_row
 
-  row "CORE"
+  row "START"
   row " mqlaunch              Open main menu"
   row " mqlaunch demo         Run guided demo mode"
   row " mqlaunch help         Show help"
   row " mqlaunch commands     Show command index"
   row " mqlaunch palette      Open fuzzy command palette"
-  row " mqlaunch system       Open System menu"
 
   empty_row
   row "WORKFLOWS"
+  row " mqlaunch system       Open System menu"
   row " mqlaunch perf         Open Performance menu"
-  row " mqlaunch system check Run system check"
-  row " mqlaunch system debug Create debug bundle"
   row " mqlaunch dev          Open Dev menu"
   row " mqlaunch git          Open Git menu"
   row " mqlaunch tools        Open Tools menu"
@@ -27,14 +23,14 @@ show_command_index() {
   row " mqlaunch shortcuts    Open Shortcuts menu"
 
   empty_row
-  PROJECT FLOWS
-  mqlaunch workflows boot       Run project boot
-  mqlaunch workflows check      Run project check
-  mqlaunch login menu           Session boot + full menu
-  mqlaunch login about          Session boot + about screen
-  mqlaunch login check          Session boot + self-check
-  mqlaunch shortcuts list       List shortcuts directly
-  mqlaunch shortcuts search clip Search shortcuts by name
+  row "PROJECT FLOWS"
+  row " mqlaunch workflows boot        Run project boot"
+  row " mqlaunch workflows check       Run project check"
+  row " mqlaunch login menu            Session boot + full menu"
+  row " mqlaunch login about           Session boot + about screen"
+  row " mqlaunch login check           Session boot + self-check"
+  row " mqlaunch shortcuts list        List shortcuts directly"
+  row " mqlaunch shortcuts search clip Search shortcuts by name"
 
   empty_row
   row "SECURITY & OPS"
@@ -46,17 +42,19 @@ show_command_index() {
   row " mqlaunch mc           Open advanced system dashboard"
 
   empty_row
-  row "CHECKS / SUPPORT"
-  row " mqlaunch about        Open About / Status"
-  row " mqlaunch version      Version information"
-  row " mqlaunch notes        Release notes / changelog"
-  row " mqlaunch check        Run self-check"
+  row "CHECKS & SUPPORT"
+  row " mqlaunch check        Run environment check"
+  row " mqlaunch self-check   Run internal smoke test"
   row " mqlaunch bundle       Create debug bundle"
+  row " mqlaunch about        Open About / Status"
+  row " mqlaunch version      Show version information"
+  row " mqlaunch notes        Show release notes / changelog"
 
   empty_row
   row "UTILITY"
   row " mqlaunch repo         Open repo root"
   row " mqlaunch guide        Open terminal guide"
+  row " mqlaunch system time  Show date and time"
   row " mqlaunch theme        Open Themes menu"
   row " mqlaunch theme-macos  Apply macOS theme"
   row " mqlaunch theme-reset  Reset theme"
@@ -66,11 +64,10 @@ show_command_index() {
 }
 
 show_help() {
-  cat <<HELP
-
+  cat <<'HELP'
 mqlaunch — modular terminal workflow hub
 
-CORE
+START
   mqlaunch                Open main menu
   mqlaunch demo           Run guided demo mode
   mqlaunch help           Show help
@@ -85,18 +82,16 @@ WORKFLOWS
   mqlaunch tools          Open Tools menu
   mqlaunch workflows      Open Workflows menu
   mqlaunch release        Open Release menu
-  mqlaunch release notes  Show release notes directly
   mqlaunch login          Open Login menu
   mqlaunch shortcuts      Open Shortcuts menu
-  
- empty_row
-  PROJECT FLOWS
-  mqlaunch workflows boot       Run project boot
-  mqlaunch workflows check      Run project check
-  mqlaunch login menu           Session boot + full menu
-  mqlaunch login about          Session boot + about screen
-  mqlaunch login check          Session boot + self-check
-  mqlaunch shortcuts list       List shortcuts directly
+
+PROJECT FLOWS
+  mqlaunch workflows boot        Run project boot
+  mqlaunch workflows check       Run project check
+  mqlaunch login menu            Session boot + full menu
+  mqlaunch login about           Session boot + about screen
+  mqlaunch login check           Session boot + self-check
+  mqlaunch shortcuts list        List shortcuts directly
   mqlaunch shortcuts search clip Search shortcuts by name
 
 SECURITY & OPS
@@ -107,13 +102,13 @@ SECURITY & OPS
   mqlaunch guard          Perimeter watchdog (USB/Power monitor)
   mqlaunch mc             Open advanced system dashboard
 
-CHECKS / SUPPORT
+CHECKS & SUPPORT
+  mqlaunch check          Run environment check
+  mqlaunch self-check     Run internal smoke test
+  mqlaunch bundle         Create debug bundle
   mqlaunch about          Open About / Status
   mqlaunch version        Show version information
   mqlaunch notes          Show release notes / changelog
-  mqlaunch check          Run system check
-  mqlaunch self-check     Run smoke self-check
-  mqlaunch bundle         Create debug bundle
 
 UTILITY
   mqlaunch repo           Open repo root
@@ -124,11 +119,11 @@ UTILITY
   mqlaunch theme-reset    Reset theme
 
 POPULAR FLOWS
-  mqlaunch git
-  mqlaunch workflows
-  mqlaunch release
-  mqlaunch login
-  mqlaunch shortcuts
-
+  mqlaunch
+  mqlaunch perf
+  mqlaunch system check
+  mqlaunch doctor
+  mqlaunch dev
+  mqlaunch tools
 HELP
 }
