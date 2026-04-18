@@ -25,13 +25,16 @@ show_command_index() {
   row " mqlaunch release      Open Release menu"
   row " mqlaunch login        Open Login menu"
   row " mqlaunch shortcuts    Open Shortcuts menu"
-  row " mqlaunch workflows boot       Run project boot"
-  row " mqlaunch workflows check      Run project check"
-  row " mqlaunch login menu   Start full session boot"
-  row " mqlaunch login about  Start session in about mode"
-  row " mqlaunch login check  Start session in self-check mode"
-  row " mqlaunch shortcuts list        List shortcuts directly"
-  row " mqlaunch shortcuts search clip Search shortcuts by name"
+
+  empty_row
+  PROJECT FLOWS
+  mqlaunch workflows boot       Run project boot
+  mqlaunch workflows check      Run project check
+  mqlaunch login menu           Session boot + full menu
+  mqlaunch login about          Session boot + about screen
+  mqlaunch login check          Session boot + self-check
+  mqlaunch shortcuts list       List shortcuts directly
+  mqlaunch shortcuts search clip Search shortcuts by name
 
   empty_row
   row "SECURITY & OPS"
@@ -85,13 +88,16 @@ WORKFLOWS
   mqlaunch release notes  Show release notes directly
   mqlaunch login          Open Login menu
   mqlaunch shortcuts      Open Shortcuts menu
-  mqlaunch workflows boot Run project boot
-  mqlaunch workflows check Run project check
-  mqlaunch shortcuts list
-  mqlaunch shortcuts search clip
-  mqlaunch login menu     Session boot + full menu
-  mqlaunch login about    Session boot + about screen
-  mqlaunch login check    Session boot + self-check
+  
+ empty_row
+  PROJECT FLOWS
+  mqlaunch workflows boot       Run project boot
+  mqlaunch workflows check      Run project check
+  mqlaunch login menu           Session boot + full menu
+  mqlaunch login about          Session boot + about screen
+  mqlaunch login check          Session boot + self-check
+  mqlaunch shortcuts list       List shortcuts directly
+  mqlaunch shortcuts search clip Search shortcuts by name
 
 SECURITY & OPS
   mqlaunch ghost          Run network cloaking (MAC/DNS spoof)
