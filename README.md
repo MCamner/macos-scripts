@@ -1,25 +1,18 @@
-# macos-scripts
+# macos-scripts ⚡
 
-![macOS](https://img.shields.io/badge/platform-macOS-black)
-![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![License](https://img.shields.io/badge/license-MIT-2ea44f)
-![Status](https://img.shields.io/badge/status-active-success)
+**Turn scattered shell commands into structured workflows**
 
-⚡ Turn scattered shell commands into structured workflows.
-
-**Stop memorizing commands. Start running workflows.**
-
-Turn scattered shell commands into a clean, repeatable workflow system.
+Stop memorizing commands. Start running workflows.
 
 ---
 
 ## 🚀 Quick start
 
+### Option 1 — Install (recommended)
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
-
-mqlaunch doctor
-mqlaunch
+```
 
 ### Option 2 — Clone
 
@@ -31,33 +24,29 @@ cd macos-scripts
 
 ---
 
-## 🚀 First run
+## ⚡ First run
 
-After installing, start here:
-
+```bash
 mqlaunch doctor
+```
 
 This will:
 
-- verify your environment
-- check required dependencies
-- validate your setup
-- highlight issues with clear fixes
+* verify your environment
+* check required dependencies
+* validate your setup
+* highlight issues with clear fixes
 
-Then explore:
+---
 
+## 🚦 Then explore
+
+```bash
 mqlaunch
+```
 
-→ browse workflows via the interactive menu  
-→ or run commands directly (perf, system, dev, tools)
-
-💡 Recommended flow
-
-1. mqlaunch doctor   → validate setup  
-2. mqlaunch          → explore workflows  
-3. mqlaunch perf     → try a real workflow  
-
-→ from zero to productive in under a minute
+* browse workflows via the interactive menu
+* or run commands directly (`perf`, `system`, `dev`, `tools`)
 
 ---
 
@@ -84,14 +73,7 @@ mqlaunch perf
 
 Most environments don’t lack tools — they lack structure.
 
-Typical problems:
-
-- scattered scripts across folders  
-- commands hard to discover  
-- inconsistent execution  
-- reliance on memory / tribal knowledge  
-
-**macos-scripts fixes this by turning:**
+This project turns:
 
 > useful chaos → usable system
 
@@ -99,38 +81,25 @@ Typical problems:
 
 ## 🧠 Core idea
 
-> One command → structured workflows → repeatable execution
+**One command → structured workflows → repeatable execution**
 
-- single entrypoint: `mqlaunch`
-- organized workflows (Dev, System, Performance, Tools)
-- works as menu **and** direct CLI
-- built for real-world terminal usage
-
----
-
-## 🧩 How it works
-
-```text
-User → mqlaunch → Workflows → Scripts → System
-```
-
-- CLI = control layer  
-- workflows = structure  
-- scripts = execution  
-- system = environment  
+* single entrypoint: `mqlaunch`
+* organized workflows (Dev, System, Performance, Tools)
+* works as menu and direct CLI
 
 ---
 
 ## 🧰 Common commands
 
 ```bash
-mqlaunch              # open menu
-mqlaunch perf         # performance tools
-mqlaunch system check # system health
-mqlaunch dev          # dev workflows
-mqlaunch tools        # utilities
-mqlaunch demo         # demo mode
+mqlaunch
+mqlaunch perf
+mqlaunch system check
+mqlaunch dev
+mqlaunch tools
+mqlaunch demo
 ```
+
 
 ---
 ## 🩺 Health check
