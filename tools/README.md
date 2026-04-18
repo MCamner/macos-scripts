@@ -1,8 +1,8 @@
 # Tools
 
-Reusable scripts, CLI utilities, and release automation for the **macos-scripts** project.
+Reusable scripts, CLI utilities, and release automation for the macos-scripts project.
 
-This folder is where standalone tools live — things you can run directly, reuse across modules, or use outside `mqlaunch`.
+This folder contains standalone tools — things you can run directly, reuse across modules, or use outside mqlaunch.
 
 ---
 
@@ -11,7 +11,7 @@ This folder is where standalone tools live — things you can run directly, reus
 Keep powerful, reusable building blocks in one place:
 
 * run tools directly from terminal
-* support `mqlaunch` workflows
+* support mqlaunch workflows
 * enable safe automation (including releases)
 
 ---
@@ -20,10 +20,12 @@ Keep powerful, reusable building blocks in one place:
 
 ```
 tools/
-├── cli/                  # command-line tools (AI, helpers, wrappers)
-├── scripts/              # standalone utility scripts
+├── cli/                  # user-facing CLI tools
+├── scripts/              # system, diagnostics, and utility scripts
+├── legacy/               # archived/old scripts (patches, backups)
 ├── mac-terminal-guide/   # terminal guide source
 ├── release.sh            # release automation script
+├── onboarding.sh         # onboarding/setup helper
 └── README.md
 ```
 
@@ -31,25 +33,20 @@ tools/
 
 ## 🚀 Release Automation
 
-The repo includes a **safe, repeatable release system**:
+Safe, repeatable release workflow:
 
 ```
 tools/release.sh
 ```
 
-### Preview (no changes)
+Run from repo root:
 
-```
-./tools/release.sh --dry-run 0.1.3
-```
-
-### Run full release
-
-```
-./tools/release.sh 0.1.3
+```bash
+./tools/release.sh --dry-run 0.1.5
+./tools/release.sh 0.1.5
 ```
 
-### What it handles
+What it handles:
 
 * updates `VERSION`
 * updates README version badge
@@ -64,17 +61,22 @@ tools/release.sh
 
 ## 🧠 CLI Tools
 
-Run tools directly from the repo root:
+Run from repo root:
 
+```bash
+bash tools/cli/<tool>.sh
 ```
-bash tools/cli/ai-mode.sh
-```
+
+Examples:
+
+* `boot-maker.sh` → create bootable USB (Intel / Apple Silicon / Asahi support)
+* `ai-mode.sh` → AI workflow helper
 
 Used for:
 
-* AI workflows
-* command helpers
-* integration with `mqlaunch`
+* user-triggered workflows
+* standalone utilities
+* integration with mqlaunch
 
 ---
 
@@ -86,17 +88,37 @@ Located in:
 tools/scripts/
 ```
 
-Examples include:
+These are reusable system and diagnostic tools.
 
-* system helpers
-* debug / snapshot tools
-* reusable shell utilities
+Examples:
+
+* `doctor.sh` → environment readiness check
+* `system-check.sh` → basic system validation
+* `network-ghost.sh` → network diagnostics
+* `vault-scan.sh` → scan for sensitive data / config issues
+* `create-debug-bundle.sh` → generate debug snapshots
 
 Run directly:
 
-```
+```bash
 bash tools/scripts/<script-name>.sh
 ```
+
+---
+
+## 🗃 Legacy
+
+```
+tools/legacy/
+```
+
+Contains:
+
+* old patch scripts
+* backups (`.bak`)
+* deprecated utilities
+
+👉 Not part of the active system — kept for reference only.
 
 ---
 
@@ -108,7 +130,7 @@ Source:
 tools/mac-terminal-guide/
 ```
 
-Generated HTML (via docs):
+Generated HTML:
 
 ```
 docs/mac-terminal-guide.html
@@ -117,7 +139,7 @@ docs/mac-terminal-guide.html
 Used for:
 
 * onboarding
-* reference material
+* documentation
 * learning terminal workflows
 
 ---
@@ -125,7 +147,7 @@ Used for:
 ## 🔗 How it fits the system
 
 * `tools/` = reusable building blocks
-* `terminal/` = user interface (`mqlaunch`)
+* `terminal/` = user interface (mqlaunch)
 * `system/` = OS-level tweaks
 * `automation/` = workflows
 
@@ -144,12 +166,12 @@ Used for:
 
 ## 🔮 Next Steps
 
-* integrate release flow into `mqlaunch`
+* integrate release flow into mqlaunch
 * expand CLI toolset
-* add validation / diagnostics tools
-* improve automation pipelines
+* improve diagnostics (doctor, vault-scan, network)
+* strengthen automation pipelines
 
 ---
 
-💡 Tip: If something becomes useful more than once — it belongs in `tools/`.
-
+💡 Tip:
+If something becomes useful more than once — it belongs in `tools/`.
