@@ -166,7 +166,10 @@ main() {
   section "NETWORK"
   kv "Primary IP" "$(get_primary_ip)"
   kv "Gateway" "$(get_default_route)"
-  kv "Wi-Fi" "$(get_wifi_name:-Not connected)"
+  local wifi_name
+  wifi_name="$(get_wifi_name 2>/dev/null || true)"
+  [[ -z "$wifi_name" ]] && wifi_name="Not connected"
+  kv "Wi-Fi" "$wifi_name"
 
   section "POWER"
   kv "Battery" "$(get_battery_info)"
