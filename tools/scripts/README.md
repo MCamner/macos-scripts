@@ -36,13 +36,44 @@ tools/scripts/
 ├── vault-scan.sh            # scan for secrets / config issues
 ├── system-check.sh          # basic system validation
 ├── create-debug-bundle.sh   # generate debug snapshot
-├── blackout.sh              # experimental display/UX tool
+├── blackout.sh              # experimental focus / screen effect tool
 ├── mqlaunch_desktop.sh      # desktop integration
 ├── test-*.sh                # test scripts
+├── pulse.sh                 # quick system pulse / lightweight status
 └── README.md
 ```
 
 ---
+
+## 🏷 Status
+
+| Script | Category | Status | Description |
+|-------|--------|--------|------------|
+| `doctor.sh` | Diagnostics | 🟢 Stable | Environment readiness check |
+| `mission-control.sh` | Observability | 🟢 Stable | System overview (cockpit view) |
+| `overseer.sh` | Monitoring | 🟡 Beta | Process and system monitoring |
+| `network-ghost.sh` | Network | 🟢 Stable | Network diagnostics |
+| `vault-scan.sh` | Security | 🟢 Stable | Scan for secrets / config issues |
+| `system-check.sh` | Diagnostics | 🟢 Stable | Basic system validation |
+| `create-debug-bundle.sh` | Support | 🟢 Stable | Generate debug snapshot |
+| `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
+| `blackout.sh` | UX / Experimental | 🔴 Experimental | Focus / visual effect tool |
+| `mqlaunch_desktop.sh` | Integration | 🟡 Beta | Desktop integration |
+| `test-*.sh` | Testing | 🟢 Stable | Test and validation scripts |
+
+---
+
+### Legend
+
+- 🟢 **Stable** — safe to use, core functionality  
+- 🟡 **Beta** — works, but evolving  
+- 🔴 **Experimental** — unstable or exploratory  
+
+---
+
+💡 Tip:  
+Stable tools are safe entry points.  
+Experimental tools are for exploration.
 
 ## 🚀 Usage
 
@@ -64,6 +95,7 @@ bash tools/scripts/network-ghost.sh
 
 ## 🚦 Start here
 
+These are the primary entry-point tools for this directory:
 If you're new to `tools/scripts/`, start with these:
 
 ### 1. `doctor.sh`
