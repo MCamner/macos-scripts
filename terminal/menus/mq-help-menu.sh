@@ -46,7 +46,7 @@ show_command_index() {
   row " mqlaunch mc           Open advanced system dashboard"
 
   empty_row
-  row "STATUS / SUPPORT"
+  row "CHECKS / SUPPORT"
   row " mqlaunch about        Open About / Status"
   row " mqlaunch version      Version information"
   row " mqlaunch notes        Release notes / changelog"
@@ -107,7 +107,7 @@ SECURITY & OPS
   mqlaunch guard          Perimeter watchdog (USB/Power monitor)
   mqlaunch mc             Open advanced system dashboard
 
-STATUS / SUPPORT
+CHECKS / SUPPORT
   mqlaunch about          Open About / Status
   mqlaunch version        Show version information
   mqlaunch notes          Show release notes / changelog
