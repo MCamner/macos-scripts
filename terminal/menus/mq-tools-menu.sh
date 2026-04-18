@@ -134,10 +134,11 @@ print_menu() {
   row2 " 3. Open launchers folder" " 4. Open themes folder"
   row2 " 5. Open menus folder" " 6. Open dashboard"
   row2 " 7. Open terminal guide" " 8. Show key paths"
-  row2 " 9. Show git status" " b. Back"
+  row2 " 9. Show git status" "10. Boot Maker"
+  row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select option [1-9,b]: ${C_RESET}"
+  printf "${C_TITLE}Select option [1-10,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -158,6 +159,7 @@ menu_loop() {
       7) open_guide ;;
       8) show_paths ;;
       9) show_git_status ;;
+    10) "$BASE_DIR/tools/scripts/boot-maker.sh"; pause_enter ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
