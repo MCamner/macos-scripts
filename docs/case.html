@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>macos-scripts — Case Study</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11172a;
+      --panel-2: #0f1526;
+      --text: #e8edf7;
+      --muted: #a8b3c7;
+      --line: #24304a;
+      --accent: #63d2ff;
+      --accent-2: #8b7dff;
+      --ok: #37d67a;
+      --warn: #ffcc66;
+      --exp: #ff7a7a;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 22px;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(99,210,255,.16), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(139,125,255,.16), transparent 24%),
+        linear-gradient(180deg, #0a0f1e 0%, #0b1020 100%);
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap { width: min(calc(100% - 32px), var(--max)); margin: 0 auto; }
+    .nav {
+      position: sticky; top: 0; z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(11,16,32,.72);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px 0;
+    }
+    .brand { font-weight: 700; letter-spacing: .2px; }
+    .nav-links { display: flex; gap: 18px; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); font-size: 14px; }
+
+    .hero { padding: 72px 0 30px; }
+    .hero-grid {
+      display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: stretch;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero-copy { padding: 34px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1.02; letter-spacing: -0.04em;
+    }
+    .lead {
+      font-size: clamp(18px, 2vw, 22px);
+      color: var(--muted); max-width: 62ch; margin: 0 0 24px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 26px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 0 16px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #121a30; color: var(--text); font-weight: 600;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), #7fe1ff);
+      color: #06101a; border-color: transparent;
+    }
+    .mini-stats {
+      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px;
+    }
+    .stat {
+      padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .stat strong { display: block; font-size: 20px; }
+    .stat span { color: var(--muted); font-size: 13px; }
+
+    .terminal { padding: 20px; background: #0a1020; position: relative; overflow: hidden; }
+    .terminal::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(99,210,255,.04), transparent 35%);
+      pointer-events: none;
+    }
+    .dots { display: flex; gap: 8px; margin-bottom: 14px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot.r { background: #ff6b6b; } .dot.y { background: #ffd166; } .dot.g { background: #37d67a; }
+    pre {
+      margin: 0; white-space: pre-wrap; word-break: break-word;
+      font: 14px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #d7e7ff;
+    }
+    .prompt { color: var(--ok); }
+    .accent { color: var(--accent); }
+    .muted { color: #92a7c6; }
+
+    section { padding: 22px 0; }
+    .section-head { margin-bottom: 16px; }
+    h2 {
+      margin: 0 0 8px; font-size: clamp(24px, 3vw, 38px);
+      letter-spacing: -0.03em;
+    }
+    .section-head p { margin: 0; color: var(--muted); max-width: 68ch; }
+
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: 18px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+    .panel { padding: 22px; }
+    .panel h3 { margin: 0 0 10px; font-size: 18px; }
+    .panel p { margin: 0; color: var(--muted); }
+    .kicker { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+
+    ul.clean { list-style: none; padding: 0; margin: 0; }
+    ul.clean li {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 0; color: var(--muted);
+      border-bottom: 1px dashed rgba(255,255,255,.07);
+    }
+    ul.clean li:last-child { border-bottom: 0; }
+    .tick { color: var(--accent); font-weight: 700; }
+
+    .flow {
+      padding: 26px; background: linear-gradient(180deg, rgba(99,210,255,.04), rgba(255,255,255,.02));
+    }
+    .flow pre { color: #e9f2ff; }
+
+    .tool {
+      padding: 18px; border-radius: 18px; background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .tool .name { font-weight: 700; font-size: 18px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(255,255,255,.08); margin-bottom: 10px;
+    }
+    .stable { color: var(--ok); }
+    .beta { color: var(--warn); }
+    .exp { color: var(--exp); }
+
+    .compare { overflow: hidden; }
+    .compare-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .compare-col { padding: 24px; }
+    .compare-col:first-child { border-right: 1px solid rgba(255,255,255,.08); }
+    .compare h3 { margin-top: 0; }
+
+    .cta {
+      margin: 28px 0 70px; padding: 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+    }
+    .cta p { margin: 8px 0 0; color: var(--muted); }
+
+    footer {
+      padding: 0 0 46px; color: var(--muted); text-align: center; font-size: 14px;
+    }
+
+    @media (max-width: 940px) {
+      .hero-grid, .grid-2, .grid-3, .grid-4, .compare-grid { grid-template-columns: 1fr; }
+      .mini-stats { grid-template-columns: 1fr; }
+      .compare-col:first-child { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .hero { padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand">macos-scripts — Case Study</div>
+      <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#solution">Solution</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#tools">Tools</a>
+        <a href="#value">Value</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div class="card hero-copy">
+        <div class="eyebrow">CLI Product Case</div>
+        <h1>A unified command surface for structured workflows on macOS</h1>
+        <p class="lead">
+          <strong>macos-scripts</strong> turns scattered shell commands into a modular workflow system,
+          built around a single entrypoint called <span class="accent">mqlaunch</span>.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://github.com/MCamner/macos-scripts">View Repository</a>
+          <a class="btn" href="#solution">See how it works</a>
+        </div>
+        <div class="mini-stats">
+          <div class="stat"><strong>1</strong><span>Unified entrypoint</span></div>
+          <div class="stat"><strong>5+</strong><span>Flagship tools</span></div>
+          <div class="stat"><strong>Menu + CLI</strong><span>Two usage modes</span></div>
+        </div>
+      </div>
+
+      <div class="card terminal">
+        <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <pre><span class="prompt">$</span> mqlaunch doctor
+
+<span class="accent">MQ DOCTOR — Environment Readiness Check</span>
+────────────────────────────────────────────────────
+OS                  macOS
+Shell               zsh
+Repo                detected
+Git workflow        READY
+Release workflow    PARTIAL
+Dev workflow        READY
+
+Recommendations
+────────────────────────────────────────────────────
+- Commit or stash local changes before release flows
+
+<span class="prompt">$</span> mqlaunch
+<span class="muted">→ open the command surface
+→ browse workflows
+→ run tools consistently</span></pre>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="problem">
+      <div class="section-head">
+        <h2>The problem</h2>
+        <p>Most environments do not lack tools. They lack structure, repeatability, and a clear operational entrypoint.</p>
+      </div>
+      <div class="card compare">
+        <div class="compare-grid">
+          <div class="compare-col">
+            <div class="kicker">Before</div>
+            <h3>Ad-hoc command usage</h3>
+            <ul class="clean">
+              <li><span class="tick">•</span><span>Commands scattered across notes, aliases, scripts, and memory</span></li>
+              <li><span class="tick">•</span><span>Debugging depends on knowing which tool to run and in what order</span></li>
+              <li><span class="tick">•</span><span>Execution varies between sessions and people</span></li>
+              <li><span class="tick">•</span><span>High cognitive load for repetitive operations</span></li>
+            </ul>
+          </div>
+          <div class="compare-col">
+            <div class="kicker">After</div>
+            <h3>Structured workflows</h3>
+            <ul class="clean">
+              <li><span class="tick">•</span><span>One command surface: <code>mqlaunch</code></span></li>
+              <li><span class="tick">•</span><span>Grouped workflows by intent: System, Dev, Performance, Tools</span></li>
+              <li><span class="tick">•</span><span>Same action, same path, every time</span></li>
+              <li><span class="tick">•</span><span>Faster onboarding and clearer troubleshooting</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="solution">
+      <div class="section-head">
+        <h2>The solution</h2>
+        <p>A modular CLI toolkit that creates a lightweight operations cockpit for local macOS workflows.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card panel">
+          <div class="kicker">Entry point</div>
+          <h3>mqlaunch</h3>
+          <p>The unified command surface that routes users into workflows and tools without relying on memory.</p>
+        </div>
+        <div class="card panel">
+          <div class="kicker">Tooling layer</div>
+          <h3>Reusable scripts</h3>
+          <p>Diagnostics, observability, security checks, and support utilities remain independently usable.</p>
+        </div>
+        <div class="card panel">
+          <div class="kicker">Workflow design</div>
+          <h3>Structured execution</h3>
+          <p>Commands are grouped by purpose, which reduces friction and makes repeated tasks consistent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head">
+        <h2>How it works</h2>
+        <p>The architecture separates interface, workflow routing, execution tools, and the underlying system layer.</p>
+      </div>
+      <div class="card flow">
+        <pre>User
+  ↓
+mqlaunch (CLI entrypoint)
+  ↓
+Workflows (Dev / System / Performance / Tools)
+  ↓
+Scripts and CLI tools
+  ↓
+macOS system</pre>
+      </div>
+      <div class="grid-4" style="margin-top:18px;">
+        <div class="card panel"><h3>Command surface</h3><p><code>mqlaunch</code> provides the interactive shell for discovery and execution.</p></div>
+        <div class="card panel"><h3>Workflow layer</h3><p>Menus and direct commands organize tasks by intent, not just by file.</p></div>
+        <div class="card panel"><h3>Execution layer</h3><p>Scripts and CLI tools do the actual work while remaining modular.</p></div>
+        <div class="card panel"><h3>System layer</h3><p>macOS operations, network state, diagnostics, and local environment controls.</p></div>
+      </div>
+    </section>
+
+    <section id="tools">
+      <div class="section-head">
+        <h2>Flagship tools</h2>
+        <p>These tools define the core value of the project and give the toolkit a clear identity.</p>
+      </div>
+      <div class="grid-3">
+        <div class="tool card panel">
+          <div class="badge stable">🟢 Stable</div>
+          <div class="name">doctor</div>
+          <p>Environment readiness check for dependencies, repo state, and workflow health.</p>
+        </div>
+        <div class="tool card panel">
+          <div class="badge stable">🟢 Stable</div>
+          <div class="name">mission-control</div>
+          <p>A cockpit-style system overview for CPU, memory, disk, network, battery, and git state.</p>
+        </div>
+        <div class="tool card panel">
+          <div class="badge stable">🟢 Stable</div>
+          <div class="name">network-ghost</div>
+          <p>Fast network diagnostics focused on IP, gateway, and connectivity basics.</p>
+        </div>
+        <div class="tool card panel">
+          <div class="badge stable">🟢 Stable</div>
+          <div class="name">vault-scan</div>
+          <p>Security-oriented checks to reduce the risk of leaking secrets or risky config patterns.</p>
+        </div>
+        <div class="tool card panel">
+          <div class="badge beta">🟡 Beta</div>
+          <div class="name">overseer</div>
+          <p>System and process monitoring to surface bottlenecks and heavy activity quickly.</p>
+        </div>
+        <div class="tool card panel">
+          <div class="badge stable">🟢 Stable</div>
+          <div class="name">debug-bundle</div>
+          <p>Creates troubleshooting snapshots so system state can be captured and shared consistently.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="value">
+      <div class="section-head">
+        <h2>Why it matters</h2>
+        <p>The value is not a single script. The value is a repeatable operational model with a clear entrypoint.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card panel">
+          <h3>Product value</h3>
+          <ul class="clean">
+            <li><span class="tick">•</span><span>Reduces cognitive load by replacing memory-driven command usage</span></li>
+            <li><span class="tick">•</span><span>Improves observability through purpose-built diagnostics tools</span></li>
+            <li><span class="tick">•</span><span>Creates consistency in repeated system and troubleshooting workflows</span></li>
+            <li><span class="tick">•</span><span>Makes tooling discoverable through both menus and direct CLI access</span></li>
+          </ul>
+        </div>
+        <div class="card panel">
+          <h3>Architecture value</h3>
+          <ul class="clean">
+            <li><span class="tick">•</span><span>Separates UI, workflow routing, and execution cleanly</span></li>
+            <li><span class="tick">•</span><span>Keeps tools modular and independently runnable</span></li>
+            <li><span class="tick">•</span><span>Supports future extensions without collapsing into script sprawl</span></li>
+            <li><span class="tick">•</span><span>Acts as a strong portfolio piece for CLI design and platform thinking</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Core idea</h2>
+        <p>This project is built around one simple principle.</p>
+      </div>
+      <div class="card panel" style="text-align:center; padding: 34px;">
+        <div style="font-size: clamp(22px, 3vw, 36px); font-weight: 800; letter-spacing: -.03em;">
+          One command → structured workflows → repeatable execution
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card cta">
+        <div>
+          <div class="kicker">Repository</div>
+          <h2 style="margin:0;">macos-scripts</h2>
+          <p>A modular CLI toolkit for macOS workflows, diagnostics, and system control.</p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a class="btn primary" href="https://github.com/MCamner/macos-scripts">Open repository</a>
+          <a class="btn" href="#top">Back to top</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built as a portfolio case around workflow architecture, CLI design, and observability thinking.
+  </footer>
+</body>
+</html>
