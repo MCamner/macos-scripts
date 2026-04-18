@@ -1,5 +1,10 @@
 # macos-scripts ⚡
 
+![macOS](https://img.shields.io/badge/platform-macOS-black)
+![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
+![License](https://img.shields.io/badge/license-MIT-2ea44f)
+![Status](https://img.shields.io/badge/status-active-success)
+
 **Turn scattered shell commands into structured workflows**
 
 Stop memorizing commands. Start running workflows.
