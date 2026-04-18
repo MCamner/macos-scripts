@@ -159,7 +159,7 @@ menu_loop() {
       7) open_guide ;;
       8) show_paths ;;
       9) show_git_status ;;
-    10) "$BASE_DIR/tools/scripts/boot-maker.sh"; pause_enter ;;
+    10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
