@@ -7,6 +7,9 @@
 
 **Turn scattered shell commands into structured workflows**
 
+👉 **View case study:**  
+https://mcamner.github.io/macos-scripts/case.html
+
 Stop memorizing commands. Start running workflows.
 
 ---
@@ -186,10 +189,13 @@ macos-scripts/
 
 ---
 
-## 📈 Real use case
+## 🎬 Case Study
 
-👉 **View case study:**  
-https://mcamner.github.io/macos-scripts/case.html
+See how macos-scripts is designed as a structured CLI system:
+
+👉 https://mcamner.github.io/macos-scripts/case.html
+
+## 📈 Real use case
 
 Example:
 
