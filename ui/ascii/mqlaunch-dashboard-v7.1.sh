@@ -193,7 +193,7 @@ mq_state_color() {
 mq_box_top() {
   local title="$1"
   local width="$2"
-  local inner=$(( width - 6 - ${#title} ))
+  local inner=$(( width - 5 - ${#title} ))
   (( inner < 0 )) && inner=0
   printf "┌─ %s %s┐\n" "$title" "$(mq_repeat "─" "$inner")"
 }
