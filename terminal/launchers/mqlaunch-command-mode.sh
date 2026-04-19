@@ -145,7 +145,10 @@ dispatch_cli_command() {
         net|network)
           show_network_info
           ;;
-        check|doctor|health)
+        doctor)
+      "$BASE_DIR/tools/scripts/doctor.sh"
+      ;;
+    check|health)
           system_check
           ;;
         self-check|selfcheck)
@@ -272,7 +275,7 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    check|doctor|health)
+    check|health)
       system_check
       return 0
       ;;
