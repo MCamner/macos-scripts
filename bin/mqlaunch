@@ -1,3 +1,13 @@
+
+run_script() {
+  local script="$1"
+  if [[ -x "$script" ]]; then
+    "$script"
+  else
+    echo "Error: Script not found or not executable: $script"
+  fi
+}
+
 #!/usr/bin/env zsh
 set -euo pipefail
 
