@@ -16,44 +16,170 @@ print_main_menu() {
   row2 " h. Health Check" " a. Apps"
 
   empty_row
-  local USER_NAME HOST_NAME TIME SURFACE_COLOR
+  render_command_surface
+}
+
+surface_terminal_width() {
+  local cols width
+  cols="$(tput cols 2>/dev/null || true)"
+  [[ "$cols" =~ ^[0-9]+$ ]] || cols="${BOX_INNER:-88}"
+
+  width=$(( cols - 2 ))
+  (( width > 112 )) && width=112
+  (( width < 32 )) && width=32
+  printf "%s" "$width"
+}
+
+surface_pad() {
+  local text="$1"
+  local width="$2"
+  printf "%-*.*s" "$width" "$width" "$text"
+}
+
+surface_top() {
+  local title="$1"
+  local width="$2"
+  local color="$3"
+  local fill=$(( width - 5 - ${#title} ))
+  (( fill < 0 )) && fill=0
+  printf "%b┌─ %s %s┐%b\n" "$color" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
+}
+
+surface_bottom() {
+  local width="$1"
+  local color="$2"
+  printf "%b└%s┘%b\n" "$color" "$(repeat_char $(( width - 2 )) "─")" "$C_RESET"
+}
+
+surface_row() {
+  local text="$1"
+  local width="$2"
+  local color="$3"
+  local inner=$(( width - 4 ))
+  printf "%b│ %s │%b\n" "$color" "$(surface_pad "$text" "$inner")" "$C_RESET"
+}
+
+surface_split_row() {
+  local left="$1"
+  local right="$2"
+  local width="$3"
+  local color="$4"
+  local inner left_width right_width
+  inner=$(( width - 4 ))
+  left_width=$(( inner / 2 ))
+  right_width=$(( inner - left_width - 1 ))
+  printf "%b│ %s %s │%b\n" \
+    "$color" \
+    "$(surface_pad "$left" "$left_width")" \
+    "$(surface_pad "$right" "$right_width")" \
+    "$C_RESET"
+}
+
+surface_figure_row() {
+  local art="$1"
+  local right="$2"
+  local width="$3"
+  local surface_color="$4"
+  local figure_color="$5"
+  local inner left_width right_width art_col art_pad
+  inner=$(( width - 4 ))
+  left_width=$(( inner / 2 ))
+  right_width=$(( inner - left_width - 1 ))
+  art_col=$(( left_width / 2 - 4 ))
+  (( art_col < 1 )) && art_col=1
+  art_pad="$(repeat_char "$art_col" " ")"
+
+  printf "%b│ %s%b%s%b%s %s │%b\n" \
+    "$surface_color" \
+    "$art_pad" \
+    "$figure_color" \
+    "$art" \
+    "$surface_color" \
+    "$(repeat_char $(( left_width - art_col - ${#art} )) " ")" \
+    "$(surface_pad "$right" "$right_width")" \
+    "$C_RESET"
+}
+
+surface_compact_figure_row() {
+  local art="$1"
+  local width="$2"
+  local surface_color="$3"
+  local figure_color="$4"
+  local inner art_col right_pad
+  inner=$(( width - 4 ))
+  art_col=$(( (inner - ${#art}) / 2 ))
+  (( art_col < 1 )) && art_col=1
+  right_pad=$(( inner - art_col - ${#art} ))
+  (( right_pad < 0 )) && right_pad=0
+
+  printf "%b│ %s%b%s%b%s │%b\n" \
+    "$surface_color" \
+    "$(repeat_char "$art_col" " ")" \
+    "$figure_color" \
+    "$art" \
+    "$surface_color" \
+    "$(repeat_char "$right_pad" " ")" \
+    "$C_RESET"
+}
+
+surface_git_state() {
+  local count
+  count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+  if [[ -z "$count" || "$count" == "0" ]]; then
+    printf "Clean"
+  else
+    printf "Dirty (%s)" "$count"
+  fi
+}
+
+render_command_surface() {
+  local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR width git_state tip activity system_state
   USER_NAME="${USER:-$(whoami)}"
   HOST_NAME="$(hostname -s)"
   TIME="$(date '+%Y-%m-%d %H:%M:%S')"
-  if [[ -t 1 ]]; then
-    SURFACE_COLOR=$'\033[0;37m'
+  width="$(surface_terminal_width)"
+  git_state="$(surface_git_state)"
+  system_state="System: Stable"
+  activity="Activity: Monitoring"
+  if [[ "$git_state" == Dirty* ]]; then
+    tip="Review git changes"
   else
-    SURFACE_COLOR=""
+    tip="Run help to see index"
   fi
 
-  surface_top() {
-    local title="$1"
-    local width=80
-    local fill=$(( width - 5 - ${#title} ))
-    (( fill < 0 )) && fill=0
-    printf "%b┌─ %s %s┐%b\n" "$SURFACE_COLOR" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
-  }
+  if [[ -t 1 ]]; then
+    SURFACE_COLOR=$'\033[0;37m'
+    FIGURE_COLOR="$C_OK"
+  else
+    SURFACE_COLOR=""
+    FIGURE_COLOR=""
+  fi
 
-  surface_bottom() {
-    printf "%b└%s┘%b\n" "$SURFACE_COLOR" "$(repeat_char 78 "─")" "$C_RESET"
-  }
-
-  surface_dual_row() {
-    printf "%b│ %-41.41s %-34.34s │%b\n" "$SURFACE_COLOR" "$1" "$2" "$C_RESET"
-  }
-
-  surface_top "Command Surface"
-  surface_dual_row "Welcome back ${USER_NAME}!" "Tips for getting started"
-  surface_dual_row " " "Run help to see index"
-
-  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "▄▄████▄▄" " " " " "$C_RESET"
-  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "████████" " " "System: Stable" "$C_RESET"
-  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "██▄██▄██" " " " " "$C_RESET"
-  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " " ▄█▀▀█▄ " " " "Activity: Monitoring" "$C_RESET"
-
-  surface_dual_row "Host: ${HOST_NAME}" "User: ${USER_NAME}"
-  surface_dual_row "Time: ${TIME}" "X. Exit launcher"
-  surface_bottom
+  surface_top "Command Surface v3" "$width" "$SURFACE_COLOR"
+  if (( width < 56 )); then
+    surface_row "Welcome back ${USER_NAME}!" "$width" "$SURFACE_COLOR"
+    if (( width >= 44 )); then
+      surface_compact_figure_row "▄▄████▄▄" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+      surface_compact_figure_row "████████" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+      surface_compact_figure_row "██▄██▄██" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+      surface_compact_figure_row " ▄█▀▀█▄ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    fi
+    surface_row "$system_state | Git: $git_state" "$width" "$SURFACE_COLOR"
+    surface_row "$activity" "$width" "$SURFACE_COLOR"
+    surface_row "Host: ${HOST_NAME} | User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
+    surface_row "Time: ${TIME} | X. Exit launcher" "$width" "$SURFACE_COLOR"
+    surface_row "Tip: $tip" "$width" "$SURFACE_COLOR"
+  else
+    surface_split_row "Welcome back ${USER_NAME}!" "Tips: $tip" "$width" "$SURFACE_COLOR"
+    surface_split_row "Mode: Interactive" "Git: $git_state" "$width" "$SURFACE_COLOR"
+    surface_figure_row "▄▄████▄▄" "" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    surface_figure_row "████████" "$system_state" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    surface_figure_row "██▄██▄██" "Repo: macos-scripts" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    surface_figure_row " ▄█▀▀█▄ " "$activity" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    surface_split_row "Host: ${HOST_NAME}" "User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
+    surface_split_row "Time: ${TIME}" "X. Exit launcher" "$width" "$SURFACE_COLOR"
+  fi
+  surface_bottom "$width" "$SURFACE_COLOR"
 }
 
 handle_main_menu_choice() {
@@ -88,7 +214,77 @@ handle_main_menu_choice() {
 }
 
 read_main_choice() {
+  local prompt_line prompt_hint prompt_color prompt_width
+  prompt_width="$(surface_terminal_width)"
+  prompt_line="$(repeat_char "$prompt_width" "─")"
+  prompt_hint=">> choose an option, command alias, or x to exit"
+  if [[ -t 1 ]]; then
+    prompt_color=$'\033[0;37m'
+  else
+    prompt_color=""
+  fi
+
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+    local prompt input cursor key old_stty
+    prompt="mqlaunch > "
+    input=""
+    cursor=0
+
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%s" "$prompt"
+    printf "\n%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n\n" "$C_OK" "$prompt_hint" "$C_RESET"
+    printf "\033[4A"
+
+    old_stty="$(stty -g)"
+    stty -echo -icanon min 1 time 0 2>/dev/null || true
+
+    while true; do
+      printf "\r\033[2K%s%s" "$prompt" "$input"
+      printf "\r\033[%dC" $(( ${#prompt} + cursor ))
+
+      IFS= read -r -k 1 key || {
+        stty "$old_stty" 2>/dev/null || true
+        return 1
+      }
+
+      case "$key" in
+        $'\n'|$'\r')
+          break
+          ;;
+        $'\177'|$'\b')
+          if (( cursor > 0 )); then
+            input="${input[1,cursor-1]}${input[cursor+1,-1]}"
+            (( cursor-- ))
+          fi
+          ;;
+        $'\033')
+          IFS= read -r -k 1 key || key=""
+          if [[ "$key" == "[" ]]; then
+            IFS= read -r -k 1 key || key=""
+            case "$key" in
+              C) (( cursor < ${#input} )) && (( cursor++ )) ;;
+              D) (( cursor > 0 )) && (( cursor-- )) ;;
+            esac
+          fi
+          ;;
+        *)
+          input="${input[1,cursor]}${key}${input[cursor+1,-1]}"
+          (( cursor++ ))
+          ;;
+      esac
+    done
+
+    stty "$old_stty" 2>/dev/null || true
+    printf "\r\033[2K%s%s\n\033[3B" "$prompt" "$input"
+    choice="$input"
+    return 0
+  fi
+
+  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
+  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+  printf "%b%s%b\n\n" "$C_OK" "$prompt_hint" "$C_RESET"
   choice="$REPLY"
 }
 
