@@ -238,9 +238,8 @@ interactive_menu() {
     row2 " 5. Open UI folder" " 6. Open dashboards folder"
     row2 " 7. Open project page" " 0. Exit"
     print_footer
-    printf "${C_TITLE}Select option [0-7]: ${C_RESET}"
-
-    read -r choice
+    read_menu_choice "Select option [0-7] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in

@@ -10,7 +10,6 @@ print_net_menu() {
   row2 " 5. Copy IP info to clipboard" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select net option [1-5,b]: ${C_RESET}"
 }
 
 handle_net_menu_choice() {
@@ -34,7 +33,8 @@ net_menu_loop() {
 
   while true; do
     print_net_menu
-    read -r choice
+    read_menu_choice "Select net option [1-5,b] > " || break
+    choice="$REPLY"
     echo
 
     if ! handle_net_menu_choice "$choice"; then

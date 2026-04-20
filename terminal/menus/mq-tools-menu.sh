@@ -139,7 +139,6 @@ print_menu() {
   row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select option [1-11,b]: ${C_RESET}"
 }
 
 menu_loop() {
@@ -147,7 +146,8 @@ menu_loop() {
 
   while true; do
     print_menu
-    read -r choice
+    read_menu_choice "Select option [1-11,b] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in

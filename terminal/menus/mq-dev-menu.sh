@@ -14,7 +14,6 @@ print_dev_menu() {
   row2 " b. Back" ""
 
   print_footer
-  printf "${C_TITLE}Select dev option [1-12,b]: ${C_RESET}"
 }
 
 handle_dev_menu_choice() {
@@ -45,7 +44,8 @@ dev_menu_loop() {
 
   while true; do
     print_dev_menu
-    read -r choice
+    read_menu_choice "Select dev option [1-12,b] > " || break
+    choice="$REPLY"
     echo
 
     if ! handle_dev_menu_choice "$choice"; then

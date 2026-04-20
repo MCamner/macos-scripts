@@ -42,7 +42,6 @@ show_demo() {
   row2 " 0. Exit" ""
 
   print_footer
-  printf "${C_TITLE}Select option [0-2]: ${C_RESET}"
 }
 
 show_paths() {
@@ -63,7 +62,8 @@ main() {
 
   while true; do
     show_demo
-    read -r choice
+    read_menu_choice "Select option [0-2] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in

@@ -12,7 +12,6 @@ print_ai_menu() {
   row2 " 9. AI Menu" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select AI mode [1-9,b]: ${C_RESET}"
 }
 
 handle_ai_menu_choice() {
@@ -40,7 +39,8 @@ ai_menu_loop() {
 
   while true; do
     print_ai_menu
-    read -r choice
+    read_menu_choice "Select AI mode [1-9,b] > " || break
+    choice="$REPLY"
     echo
 
     if ! handle_ai_menu_choice "$choice"; then

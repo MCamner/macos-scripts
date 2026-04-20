@@ -26,9 +26,8 @@ open_apps_menu() {
     row2 " b. Back" " x. Exit"
 
     print_footer
-    printf "${C_TITLE}Select option [1-14,b,x]: ${C_RESET}"
-
-    read -r choice
+    read_menu_choice "Select option [1-14,b,x] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in

@@ -725,7 +725,6 @@ print_themes_menu() {
   row2 " 7. Reset theme" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select theme option [1-7,b]: ${C_RESET}"
 }
 
 themes_menu_loop() {
@@ -738,7 +737,8 @@ themes_menu_loop() {
       echo
     fi
     print_themes_menu
-    read -r choice
+    read_menu_choice "Select theme option [1-7,b] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in

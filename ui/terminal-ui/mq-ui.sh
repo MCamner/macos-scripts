@@ -101,6 +101,24 @@ pause_enter() {
   read -r _
 }
 
+read_prompt() {
+  local color_prompt="$1"
+  local plain_prompt="${2:-$1}"
+
+  REPLY=""
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+    vared -p "$plain_prompt" -c REPLY
+  else
+    printf "%b" "$color_prompt"
+    IFS= read -r REPLY
+  fi
+}
+
+read_menu_choice() {
+  local prompt="$1"
+  read_prompt "${C_TITLE}${prompt}${C_RESET}" "$prompt"
+}
+
 set_terminal_title() {
   printf '\033]0;%s — %s\007' "$APP_TITLE" "$APP_SUBTITLE"
 }

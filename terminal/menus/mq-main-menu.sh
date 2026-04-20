@@ -88,13 +88,8 @@ handle_main_menu_choice() {
 }
 
 read_main_choice() {
-  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
-    choice=""
-    vared -p "mqlaunch > " -c choice
-  else
-    printf "${C_TITLE}mqlaunch > ${C_RESET}"
-    IFS= read -r choice
-  fi
+  read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
+  choice="$REPLY"
 }
 
 main_loop() {
