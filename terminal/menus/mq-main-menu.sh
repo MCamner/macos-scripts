@@ -15,6 +15,25 @@ print_main_menu() {
   row2 " p. Performance" " n. Network"
   row2 " h. Health Check" " a. Apps"
 
+  empty_row
+  local USER_NAME HOST_NAME TIME
+  USER_NAME="${USER:-$(whoami)}"
+  HOST_NAME="$(hostname -s)"
+  TIME="$(date '+%Y-%m-%d %H:%M:%S')"
+
+  echo -e "${C_INFO}┌─ Command Surface ─────────────────────────────────────────────────────────────┐${C_RESET}"
+  printf "│ %-45b │ %-26b │\n" "Welcome back ${C_OK}${USER_NAME}${C_INFO}!" "Tips for getting started"
+  printf "│ %-45b │ %-26b │\n" " " "Run help to see index"
+
+  printf "│ %-15b ${C_ERR}▄▄████▄▄${C_INFO} %-22b │ %-26b │\n" " " " " " "
+  printf "│ %-15b ${C_ERR}████████${C_INFO} %-22b │ %-26b │\n" " " " " "System: ${C_OK}Stable${C_INFO}"
+  printf "│ %-15b ${C_ERR}██▄██▄██${C_INFO} %-22b │ %-26b │\n" " " " " " "
+  printf "│ %-15b ${C_ERR} ▄█▀▀█▄ ${C_INFO} %-22b │ %-26b │\n" " " " " "Activity: ${C_TITLE}Monitoring${C_INFO}"
+
+  printf "│ %-45b │ %-26b │\n" "Path: ${BASE_DIR}${C_INFO}" "Zephyr Pro"
+  printf "│ %-45b │ %-26b │\n" "Host: ${HOST_NAME}${C_INFO}" "Last sync: ${TIME}"
+  echo -e "${C_INFO}└──────────────────────────────────────────────────────────────────────────────┘${C_RESET}"
+
   print_main_footer
   printf "${C_TITLE}Select option [1-6,p,n,h,a,X]: ${C_RESET}"
 }
