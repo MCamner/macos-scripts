@@ -16,26 +16,46 @@ print_main_menu() {
   row2 " h. Health Check" " a. Apps"
 
   empty_row
-  local USER_NAME HOST_NAME TIME
+  local USER_NAME HOST_NAME TIME SURFACE_COLOR
   USER_NAME="${USER:-$(whoami)}"
   HOST_NAME="$(hostname -s)"
   TIME="$(date '+%Y-%m-%d %H:%M:%S')"
+  if [[ -t 1 ]]; then
+    SURFACE_COLOR=$'\033[0;37m'
+  else
+    SURFACE_COLOR=""
+  fi
 
-  echo -e "${C_INFO}┌─ Command Surface ─────────────────────────────────────────────────────────────┐${C_RESET}"
-  printf "│ %-45b │ %-26b │\n" "Welcome back ${C_OK}${USER_NAME}${C_INFO}!" "Tips for getting started"
-  printf "│ %-45b │ %-26b │\n" " " "Run help to see index"
+  surface_top() {
+    local title="$1"
+    local width=80
+    local fill=$(( width - 5 - ${#title} ))
+    (( fill < 0 )) && fill=0
+    printf "%b┌─ %s %s┐%b\n" "$SURFACE_COLOR" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
+  }
 
-  printf "│ %-15b ${C_ERR}▄▄████▄▄${C_INFO} %-22b │ %-26b │\n" " " " " " "
-  printf "│ %-15b ${C_ERR}████████${C_INFO} %-22b │ %-26b │\n" " " " " "System: ${C_OK}Stable${C_INFO}"
-  printf "│ %-15b ${C_ERR}██▄██▄██${C_INFO} %-22b │ %-26b │\n" " " " " " "
-  printf "│ %-15b ${C_ERR} ▄█▀▀█▄ ${C_INFO} %-22b │ %-26b │\n" " " " " "Activity: ${C_TITLE}Monitoring${C_INFO}"
+  surface_bottom() {
+    printf "%b└%s┘%b\n" "$SURFACE_COLOR" "$(repeat_char 78 "─")" "$C_RESET"
+  }
 
-  printf "│ %-45b │ %-26b │\n" "Path: ${BASE_DIR}${C_INFO}" "Zephyr Pro"
-  printf "│ %-45b │ %-26b │\n" "Host: ${HOST_NAME}${C_INFO}" "Last sync: ${TIME}"
-  echo -e "${C_INFO}└──────────────────────────────────────────────────────────────────────────────┘${C_RESET}"
+  surface_dual_row() {
+    printf "%b│ %-41.41s %-34.34s │%b\n" "$SURFACE_COLOR" "$1" "$2" "$C_RESET"
+  }
 
-  print_main_footer
-  printf "${C_TITLE}Select option [1-6,p,n,h,a,X]: ${C_RESET}"
+  surface_top "Command Surface"
+  surface_dual_row "Welcome back ${USER_NAME}!" "Tips for getting started"
+  surface_dual_row " " "Run help to see index"
+
+  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "▄▄████▄▄" " " " " "$C_RESET"
+  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "████████" " " "System: Stable" "$C_RESET"
+  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " "██▄██▄██" " " " " "$C_RESET"
+  printf "%b│ %-16s%s%-17s %-34s │%b\n" "$SURFACE_COLOR" " " " ▄█▀▀█▄ " " " "Activity: Monitoring" "$C_RESET"
+
+  surface_dual_row "Host: ${HOST_NAME}" "User: ${USER_NAME}"
+  surface_dual_row "Time: ${TIME}" "X. Exit launcher"
+  surface_bottom
+
+  printf "${C_TITLE}mqlaunch > ${C_RESET}"
 }
 
 handle_main_menu_choice() {
