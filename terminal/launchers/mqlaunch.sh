@@ -52,6 +52,10 @@ else
   exit 1
 fi
 
+if [[ -t 0 ]]; then
+  stty erase '^?' 2>/dev/null || true
+fi
+
 BOX_INNER=88
 
 # Main menu module
