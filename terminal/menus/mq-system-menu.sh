@@ -16,22 +16,22 @@ open_system_menu() {
     row "HEALTH / SAFETY"
     row2 " 4. Doctor"        " 5. Self-check"
     row2 " 6. Debug bundle"  " 7. System check"
-    row2 " 8. Vault Scan"    ""
+    row2 " 8. Vault Scan"    " 9. Reap"
 
     empty_row
     row "SESSION / CONTROL"
-    row2 " 9. Lock screen"   "10. Sleep display"
-    row2 "11. Restart Finder" "12. Show date and time"
+    row2 "10. Lock screen"   "11. Sleep display"
+    row2 "12. Restart Finder" "13. Show date and time"
 
     empty_row
     row "NAVIGATION"
-    row2 "13. Repo folder" "14. Repo in browser"
+    row2 "14. Repo folder" "15. Repo in browser"
 
     empty_row
     row2 " b. Back" " x. Exit"
 
     print_footer
-    read_menu_choice "Select option [1-14,b,x] > " || return
+    read_menu_choice "Select option [1-15,b,x] > " || return
     choice="$REPLY"
     echo
 
@@ -44,12 +44,13 @@ open_system_menu() {
       6) run_debug_bundle || true; pause_enter ;;
       7) system_check; pause_enter ;;
       8) "$BASE_DIR/tools/scripts/vault-scan.sh"; pause_enter ;;
-      9) lock_screen ;;
-      10) sleep_display ;;
-      11) restart_finder ;;
-      12) show_date_time ;;
-      13) open_base_dir ;;
-      14) open_repo_browser ;;
+      9) "$BASE_DIR/tools/scripts/overseer.sh"; pause_enter ;;
+      10) lock_screen ;;
+      11) sleep_display ;;
+      12) restart_finder ;;
+      13) show_date_time ;;
+      14) open_base_dir ;;
+      15) open_repo_browser ;;
       b|B) return ;;
       x|X)
         echo "Exiting ${APP_TITLE}..."
