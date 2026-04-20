@@ -54,8 +54,6 @@ print_main_menu() {
   surface_dual_row "Host: ${HOST_NAME}" "User: ${USER_NAME}"
   surface_dual_row "Time: ${TIME}" "X. Exit launcher"
   surface_bottom
-
-  printf "${C_TITLE}mqlaunch > ${C_RESET}"
 }
 
 handle_main_menu_choice() {
@@ -89,12 +87,22 @@ handle_main_menu_choice() {
   esac
 }
 
+read_main_choice() {
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+    choice=""
+    vared -p "mqlaunch > " -c choice
+  else
+    printf "${C_TITLE}mqlaunch > ${C_RESET}"
+    IFS= read -r choice
+  fi
+}
+
 main_loop() {
   local choice
 
   while true; do
     print_main_menu
-    read -r choice
+    read_main_choice || return
     echo
     handle_main_menu_choice "$choice"
   done
