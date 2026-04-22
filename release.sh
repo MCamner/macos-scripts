@@ -11,24 +11,25 @@ COMMIT_CREATED=0
 TAG_CREATED=0
 TARGET_VERSION=""
 TARGET_TAG=""
+RESTORE_DIR=""
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./tools/release.sh [--dry-run] [--github-release] <version>
+  ./release.sh [--dry-run] [--github-release] <version>
 
 Examples:
-  ./tools/release.sh 0.1.2
-  ./tools/release.sh --dry-run 0.1.2
-  ./tools/release.sh --github-release 0.1.2
+  ./release.sh 0.1.2
+  ./release.sh --dry-run 0.1.2
+  ./release.sh --github-release 0.1.2
 
 What it does:
   1. Verifies git working tree is clean
   2. Verifies required files exist
-  3. Syncs with origin/main
+  3. Syncs with origin/main for live releases
   4. Verifies tag v<version> does not already exist
   5. Updates VERSION
-  6. Updates README version badge
+  6. Updates README version badge when present
   7. Verifies CHANGELOG.md contains the version
   8. Shows a diff preview
   9. Creates a release commit
@@ -37,8 +38,8 @@ What it does:
  12. Optionally creates a GitHub Release via gh CLI
 
 Safety:
-  - --dry-run performs all checks and file updates locally, shows the diff,
-    then rolls changes back and exits without commit/tag/push.
+  - --dry-run performs local checks and file updates, shows the diff,
+    then rolls changes back and exits without fetch/commit/tag/push.
   - If the script aborts before commit, VERSION and README.md are restored.
 EOF
 }
@@ -82,6 +83,12 @@ require_clean_git() {
   fi
 }
 
+require_release_files_clean() {
+  local dirty_files
+  dirty_files="$(git status --porcelain -- "$VERSION_FILE" "$README_FILE" "$CHANGELOG_FILE")"
+  [[ -z "$dirty_files" ]] || die "Release files have local changes. Commit or stash VERSION, README.md, and CHANGELOG.md first."
+}
+
 tag_exists() {
   local tag="$1"
   git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1
@@ -100,22 +107,23 @@ create_github_release() {
     --notes-file "$CHANGELOG_FILE"
 }
 
+create_restore_point() {
+  RESTORE_DIR="$(mktemp -d)"
+  cp "$VERSION_FILE" "$RESTORE_DIR/$VERSION_FILE"
+  cp "$README_FILE" "$RESTORE_DIR/$README_FILE"
+}
+
 restore_worktree_changes() {
-  local changed=0
+  [[ -n "$RESTORE_DIR" && -d "$RESTORE_DIR" ]] || return 0
 
-  if ! git diff --quiet -- "$VERSION_FILE"; then
-    git restore -- "$VERSION_FILE"
-    changed=1
-  fi
+  cp "$RESTORE_DIR/$VERSION_FILE" "$VERSION_FILE"
+  cp "$RESTORE_DIR/$README_FILE" "$README_FILE"
+  info "Rolled back local file changes"
+}
 
-  if ! git diff --quiet -- "$README_FILE"; then
-    git restore -- "$README_FILE"
-    changed=1
-  fi
-
-  if [[ "$changed" -eq 1 ]]; then
-    info "Rolled back local file changes"
-  fi
+cleanup_restore_point() {
+  [[ -n "$RESTORE_DIR" && -d "$RESTORE_DIR" ]] || return 0
+  rm -rf "$RESTORE_DIR"
 }
 
 cleanup_on_error() {
@@ -127,6 +135,7 @@ cleanup_on_error() {
 
     if [[ "$COMMIT_CREATED" -eq 0 ]]; then
       restore_worktree_changes
+      cleanup_restore_point
     else
       echo "A release commit was already created; no automatic rollback was applied."
     fi
@@ -166,7 +175,8 @@ new_text, count = re.subn(
 )
 
 if count == 0:
-    raise SystemExit("README version badge not found")
+    print("README version badge not found; skipping")
+    raise SystemExit(0)
 
 path.write_text(new_text, encoding="utf-8")
 PY
@@ -204,7 +214,7 @@ print_release_summary() {
 }
 
 parse_args() {
-  if [[ $# -lt 1 || $# -gt 2 ]]; then
+  if [[ $# -lt 1 || $# -gt 3 ]]; then
     usage
     exit 1
   fi
@@ -213,6 +223,10 @@ parse_args() {
     case "$1" in
       --dry-run)
         DRY_RUN=1
+        shift
+        ;;
+      --github-release)
+        GH_RELEASE=1
         shift
         ;;
       -h|--help)
@@ -242,18 +256,27 @@ main() {
   require_file "$README_FILE"
   require_file "$CHANGELOG_FILE"
   require_on_main
-  require_clean_git
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    require_release_files_clean
+  else
+    require_clean_git
+  fi
 
-  info "Fetching latest main and tags from origin"
-  git fetch origin main --tags
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    info "Dry run: skipping fetch and pull"
+  else
+    info "Fetching latest main and tags from origin"
+    git fetch origin main --tags
 
-  info "Ensuring local main matches origin/main"
-  git pull --rebase origin main
+    info "Ensuring local main matches origin/main"
+    git pull --rebase origin main
+  fi
 
   if tag_exists "$TARGET_TAG"; then
     die "Tag $TARGET_TAG already exists"
   fi
 
+  create_restore_point
   print_release_summary "$TARGET_VERSION" "$TARGET_TAG"
 
   info "Updating VERSION -> $TARGET_VERSION"
@@ -271,6 +294,7 @@ main() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     info "Dry run complete; restoring local changes"
     restore_worktree_changes
+    cleanup_restore_point
     trap - EXIT
     exit 0
   fi
@@ -290,12 +314,14 @@ main() {
   info "Pushing tag $TARGET_TAG"
   git push origin "$TARGET_TAG"
 
-  info "Creating GitHub release $TARGET_TAG"
-  gh release create "$TARGET_TAG" \
-    --title "Release $TARGET_TAG" \
-    --notes-file CHANGELOG.md
+  if [[ "$GH_RELEASE" -eq 1 ]]; then
+    create_github_release
+  else
+    info "Skipping GitHub release. Use --github-release to create one."
+  fi
 
   info "Release complete: $TARGET_TAG"
+  cleanup_restore_point
   trap - EXIT
 }
 

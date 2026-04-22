@@ -7,6 +7,8 @@ V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 TOOLS_BRIDGE="$PROJECT_ROOT/terminal/bridges/tools-bridge.sh"
 DEV_BRIDGE="$PROJECT_ROOT/terminal/bridges/dev-bridge.sh"
 PERF_BRIDGE="$PROJECT_ROOT/terminal/bridges/performance-bridge.sh"
+RELEASE_SCRIPT="$PROJECT_ROOT/release.sh"
+RELEASE_MENU="$PROJECT_ROOT/terminal/menus/mq-release-menu.sh"
 
 pass() {
   echo "[PASS] $1"
@@ -44,6 +46,7 @@ assert_file "$V1" "V1 launcher"
 assert_file "$TOOLS_BRIDGE" "Tools bridge"
 assert_file "$DEV_BRIDGE" "Dev bridge"
 assert_file "$PERF_BRIDGE" "Performance bridge"
+assert_file "$RELEASE_SCRIPT" "Release script"
 
 assert_cmd_ok "Legacy launcher help works" zsh "$LEGACY" help
 assert_cmd_ok "V1 launcher help works" bash "$V1" help
@@ -52,6 +55,7 @@ assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance 
 assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
 assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
 assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"
+assert_grep 'RELEASE_SCRIPT="\$BASE_DIR/release\.sh"' "$RELEASE_MENU" "Release menu points at root release script"
 
 assert_grep 'render_main_menu_panel' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu panel exists"
 assert_grep 'surface_top "Main Menu"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu panel has title"

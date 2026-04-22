@@ -3,7 +3,7 @@ set -euo pipefail
 
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
-RELEASE_SCRIPT="$BASE_DIR/tools/release.sh"
+RELEASE_SCRIPT="$BASE_DIR/release.sh"
 CHANGELOG_FILE="$BASE_DIR/CHANGELOG.md"
 VERSION_FILE="$BASE_DIR/VERSION"
 
@@ -122,7 +122,6 @@ open_release_script_in_editor() {
 
 prompt_version() {
   local prompt="$1"
-  local version=""
 
   print_header
   row_bold "$prompt"
@@ -130,19 +129,18 @@ prompt_version() {
   row "Example: 0.1.4"
   print_footer
   printf "${C_TITLE}Version: ${C_RESET}"
-  read -r version
+  read -r REPLY
 
-  if [[ -z "${version// }" ]]; then
+  if [[ -z "${REPLY// }" ]]; then
     ui_warn "No version entered."
     pause_enter
     return 1
   fi
-
-  printf '%s\n' "$version"
 }
 
 run_release_command() {
   local title="$1"
+  local status=0
   shift
 
   require_release_script || return 1
@@ -154,21 +152,29 @@ run_release_command() {
   (
     cd "$BASE_DIR" || exit 1
     "$RELEASE_SCRIPT" "$@"
-  )
+  ) || status=$?
+
+  if [[ "$status" -ne 0 ]]; then
+    empty_row
+    row "Release command failed with exit code: $status"
+  fi
 
   print_footer
   pause_enter
+  return "$status"
 }
 
 run_release_dry() {
   local version=""
-  version="$(prompt_version "DRY RUN RELEASE")" || return 1
+  prompt_version "DRY RUN RELEASE" || return 1
+  version="$REPLY"
   run_release_command "DRY RUN RELEASE" --dry-run "$version"
 }
 
 run_release_live() {
   local version=""
-  version="$(prompt_version "RUN RELEASE")" || return 1
+  prompt_version "RUN RELEASE" || return 1
+  version="$REPLY"
   run_release_command "RUN RELEASE" "$version"
 }
 
@@ -240,9 +246,9 @@ menu_loop() {
 
     case "$choice" in
       1) show_release_status ;;
-      2) run_release_dry ;;
-      3) run_release_live ;;
-      4) create_github_release_only ;;
+      2) run_release_dry || true ;;
+      3) run_release_live || true ;;
+      4) create_github_release_only || true ;;
       5) show_changelog ;;
       6) show_tags ;;
       7) open_changelog_in_editor ;;

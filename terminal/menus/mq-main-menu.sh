@@ -47,6 +47,39 @@ surface_pad() {
   printf "%-*.*s" "$width" "$width" "$text"
 }
 
+surface_action_word() {
+  local index="$1"
+  case $(( index % 10 )) in
+    0) printf "routing" ;;
+    1) printf "loading" ;;
+    2) printf "opening" ;;
+    3) printf "mapping" ;;
+    4) printf "syncing" ;;
+    5) printf "priming" ;;
+    6) printf "launching" ;;
+    7) printf "resolving" ;;
+    8) printf "decoding" ;;
+    *) printf "activating" ;;
+  esac
+}
+
+surface_accept_scramble() {
+  local color="$1"
+  local selected="$2"
+  local frame start word
+  start=$(( RANDOM % 10 ))
+
+  for frame in 1 2 3 4 5 6; do
+    word="$(surface_action_word $(( start + frame )))"
+    printf "\r\033[2K%b>> %-10s %s%b" "$color" "$word" "$selected" "$C_RESET"
+    sleep 0.025
+  done
+
+  word="$(surface_action_word $(( start + 7 )))"
+  printf "\r\033[2K%b>> %-10s %s%b" "$C_OK" "$word" "$selected" "$C_RESET"
+  sleep 0.04
+}
+
 surface_top() {
   local title="$1"
   local width="$2"
@@ -328,7 +361,9 @@ read_main_choice() {
     done
 
     stty "$old_stty" 2>/dev/null || true
-    printf "\r\033[2K%s%s\n\033[3B" "$prompt" "$input"
+    printf "\r\033[2K%s%s\033[2B" "$prompt" "$input"
+    surface_accept_scramble "$C_WARN" "${input:-menu}"
+    printf "\033[2B\n"
     choice="$input"
     return 0
   fi

@@ -24,7 +24,6 @@ tools/
 ├── scripts/              # system, diagnostics, and utility scripts
 ├── legacy/               # archived/old scripts (patches, backups)
 ├── mac-terminal-guide/   # terminal guide source
-├── release.sh            # release automation script
 ├── onboarding.sh         # onboarding/setup helper
 └── README.md
 ```
@@ -36,14 +35,14 @@ tools/
 Safe, repeatable release workflow:
 
 ```
-tools/release.sh
+release.sh
 ```
 
 Run from repo root:
 
 ```bash
-./tools/release.sh --dry-run 0.1.5
-./tools/release.sh 0.1.5
+./release.sh --dry-run 0.1.5
+./release.sh 0.1.5
 ```
 
 What it handles:

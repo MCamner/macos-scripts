@@ -125,9 +125,9 @@ set_terminal_title() {
 
 clear_screen() {
   if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
-    tput clear
+    tput clear 2>/dev/null || printf '\033[H\033[2J'
   else
-    clear
+    printf '\033[H\033[2J'
   fi
   set_terminal_title
 }
