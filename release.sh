@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
+
+DRY_RUN=false
+GITHUB_RELEASE=false
+INIT_CHANGELOG=false
+VERSION=""
 
 VERSION_FILE="VERSION"
 README_FILE="README.md"
 CHANGELOG_FILE="CHANGELOG.md"
 
-DRY_RUN=0
-GH_RELEASE=0
-COMMIT_CREATED=0
-TAG_CREATED=0
-TARGET_VERSION=""
-TARGET_TAG=""
-RESTORE_DIR=""
+ORIG_VERSION_CONTENT=""
+ORIG_README_CONTENT=""
 
-usage() {
-  cat <<'EOF'
+show_usage() {
+  cat <<'USAGE'
 Usage:
-  ./release.sh [--dry-run] [--github-release] <version>
+  ./release.sh [--dry-run] [--github-release] [--init-changelog] <version>
 
 Examples:
   ./release.sh 0.1.2
   ./release.sh --dry-run 0.1.2
   ./release.sh --github-release 0.1.2
+  ./release.sh --init-changelog 0.1.2
 
 What it does:
   1. Verifies git working tree is clean
@@ -37,292 +39,269 @@ What it does:
  11. Pushes main and the new tag to origin
  12. Optionally creates a GitHub Release via gh CLI
 
+Special mode:
+  --init-changelog
+    Creates a changelog template for the requested version at the top of
+    CHANGELOG.md, then exits without commit/tag/push.
+
 Safety:
   - --dry-run performs local checks and file updates, shows the diff,
     then rolls changes back and exits without fetch/commit/tag/push.
   - If the script aborts before commit, VERSION and README.md are restored.
-EOF
+USAGE
 }
 
-die() {
-  echo "ERROR: $*" >&2
-  exit 1
+log_step() {
+  printf '==> %s\n' "$1"
 }
 
-info() {
-  echo "==> $*"
+error() {
+  printf 'ERROR: %s\n' "$1" >&2
+}
+
+rollback_local_changes() {
+  local rolled_back=false
+
+  if [[ -n "${ORIG_VERSION_CONTENT}" && -f "${VERSION_FILE}" ]]; then
+    printf '%s' "${ORIG_VERSION_CONTENT}" > "${VERSION_FILE}"
+    rolled_back=true
+  fi
+
+  if [[ -n "${ORIG_README_CONTENT}" && -f "${README_FILE}" ]]; then
+    printf '%s' "${ORIG_README_CONTENT}" > "${README_FILE}"
+    rolled_back=true
+  fi
+
+  if [[ "${rolled_back}" == true ]]; then
+    log_step "Rolled back local file changes"
+  fi
+}
+
+on_error() {
+  error "Release command failed with exit code: $?"
+  rollback_local_changes || true
+}
+
+trap on_error ERR
+
+require_clean_tree() {
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    error "Git working tree is not clean. Commit or stash changes first."
+    exit 1
+  fi
+
+  if [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
+    error "Untracked files detected. Commit, remove, or ignore them first."
+    exit 1
+  fi
 }
 
 require_file() {
   local file="$1"
-  [[ -f "$file" ]] || die "Missing required file: $file"
+  [[ -f "$file" ]] || { error "Required file missing: $file"; exit 1; }
 }
 
-validate_version() {
+require_changelog_version() {
   local version="$1"
-  [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "Version must look like 0.1.2"
-}
 
-require_git_repo() {
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "Not inside a git repository"
-}
-
-require_on_main() {
-  local branch
-  branch="$(git symbolic-ref --short HEAD)"
-  [[ "$branch" == "main" ]] || die "Current branch is '$branch'. Switch to 'main' first."
-}
-
-require_clean_git() {
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    die "Working tree is not clean. Commit or stash your changes first."
-  fi
-
-  if [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
-    die "Untracked files present. Commit, ignore, or remove them first."
+  if ! grep -Eq "^\## \[${version}\]" "${CHANGELOG_FILE}"; then
+    error "${CHANGELOG_FILE} does not appear to contain a section for version ${version}"
+    exit 1
   fi
 }
-
-require_release_files_clean() {
-  local dirty_files
-  dirty_files="$(git status --porcelain -- "$VERSION_FILE" "$README_FILE" "$CHANGELOG_FILE")"
-  [[ -z "$dirty_files" ]] || die "Release files have local changes. Commit or stash VERSION, README.md, and CHANGELOG.md first."
-}
-
-tag_exists() {
-  local tag="$1"
-  git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1
-}
-
-require_gh_cli() {
-  command -v gh >/dev/null 2>&1 || die "GitHub CLI (gh) is required for --github-release"
-}
-
-create_github_release() {
-  require_gh_cli
-
-  info "Creating GitHub release $TARGET_TAG"
-  gh release create "$TARGET_TAG" \
-    --title "Release $TARGET_TAG" \
-    --notes-file "$CHANGELOG_FILE"
-}
-
-create_restore_point() {
-  RESTORE_DIR="$(mktemp -d)"
-  cp "$VERSION_FILE" "$RESTORE_DIR/$VERSION_FILE"
-  cp "$README_FILE" "$RESTORE_DIR/$README_FILE"
-}
-
-restore_worktree_changes() {
-  [[ -n "$RESTORE_DIR" && -d "$RESTORE_DIR" ]] || return 0
-
-  cp "$RESTORE_DIR/$VERSION_FILE" "$VERSION_FILE"
-  cp "$RESTORE_DIR/$README_FILE" "$README_FILE"
-  info "Rolled back local file changes"
-}
-
-cleanup_restore_point() {
-  [[ -n "$RESTORE_DIR" && -d "$RESTORE_DIR" ]] || return 0
-  rm -rf "$RESTORE_DIR"
-}
-
-cleanup_on_error() {
-  local exit_code=$?
-
-  if [[ $exit_code -ne 0 ]]; then
-    echo
-    echo "Release aborted."
-
-    if [[ "$COMMIT_CREATED" -eq 0 ]]; then
-      restore_worktree_changes
-      cleanup_restore_point
-    else
-      echo "A release commit was already created; no automatic rollback was applied."
-    fi
-
-    if [[ "$TAG_CREATED" -eq 1 ]]; then
-      echo "A local tag '$TARGET_TAG' was created before failure."
-      echo "Remove it manually if needed:"
-      echo "  git tag -d $TARGET_TAG"
-    fi
-  fi
-
-  exit "$exit_code"
-}
-
-trap cleanup_on_error EXIT
 
 update_version_file() {
   local version="$1"
-  printf '%s\n' "$version" > "$VERSION_FILE"
+  log_step "Updating VERSION -> ${version}"
+  ORIG_VERSION_CONTENT="$(cat "${VERSION_FILE}")"
+  printf '%s\n' "${version}" > "${VERSION_FILE}"
 }
 
 update_readme_badge() {
   local version="$1"
 
-  python3 - <<PY
-from pathlib import Path
-import re
+  ORIG_README_CONTENT="$(cat "${README_FILE}")"
 
-path = Path("$README_FILE")
-text = path.read_text(encoding="utf-8")
-
-new_text, count = re.subn(
-    r'version-[0-9]+\.[0-9]+\.[0-9]+-informational',
-    f'version-$version-informational',
-    text,
-    count=1
-)
-
-if count == 0:
-    print("README version badge not found; skipping")
-    raise SystemExit(0)
-
-path.write_text(new_text, encoding="utf-8")
-PY
-}
-
-verify_changelog_contains_version() {
-  local version="$1"
-
-  if ! grep -Eq "^\[?$version\]?([[:space:]]+-[[:space:]].*)?$" "$CHANGELOG_FILE"; then
-    if ! grep -Eq "^##[[:space:]]+\[?$version\]?([[:space:]]+-[[:space:]].*)?$" "$CHANGELOG_FILE"; then
-      die "CHANGELOG.md does not appear to contain a section for version $version"
-    fi
-  fi
-}
-
-show_diff_summary() {
-  echo
-  git --no-pager diff -- "$VERSION_FILE" "$README_FILE" "$CHANGELOG_FILE" || true
-  echo
-}
-
-print_release_summary() {
-  local version="$1"
-  local tag="$2"
-
-  echo
-  echo "Release summary"
-  echo "---------------"
-  echo "Version : $version"
-  echo "Tag     : $tag"
-  echo "Branch  : main"
-  echo "Files   : $VERSION_FILE, $README_FILE, $CHANGELOG_FILE"
-  echo "GitHub  : $([[ "$GH_RELEASE" -eq 1 ]] && echo enabled || echo disabled)"
-  echo
-}
-
-parse_args() {
-  if [[ $# -lt 1 || $# -gt 3 ]]; then
-    usage
-    exit 1
-  fi
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --dry-run)
-        DRY_RUN=1
-        shift
-        ;;
-      --github-release)
-        GH_RELEASE=1
-        shift
-        ;;
-      -h|--help)
-        usage
-        exit 0
-        ;;
-      *)
-        if [[ -n "$TARGET_VERSION" ]]; then
-          die "Unexpected argument: $1"
-        fi
-        TARGET_VERSION="$1"
-        shift
-        ;;
-    esac
-  done
-
-  [[ -n "$TARGET_VERSION" ]] || die "Missing version argument"
-  TARGET_TAG="v$TARGET_VERSION"
-}
-
-main() {
-  parse_args "$@"
-
-  validate_version "$TARGET_VERSION"
-  require_git_repo
-  require_file "$VERSION_FILE"
-  require_file "$README_FILE"
-  require_file "$CHANGELOG_FILE"
-  require_on_main
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    require_release_files_clean
+  if grep -Eq 'badge/version-[0-9]+\.[0-9]+\.[0-9]+' "${README_FILE}"; then
+    log_step "Updating README version badge -> ${version}"
+    perl -0pi -e "s/badge\/version-[0-9]+\.[0-9]+\.[0-9]+/badge\/version-${version}/g" "${README_FILE}"
   else
-    require_clean_git
+    log_step "Updating README version badge -> ${version}"
+    printf 'README version badge not found; skipping\n'
+  fi
+}
+
+init_changelog_section() {
+  local version="$1"
+  local today tmp_file
+  today="$(date +%F)"
+
+  require_file "${CHANGELOG_FILE}"
+
+  if grep -Eq "^\## \[${version}\]" "${CHANGELOG_FILE}"; then
+    printf 'CHANGELOG already contains version %s\n' "${version}"
+    return 0
   fi
 
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    info "Dry run: skipping fetch and pull"
-  else
-    info "Fetching latest main and tags from origin"
-    git fetch origin main --tags
+  tmp_file="$(mktemp)"
 
-    info "Ensuring local main matches origin/main"
-    git pull --rebase origin main
-  fi
+  {
+    printf '## [%s] - %s\n\n' "${version}" "${today}"
+    printf '### Added\n'
+    printf -- '- \n\n'
+    printf '### Changed\n'
+    printf -- '- \n\n'
+    printf '### Fixed\n'
+    printf -- '- \n\n'
+    cat "${CHANGELOG_FILE}"
+  } > "${tmp_file}"
 
-  if tag_exists "$TARGET_TAG"; then
-    die "Tag $TARGET_TAG already exists"
-  fi
+  mv "${tmp_file}" "${CHANGELOG_FILE}"
+  printf 'Initialized CHANGELOG.md template for version %s\n' "${version}"
+}
 
-  create_restore_point
-  print_release_summary "$TARGET_VERSION" "$TARGET_TAG"
+print_summary() {
+  local tag="v${VERSION}"
 
-  info "Updating VERSION -> $TARGET_VERSION"
-  update_version_file "$TARGET_VERSION"
+  cat <<EOF_SUMMARY
+Release summary
+---------------
+Version : ${VERSION}
+Tag     : ${tag}
+Branch  : main
+Files   : ${VERSION_FILE}, ${README_FILE}, ${CHANGELOG_FILE}
+GitHub  : $( [[ "${GITHUB_RELEASE}" == true ]] && echo enabled || echo disabled )
+EOF_SUMMARY
+}
 
-  info "Updating README version badge -> $TARGET_VERSION"
-  update_readme_badge "$TARGET_VERSION"
+create_release_commit_and_tag() {
+  local version="$1"
+  local tag="v${version}"
 
-  info "Verifying CHANGELOG contains version $TARGET_VERSION"
-  verify_changelog_contains_version "$TARGET_VERSION"
+  git add "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}"
+  git commit -m "Prepare ${tag} release"
+  git tag -a "${tag}" -m "${tag}"
+}
 
-  info "Previewing changes"
-  show_diff_summary
+push_release() {
+  local version="$1"
+  local tag="v${version}"
 
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    info "Dry run complete; restoring local changes"
-    restore_worktree_changes
-    cleanup_restore_point
-    trap - EXIT
-    exit 0
-  fi
-
-  info "Creating release commit"
-  git add "$VERSION_FILE" "$README_FILE" "$CHANGELOG_FILE"
-  git commit -m "Prepare v$TARGET_VERSION release"
-  COMMIT_CREATED=1
-
-  info "Creating annotated tag $TARGET_TAG"
-  git tag -a "$TARGET_TAG" -m "Release $TARGET_TAG"
-  TAG_CREATED=1
-
-  info "Pushing main"
   git push origin main
-
-  info "Pushing tag $TARGET_TAG"
-  git push origin "$TARGET_TAG"
-
-  if [[ "$GH_RELEASE" -eq 1 ]]; then
-    create_github_release
-  else
-    info "Skipping GitHub release. Use --github-release to create one."
-  fi
-
-  info "Release complete: $TARGET_TAG"
-  cleanup_restore_point
-  trap - EXIT
+  git push origin "${tag}"
 }
 
-main "$@"
+create_github_release() {
+  local version="$1"
+  local tag="v${version}"
+
+  command -v gh >/dev/null 2>&1 || {
+    error "gh CLI is required for --github-release"
+    exit 1
+  }
+
+  gh release create "${tag}" \
+    --title "${tag}" \
+    --notes-file "${CHANGELOG_FILE}"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --github-release)
+      GITHUB_RELEASE=true
+      shift
+      ;;
+    --init-changelog)
+      INIT_CHANGELOG=true
+      shift
+      ;;
+    -h|--help)
+      show_usage
+      exit 0
+      ;;
+    -*)
+      error "Unknown option: $1"
+      show_usage
+      exit 1
+      ;;
+    *)
+      if [[ -n "${VERSION}" ]]; then
+        error "Only one version argument is allowed."
+        show_usage
+        exit 1
+      fi
+      VERSION="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "${VERSION}" ]]; then
+  show_usage
+  printf '\nRelease aborted.\n'
+  exit 1
+fi
+
+require_file "${VERSION_FILE}"
+require_file "${README_FILE}"
+require_file "${CHANGELOG_FILE}"
+
+if [[ "${INIT_CHANGELOG}" == true ]]; then
+  init_changelog_section "${VERSION}"
+  exit 0
+fi
+
+require_clean_tree
+
+print_summary
+printf '\n'
+
+if [[ "${DRY_RUN}" == false ]]; then
+  log_step "Syncing with origin/main"
+  git fetch origin main
+  git checkout main >/dev/null 2>&1 || true
+  git pull --ff-only origin main
+fi
+
+if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+  error "Tag v${VERSION} already exists locally."
+  exit 1
+fi
+
+if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
+  error "Tag v${VERSION} already exists on origin."
+  exit 1
+fi
+
+update_version_file "${VERSION}"
+update_readme_badge "${VERSION}"
+
+log_step "Verifying CHANGELOG contains version ${VERSION}"
+require_changelog_version "${VERSION}"
+
+log_step "Showing diff preview"
+git --no-pager diff -- "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" || true
+
+if [[ "${DRY_RUN}" == true ]]; then
+  printf '\nDry run complete. No commit, tag, or push performed.\n'
+  rollback_local_changes
+  exit 0
+fi
+
+log_step "Creating release commit and tag"
+create_release_commit_and_tag "${VERSION}"
+
+log_step "Pushing main and tag"
+push_release "${VERSION}"
+
+if [[ "${GITHUB_RELEASE}" == true ]]; then
+  log_step "Creating GitHub release"
+  create_github_release "${VERSION}"
+fi
+
+trap - ERR
+printf '\nRelease completed successfully.\n'
