@@ -50,8 +50,8 @@ assert_cmd_ok "V1 launcher help works" bash "$V1" help
 
 assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance route exists in launcher"
 assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
-assert_grep 'tools\|tools-menu\|toolsmenu\|menu-tools\).*open_tools_menu' "$LEGACY" "Tools route exists in launcher"
-assert_grep 'tools-v1\|menu-tools-v1\).*open_v1_tools_menu' "$LEGACY" "Legacy Tools fallback route exists"
+assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
+assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"
 
 assert_grep 'row_bold "MAIN MENU"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu module exists"
 assert_grep 'row2 " 1\. Workflows" " 2\. System"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Workflows and System"
