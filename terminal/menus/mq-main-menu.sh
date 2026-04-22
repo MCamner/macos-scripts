@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
 
+main_menu_is_sourced() {
+  if [[ -n "${ZSH_EVAL_CONTEXT:-}" ]]; then
+    [[ ":$ZSH_EVAL_CONTEXT:" == *:file:* ]]
+    return
+  fi
+
+  [[ "${BASH_SOURCE[0]:-}" != "$0" ]]
+}
+
+main_menu_direct_entry() {
+  local base_dir launcher
+  base_dir="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+  launcher="$base_dir/terminal/launchers/mqlaunch.sh"
+
+  if [[ -x "$launcher" ]]; then
+    exec "$launcher" "${1:-menu}"
+  elif [[ -f "$launcher" ]]; then
+    exec zsh "$launcher" "${1:-menu}"
+  fi
+
+  echo "Missing launcher: $launcher" >&2
+  exit 1
+}
+
 print_main_menu() {
   print_header
   row_bold "MAIN MENU"
@@ -298,3 +322,7 @@ main_loop() {
     handle_main_menu_choice "$choice"
   done
 }
+
+if ! main_menu_is_sourced; then
+  main_menu_direct_entry "$@"
+fi
