@@ -1,17 +1,19 @@
-## [0.1.6] - 2026-04-23
-
-### Added
-- 
-
-### Changed
-- 
-
-### Fixed
-- 
-
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file.## [0.1.6] - 2026-04-23
+
+### Added
+
+* Add changelog template initialization for new releases
+
+### Changed
+
+* Improve release workflow validation
+* Refine release script behavior for smoother version preparation
+
+### Fixed
+
+* Prevent release attempts from proceeding without a matching changelog entry
 
 ---
 
@@ -74,4 +76,3 @@ All notable changes to this project will be documented in this file.
 * Base structure for macos-scripts
 * Initial mqlaunch functionality
 * Core terminal workflows
-
