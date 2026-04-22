@@ -759,9 +759,9 @@ open_git_menu() {
   local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
 
   if [[ -x "$git_script" ]]; then
-    "$git_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 "$git_script" menu
   elif [[ -f "$git_script" ]]; then
-    bash "$git_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$git_script" menu
   else
     print_header
     row "GIT MENU"
@@ -776,10 +776,10 @@ open_git_menu() {
 open_release_menu() {
   local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
   if [[ -x "$release_menu" ]]; then
-    "$release_menu" menu
+    MQ_USE_DASHBOARD_HEADER=1 "$release_menu" menu
   elif [[ -f "$release_menu" ]]; then
     chmod +x "$release_menu" 2>/dev/null || true
-    bash "$release_menu" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$release_menu" menu
   else
     print_header
     row "RELEASE MENU"
@@ -795,10 +795,10 @@ run_mqworkflows() {
   local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
 
   if [[ -x "$workflows_menu" ]]; then
-    "$workflows_menu" "${@:-menu}"
+    MQ_USE_DASHBOARD_HEADER=1 "$workflows_menu" "${@:-menu}"
   elif [[ -f "$workflows_menu" ]]; then
     chmod +x "$workflows_menu" 2>/dev/null || true
-    bash "$workflows_menu" "${@:-menu}"
+    MQ_USE_DASHBOARD_HEADER=1 bash "$workflows_menu" "${@:-menu}"
   else
     print_header
     row_bold "WORKFLOWS"
@@ -815,10 +815,10 @@ open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
   if [[ -x "$tools_script" ]]; then
-    bash "$tools_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   elif [[ -f "$tools_script" ]]; then
     chmod +x "$tools_script" 2>/dev/null || true
-    bash "$tools_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   else
     print_header
     row "TOOLS MENU"

@@ -137,6 +137,17 @@ short_host() {
 }
 
 print_header() {
+  local dashboard
+
+  if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
+    dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
+    if [[ -f "$dashboard" ]]; then
+      bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
+      printf '\n'
+      return
+    fi
+  fi
+
   clear_screen
   border
   header_dual_row "$APP_TITLE" "        .-."
