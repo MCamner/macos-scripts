@@ -26,31 +26,18 @@ main_menu_direct_entry() {
 
 print_main_menu() {
   print_header
-  row_bold "MAIN MENU"
-  empty_row
-
-  row "CORE"
-  row2 " 1. Workflows" " 2. System"
-  row2 " 3. Git" " 4. Release"
-  row2 " 5. Dev" " 6. Help"
-
-  empty_row
-  row "QUICK ACCESS"
-  row2 " p. Performance" " n. Network"
-  row2 " h. Health Check" " a. Apps"
-
-  empty_row
+  render_main_menu_panel
   render_command_surface
 }
 
 surface_terminal_width() {
   local cols width
   cols="$(tput cols 2>/dev/null || true)"
-  [[ "$cols" =~ ^[0-9]+$ ]] || cols="${BOX_INNER:-88}"
+  [[ "$cols" =~ ^[0-9]+$ ]] || cols="${BOX_INNER:-92}"
 
-  width=$(( cols - 2 ))
+  width="$cols"
   (( width > 112 )) && width=112
-  (( width < 32 )) && width=32
+  (( width < 60 )) && width=60
   printf "%s" "$width"
 }
 
@@ -97,6 +84,28 @@ surface_split_row() {
     "$(surface_pad "$left" "$left_width")" \
     "$(surface_pad "$right" "$right_width")" \
     "$C_RESET"
+}
+
+render_main_menu_panel() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  if [[ -t 1 ]]; then
+    panel_color=$'\033[0;37m'
+  else
+    panel_color=""
+  fi
+
+  surface_top "Main Menu" "$width" "$panel_color"
+  surface_row "CORE" "$width" "$panel_color"
+  surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
+  surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
+  surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "QUICK ACCESS" "$width" "$panel_color"
+  surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 surface_dual_figure_row() {

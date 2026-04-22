@@ -447,8 +447,24 @@ mqlaunch_dashboard_v71() {
   mq_box_bottom "$width"
   echo
 
-  echo -e "${ACCENT_RED}${C_BOLD}>>> READY${C_RESET} ${C_DIM}// polished branded command surface stable${C_RESET}"
-  echo -e "${ACCENT_CYAN}${C_BOLD}$(mq_repeat "═" "$width")${C_RESET}"
+  local ready_text ready_pad
+  ready_text=" READY // polished branded command surface stable"
+  ready_pad=$(( width - 2 - ${#ready_text} ))
+  (( ready_pad < 0 )) && ready_pad=0
+
+  echo -e "${ACCENT_CYAN}${C_BOLD}╔$(mq_repeat "═" $(( width - 2 )))╗${C_RESET}"
+  printf "%b║%b %bREADY%b %b// polished branded command surface stable%b" \
+    "$ACCENT_CYAN$C_BOLD" \
+    "$C_RESET" \
+    "$ACCENT_GREEN$C_BOLD" \
+    "$C_RESET" \
+    "$C_DIM" \
+    "$C_RESET"
+  printf "%s%b║%b\n" \
+    "$(mq_repeat " " "$ready_pad")" \
+    "$ACCENT_CYAN$C_BOLD" \
+    "$C_RESET"
+  echo -e "${ACCENT_CYAN}${C_BOLD}╚$(mq_repeat "═" $(( width - 2 )))╝${C_RESET}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
