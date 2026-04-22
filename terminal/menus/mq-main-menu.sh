@@ -99,48 +99,65 @@ surface_split_row() {
     "$C_RESET"
 }
 
-surface_figure_row() {
-  local art="$1"
-  local right="$2"
-  local width="$3"
-  local surface_color="$4"
-  local figure_color="$5"
-  local inner left_width right_width art_col art_pad
+surface_dual_figure_row() {
+  local left_art="$1"
+  local right_art="$2"
+  local right="$3"
+  local width="$4"
+  local surface_color="$5"
+  local left_color="$6"
+  local right_color="$7"
+  local inner left_width right_width art_width art_col right_pad gap
   inner=$(( width - 4 ))
   left_width=$(( inner / 2 ))
   right_width=$(( inner - left_width - 1 ))
-  art_col=$(( left_width / 2 - 4 ))
+  gap="  "
+  art_width=$(( ${#left_art} + ${#gap} + ${#right_art} ))
+  art_col=$(( (left_width - art_width) / 2 ))
   (( art_col < 1 )) && art_col=1
-  art_pad="$(repeat_char "$art_col" " ")"
+  right_pad=$(( left_width - art_col - art_width ))
+  (( right_pad < 0 )) && right_pad=0
 
-  printf "%b│ %s%b%s%b%s %s │%b\n" \
+  printf "%b│ %s%b%s%b%s%b%s%b%s %s │%b\n" \
     "$surface_color" \
-    "$art_pad" \
-    "$figure_color" \
-    "$art" \
+    "$(repeat_char "$art_col" " ")" \
+    "$left_color" \
+    "$left_art" \
     "$surface_color" \
-    "$(repeat_char $(( left_width - art_col - ${#art} )) " ")" \
+    "$gap" \
+    "$right_color" \
+    "$right_art" \
+    "$surface_color" \
+    "$(repeat_char "$right_pad" " ")" \
     "$(surface_pad "$right" "$right_width")" \
     "$C_RESET"
 }
 
-surface_compact_figure_row() {
-  local art="$1"
-  local width="$2"
-  local surface_color="$3"
-  local figure_color="$4"
-  local inner art_col right_pad
+surface_compact_dual_figure_row() {
+  local left_art="$1"
+  local right_art="$2"
+  local width="$3"
+  local surface_color="$4"
+  local left_color="$5"
+  local right_color="$6"
+  local inner art_width art_col right_pad gap
   inner=$(( width - 4 ))
-  art_col=$(( (inner - ${#art}) / 2 ))
+  gap="  "
+  art_width=$(( ${#left_art} + ${#gap} + ${#right_art} ))
+  art_col=$(( (inner - art_width) / 2 ))
   (( art_col < 1 )) && art_col=1
-  right_pad=$(( inner - art_col - ${#art} ))
+  right_pad=$(( inner - art_col - art_width ))
   (( right_pad < 0 )) && right_pad=0
 
-  printf "%b│ %s%b%s%b%s │%b\n" \
+  printf "%b│ %s%b%s%b%s%b%s%b%s │%b\n" \
     "$surface_color" \
     "$(repeat_char "$art_col" " ")" \
-    "$figure_color" \
-    "$art" \
+    "$left_color" \
+    "$left_art" \
+    "$surface_color" \
+    "$gap" \
+    "$right_color" \
+    "$right_art" \
     "$surface_color" \
     "$(repeat_char "$right_pad" " ")" \
     "$C_RESET"
@@ -157,7 +174,7 @@ surface_git_state() {
 }
 
 render_command_surface() {
-  local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR width git_state tip activity system_state
+  local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR ALT_FIGURE_COLOR width git_state tip activity system_state
   USER_NAME="${USER:-$(whoami)}"
   HOST_NAME="$(hostname -s)"
   TIME="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -174,19 +191,21 @@ render_command_surface() {
   if [[ -t 1 ]]; then
     SURFACE_COLOR=$'\033[0;37m'
     FIGURE_COLOR="$C_OK"
+    ALT_FIGURE_COLOR="$C_WARN"
   else
     SURFACE_COLOR=""
     FIGURE_COLOR=""
+    ALT_FIGURE_COLOR=""
   fi
 
   surface_top "Command Surface v3" "$width" "$SURFACE_COLOR"
   if (( width < 56 )); then
     surface_row "Welcome back ${USER_NAME}!" "$width" "$SURFACE_COLOR"
     if (( width >= 44 )); then
-      surface_compact_figure_row "▄▄████▄▄" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-      surface_compact_figure_row "████████" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-      surface_compact_figure_row "██▄██▄██" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-      surface_compact_figure_row " ▄█▀▀█▄ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+      surface_compact_dual_figure_row "▄▄████▄▄" " ▄▄██▄▄ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row "████████" "█▀████▀█" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row "██▄██▄██" "██▀██▀██" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row " ▄█▀▀█▄ " " ▀▄██▄▀ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
     fi
     surface_row "$system_state | Git: $git_state" "$width" "$SURFACE_COLOR"
     surface_row "$activity" "$width" "$SURFACE_COLOR"
@@ -196,10 +215,10 @@ render_command_surface() {
   else
     surface_split_row "Welcome back ${USER_NAME}!" "Tips: $tip" "$width" "$SURFACE_COLOR"
     surface_split_row "Mode: Interactive" "Git: $git_state" "$width" "$SURFACE_COLOR"
-    surface_figure_row "▄▄████▄▄" "" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-    surface_figure_row "████████" "$system_state" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-    surface_figure_row "██▄██▄██" "Repo: macos-scripts" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
-    surface_figure_row " ▄█▀▀█▄ " "$activity" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR"
+    surface_dual_figure_row "▄▄████▄▄" " ▄▄██▄▄ " "" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row "████████" "█▀████▀█" "$system_state" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row "██▄██▄██" "██▀██▀██" "Repo: macos-scripts" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row " ▄█▀▀█▄ " " ▀▄██▄▀ " "$activity" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
     surface_split_row "Host: ${HOST_NAME}" "User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
     surface_split_row "Time: ${TIME}" "X. Exit launcher" "$width" "$SURFACE_COLOR"
   fi
