@@ -5,7 +5,7 @@ open_help_center_menu() {
 
   while true; do
     print_header
-    row_bold "HELP"
+    row_menu_title "HELP"
     empty_row
 
     row "REFERENCE"

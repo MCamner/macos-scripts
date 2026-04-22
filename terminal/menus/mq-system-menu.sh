@@ -5,7 +5,7 @@ open_system_menu() {
 
   while true; do
     print_header
-    row_bold "SYSTEM"
+    row_menu_title "SYSTEM"
     empty_row
 
     row "OBSERVABILITY"

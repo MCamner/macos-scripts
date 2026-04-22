@@ -72,6 +72,15 @@ row_bold() {
   printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
+row_menu_title() {
+  local text="$1"
+  if [[ -t 1 ]]; then
+    printf "\033[1m%-*.*s\033[0m\n" "$BOX_INNER" "$BOX_INNER" "$text"
+  else
+    row "$text"
+  fi
+}
+
 row2() {
   local c1="$1"
   local c2="$2"
