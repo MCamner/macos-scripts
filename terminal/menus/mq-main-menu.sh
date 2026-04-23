@@ -137,6 +137,7 @@ render_main_menu_panel() {
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
+  surface_split_row "r. REPL" "" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -284,6 +285,7 @@ handle_main_menu_choice() {
     n|N) show_network_info ;;
     h|H) system_check ;;
     a|A) open_apps_menu ;;
+    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
 
     # EXIT
     x|X)

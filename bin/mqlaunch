@@ -1,5 +1,29 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
+
 set -euo pipefail
 
-PROJECT_ROOT="$HOME/macos-scripts"
-exec "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" "$@"
+BASE_DIR="${BASE_DIR:-$HOME/macos-scripts}"
+MAIN_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch.sh"
+REPL_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch-repl.sh"
+
+if [[ ! -x "$MAIN_LAUNCHER" ]]; then
+  echo "[MQ] Main launcher not found or not executable: $MAIN_LAUNCHER" >&2
+  exit 1
+fi
+
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    repl|prompt|shell)
+      shift || true
+
+      if [[ ! -x "$REPL_LAUNCHER" ]]; then
+        echo "[MQ] REPL launcher not found or not executable: $REPL_LAUNCHER" >&2
+        exit 1
+      fi
+
+      exec "$REPL_LAUNCHER" "$@"
+      ;;
+  esac
+fi
+
+exec "$MAIN_LAUNCHER" "$@"
