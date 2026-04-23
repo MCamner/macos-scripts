@@ -52,6 +52,10 @@ else
   exit 1
 fi
 
+if [[ -t 0 ]]; then
+  stty erase '^?' 2>/dev/null || true
+fi
+
 BOX_INNER=88
 
 # Main menu module
@@ -721,7 +725,6 @@ print_themes_menu() {
   row2 " 7. Reset theme" " b. Back"
 
   print_footer
-  printf "${C_TITLE}Select theme option [1-7,b]: ${C_RESET}"
 }
 
 themes_menu_loop() {
@@ -734,7 +737,8 @@ themes_menu_loop() {
       echo
     fi
     print_themes_menu
-    read -r choice
+    read_menu_choice "Select theme option [1-7,b] > " || return
+    choice="$REPLY"
     echo
 
     case "$choice" in
@@ -755,9 +759,9 @@ open_git_menu() {
   local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
 
   if [[ -x "$git_script" ]]; then
-    "$git_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 "$git_script" menu
   elif [[ -f "$git_script" ]]; then
-    bash "$git_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$git_script" menu
   else
     print_header
     row "GIT MENU"
@@ -772,10 +776,10 @@ open_git_menu() {
 open_release_menu() {
   local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
   if [[ -x "$release_menu" ]]; then
-    "$release_menu" menu
+    MQ_USE_DASHBOARD_HEADER=1 "$release_menu" menu
   elif [[ -f "$release_menu" ]]; then
     chmod +x "$release_menu" 2>/dev/null || true
-    bash "$release_menu" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$release_menu" menu
   else
     print_header
     row "RELEASE MENU"
@@ -791,10 +795,10 @@ run_mqworkflows() {
   local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
 
   if [[ -x "$workflows_menu" ]]; then
-    "$workflows_menu" "${@:-menu}"
+    MQ_USE_DASHBOARD_HEADER=1 "$workflows_menu" "${@:-menu}"
   elif [[ -f "$workflows_menu" ]]; then
     chmod +x "$workflows_menu" 2>/dev/null || true
-    bash "$workflows_menu" "${@:-menu}"
+    MQ_USE_DASHBOARD_HEADER=1 bash "$workflows_menu" "${@:-menu}"
   else
     print_header
     row_bold "WORKFLOWS"
@@ -811,10 +815,10 @@ open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
   if [[ -x "$tools_script" ]]; then
-    bash "$tools_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   elif [[ -f "$tools_script" ]]; then
     chmod +x "$tools_script" 2>/dev/null || true
-    bash "$tools_script" menu
+    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   else
     print_header
     row "TOOLS MENU"
@@ -1282,6 +1286,7 @@ run_arg_command() {
     perf|performance) open_performance_menu ;;
     demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
+    doctor) "$BASE_DIR/tools/scripts/doctor.sh" ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
     notes|changelog|release-notes) show_release_notes ;;

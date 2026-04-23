@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+PROJECT_ROOT="$HOME/macos-scripts"
+exec "$PROJECT_ROOT/terminal/launchers/mqlaunch.sh" "$@"
