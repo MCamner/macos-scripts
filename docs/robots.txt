@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mcamner.github.io/macos-scripts/sitemap.xml

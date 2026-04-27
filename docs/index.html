@@ -3,7 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>macos-scripts</title>
+  <title>macos-scripts | macOS CLI workflows and mqlaunch toolkit</title>
+  <meta name="description" content="macos-scripts is a modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, and repeatable system checks." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://mcamner.github.io/macos-scripts/" />
+  <link rel="preload" as="image" href="mqlaunch.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="macos-scripts" />
+  <meta property="og:title" content="macos-scripts | macOS CLI workflows and mqlaunch toolkit" />
+  <meta property="og:description" content="Turn scattered shell commands into structured macOS workflows with mqlaunch, diagnostics, automation scripts, and terminal tooling." />
+  <meta property="og:url" content="https://mcamner.github.io/macos-scripts/" />
+  <meta property="og:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
+  <meta property="og:image:alt" content="macos-scripts mqlaunch terminal interface preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="macos-scripts | macOS CLI workflows and mqlaunch toolkit" />
+  <meta name="twitter:description" content="A modular macOS CLI toolkit for structured terminal workflows, diagnostics, automation, and system checks." />
+  <meta name="twitter:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "macos-scripts",
+      "description": "A modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, and repeatable system checks.",
+      "codeRepository": "https://github.com/MCamner/macos-scripts",
+      "programmingLanguage": ["Shell", "Zsh", "Bash"],
+      "operatingSystem": "macOS",
+      "license": "https://github.com/MCamner/macos-scripts/blob/main/LICENSE",
+      "url": "https://mcamner.github.io/macos-scripts/"
+    }
+  </script>
   <style>
     :root {
       --bg: #0b0f10;
@@ -116,6 +144,58 @@
       white-space: pre-wrap;
     }
 
+    .preview {
+      display: block;
+      width: 100%;
+      margin-top: 28px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .feature {
+      padding: 16px;
+      background: #0a0e11;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .feature h2 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .feature p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .links a {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
     @media (max-width: 640px) {
       h1 {
         font-size: 30px;
@@ -123,6 +203,10 @@
 
       .content {
         padding: 22px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -137,20 +221,50 @@
     </div>
 
     <section class="content">
-      <div class="prompt">$ open mac-terminal-guide</div>
+      <div class="prompt">$ mqlaunch</div>
       <h1>macos-scripts</h1>
       <p>
-        A live preview page for terminal workflows, tools, and the macOS terminal guide.
+        A modular macOS CLI toolkit for turning scattered shell commands into structured workflows.
+        The project centers on <strong>mqlaunch</strong>, a single terminal entrypoint for diagnostics,
+        automation, system checks, developer utilities, and repeatable local operations.
       </p>
 
       <div class="buttons">
-        <a class="button" href="mac-terminal-guide.html">Open Guide</a>
+        <a class="button" href="case.html">View Case Study</a>
+        <a class="button secondary" href="mac-terminal-guide.html">Open Terminal Guide</a>
         <a class="button secondary" href="https://github.com/MCamner/macos-scripts">View Repository</a>
+      </div>
+
+      <img class="preview" src="mqlaunch.png" alt="mqlaunch terminal menu from the macos-scripts CLI toolkit" width="1832" height="596" />
+
+      <div class="features" aria-label="macos-scripts features">
+        <article class="feature">
+          <h2>Structured workflows</h2>
+          <p>Run system, dev, performance, tools, and release workflows from one discoverable command surface.</p>
+        </article>
+        <article class="feature">
+          <h2>macOS diagnostics</h2>
+          <p>Use doctor, mission-control, network checks, and debug bundles to inspect local environment health.</p>
+        </article>
+        <article class="feature">
+          <h2>Terminal reference</h2>
+          <p>Browse a searchable macOS terminal guide for commands, keyboard shortcuts, and shell patterns.</p>
+        </article>
       </div>
 
       <div class="code">> launcher: mqlaunch
 > site: github pages
 > status: online</div>
+
+      <nav class="links" aria-label="Project links">
+        <a href="case.html">CLI case study</a>
+        <a href="mac-terminal-guide.html">macOS terminal command guide</a>
+        <a href="https://github.com/MCamner/macos-scripts#quick-start">Install instructions</a>
+      </nav>
+
+      <footer>
+        Built for macOS terminal workflows, CLI discoverability, diagnostics, and repeatable shell automation.
+      </footer>
     </section>
   </main>
 </body>
