@@ -301,7 +301,7 @@ handle_main_menu_choice() {
 }
 
 read_main_choice() {
-  local prompt_line prompt_hint prompt_color prompt_width
+  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row
   prompt_width="$(surface_terminal_width)"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> choose an option, command alias, or x to exit"
@@ -311,24 +311,36 @@ read_main_choice() {
     prompt_color=""
   fi
 
+  # Pin prompt area to the bottom of the visible terminal window.
+  # Layout (4 rows): separator / input / separator / hint
+  term_lines="$(tput lines 2>/dev/null || echo 24)"
+  prompt_row=$(( term_lines - 3 ))   # row of first separator (1-indexed)
+  input_row=$(( prompt_row + 1 ))    # row of "mqlaunch > " input
+  (( prompt_row < 2 )) && prompt_row=2
+  (( input_row < 3 )) && input_row=3
+
   if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
     local prompt input cursor key old_stty
     prompt="mqlaunch > "
     input=""
     cursor=0
 
+    # Clear from prompt_row to end of screen, then draw fixed prompt block
+    printf "\033[%d;1H\033[J" "$prompt_row"
     printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
     printf "%s" "$prompt"
     printf "\n%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%b%s%b\n\n" "$C_OK" "$prompt_hint" "$C_RESET"
-    printf "\033[4A"
+    printf "%b%s%b" "$C_OK" "$prompt_hint" "$C_RESET"
+    # Move cursor to the input line
+    printf "\033[%d;1H" "$input_row"
 
     old_stty="$(stty -g)"
     stty -echo -icanon min 1 time 0 2>/dev/null || true
 
     while true; do
+      printf "\033[%d;1H" "$input_row"
       printf "\r\033[2K%s%s" "$prompt" "$input"
-      printf "\r\033[%dC" $(( ${#prompt} + cursor ))
+      printf "\033[%d;%dH" "$input_row" $(( ${#prompt} + cursor + 1 ))
 
       IFS= read -r -k 1 key || {
         stty "$old_stty" 2>/dev/null || true
@@ -363,17 +375,19 @@ read_main_choice() {
     done
 
     stty "$old_stty" 2>/dev/null || true
-    printf "\r\033[2K%s%s\033[2B" "$prompt" "$input"
+    printf "\033[%d;1H\r\033[2K" "$input_row"
     surface_accept_scramble "$C_WARN" "${input:-menu}"
-    printf "\033[2B\n"
+    printf "\n"
     choice="$input"
     return 0
   fi
 
+  # Fallback: anchor prompt to bottom even for non-ZSH paths
+  printf "\033[%d;1H\033[J" "$prompt_row"
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  printf "%b%s%b\n\n" "$C_OK" "$prompt_hint" "$C_RESET"
+  printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
   choice="$REPLY"
 }
 
