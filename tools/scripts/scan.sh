@@ -455,6 +455,84 @@ gui_insight() {
   echo "- WindowServer reflects UI load"
 }
 
+# ----------------------------
+# ROOT CAUSE ENGINE v1
+# ----------------------------
+
+root_cause_engine() {
+  echo
+  section "ROOT CAUSE"
+
+  TMP="$HOME/.mq/rc.tmp"
+  mkdir -p "$HOME/.mq"
+  : > "$TMP"
+
+  # Aggregera: PID, CPU, RSS, COMMAND -> per basename
+  ps -Ao pid,pcpu,rss,comm \
+    | awk '
+      NR>1 {
+        cmd=$4
+        gsub(".*/","",cmd)        # basename
+        cpu=($2+0)
+        rss_mb=($3/1024)
+
+        sum_mem[cmd]+=rss_mb
+        if (cpu > max_cpu[cmd]) max_cpu[cmd]=cpu
+        count[cmd]++
+      }
+      END {
+        for (k in sum_mem) {
+          printf "%s|%.0f|%.0f|%d\n", k, sum_mem[k], max_cpu[k], count[k]
+        }
+      }
+    ' > "$TMP"
+
+  # Välj topp (filtrera bort system/symptom)
+  TOP_LINE=$(awk -F'|' '
+    {
+      name=$1; mem=$2+0; cpu=$3+0; cnt=$4+0
+
+      # filtrera bort symptom/system
+      if (name ~ /(WindowServer|coreaudiod|trustd|syspolicyd|kernel|launchd|loginwindow)/) next
+
+      # score: memory först, cpu sekundärt, instanser som bonus
+      score = mem*0.08 + cpu*2 + cnt*5
+
+      printf "%f|%s|%d|%d|%d\n", score, name, mem, cpu, cnt
+    }
+  ' "$TMP" | sort -t'|' -k1 -nr | head -n1)
+
+  if [ -z "$TOP_LINE" ]; then
+    echo "No clear root cause detected"
+    return
+  fi
+
+  SCORE=$(echo "$TOP_LINE" | cut -d'|' -f1)
+  NAME=$(echo "$TOP_LINE" | cut -d'|' -f2)
+  MEM=$(echo "$TOP_LINE" | cut -d'|' -f3)
+  CPU=$(echo "$TOP_LINE" | cut -d'|' -f4)
+  CNT=$(echo "$TOP_LINE" | cut -d'|' -f5)
+
+  # Confidence heuristik
+  CONF="MEDIUM"
+  if [ "$MEM" -gt 500 ]; then CONF="HIGH"; fi
+  if [ "$CPU" -gt 20 ]; then CONF="HIGH"; fi
+  if [ "$CNT" -ge 3 ]; then CONF="HIGH"; fi
+
+  echo "$NAME"
+  echo
+  echo "Confidence: $CONF"
+  echo
+  echo "Reason:"
+  echo "- Total memory: ${MEM} MB"
+  echo "- Peak CPU: ${CPU}%"
+  echo "- Instances: $CNT"
+
+  echo
+  echo "Recommended action:"
+  echo "- Close or restart $NAME"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -492,6 +570,7 @@ combined_insight_v2
 audio_insight
 gui_insight
 severity_score
+root_cause_engine
 
 section "SUMMARY"
 ok "Scan complete"
