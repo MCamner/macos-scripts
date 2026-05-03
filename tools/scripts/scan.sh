@@ -6,6 +6,7 @@ source "$HOME/macos-scripts/tools/cli/mq-ui.sh"
 # FUNCTIONS
 # ==================================================
 
+# Function: suggest fallback.
 suggest_fallback() {
   echo
   echo "Suggested actions:"
@@ -13,12 +14,14 @@ suggest_fallback() {
   echo "- Restart session"
 }
 
+# Function: insight v2.
 insight_v2() {
   echo
   echo "Analysis:"
   ps -Ao pcpu,comm | sort -nr | awk 'NR>1 && NR<=4 {print "- " $2}'
 }
 
+# Function: memory insight.
 memory_insight() {
   echo
   section "MEMORY (Top consumers)"
@@ -32,6 +35,7 @@ memory_insight() {
 	    '
 }
 
+# Function: memory pressure v4.
 memory_pressure_v4() {
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
   $(vm_stat | awk '
@@ -80,6 +84,7 @@ memory_pressure_v4() {
   fi
 }
 
+# Function: combined insight v2.
 combined_insight_v2() {
   echo
   section "COMBINED INSIGHT"
@@ -96,6 +101,7 @@ combined_insight_v2() {
   echo "Top Memory: $MEM_NAME ($(awk "BEGIN {print $MEM_RSS/1024}") MB)"
 }
 
+# Function: severity score.
 severity_score() {
   echo
   section "HEALTH SCORE"
@@ -133,6 +139,7 @@ severity_score() {
   echo "Status: $STATUS"
 }
 
+# Function: no action mode.
 no_action_mode() {
   [ -n "$HEALTH_SCORE" ] || return 1
   [ -n "$MEM_STATUS" ] || return 1
@@ -158,6 +165,7 @@ no_action_mode() {
   return 1
 }
 
+# Function: suggest kill.
 suggest_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
@@ -179,6 +187,7 @@ suggest_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
+# Function: smart kill.
 smart_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
@@ -203,6 +212,7 @@ smart_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
+# Function: track offender.
 track_offender() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -248,6 +258,7 @@ track_offender() {
   fi
 }
 
+# Function: score offenders.
 score_offenders() {
   echo
   section "OFFENDER RANKING"
@@ -280,6 +291,7 @@ score_offenders() {
   echo
 }
 
+# Function: top weighted action.
 top_weighted_action() {
   read PID CPU MEM NAME <<< \
   $(ps -Ao pid,pcpu,pmem,comm \
@@ -309,6 +321,7 @@ top_weighted_action() {
 # DECAY MODEL v1
 # ----------------------------
 
+# Function: track offender decay.
 track_offender_decay() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -324,6 +337,7 @@ track_offender_decay() {
   tail -n 100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
 }
 
+# Function: recent count.
 recent_count() {
   LOG="$HOME/.mq/offenders.log"
   NOW=$(date +%s)
@@ -351,6 +365,7 @@ recent_count() {
 # MEMORY-WEIGHTED SCORING v3
 # ----------------------------
 
+# Function: score offenders v3.
 score_offenders_v3() {
   echo
   section "OFFENDER RANKING (v3)"
@@ -386,6 +401,7 @@ score_offenders_v3() {
   echo
 }
 
+# Function: top weighted action v3.
 top_weighted_action_v3() {
   # välj högst score från samma beräkning
   TOP_LINE=$(ps -Ao pid,pcpu,pmem,rss,comm \
@@ -440,6 +456,7 @@ top_weighted_action_v3() {
 # AUDIO FILTERING v2
 # ----------------------------
 
+# Function: audio insight.
 audio_insight() {
   # trigga bara om coreaudiod faktiskt syns högt
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi coreaudiod; then
@@ -492,6 +509,7 @@ audio_insight() {
 # GUI-AWARE INSIGHT v1
 # ----------------------------
 
+# Function: gui insight.
 gui_insight() {
   # trigga bara om WindowServer är top CPU
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi WindowServer; then
@@ -534,6 +552,7 @@ gui_insight() {
 # ROOT CAUSE ENGINE v1
 # ----------------------------
 
+# Function: root cause engine.
 root_cause_engine() {
   echo
   section "ROOT CAUSE"
@@ -644,6 +663,7 @@ root_cause_engine() {
   echo "- Close or restart $NAME"
 }
 
+# Function: trend engine v1.
 trend_engine_v1() {
   [ -n "$ROOT_CAUSE_NAME" ] || return
   [ -n "$ROOT_MEM_TOP3" ] || return
