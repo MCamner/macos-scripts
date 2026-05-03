@@ -467,46 +467,50 @@ root_cause_engine() {
   mkdir -p "$HOME/.mq"
   : > "$TMP"
 
-  # Aggregera: PID, CPU, RSS, COMMAND -> per basename
+  # Aggregera per app: max RSS, top 3 RSS, max CPU, antal processer
   ps -Ao pid,pcpu,rss,comm \
     | awk '
       NR>1 {
-        cmd=$4
+        full_cmd=$0
+        sub(/^[[:space:]]*[0-9]+[[:space:]]+[0-9.]+[[:space:]]+[0-9]+[[:space:]]+/, "", full_cmd)
+
+        cmd=full_cmd
         gsub(".*/","",cmd)
 
         # -------- NORMALIZATION --------
-        grouped=0
-        if (cmd ~ /ChatGPT/) { cmd="ChatGPT"; grouped=1 }
-        else if (cmd ~ /Electron/) { cmd="ChatGPT"; grouped=1 }
-        else if (cmd ~ /Chrome|Google/) { cmd="Chrome"; grouped=1 }
-        else if (cmd ~ /Code|Visual/) { cmd="Visual"; grouped=1 }
+        if (full_cmd ~ /ChatGPT/) cmd="ChatGPT"
+        else if (full_cmd ~ /Electron/) cmd="Electron"
+        else if (full_cmd ~ /Chrome|Google/) cmd="Chrome"
+        else if (full_cmd ~ /Code|Visual Studio Code/) cmd="Visual"
 
-        MEM_CAP=1500
         cpu=($2+0)
         rss_mb=($3/1024)
 
-        sum_mem[cmd]+=rss_mb
-        if (sum_mem[cmd] > MEM_CAP) sum_mem[cmd]=MEM_CAP
+        # ChatGPT Atlas renderers can report inflated shared RSS.
+        # Keep them from dominating app-impact scoring over heavier local apps.
+        if (full_cmd ~ /ChatGPT Atlas.*\(Renderer\)/ && rss_mb > 120) rss_mb=120
+
+        if (rss_mb > top1[cmd]) {
+          top3[cmd]=top2[cmd]
+          top2[cmd]=top1[cmd]
+          top1[cmd]=rss_mb
+        } else if (rss_mb > top2[cmd]) {
+          top3[cmd]=top2[cmd]
+          top2[cmd]=rss_mb
+        } else if (rss_mb > top3[cmd]) {
+          top3[cmd]=rss_mb
+        }
+
         if (rss_mb > max_mem[cmd]) max_mem[cmd]=rss_mb
         if (cpu > max_cpu[cmd]) max_cpu[cmd]=cpu
         count[cmd]++
-        if (grouped) grouped_app[cmd]=1
       }
       END {
-        for (k in sum_mem) {
-          mem=sum_mem[k]
+        for (k in count) {
+          top3_sum=top1[k] + top2[k] + top3[k]
+          if (top3_sum > 1500) top3_sum=1500
 
-          # Electron/Chromium-style apps share memory across helper processes.
-          # Use max RSS plus a capped helper allowance to avoid renderer inflation.
-          if (grouped_app[k]) {
-            helper=count[k]-1
-            if (helper < 0) helper=0
-            if (helper > 3) helper=3
-            mem=max_mem[k] + helper*80
-          }
-          if (mem > 1500) mem=1500
-
-          printf "%s|%.0f|%.0f|%d\n", k, mem, max_cpu[k], count[k]
+          printf "%s|%.0f|%.0f|%.0f|%d\n", k, max_mem[k], top3_sum, max_cpu[k], count[k]
         }
       }
     ' > "$TMP"
@@ -514,17 +518,15 @@ root_cause_engine() {
   # Välj topp (filtrera bort system/symptom)
   TOP_LINE=$(awk -F'|' '
     {
-      name=$1; mem=$2+0; cpu=$3+0; cnt=$4+0
+      name=$1; max_mem=$2+0; top3_mem=$3+0; cpu=$4+0; cnt=$5+0
 
       # filtrera bort symptom/system
       if (name ~ /(WindowServer|coreaudiod|trustd|syspolicyd|kernel|launchd|loginwindow)/) next
 
-      # score: memory först, cpu sekundärt, instanser som begränsad bonus
-      instance_bonus = cnt
-      if (instance_bonus > 3) instance_bonus = 3
-      score = mem*0.08 + cpu*2 + instance_bonus*5
+      # impact scoring v4: max process + top 3 processes + CPU
+      score = (max_mem * 0.6) + (top3_mem * 0.3) + (cpu * 0.1)
 
-      printf "%f|%s|%d|%d|%d\n", score, name, mem, cpu, cnt
+      printf "%f|%s|%d|%d|%d|%d\n", score, name, max_mem, top3_mem, cpu, cnt
     }
   ' "$TMP" | sort -t'|' -k1 -nr | head -n1)
 
@@ -535,22 +537,24 @@ root_cause_engine() {
 
   SCORE=$(echo "$TOP_LINE" | cut -d'|' -f1)
   NAME=$(echo "$TOP_LINE" | cut -d'|' -f2)
-  MEM=$(echo "$TOP_LINE" | cut -d'|' -f3)
-  CPU=$(echo "$TOP_LINE" | cut -d'|' -f4)
-  CNT=$(echo "$TOP_LINE" | cut -d'|' -f5)
+  MAX_MEM=$(echo "$TOP_LINE" | cut -d'|' -f3)
+  TOP3_MEM=$(echo "$TOP_LINE" | cut -d'|' -f4)
+  CPU=$(echo "$TOP_LINE" | cut -d'|' -f5)
+  CNT=$(echo "$TOP_LINE" | cut -d'|' -f6)
 
   # Confidence heuristik
   CONF="MEDIUM"
-  if [ "$MEM" -gt 500 ]; then CONF="HIGH"; fi
+  if [ "$MAX_MEM" -gt 450 ]; then CONF="HIGH"; fi
+  if [ "$TOP3_MEM" -gt 1000 ]; then CONF="HIGH"; fi
   if [ "$CPU" -gt 20 ]; then CONF="HIGH"; fi
-  if [ "$CNT" -ge 3 ]; then CONF="HIGH"; fi
 
   echo "$NAME"
   echo
   echo "Confidence: $CONF"
   echo
   echo "Reason:"
-  echo "- Total memory: ${MEM} MB"
+  echo "- Max process memory: ${MAX_MEM} MB"
+  echo "- Top 3 memory: ${TOP3_MEM} MB"
   echo "- Peak CPU: ${CPU}%"
   echo "- Instances: $CNT"
 
