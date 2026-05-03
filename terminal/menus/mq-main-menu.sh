@@ -28,6 +28,7 @@ print_main_menu() {
   print_header
   render_main_menu_panel
   render_command_surface
+  MQ_MAIN_MENU_RENDERED_LINES=64
 }
 
 surface_terminal_width() {
@@ -301,7 +302,7 @@ handle_main_menu_choice() {
 }
 
 read_main_choice() {
-  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row
+  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
   prompt_width="$(surface_terminal_width)"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> choose an option, command alias, or x to exit"
@@ -318,8 +319,12 @@ read_main_choice() {
   input_row=$(( prompt_row + 1 ))    # row of "mqlaunch > " input
   (( prompt_row < 2 )) && prompt_row=2
   (( input_row < 3 )) && input_row=3
+  pin_prompt=0
+  if (( term_lines > ${MQ_MAIN_MENU_RENDERED_LINES:-64} + 4 )); then
+    pin_prompt=1
+  fi
 
-  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 && "$pin_prompt" -eq 1 ]]; then
     local prompt input cursor key old_stty
     prompt="mqlaunch > "
     input=""
@@ -382,12 +387,12 @@ read_main_choice() {
     return 0
   fi
 
-  # Fallback: anchor prompt to bottom even for non-ZSH paths
-  printf "\033[%d;1H\033[J" "$prompt_row"
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
+  # Fallback for normal Terminal heights: keep the prompt in flow so it never
+  # clears the lower part of the rendered menu.
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
+  read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
+  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   choice="$REPLY"
 }
 
