@@ -105,6 +105,75 @@ require_release_script() {
   fi
 }
 
+init_release_files() {
+  local version today confirm
+
+  print_header
+  row_bold "INITIALIZE RELEASE FILES"
+  empty_row
+  row "Repo:"
+  row " $RELEASE_REPO"
+  empty_row
+  row "This can create missing files:"
+  row " release.sh"
+  row " VERSION"
+  row " CHANGELOG.md"
+  empty_row
+  row "Existing files will not be overwritten."
+  print_footer
+
+  printf "%bInitial version [0.1.0]: %b" "$C_TITLE" "$C_RESET"
+  read -r version
+  version="${version:-0.1.0}"
+
+  printf "%bCreate missing release files? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || {
+    ui_warn "Initialization cancelled."
+    pause_enter
+    return 1
+  }
+
+  today="$(date +%F)"
+
+  if [[ ! -f "$VERSION_FILE" ]]; then
+    printf '%s\n' "$version" > "$VERSION_FILE"
+  fi
+
+  if [[ ! -f "$CHANGELOG_FILE" ]]; then
+    cat > "$CHANGELOG_FILE" <<EOF_CHANGELOG
+# Changelog
+
+<!-- markdownlint-disable MD024 -->
+
+All notable changes to this project will be documented in this file.
+
+## [$version] - $today
+
+### Added
+
+* Initial release setup
+EOF_CHANGELOG
+  fi
+
+  if [[ ! -f "$RELEASE_SCRIPT" ]]; then
+    cp "$BASE_DIR/release.sh" "$RELEASE_SCRIPT"
+    chmod +x "$RELEASE_SCRIPT"
+  elif [[ ! -x "$RELEASE_SCRIPT" ]]; then
+    chmod +x "$RELEASE_SCRIPT"
+  fi
+
+  print_header
+  row_bold "INITIALIZE RELEASE FILES"
+  empty_row
+  row "Release files are ready:"
+  row " $RELEASE_SCRIPT"
+  row " $VERSION_FILE"
+  row " $CHANGELOG_FILE"
+  print_footer
+  pause_enter
+}
+
 current_version() {
   if [[ -f "$VERSION_FILE" ]]; then
     head -n 1 "$VERSION_FILE"
@@ -155,7 +224,7 @@ show_tags() {
   row_bold "LATEST TAGS"
   empty_row
 
-  git -C "$BASE_DIR" tag --sort=-creatordate | head -n 12 || true
+  git -C "$RELEASE_REPO" tag --sort=-creatordate | head -n 12 || true
 
   print_footer
   pause_enter
@@ -300,10 +369,10 @@ print_menu() {
   empty_row
 
   row2 " 1. Release status" " 2. Change repo"
-  row2 " 3. Dry run release" " 4. Run release"
-  row2 " 5. Create GitHub release" " 6. View changelog"
-  row2 " 7. Show latest tags" " 8. Open changelog"
-  row2 " 9. Open release script" ""
+  row2 " 3. Initialize files" " 4. Dry run release"
+  row2 " 5. Run release" " 6. Create GitHub release"
+  row2 " 7. View changelog" " 8. Show latest tags"
+  row2 " 9. Open changelog" "10. Open release script"
   row2 " b. Back" ""
 
   print_footer
@@ -316,20 +385,21 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-9,b] > " || return
+    read_menu_choice "Select option [1-10,b] > " || return
     choice="$REPLY"
     echo
 
     case "$choice" in
       1) show_release_status ;;
       2) choose_release_repo || true ;;
-      3) run_release_dry || true ;;
-      4) run_release_live || true ;;
-      5) create_github_release_only || true ;;
-      6) show_changelog ;;
-      7) show_tags ;;
-      8) open_changelog_in_editor ;;
-      9) open_release_script_in_editor ;;
+      3) init_release_files || true ;;
+      4) run_release_dry || true ;;
+      5) run_release_live || true ;;
+      6) create_github_release_only || true ;;
+      7) show_changelog ;;
+      8) show_tags ;;
+      9) open_changelog_in_editor ;;
+      10) open_release_script_in_editor ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -346,6 +416,7 @@ Usage:
 Commands:
   menu      Open menu (default)
   repo      Select repo, then open menu
+  init      Create missing release files for selected repo
   status    Show release status
   dry-run   Start dry-run release flow
   release   Start live release flow
@@ -368,6 +439,7 @@ main() {
   case "$cmd" in
     menu) menu_loop ;;
     repo) choose_release_repo && menu_loop ;;
+    init) init_release_files ;;
     status) show_release_status ;;
     dry-run) run_release_dry ;;
     release) run_release_live ;;
@@ -383,4 +455,4 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+main "$@"
