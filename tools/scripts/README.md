@@ -93,6 +93,25 @@ bash tools/scripts/mission-control.sh
 bash tools/scripts/network-ghost.sh
 ```
 
+### Command Cheat Sheet
+
+```bash
+# Check that the documentation helper has valid bash syntax
+bash -n tools/scripts/document-functions.sh
+
+# Preview which function comments would be added to one script
+tools/scripts/document-functions.sh tools/scripts/scan.sh
+
+# Add missing function comments to one script
+tools/scripts/document-functions.sh --write tools/scripts/scan.sh
+
+# Preview missing function comments for all scripts in this directory
+tools/scripts/document-functions.sh tools/scripts
+
+# Add missing function comments for all scripts in this directory
+tools/scripts/document-functions.sh --write tools/scripts
+```
+
 ---
 
 ## 🚦 Start here
