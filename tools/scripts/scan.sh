@@ -195,7 +195,7 @@ score_offenders() {
     MEM_INT=${MEM%%[.,]*}
 
     # repeat count
-    COUNT=$(grep -c "$NAME" "$LOG" 2>/dev/null)
+    COUNT=$(recent_count)
 
     SCORE=$((CPU_INT * 5 + MEM_INT * 3 + COUNT * 2))
 
@@ -230,11 +230,54 @@ top_weighted_action() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
+# ----------------------------
+# DECAY MODEL v1
+# ----------------------------
+
+track_offender_decay() {
+  LOG="$HOME/.mq/offenders.log"
+  mkdir -p "$HOME/.mq"
+
+  read PID CPU NAME <<< \
+  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+
+  NOW=$(date +%s)
+
+  echo "$NOW|$NAME" >> "$LOG"
+
+  # behåll senaste 100 rader
+  tail -n 100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+}
+
+recent_count() {
+  LOG="$HOME/.mq/offenders.log"
+  NOW=$(date +%s)
+
+  read PID CPU NAME <<< \
+  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+
+  COUNT=0
+
+  while IFS='|' read TS PROC; do
+    AGE=$((NOW - TS))
+
+    if [ "$AGE" -lt 300 ]; then   # 5 minuter
+      if [[ "$PROC" == *"$NAME"* ]]; then
+        COUNT=$((COUNT + 1))
+      fi
+    fi
+  done < "$LOG"
+
+  echo "$COUNT"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
 
 header "MQ SCAN"
+
+track_offender_decay
 
 section "SYSTEM"
 ok "CPU: $(uptime | awk -F'load averages:' '{print $2}')"
@@ -266,4 +309,3 @@ severity_score
 
 section "SUMMARY"
 ok "Scan complete"
-
