@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+BASE_DIR="$HOME/macos-scripts"
+LIB="$BASE_DIR/tools/cli/mq-lib.sh"
+
+[ -f "$LIB" ] && source "$LIB"
+
+# --------------------------------------------------
+# Interactive mode (fzf)
+# --------------------------------------------------
+
+if [ $# -eq 0 ]; then
+  if command -v fzf >/dev/null; then
+    cmd=$(printf "%s\n" \
+      "doctor" \
+      "sys" \
+      "config" \
+      "reload" \
+      "scan" \
+      "pulse" \
+      "exit" \
+      | fzf --prompt="mq > " --height=40% --border)
+
+    case "$cmd" in
+      doctor) mq_doctor ;;
+      sys) mq_sys ;;
+      config) mq_config ;;
+      reload) mq_reload ;;
+      scan) mq_scan ;;
+      pulse) mq_pulse ;;
+      *) exit 0 ;;
+    esac
+    exit 0
+  else
+    mq_help
+    exit 0
+  fi
+fi
+
+# --------------------------------------------------
+# Normal CLI mode
+# --------------------------------------------------
+
+cmd="$1"
+shift || true
+
+case "$cmd" in
+  doctor)   mq_doctor "$@" ;;
+  sys)      mq_sys "$@" ;;
+  config)   mq_config "$@" ;;
+  reload)   mq_reload "$@" ;;
+  scan)     mq_scan "$@" ;;
+  pulse)    mq_pulse "$@" ;;
+  help|*)   mq_help ;;
+esac
