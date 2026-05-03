@@ -475,16 +475,18 @@ root_cause_engine() {
         gsub(".*/","",cmd)
 
         # -------- NORMALIZATION --------
-        # slå ihop electron-processer
         grouped=0
         if (cmd ~ /ChatGPT/) { cmd="ChatGPT"; grouped=1 }
-        if (cmd ~ /Chrome/) { cmd="Chrome"; grouped=1 }
-        if (cmd ~ /Code|Visual/) { cmd="Visual"; grouped=1 }
+        else if (cmd ~ /Electron/) { cmd="ChatGPT"; grouped=1 }
+        else if (cmd ~ /Chrome|Google/) { cmd="Chrome"; grouped=1 }
+        else if (cmd ~ /Code|Visual/) { cmd="Visual"; grouped=1 }
 
+        MEM_CAP=1500
         cpu=($2+0)
         rss_mb=($3/1024)
 
         sum_mem[cmd]+=rss_mb
+        if (sum_mem[cmd] > MEM_CAP) sum_mem[cmd]=MEM_CAP
         if (rss_mb > max_mem[cmd]) max_mem[cmd]=rss_mb
         if (cpu > max_cpu[cmd]) max_cpu[cmd]=cpu
         count[cmd]++
@@ -502,6 +504,7 @@ root_cause_engine() {
             if (helper > 3) helper=3
             mem=max_mem[k] + helper*80
           }
+          if (mem > 1500) mem=1500
 
           printf "%s|%.0f|%.0f|%d\n", k, mem, max_cpu[k], count[k]
         }
