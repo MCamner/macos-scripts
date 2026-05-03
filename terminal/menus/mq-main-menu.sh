@@ -304,7 +304,7 @@ handle_main_menu_choice() {
 read_main_choice() {
   local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
   prompt_width="$(surface_terminal_width)"
-  prompt_line="$(repeat_char "$prompt_width" "─")"
+  prompt_line="$(repeat_char $(( prompt_width - 2 )) "─")"
   prompt_hint=">> choose an option, command alias, or x to exit"
   if [[ -t 1 ]]; then
     prompt_color=$'\033[0;37m'
