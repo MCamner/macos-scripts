@@ -613,6 +613,7 @@ root_cause_engine() {
   if [ "$MAX_MEM" -gt 450 ]; then CONF="HIGH"; fi
   if [ "$TOP3_MEM" -gt 1000 ]; then CONF="HIGH"; fi
   if [ "$CPU" -gt 20 ]; then CONF="HIGH"; fi
+  INST=$( [ "$CNT" -gt 5 ] && echo "5+" || echo "$CNT" )
 
   echo "$NAME"
   echo
@@ -622,7 +623,7 @@ root_cause_engine() {
   echo "- Max process memory: ${MAX_MEM} MB"
   echo "- Top 3 memory: ${TOP3_MEM} MB"
   echo "- Peak CPU: ${CPU}%"
-  echo "- Instances: $CNT"
+  echo "- Instances: $INST"
 
   echo
   echo "Recommended action:"
