@@ -15,6 +15,7 @@ menu_performance() {
     print_menu_item "7" "Battery status"
     print_menu_item "8" "Create performance snapshot"
     print_menu_item "9" "Quick watch"
+    print_menu_item "10" "MQ scan"
     print_menu_item "b" "Back"
     print_footer_hint
 
@@ -31,6 +32,7 @@ menu_performance() {
       7) command_perf_battery ;;
       8) command_perf_snapshot ;;
       9) command_perf_quick_watch ;;
+      10) "$PROJECT_ROOT/tools/scripts/scan.sh"; pause_enter ;;
       b|B|back) break ;;
       *) warn "Unknown choice: $choice"; sleep 1 ;;
     esac
