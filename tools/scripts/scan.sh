@@ -125,6 +125,50 @@ smart_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
+track_offender() {
+  LOG="$HOME/.mq/offenders.log"
+  mkdir -p "$HOME/.mq"
+
+  read PID CPU NAME <<< \
+  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+
+  echo "$NAME" >> "$LOG"
+
+  COUNT=$(grep -c "$NAME" "$LOG" 2>/dev/null)
+
+  # limit log size
+  tail -n 50 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+
+  # only escalate if non-system
+  case "$NAME" in
+    *"/System/"*|*"coreaudiod"*|*"WindowServer"*)
+      return
+      ;;
+  esac
+
+  if [ "$COUNT" -ge 3 ]; then
+    echo
+    echo "Repeat offender detected:"
+    echo "$NAME seen $COUNT times"
+
+    echo
+    echo "Escalation:"
+    echo "- Consistent CPU usage"
+
+    echo
+    read -p "Kill strongly recommended [y/N]: " choice
+
+    case "$choice" in
+      y|Y)
+        kill -15 "$PID" && echo "✔ killed"
+        ;;
+      *)
+        echo "Skipped"
+        ;;
+    esac
+  fi
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -152,6 +196,7 @@ ps -Ao pid,pcpu,comm \
 
 suggest_kill
 smart_kill
+track_offender
 memory_insight
 combined_insight_v2
 severity_score
