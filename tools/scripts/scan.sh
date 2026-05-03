@@ -195,7 +195,7 @@ score_offenders() {
     MEM_INT=${MEM%%[.,]*}
 
     # repeat count
-    COUNT=$(recent_count)
+    COUNT=$(recent_count "$NAME")
 
     SCORE=$((CPU_INT * 5 + MEM_INT * 3 + COUNT * 2))
 
@@ -252,17 +252,18 @@ track_offender_decay() {
 recent_count() {
   LOG="$HOME/.mq/offenders.log"
   NOW=$(date +%s)
-
-  read PID CPU NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  TARGET="$1"
 
   COUNT=0
+  [ -f "$LOG" ] || { echo "$COUNT"; return; }
 
   while IFS='|' read TS PROC; do
+    [[ "$TS" =~ ^[0-9]+$ ]] || continue
+
     AGE=$((NOW - TS))
 
     if [ "$AGE" -lt 300 ]; then   # 5 minuter
-      if [[ "$PROC" == *"$NAME"* ]]; then
+      if [[ "$(basename "$PROC")" == "$TARGET" ]]; then
         COUNT=$((COUNT + 1))
       fi
     fi
