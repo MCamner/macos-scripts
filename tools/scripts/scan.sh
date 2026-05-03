@@ -169,6 +169,57 @@ track_offender() {
   fi
 }
 
+score_offenders() {
+  echo
+  section "OFFENDER RANKING"
+
+  LOG="$HOME/.mq/offenders.log"
+  mkdir -p "$HOME/.mq"
+
+  ps -Ao pid,pcpu,pmem,comm \
+    | sort -k2 -nr \
+    | head -n 6 \
+    | awk 'NR>1 {print $1, $2, $3, $4}' | while read PID CPU MEM NAME
+  do
+    CPU_INT=${CPU%.*}
+    MEM_INT=${MEM%.*}
+
+    # repeat count
+    COUNT=$(grep -c "$NAME" "$LOG" 2>/dev/null)
+
+    SCORE=$((CPU_INT * 5 + MEM_INT * 3 + COUNT * 2))
+
+    printf "%-15s score: %s\n" "$NAME" "$SCORE"
+  done | sort -k3 -nr
+
+  echo
+}
+
+top_weighted_action() {
+  read PID CPU MEM NAME <<< \
+  $(ps -Ao pid,pcpu,pmem,comm \
+    | sort -k2 -nr \
+    | awk 'NR==2 {print $1, $2, $3, $4}')
+
+  CPU_INT=${CPU%.*}
+
+  case "$NAME" in
+    *"/System/"*|*"coreaudiod"*|*"WindowServer"*)
+      return
+      ;;
+  esac
+
+  if [ "$CPU_INT" -lt 15 ]; then
+    return
+  fi
+
+  echo "Top offender (weighted):"
+  echo "$NAME → Kill recommended"
+
+  read -p "[y/N]: " choice
+  [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -198,6 +249,8 @@ suggest_kill
 smart_kill
 track_offender
 memory_insight
+score_offenders
+top_weighted_action
 combined_insight_v2
 severity_score
 
