@@ -33,8 +33,6 @@ memory_insight() {
 }
 
 memory_pressure_v4() {
-  TOTAL_BYTES=$(sysctl -n hw.memsize 2>/dev/null)
-
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
   $(vm_stat | awk '
     NR==1 {
@@ -42,61 +40,44 @@ memory_pressure_v4() {
       gsub(/[^0-9]/, "", page_size)
     }
     /Pages free:/ {free=$3}
-    /Pages inactive:/ {inactive=$3}
     /Pages speculative:/ {speculative=$3}
     /Pages purgeable:/ {purgeable=$3}
     /Pages occupied by compressor:/ {compressor=$5}
     /Pageouts:/ {pageouts=$2}
     END {
       gsub(/\./, "", free)
-      gsub(/\./, "", inactive)
       gsub(/\./, "", speculative)
       gsub(/\./, "", purgeable)
       gsub(/\./, "", compressor)
       gsub(/\./, "", pageouts)
 
-      available=(free + inactive + speculative + purgeable) * page_size / 1024 / 1024
+      available=(free + speculative + purgeable) * page_size / 1024 / 1024
       compressed=compressor * page_size / 1024 / 1024
 
       printf "%.0f %.0f %d\n", available, compressed, pageouts
     }
   ')
 
-  if [ -z "$TOTAL_BYTES" ] || [ -z "$AVAILABLE_MB" ]; then
+  if [ -z "$AVAILABLE_MB" ] || [ -z "$COMPRESSED_MB" ]; then
     MQ_MEM_SCORE=20
+    MEM_STATUS="UNKNOWN"
     warn "Memory: unable to read vm_stat"
     return
   fi
 
-  TOTAL_MB=$(awk "BEGIN {printf \"%.0f\", $TOTAL_BYTES/1024/1024}")
-  AVAILABLE_PCT=$(awk "BEGIN {printf \"%.0f\", ($AVAILABLE_MB/$TOTAL_MB)*100}")
-  COMPRESSED_PCT=$(awk "BEGIN {printf \"%.0f\", ($COMPRESSED_MB/$TOTAL_MB)*100}")
-
-  MQ_MEM_SCORE=10
-  STATUS="OK"
-
-  if [ "$AVAILABLE_PCT" -lt 8 ] || [ "$COMPRESSED_PCT" -gt 25 ]; then
-    MQ_MEM_SCORE=30
-    STATUS="CRITICAL"
-  elif [ "$AVAILABLE_PCT" -lt 15 ] || [ "$COMPRESSED_PCT" -gt 15 ]; then
+  if [ "$COMPRESSED_MB" -lt 1024 ]; then
+    MQ_MEM_SCORE=10
+    MEM_STATUS="OK"
+    ok "Memory OK: ${AVAILABLE_MB} MB available, ${COMPRESSED_MB} MB compressed"
+  elif [ "$COMPRESSED_MB" -lt 3000 ]; then
     MQ_MEM_SCORE=20
-    STATUS="PRESSURE"
+    MEM_STATUS="PRESSURE"
+    warn "Memory PRESSURE: ${AVAILABLE_MB} MB available, ${COMPRESSED_MB} MB compressed"
+  else
+    MQ_MEM_SCORE=30
+    MEM_STATUS="CRITICAL"
+    err "Memory CRITICAL: ${AVAILABLE_MB} MB available, ${COMPRESSED_MB} MB compressed"
   fi
-  MEM_STATUS="$STATUS"
-
-  MESSAGE="Memory $STATUS: ${AVAILABLE_MB} MB available (${AVAILABLE_PCT}%), ${COMPRESSED_MB} MB compressed"
-
-  case "$STATUS" in
-    OK)
-      ok "$MESSAGE"
-      ;;
-    PRESSURE)
-      warn "$MESSAGE"
-      ;;
-    *)
-      err "$MESSAGE"
-      ;;
-  esac
 }
 
 combined_insight_v2() {
