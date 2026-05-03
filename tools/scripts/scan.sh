@@ -361,6 +361,40 @@ top_weighted_action_v3() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
+# ----------------------------
+# AUDIO-AWARE INSIGHT v1
+# ----------------------------
+
+audio_insight() {
+  # kolla om coreaudiod är top 3 CPU
+  if ! ps -Ao pcpu,comm | sort -nr | head -n 4 | grep -qi coreaudiod; then
+    return
+  fi
+
+  echo
+  section "AUDIO INSIGHT"
+
+  echo "coreaudiod active"
+
+  echo
+  echo "Likely audio sources:"
+
+  ps -Ao pcpu,comm \
+    | sort -nr \
+    | awk '
+      NR>1 && NR<=10 {
+        if ($2 ~ /Applications|Chrome|Safari|ChatGPT|Spotify|Zoom|Teams/)
+          print "- " $2
+      }
+    '
+
+  echo
+  echo "Recommendation:"
+  echo "- Close or restart audio-heavy apps"
+  echo "- Check browser tabs (video/audio)"
+  echo "- Restart audio if needed: sudo killall coreaudiod"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -395,41 +429,8 @@ memory_insight
 score_offenders_v3
 top_weighted_action_v3
 combined_insight_v2
+audio_insight
 severity_score
 
 section "SUMMARY"
 ok "Scan complete"
-
-# ----------------------------
-# AUDIO-AWARE INSIGHT v1
-# ----------------------------
-
-audio_insight() {
-  # kolla om coreaudiod är top 3 CPU
-  if ! ps -Ao pcpu,comm | sort -nr | head -n 4 | grep -qi coreaudiod; then
-    return
-  fi
-
-  echo
-  section "AUDIO INSIGHT"
-
-  echo "coreaudiod active"
-
-  echo
-  echo "Likely audio sources:"
-
-  ps -Ao pcpu,comm \
-    | sort -nr \
-    | awk '
-      NR>1 && NR<=10 {
-        if ($2 ~ /Applications|Chrome|Safari|ChatGPT|Spotify|Zoom|Teams/)
-          print "- " $2
-      }
-    '
-
-  echo
-  echo "Recommendation:"
-  echo "- Close or restart audio-heavy apps"
-  echo "- Check browser tabs (video/audio)"
-  echo "- Restart audio if needed: sudo killall coreaudiod"
-}
