@@ -28,8 +28,13 @@ mq_config() {
 }
 
 mq_reload() {
-  source ~/.zshrc
-  echo "✔ Shell reloaded"
+  if command -v zsh >/dev/null 2>&1; then
+    echo "Reloading shell with zsh..."
+    exec zsh -l
+  fi
+
+  echo "zsh not found; run: exec zsh -l" >&2
+  return 1
 }
 
 mq_pulse() {
