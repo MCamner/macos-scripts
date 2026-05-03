@@ -29,7 +29,73 @@ memory_insight() {
     | awk '
       NR==1 {printf "%-8s %-6s %-10s %s\n", "PID", "MEM%", "RSS(MB)", "PROCESS"}
       NR>1  {n=split($4,a,"/"); printf "%-8s %-6s %-10.1f %s\n", $1, $2, $3/1024, a[n]}
-    '
+	    '
+}
+
+memory_pressure_v4() {
+  TOTAL_BYTES=$(sysctl -n hw.memsize 2>/dev/null)
+
+  read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
+  $(vm_stat | awk '
+    NR==1 {
+      page_size=$8
+      gsub(/[^0-9]/, "", page_size)
+    }
+    /Pages free:/ {free=$3}
+    /Pages inactive:/ {inactive=$3}
+    /Pages speculative:/ {speculative=$3}
+    /Pages purgeable:/ {purgeable=$3}
+    /Pages occupied by compressor:/ {compressor=$5}
+    /Pageouts:/ {pageouts=$2}
+    END {
+      gsub(/\./, "", free)
+      gsub(/\./, "", inactive)
+      gsub(/\./, "", speculative)
+      gsub(/\./, "", purgeable)
+      gsub(/\./, "", compressor)
+      gsub(/\./, "", pageouts)
+
+      available=(free + inactive + speculative + purgeable) * page_size / 1024 / 1024
+      compressed=compressor * page_size / 1024 / 1024
+
+      printf "%.0f %.0f %d\n", available, compressed, pageouts
+    }
+  ')
+
+  if [ -z "$TOTAL_BYTES" ] || [ -z "$AVAILABLE_MB" ]; then
+    MQ_MEM_SCORE=20
+    warn "Memory: unable to read vm_stat"
+    return
+  fi
+
+  TOTAL_MB=$(awk "BEGIN {printf \"%.0f\", $TOTAL_BYTES/1024/1024}")
+  AVAILABLE_PCT=$(awk "BEGIN {printf \"%.0f\", ($AVAILABLE_MB/$TOTAL_MB)*100}")
+  COMPRESSED_PCT=$(awk "BEGIN {printf \"%.0f\", ($COMPRESSED_MB/$TOTAL_MB)*100}")
+
+  MQ_MEM_SCORE=10
+  STATUS="OK"
+
+  if [ "$AVAILABLE_PCT" -lt 8 ] || [ "$COMPRESSED_PCT" -gt 25 ]; then
+    MQ_MEM_SCORE=30
+    STATUS="CRITICAL"
+  elif [ "$AVAILABLE_PCT" -lt 15 ] || [ "$COMPRESSED_PCT" -gt 15 ]; then
+    MQ_MEM_SCORE=20
+    STATUS="PRESSURE"
+  fi
+
+  MESSAGE="Memory $STATUS: ${AVAILABLE_MB} MB available (${AVAILABLE_PCT}%), ${COMPRESSED_MB} MB compressed"
+
+  case "$STATUS" in
+    OK)
+      ok "$MESSAGE"
+      ;;
+    PRESSURE)
+      warn "$MESSAGE"
+      ;;
+    *)
+      err "$MESSAGE"
+      ;;
+  esac
 }
 
 combined_insight_v2() {
@@ -66,7 +132,7 @@ severity_score() {
     CPU_SCORE=30
   fi
 
-  MEM_SCORE=20
+  MEM_SCORE=${MQ_MEM_SCORE:-20}
   DISK_SCORE=5
 
   SCORE=$((100 - CPU_SCORE - MEM_SCORE - DISK_SCORE))
@@ -575,7 +641,7 @@ section "SYSTEM"
 ok "CPU: $(uptime | awk -F'load averages:' '{print $2}')"
 
 section "MEMORY"
-err "Memory PRESSURE: check system"
+memory_pressure_v4
 
 section "STORAGE"
 ok "Disk: $(df -h / | awk 'NR==2 {print $5}')"
