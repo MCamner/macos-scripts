@@ -362,12 +362,12 @@ top_weighted_action_v3() {
 }
 
 # ----------------------------
-# AUDIO-AWARE INSIGHT v1
+# AUDIO FILTERING v2
 # ----------------------------
 
 audio_insight() {
-  # kolla om coreaudiod är top 3 CPU
-  if ! ps -Ao pcpu,comm | sort -nr | head -n 4 | grep -qi coreaudiod; then
+  # trigga bara om coreaudiod faktiskt syns högt
+  if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi coreaudiod; then
     return
   fi
 
@@ -376,23 +376,41 @@ audio_insight() {
 
   echo "coreaudiod active"
 
+  # om inga riktiga kandidater hittas → visa inget brus
+  CANDIDATES=$(ps -Ao comm | grep -E "ChatGPT|Chrome|Safari|Spotify|Music|VLC|zoom|Teams|Discord" | wc -l)
+  if [ "$CANDIDATES" -eq 0 ]; then
+    echo "No clear audio source detected"
+    return
+  fi
+
   echo
   echo "Likely audio sources:"
 
-  ps -Ao pcpu,comm \
-    | sort -nr \
+  # whitelist: appar som ofta använder ljud
+  ps -Ao pid,pcpu,rss,comm \
+    | sort -k2 -nr \
+    | head -n 20 \
     | awk '
-      NR>1 && NR<=10 {
-        if ($2 ~ /Applications|Chrome|Safari|ChatGPT|Spotify|Zoom|Teams/)
-          print "- " $2
+      NR>1 {
+        name=$4
+
+        # normalisera till basename
+        n=name
+        sub(".*/","",n)
+
+        # whitelist (lägg till vid behov)
+        if (n ~ /(ChatGPT|Chrome|Safari|Firefox|Spotify|Music|QuickTime|VLC|zoom|Teams|Discord|Slack)/) {
+          printf "%-18s cpu:%-5s mem:%5.0fMB\n", n, $2, $3/1024
+        }
       }
-    '
+    ' \
+    | sort -u
 
   echo
   echo "Recommendation:"
-  echo "- Close or restart audio-heavy apps"
-  echo "- Check browser tabs (video/audio)"
-  echo "- Restart audio if needed: sudo killall coreaudiod"
+  echo "- Close tabs/apps playing audio"
+  echo "- Check browser (video/music)"
+  echo "- Restart audio if glitching: sudo killall coreaudiod"
 }
 
 # ==================================================
