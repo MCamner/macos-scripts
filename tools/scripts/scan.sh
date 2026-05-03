@@ -413,6 +413,48 @@ audio_insight() {
   echo "- Restart audio if glitching: sudo killall coreaudiod"
 }
 
+# ----------------------------
+# GUI-AWARE INSIGHT v1
+# ----------------------------
+
+gui_insight() {
+  # trigga bara om WindowServer är top CPU
+  if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi WindowServer; then
+    return
+  fi
+
+  echo
+  section "GUI INSIGHT"
+
+  echo "WindowServer active"
+  echo
+
+  echo "Likely GUI-heavy apps:"
+
+  ps -Ao pid,pcpu,rss,comm \
+    | sort -k3 -nr \
+    | head -n 15 \
+    | awk '
+      NR>1 {
+        name=$4
+
+        # ta bort path → bara appnamn
+        n=name
+        sub(".*/","",n)
+
+        # filtrera bort system/irrelevant
+        if (n ~ /(Visual|Code|Chrome|Safari|Firefox|ChatGPT|Slack|Discord|Electron)/) {
+          printf "%-18s cpu:%-5s mem:%5.0fMB\n", n, $2, $3/1024
+        }
+      }
+    ' | sort -u
+
+  echo
+  echo "Reason:"
+  echo "- High memory usage drives rendering"
+  echo "- WindowServer reflects UI load"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -448,6 +490,7 @@ score_offenders_v3
 top_weighted_action_v3
 combined_insight_v2
 audio_insight
+gui_insight
 severity_score
 
 section "SUMMARY"

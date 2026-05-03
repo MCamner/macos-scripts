@@ -102,12 +102,22 @@ This project turns:
 ```bash
 mqlaunch
 mqlaunch perf
+mq scan
 mqlaunch system check
 mqlaunch dev
 mqlaunch tools
 mqlaunch demo
 ```
 
+---
+
+## 🔎 Performance scan
+
+```bash
+mq scan
+```
+
+Ranks CPU and memory offenders, highlights repeat offenders, and gives practical recommendations for what to close or restart.
 
 ---
 ## 🩺 Health check
@@ -116,7 +126,9 @@ Before diving into workflows, verify your environment.
 
 Run:
 
+```bash
 mqlaunch doctor
+```
 
 What it does:
 
@@ -127,7 +139,9 @@ What it does:
 
 Example use:
 
+```bash
 mqlaunch doctor
+```
 
 → quickly understand if your environment is ready  
 → fix issues before running workflows  
