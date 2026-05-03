@@ -3,13 +3,18 @@ set -euo pipefail
 
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
-RELEASE_SCRIPT="$BASE_DIR/release.sh"
-CHANGELOG_FILE="$BASE_DIR/CHANGELOG.md"
-VERSION_FILE="$BASE_DIR/VERSION"
+RELEASE_REPO="${MQ_RELEASE_REPO:-$BASE_DIR}"
+RELEASE_SCRIPT=""
+CHANGELOG_FILE=""
+VERSION_FILE=""
 
+# shellcheck disable=SC2034
 APP_TITLE="MQ Release"
+# shellcheck disable=SC2034
 APP_SUBTITLE="Release Automation and Versioning"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
@@ -19,6 +24,71 @@ else
   echo "Missing UI library: $UI_LIB" >&2
   exit 1
 fi
+
+refresh_release_paths() {
+  RELEASE_SCRIPT="$RELEASE_REPO/release.sh"
+  CHANGELOG_FILE="$RELEASE_REPO/CHANGELOG.md"
+  VERSION_FILE="$RELEASE_REPO/VERSION"
+}
+
+resolve_repo_path() {
+  local path="$1"
+
+  case "$path" in
+    \~) path="$HOME" ;;
+    \~/*) path="$HOME/${path#\~/}" ;;
+  esac
+
+  if [[ "$path" != /* ]]; then
+    path="$(pwd)/$path"
+  fi
+
+  (cd "$path" 2>/dev/null && pwd) || return 1
+}
+
+set_release_repo() {
+  local path="$1"
+  local resolved
+
+  resolved="$(resolve_repo_path "$path")" || {
+    ui_err "Repo path not found: $path"
+    pause_enter
+    return 1
+  }
+
+  if [[ ! -d "$resolved/.git" ]]; then
+    ui_err "Not a git repository: $resolved"
+    pause_enter
+    return 1
+  fi
+
+  RELEASE_REPO="$resolved"
+  refresh_release_paths
+}
+
+choose_release_repo() {
+  local path=""
+
+  print_header
+  row_bold "SELECT RELEASE REPO"
+  empty_row
+  row "Current repo:"
+  row " $RELEASE_REPO"
+  empty_row
+  row "Press Enter to keep current repo."
+  row "Or enter another repo path."
+  print_footer
+
+  printf "%bRepo path: %b" "$C_TITLE" "$C_RESET"
+  read -r path
+
+  if [[ -z "${path// }" ]]; then
+    refresh_release_paths
+    return 0
+  fi
+
+  set_release_repo "$path"
+}
 
 require_release_script() {
   if [[ ! -x "$RELEASE_SCRIPT" ]]; then
@@ -44,7 +114,7 @@ current_version() {
 }
 
 latest_tag() {
-  git -C "$BASE_DIR" describe --tags --abbrev=0 2>/dev/null || true
+  git -C "$RELEASE_REPO" describe --tags --abbrev=0 2>/dev/null || true
 }
 
 show_release_status() {
@@ -52,6 +122,7 @@ show_release_status() {
   row_bold "RELEASE STATUS"
   empty_row
 
+  row "Repo:            $RELEASE_REPO"
   row "Current version: $(current_version)"
   row "Latest tag:      $(latest_tag || true)"
   row "Release script:  $RELEASE_SCRIPT"
@@ -128,7 +199,7 @@ prompt_version() {
   empty_row
   row "Example: 0.1.4"
   print_footer
-  printf "${C_TITLE}Version: ${C_RESET}"
+  printf "%bVersion: %b" "$C_TITLE" "$C_RESET"
   read -r REPLY
 
   if [[ -z "${REPLY// }" ]]; then
@@ -150,7 +221,7 @@ run_release_command() {
   empty_row
 
   (
-    cd "$BASE_DIR" || exit 1
+    cd "$RELEASE_REPO" || exit 1
     "$RELEASE_SCRIPT" "$@"
   ) || status=$?
 
@@ -193,7 +264,7 @@ create_github_release_only() {
   fi
 
   print_footer
-  printf "${C_TITLE}Tag: ${C_RESET}"
+  printf "%bTag: %b" "$C_TITLE" "$C_RESET"
   read -r tag
 
   if [[ -z "${tag// }" && -n "$latest" ]]; then
@@ -211,7 +282,7 @@ create_github_release_only() {
   empty_row
 
   (
-    cd "$BASE_DIR" || exit 1
+    cd "$RELEASE_REPO" || exit 1
     gh release create "$tag" \
       --title "Release $tag" \
       --notes-file "$CHANGELOG_FILE"
@@ -225,11 +296,14 @@ print_menu() {
   print_header
   row_bold "RELEASE"
   empty_row
+  row "Repo: $RELEASE_REPO"
+  empty_row
 
-  row2 " 1. Release status" " 2. Dry run release"
-  row2 " 3. Run release" " 4. Create GitHub release"
-  row2 " 5. View changelog" " 6. Show latest tags"
-  row2 " 7. Open changelog" " 8. Open release script"
+  row2 " 1. Release status" " 2. Change repo"
+  row2 " 3. Dry run release" " 4. Run release"
+  row2 " 5. Create GitHub release" " 6. View changelog"
+  row2 " 7. Show latest tags" " 8. Open changelog"
+  row2 " 9. Open release script" ""
   row2 " b. Back" ""
 
   print_footer
@@ -238,21 +312,24 @@ print_menu() {
 menu_loop() {
   local choice
 
+  choose_release_repo || true
+
   while true; do
     print_menu
-    read_menu_choice "Select option [1-8,b] > " || return
+    read_menu_choice "Select option [1-9,b] > " || return
     choice="$REPLY"
     echo
 
     case "$choice" in
       1) show_release_status ;;
-      2) run_release_dry || true ;;
-      3) run_release_live || true ;;
-      4) create_github_release_only || true ;;
-      5) show_changelog ;;
-      6) show_tags ;;
-      7) open_changelog_in_editor ;;
-      8) open_release_script_in_editor ;;
+      2) choose_release_repo || true ;;
+      3) run_release_dry || true ;;
+      4) run_release_live || true ;;
+      5) create_github_release_only || true ;;
+      6) show_changelog ;;
+      7) show_tags ;;
+      8) open_changelog_in_editor ;;
+      9) open_release_script_in_editor ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -264,10 +341,11 @@ usage() {
 mq-release-menu.sh - interactive release menu
 
 Usage:
-  mq-release-menu.sh [command]
+  mq-release-menu.sh [command] [repo-path]
 
 Commands:
   menu      Open menu (default)
+  repo      Select repo, then open menu
   status    Show release status
   dry-run   Start dry-run release flow
   release   Start live release flow
@@ -279,9 +357,17 @@ USAGE
 
 main() {
   local cmd="${1:-menu}"
+  local repo_arg="${2:-}"
+
+  if [[ -n "$repo_arg" ]]; then
+    set_release_repo "$repo_arg" || exit 1
+  else
+    refresh_release_paths
+  fi
 
   case "$cmd" in
     menu) menu_loop ;;
+    repo) choose_release_repo && menu_loop ;;
     status) show_release_status ;;
     dry-run) run_release_dry ;;
     release) run_release_live ;;
