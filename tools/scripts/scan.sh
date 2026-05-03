@@ -28,7 +28,7 @@ memory_insight() {
     | head -n 6 \
     | awk '
       NR==1 {printf "%-8s %-6s %-10s %s\n", "PID", "MEM%", "RSS(MB)", "PROCESS"}
-      NR>1  {printf "%-8s %-6s %-10.1f %s\n", $1, $2, $3/1024, $4}
+      NR>1  {n=split($4,a,"/"); printf "%-8s %-6s %-10.1f %s\n", $1, $2, $3/1024, a[n]}
     '
 }
 
@@ -38,9 +38,11 @@ combined_insight_v2() {
 
   read CPU_PID CPU CPU_NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  CPU_NAME=$(basename "$CPU_NAME")
 
   read MEM_PID MEM MEM_RSS MEM_NAME <<< \
   $(ps -Ao pid,pmem,rss,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3, $4}')
+  MEM_NAME=$(basename "$MEM_NAME")
 
   echo "Top CPU: $CPU_NAME ($CPU%)"
   echo "Top Memory: $MEM_NAME ($(awk "BEGIN {print $MEM_RSS/1024}") MB)"
@@ -84,6 +86,7 @@ severity_score() {
 suggest_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  NAME=$(basename "$NAME")
 
   echo
   echo "Top offender:"
@@ -104,8 +107,8 @@ suggest_kill() {
 smart_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
-
-  CPU_INT=${CPU%.*}
+  NAME=$(basename "$NAME")
+  CPU_INT=${CPU%%[.,]*}
 
   if [ "$CPU_INT" -lt 15 ]; then
     return
@@ -131,6 +134,7 @@ track_offender() {
 
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  NAME=$(basename "$NAME")
 
   echo "$NAME" >> "$LOG"
 
@@ -181,15 +185,21 @@ score_offenders() {
     | head -n 6 \
     | awk 'NR>1 {print $1, $2, $3, $4}' | while read PID CPU MEM NAME
   do
-    CPU_INT=${CPU%.*}
-    MEM_INT=${MEM%.*}
+    case "$NAME" in
+      *"/System/"*|*"coreaudiod"*|*"WindowServer"*)
+        continue
+        ;;
+    esac
+    NAME=$(basename "$NAME")
+    CPU_INT=${CPU%%[.,]*}
+    MEM_INT=${MEM%%[.,]*}
 
     # repeat count
     COUNT=$(grep -c "$NAME" "$LOG" 2>/dev/null)
 
     SCORE=$((CPU_INT * 5 + MEM_INT * 3 + COUNT * 2))
 
-    printf "%-15s score: %s\n" "$NAME" "$SCORE"
+    printf "%-20s score: %s\n" "$NAME" "$SCORE"
   done | sort -k3 -nr
 
   echo
@@ -200,8 +210,8 @@ top_weighted_action() {
   $(ps -Ao pid,pcpu,pmem,comm \
     | sort -k2 -nr \
     | awk 'NR==2 {print $1, $2, $3, $4}')
-
-  CPU_INT=${CPU%.*}
+  NAME=$(basename "$NAME")
+  CPU_INT=${CPU%%[.,]*}
 
   case "$NAME" in
     *"/System/"*|*"coreaudiod"*|*"WindowServer"*)
@@ -242,7 +252,7 @@ ps -Ao pid,pcpu,comm \
   | head -n 6 \
   | awk '
     NR==1 {printf "%-8s %-6s %s\n", "PID", "CPU%", "PROCESS"}
-    NR>1  {printf "%-8s %-6s %s\n", $1, $2, $3}
+    NR>1  {n=split($3,a,"/"); printf "%-8s %-6s %s\n", $1, $2, a[n]}
   '
 
 suggest_kill
