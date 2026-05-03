@@ -82,6 +82,7 @@ memory_pressure_v4() {
     MQ_MEM_SCORE=20
     STATUS="PRESSURE"
   fi
+  MEM_STATUS="$STATUS"
 
   MESSAGE="Memory $STATUS: ${AVAILABLE_MB} MB available (${AVAILABLE_PCT}%), ${COMPRESSED_MB} MB compressed"
 
@@ -120,6 +121,7 @@ severity_score() {
 
   CORES=$(sysctl -n hw.ncpu)
   LOAD=$(uptime | awk -F'load averages:' '{print $2}' | awk '{print $1}' | tr ',' '.')
+  CPU_LOAD="$LOAD"
 
   CPU_RATIO=$(echo "$LOAD / $CORES" | bc -l 2>/dev/null)
   [ -z "$CPU_RATIO" ] && CPU_RATIO=0
@@ -136,6 +138,7 @@ severity_score() {
   DISK_SCORE=5
 
   SCORE=$((100 - CPU_SCORE - MEM_SCORE - DISK_SCORE))
+  HEALTH_SCORE="$SCORE"
 
   if [ "$SCORE" -gt 80 ]; then
     STATUS="HEALTHY"
@@ -147,6 +150,31 @@ severity_score() {
 
   echo "Score: $SCORE / 100"
   echo "Status: $STATUS"
+}
+
+no_action_mode() {
+  [ -n "$HEALTH_SCORE" ] || return 1
+  [ -n "$MEM_STATUS" ] || return 1
+  [ -n "$CPU_LOAD" ] || return 1
+
+  CPU_LOW=$(awk "BEGIN {print ($CPU_LOAD < 4) ? 1 : 0}")
+
+  if [ "$HEALTH_SCORE" -ge 70 ] && [ "$MEM_STATUS" = "OK" ] && [ "$CPU_LOW" -eq 1 ]; then
+    echo
+    section "SYSTEM STATUS"
+
+    echo "Healthy - no action required"
+    echo
+
+    if [ -n "$ROOT_CAUSE_NAME" ]; then
+      echo "Note:"
+      echo "- $ROOT_CAUSE_NAME is the primary load (normal usage)"
+    fi
+
+    return 0
+  fi
+
+  return 1
 }
 
 suggest_kill() {
@@ -603,6 +631,7 @@ root_cause_engine() {
 
   SCORE=$(echo "$TOP_LINE" | cut -d'|' -f1)
   NAME=$(echo "$TOP_LINE" | cut -d'|' -f2)
+  ROOT_CAUSE_NAME="$NAME"
   MAX_MEM=$(echo "$TOP_LINE" | cut -d'|' -f3)
   TOP3_MEM=$(echo "$TOP_LINE" | cut -d'|' -f4)
   CPU=$(echo "$TOP_LINE" | cut -d'|' -f5)
@@ -624,6 +653,8 @@ root_cause_engine() {
   echo "- Top 3 memory: ${TOP3_MEM} MB"
   echo "- Peak CPU: ${CPU}%"
   echo "- Instances: $INST"
+
+  no_action_mode && return
 
   echo
   echo "Recommended action:"
