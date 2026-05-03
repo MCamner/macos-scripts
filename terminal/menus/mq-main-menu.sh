@@ -271,7 +271,9 @@ render_command_surface() {
 
 handle_main_menu_choice() {
   local choice="$1"
+  local normalized
 
+  normalized="$(printf '%s' "$choice" | tr '[:upper:]' '[:lower:]')"
   case "$choice" in
     # CORE
     1) run_mqworkflows ;;
@@ -295,17 +297,65 @@ handle_main_menu_choice() {
       ;;
 
     *)
-      echo "${C_ERR}Invalid selection:${C_RESET} $choice"
-      pause_enter
+      if handle_main_prompt_command "$normalized" "$choice"; then
+        return 0
+      fi
       ;;
   esac
+}
+
+handle_main_prompt_command() {
+  local normalized="$1"
+  local original="$2"
+
+  [[ -z "${normalized// }" ]] && return 0
+
+  case "$normalized" in
+    workflows|workflow|wf) run_mqworkflows; return 0 ;;
+    system|sys) open_system_menu; return 0 ;;
+    git|git-menu|gitmenu) open_git_menu; return 0 ;;
+    release|rel) open_release_menu; return 0 ;;
+    dev) open_dev_menu; return 0 ;;
+    help|h|?|commands|index) open_help_center_menu; return 0 ;;
+    perf|performance) open_performance_menu; return 0 ;;
+    net|network|ip) show_network_info; return 0 ;;
+    check|health|system\ check) system_check; return 0 ;;
+    apps|applications) open_apps_menu; return 0 ;;
+    repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
+    clear|cls) clear; return 0 ;;
+    version|ver) show_version_info || true; return 0 ;;
+    notes|changelog|release\ notes) show_release_notes || true; return 0 ;;
+    about|status|dashboard) show_about_dashboard || true; return 0 ;;
+    bundle|debug|debug-bundle|support) run_debug_bundle || true; return 0 ;;
+    repo|base|macos-scripts) open_base_dir; return 0 ;;
+    guide|terminal-guide) open_terminal_guide; return 0 ;;
+  esac
+
+  if command -v dispatch_cli_command >/dev/null 2>&1; then
+    if dispatch_cli_command "$normalized"; then
+      return 0
+    fi
+  fi
+
+  run_main_shell_command "$original"
+}
+
+run_main_shell_command() {
+  local command_line="$1"
+  local shell_bin="${SHELL:-/bin/zsh}"
+
+  echo
+  printf "%b[shell]%b %s\n" "$C_INFO" "$C_RESET" "$command_line"
+  echo
+  "$shell_bin" -lc "$command_line"
+  pause_enter
 }
 
 read_main_choice() {
   local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
   prompt_width="$(surface_terminal_width)"
   prompt_line="$(repeat_char "$prompt_width" "─")"
-  prompt_hint=">> choose an option, command alias, or x to exit"
+  prompt_hint=">> option, mqlaunch command, shell command, or x to exit"
   if [[ -t 1 ]]; then
     prompt_color=$'\033[0;37m'
   else
