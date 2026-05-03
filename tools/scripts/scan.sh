@@ -574,7 +574,8 @@ root_cause_engine() {
         # -------- NORMALIZATION --------
         if (full_cmd ~ /ChatGPT/) cmd="ChatGPT"
         else if (full_cmd ~ /Electron/) cmd="Electron"
-        else if (full_cmd ~ /Chrome|Google/) cmd="Chrome"
+        else if (full_cmd ~ /Google/) cmd="Google"
+        else if (full_cmd ~ /Chrome/) cmd="Chrome"
         else if (full_cmd ~ /Code|Visual Studio Code/) cmd="Visual"
 
         cpu=($2+0)
