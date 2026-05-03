@@ -64,6 +64,19 @@ github_web_url() {
   normalize_remote_url "$remote_url"
 }
 
+get_ahead_behind() {
+  local upstream="$1"
+  local counts left right
+
+  counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null || true)"
+  read -r left right <<< "$counts"
+
+  case "$left" in ''|*[!0-9]*) left=0 ;; esac
+  case "$right" in ''|*[!0-9]*) right=0 ;; esac
+
+  printf '%s %s\n' "$left" "$right"
+}
+
 choose_repo() {
   local path=""
 
@@ -95,16 +108,14 @@ choose_repo() {
 show_status() {
   ensure_repo || return 1
 
-  local branch upstream counts ahead behind
+  local branch upstream ahead behind
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
   upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
 
   ahead=0
   behind=0
   if [[ -n "$upstream" ]]; then
-    counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null || true)"
-    behind="${counts%% *}"
-    ahead="${counts##* }"
+    read -r behind ahead <<< "$(get_ahead_behind "$upstream")"
   fi
 
   print_header
@@ -237,7 +248,7 @@ suggest_commit() {
 next_action() {
   ensure_repo || return 1
 
-  local status branch upstream counts ahead behind
+  local status branch upstream ahead behind
   status="$(git -C "$CURRENT_REPO" status --short)"
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
   upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
@@ -245,9 +256,7 @@ next_action() {
   behind=0
 
   if [[ -n "$upstream" ]]; then
-    counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null || true)"
-    behind="${counts%% *}"
-    ahead="${counts##* }"
+    read -r behind ahead <<< "$(get_ahead_behind "$upstream")"
   fi
 
   print_header
@@ -355,16 +364,14 @@ commit_changes() {
 safe_push() {
   ensure_repo || return 1
 
-  local branch upstream counts ahead behind confirm
+  local branch upstream ahead behind confirm
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
   upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
   ahead=0
   behind=0
 
   if [[ -n "$upstream" ]]; then
-    counts="$(git -C "$CURRENT_REPO" rev-list --left-right --count "${upstream}...HEAD" 2>/dev/null || true)"
-    behind="${counts%% *}"
-    ahead="${counts##* }"
+    read -r behind ahead <<< "$(get_ahead_behind "$upstream")"
   fi
 
   print_header
