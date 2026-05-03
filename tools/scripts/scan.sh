@@ -472,17 +472,38 @@ root_cause_engine() {
     | awk '
       NR>1 {
         cmd=$4
-        gsub(".*/","",cmd)        # basename
+        gsub(".*/","",cmd)
+
+        # -------- NORMALIZATION --------
+        # slå ihop electron-processer
+        grouped=0
+        if (cmd ~ /ChatGPT/) { cmd="ChatGPT"; grouped=1 }
+        if (cmd ~ /Chrome/) { cmd="Chrome"; grouped=1 }
+        if (cmd ~ /Code|Visual/) { cmd="Visual"; grouped=1 }
+
         cpu=($2+0)
         rss_mb=($3/1024)
 
         sum_mem[cmd]+=rss_mb
+        if (rss_mb > max_mem[cmd]) max_mem[cmd]=rss_mb
         if (cpu > max_cpu[cmd]) max_cpu[cmd]=cpu
         count[cmd]++
+        if (grouped) grouped_app[cmd]=1
       }
       END {
         for (k in sum_mem) {
-          printf "%s|%.0f|%.0f|%d\n", k, sum_mem[k], max_cpu[k], count[k]
+          mem=sum_mem[k]
+
+          # Electron/Chromium-style apps share memory across helper processes.
+          # Use max RSS plus a capped helper allowance to avoid renderer inflation.
+          if (grouped_app[k]) {
+            helper=count[k]-1
+            if (helper < 0) helper=0
+            if (helper > 3) helper=3
+            mem=max_mem[k] + helper*80
+          }
+
+          printf "%s|%.0f|%.0f|%d\n", k, mem, max_cpu[k], count[k]
         }
       }
     ' > "$TMP"
@@ -495,8 +516,10 @@ root_cause_engine() {
       # filtrera bort symptom/system
       if (name ~ /(WindowServer|coreaudiod|trustd|syspolicyd|kernel|launchd|loginwindow)/) next
 
-      # score: memory först, cpu sekundärt, instanser som bonus
-      score = mem*0.08 + cpu*2 + cnt*5
+      # score: memory först, cpu sekundärt, instanser som begränsad bonus
+      instance_bonus = cnt
+      if (instance_bonus > 3) instance_bonus = 3
+      score = mem*0.08 + cpu*2 + instance_bonus*5
 
       printf "%f|%s|%d|%d|%d\n", score, name, mem, cpu, cnt
     }
