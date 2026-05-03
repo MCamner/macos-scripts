@@ -272,6 +272,95 @@ recent_count() {
   echo "$COUNT"
 }
 
+# ----------------------------
+# MEMORY-WEIGHTED SCORING v3
+# ----------------------------
+
+score_offenders_v3() {
+  echo
+  section "OFFENDER RANKING (v3)"
+
+  LOG="$HOME/.mq/offenders.log"
+  mkdir -p "$HOME/.mq"
+
+  ps -Ao pid,pcpu,pmem,rss,comm \
+    | sort -k2 -nr \
+    | head -n 8 \
+    | awk 'NR>1 {print $1, $2, $3, $4, $5}' \
+    | while read PID CPU MEM RSS NAME
+  do
+    CPU_INT=${CPU%%[.,]*}
+    MEM_MB=$(awk "BEGIN {printf \"%.0f\", $RSS/1024}")
+
+    # recent count (om du har decay)
+    if command -v recent_count >/dev/null 2>&1; then
+      COUNT=$(recent_count "$(basename "$NAME")")
+    else
+      COUNT=$(grep -c "$NAME" "$LOG" 2>/dev/null)
+    fi
+
+    # score: memory-heavy
+    SCORE=$(awk "BEGIN {
+      print ($MEM_MB * 0.08) + ($CPU_INT * 2) + ($COUNT * 3)
+    }")
+
+    printf "%-18s score: %-6.1f  (mem: %4s MB  cpu: %2s%%  seen: %s)\n" \
+      "$(basename "$NAME")" "$SCORE" "$MEM_MB" "$CPU_INT" "$COUNT"
+  done | sort -k3 -nr
+
+  echo
+}
+
+top_weighted_action_v3() {
+  # välj högst score från samma beräkning
+  TOP_LINE=$(ps -Ao pid,pcpu,pmem,rss,comm \
+    | sort -k2 -nr \
+    | head -n 8 \
+    | awk 'NR>1 {print $0}' \
+    | while read PID CPU MEM RSS NAME
+      do
+        CPU_INT=${CPU%%[.,]*}
+        MEM_MB=$(awk "BEGIN {printf \"%.0f\", $RSS/1024}")
+
+        if command -v recent_count >/dev/null 2>&1; then
+          COUNT=$(recent_count "$(basename "$NAME")")
+        else
+          COUNT=0
+        fi
+
+        SCORE=$(awk "BEGIN {
+          print ($MEM_MB * 0.08) + ($CPU_INT * 2) + ($COUNT * 3)
+        }")
+
+        echo "$SCORE|$PID|$CPU|$NAME"
+      done | sort -t'|' -k1 -nr | head -n1)
+
+  SCORE=$(echo "$TOP_LINE" | cut -d'|' -f1)
+  PID=$(echo "$TOP_LINE" | cut -d'|' -f2)
+  CPU=$(echo "$TOP_LINE" | cut -d'|' -f3)
+  NAME=$(echo "$TOP_LINE" | cut -d'|' -f4)
+
+  # skydda systemprocesser
+  case "$NAME" in
+    *"/System/"*|*"coreaudiod"*|*"WindowServer"*)
+      return
+      ;;
+  esac
+
+  CPU_INT=${CPU%%[.,]*}
+
+  # bara agera om verklig impact
+  if [ "$CPU_INT" -lt 10 ]; then
+    return
+  fi
+
+  echo "Top offender (weighted v3):"
+  printf "%s  (score %.1f)\n" "$(basename "$NAME")" "$SCORE"
+
+  read -p "Kill recommended [y/N]: " choice
+  [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
+}
+
 # ==================================================
 # MAIN
 # ==================================================
@@ -303,8 +392,8 @@ suggest_kill
 smart_kill
 track_offender
 memory_insight
-score_offenders
-top_weighted_action
+score_offenders_v3
+top_weighted_action_v3
 combined_insight_v2
 severity_score
 
