@@ -36,6 +36,7 @@ tools/scripts/
 ├── vault-scan.sh            # scan for secrets / config issues
 ├── system-check.sh          # basic system validation
 ├── create-debug-bundle.sh   # generate debug snapshot
+├── document-functions.sh    # add comments above shell functions
 ├── blackout.sh              # experimental focus / screen effect tool
 ├── mqlaunch_desktop.sh      # desktop integration
 ├── test-*.sh                # test scripts
@@ -56,6 +57,7 @@ tools/scripts/
 | `vault-scan.sh` | Security | 🟢 Stable | Scan for secrets / config issues |
 | `system-check.sh` | Diagnostics | 🟢 Stable | Basic system validation |
 | `create-debug-bundle.sh` | Support | 🟢 Stable | Generate debug snapshot |
+| `document-functions.sh` | Maintenance | 🟡 Beta | Add short comments above shell functions |
 | `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
 | `blackout.sh` | UX / Experimental | 🔴 Experimental | Focus / visual effect tool |
 | `mqlaunch_desktop.sh` | Integration | 🟡 Beta | Desktop integration |
