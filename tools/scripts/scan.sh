@@ -616,6 +616,7 @@ root_cause_engine() {
   ROOT_CAUSE_NAME="$NAME"
   MAX_MEM=$(echo "$TOP_LINE" | cut -d'|' -f3)
   TOP3_MEM=$(echo "$TOP_LINE" | cut -d'|' -f4)
+  ROOT_MEM_TOP3="$TOP3_MEM"
   CPU=$(echo "$TOP_LINE" | cut -d'|' -f5)
   CNT=$(echo "$TOP_LINE" | cut -d'|' -f6)
 
@@ -641,6 +642,59 @@ root_cause_engine() {
   echo
   echo "Recommended action:"
   echo "- Close or restart $NAME"
+}
+
+trend_engine_v1() {
+  [ -n "$ROOT_CAUSE_NAME" ] || return
+  [ -n "$ROOT_MEM_TOP3" ] || return
+
+  echo
+  section "TREND"
+
+  LOG="$HOME/.mq/trend.log"
+  mkdir -p "$HOME/.mq"
+
+  NOW=$(date +%s)
+  echo "$NOW|$ROOT_CAUSE_NAME|$ROOT_MEM_TOP3" >> "$LOG"
+  tail -n 50 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+
+  LAST=$(tail -n 5 "$LOG")
+
+  if [ "$(echo "$LAST" | wc -l | tr -d ' ')" -lt 3 ]; then
+    echo "Not enough data yet"
+    return
+  fi
+
+  APP_HISTORY=$(echo "$LAST" | awk -F'|' -v app="$ROOT_CAUSE_NAME" '$2 == app')
+
+  if [ "$(echo "$APP_HISTORY" | sed '/^$/d' | wc -l | tr -d ' ')" -lt 2 ]; then
+    echo "$ROOT_CAUSE_NAME stable"
+    echo
+    echo "Pattern:"
+    echo "- New primary load; collecting trend data"
+    return
+  fi
+
+  PREV_MEM=$(echo "$APP_HISTORY" | head -n 1 | cut -d'|' -f3)
+  CURR_MEM=$(echo "$APP_HISTORY" | tail -n 1 | cut -d'|' -f3)
+  DIFF=$((CURR_MEM - PREV_MEM))
+
+  if [ "$DIFF" -gt 200 ]; then
+    echo "$ROOT_CAUSE_NAME increasing load"
+    PATTERN="Rising memory usage detected"
+  elif [ "$DIFF" -lt -200 ]; then
+    echo "$ROOT_CAUSE_NAME decreasing load"
+    PATTERN="Memory usage is easing"
+  else
+    echo "$ROOT_CAUSE_NAME stable"
+    PATTERN="Load is stable"
+  fi
+
+  echo
+  echo "Memory change: ${DIFF} MB"
+  echo
+  echo "Pattern:"
+  echo "- $PATTERN"
 }
 
 # ==================================================
@@ -681,6 +735,7 @@ audio_insight
 gui_insight
 severity_score
 root_cause_engine
+trend_engine_v1
 
 section "SUMMARY"
 ok "Scan complete"
