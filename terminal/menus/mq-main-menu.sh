@@ -389,6 +389,65 @@ read_main_choice() {
 
   # Fallback for normal Terminal heights: keep the prompt in flow so it never
   # clears the lower part of the rendered menu.
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+    local prompt input cursor key old_stty
+    prompt="mqlaunch > "
+    input=""
+    cursor=0
+
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%s\n" "$prompt"
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
+    printf "\033[3A"
+
+    old_stty="$(stty -g)"
+    stty -echo -icanon min 1 time 0 2>/dev/null || true
+
+    while true; do
+      printf "\r\033[2K%s%s" "$prompt" "$input"
+      printf "\r\033[%dC" $(( ${#prompt} + cursor ))
+
+      IFS= read -r -k 1 key || {
+        stty "$old_stty" 2>/dev/null || true
+        return 1
+      }
+
+      case "$key" in
+        $'\n'|$'\r')
+          break
+          ;;
+        $'\177'|$'\b')
+          if (( cursor > 0 )); then
+            input="${input[1,cursor-1]}${input[cursor+1,-1]}"
+            (( cursor-- ))
+          fi
+          ;;
+        $'\033')
+          IFS= read -r -k 1 key || key=""
+          if [[ "$key" == "[" ]]; then
+            IFS= read -r -k 1 key || key=""
+            case "$key" in
+              C) (( cursor < ${#input} )) && (( cursor++ )) ;;
+              D) (( cursor > 0 )) && (( cursor-- )) ;;
+            esac
+          fi
+          ;;
+        *)
+          input="${input[1,cursor]}${key}${input[cursor+1,-1]}"
+          (( cursor++ ))
+          ;;
+      esac
+    done
+
+    stty "$old_stty" 2>/dev/null || true
+    printf "\r\033[2K"
+    surface_accept_scramble "$C_WARN" "${input:-menu}"
+    printf "\033[3B\r"
+    choice="$input"
+    return 0
+  fi
+
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
   read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
