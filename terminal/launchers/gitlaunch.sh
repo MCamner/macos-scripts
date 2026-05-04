@@ -368,7 +368,7 @@ function prompt_choice() {
       --cursor.foreground="229" \
       --item.foreground="229" \
       --selected.foreground="220" \
-      --help.foreground="245" \
+      --no-show-help \
       --height=9 \
       "1. GIT STATUS" \
       "2. GIT PULL" \
