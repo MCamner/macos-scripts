@@ -278,6 +278,13 @@ function fallback_row() {
   printf "%b│%b %-70s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
 }
 
+function fallback_row_colored() {
+  local text color
+  text=$(truncate_text "$1" 70)
+  color="$2"
+  printf "%b│%b %b%-70s%b %b│%b\n" "$C_CYAN" "$C_RESET" "$color" "$text" "$C_RESET" "$C_CYAN" "$C_RESET"
+}
+
 function fallback_status_row() {
   local label="$1"
   local value="$2"
@@ -298,8 +305,8 @@ function status_check() {
 
   if ! use_gum_menu; then
     fallback_border_top
-    fallback_row "${C_TITLE}GITHUB LAUNCHPAD${C_RESET}"
-    fallback_row "${C_YELLOW}REPO COMMAND DECK${C_RESET}"
+    fallback_row_colored "GITHUB LAUNCHPAD" "$C_TITLE"
+    fallback_row_colored "REPO COMMAND DECK" "$C_YELLOW"
     fallback_border_mid
     fallback_status_row "Repo" "$REPO"
     fallback_status_row "Branch" "$BRANCH"
@@ -349,7 +356,7 @@ function render_menu() {
 function render_next_action() {
   if ! use_gum_menu; then
     fallback_border_mid
-    fallback_row "${C_TITLE}NEXT ACTION:${C_RESET} ${NEXT_ACTION_COLOR}${NEXT_ACTION_MESSAGE}${C_RESET}"
+    fallback_row_colored "NEXT ACTION: $NEXT_ACTION_MESSAGE" "$NEXT_ACTION_COLOR"
     fallback_border_bottom
     return
   fi
@@ -368,7 +375,6 @@ function prompt_choice() {
       --cursor.foreground="229" \
       --item.foreground="229" \
       --selected.foreground="220" \
-      --no-show-help \
       --height=9 \
       "1. GIT STATUS" \
       "2. GIT PULL" \
