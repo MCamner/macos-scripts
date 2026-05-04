@@ -121,24 +121,42 @@ surface_split_row() {
 }
 
 render_main_menu_panel() {
-  local width panel_color
+  local width panel_color host user git_state mode
   width="$(surface_terminal_width)"
+
   if [[ -t 1 ]]; then
     panel_color=$'\033[0;37m'
   else
     panel_color=""
   fi
 
+  host="$(hostname -s 2>/dev/null || echo unknown)"
+  user="${USER:-unknown}"
+  git_state="$(surface_git_state)"
+  mode="Main"
+
   surface_top "Main Menu" "$width" "$panel_color"
+  surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+
   surface_row "CORE" "$width" "$panel_color"
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
+
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_row "COMMANDS" "$width" "$panel_color"
+  surface_split_row "/review" "/ui" "$width" "$panel_color"
+  surface_split_row "/doctor" "/scan   /atlas" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
