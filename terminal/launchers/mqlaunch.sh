@@ -756,12 +756,12 @@ themes_menu_loop() {
 }
 
 open_git_menu() {
-  local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
+  local git_script="/usr/local/bin/gitlaunch"
 
   if [[ -x "$git_script" ]]; then
-    MQ_USE_DASHBOARD_HEADER=1 "$git_script" menu
+    "$git_script"
   elif [[ -f "$git_script" ]]; then
-    MQ_USE_DASHBOARD_HEADER=1 bash "$git_script" menu
+    zsh "$git_script"
   else
     print_header
     row "GIT MENU"
