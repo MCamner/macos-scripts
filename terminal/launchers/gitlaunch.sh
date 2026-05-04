@@ -222,8 +222,9 @@ function frame_two_col() {
 function frame_title() {
   local title="$1"
   local title_len=${#title}
-  local pad_left=$(((UI_INNER - title_len) / 2))
-  local pad_right=$((UI_INNER - title_len - pad_left))
+  local inner=$((UI_WIDTH - 2))
+  local pad_left=$(((inner - title_len) / 2))
+  local pad_right=$((inner - title_len - pad_left))
   [ "$pad_left" -lt 0 ] && pad_left=0
   [ "$pad_right" -lt 0 ] && pad_right=0
 
