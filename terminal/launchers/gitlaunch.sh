@@ -10,7 +10,6 @@ REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
-  C_BG=$'\e[48;5;18m'
   C_BORDER=$'\e[38;5;229m'
   C_ACCENT=$'\e[38;5;220m'
   C_TITLE=$'\e[1;38;5;229m'
@@ -23,7 +22,6 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_YELLOW=$'\e[33m'
 else
   C_RESET=""
-  C_BG=""
   C_BORDER=""
   C_ACCENT=""
   C_TITLE=""
@@ -156,7 +154,7 @@ function detect_repo() {
 # UI
 # ------------------------
 function clear_screen() {
-  printf "%b" "$C_BG"
+  printf "%b" "$C_RESET"
   clear
 }
 
