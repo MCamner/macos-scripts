@@ -77,6 +77,8 @@ Quick commands:
   mqlaunch apps
   mqlaunch theme
   mqlaunch theme-macos
+  mqlaunch review
+  mqlaunch ui
   mqlaunch version
   mqlaunch notes
   mqlaunch about

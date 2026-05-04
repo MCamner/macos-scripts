@@ -159,6 +159,8 @@ UTILITY
   mqlaunch theme          Open Themes menu
   mqlaunch theme-macos    Apply macOS theme
   mqlaunch theme-reset    Reset theme
+  mqlaunch review         Copy review prompt to clipboard
+  mqlaunch ui             Copy UI prompt to clipboard
 
 POPULAR FLOWS
   mqlaunch
@@ -167,5 +169,7 @@ POPULAR FLOWS
   mqlaunch doctor
   mqlaunch dev
   mqlaunch tools
+  mqlaunch review
+  mqlaunch ui
 HELP
 }
