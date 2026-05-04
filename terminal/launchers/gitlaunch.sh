@@ -9,16 +9,18 @@ DEFAULT_REPO=~/macos-scripts
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
-  C_BORDER=$'\e[36m'
-  C_TITLE=$'\e[1;96m'
-  C_LABEL=$'\e[94m'
+  C_BORDER=$'\e[38;5;45m'
+  C_ACCENT=$'\e[38;5;81m'
+  C_TITLE=$'\e[1;38;5;51m'
+  C_LABEL=$'\e[38;5;117m'
   C_GOOD=$'\e[92m'
   C_WARN=$'\e[93m'
   C_BAD=$'\e[91m'
-  C_DIM=$'\e[2m'
+  C_DIM=$'\e[38;5;245m'
 else
   C_RESET=""
   C_BORDER=""
+  C_ACCENT=""
   C_TITLE=""
   C_LABEL=""
   C_GOOD=""
@@ -26,6 +28,9 @@ else
   C_BAD=""
   C_DIM=""
 fi
+
+UI_WIDTH=74
+UI_INNER=$((UI_WIDTH - 4))
 
 # ------------------------
 # STATE MANAGEMENT
@@ -105,63 +110,122 @@ function detect_repo() {
 }
 
 # ------------------------
-# STATUS
+# UI
 # ------------------------
-function print_box_line() {
-  printf "%b  %-36s  %b\n" "$C_BORDER" "$1" "$C_RESET"
+function repeat_char() {
+  local char="$1"
+  local count="$2"
+  printf "%${count}s" "" | tr " " "$char"
 }
 
-function print_box_border() {
-  printf "%b+--------------------------------------+%b\n" "$C_BORDER" "$C_RESET"
-}
+function truncate_text() {
+  local text="$1"
+  local max="$2"
 
-function get_status_label() {
-  if [ "$1" -eq 0 ]; then
-    echo "${C_GOOD}CLEAN${C_RESET} ($1 changes)"
+  if [ ${#text} -le "$max" ]; then
+    print -r -- "$text"
+  elif [ "$max" -le 3 ]; then
+    print -r -- "${text[1,$max]}"
   else
-    echo "${C_WARN}DIRTY${C_RESET} ($1 changes)"
+    print -r -- "${text[1,$((max - 3))]}..."
   fi
 }
+
+function frame_border() {
+  printf "%b+%s+%b\n" "$C_BORDER" "$(repeat_char "-" "$((UI_WIDTH - 2))")" "$C_RESET"
+}
+
+function frame_blank() {
+  printf "%b|%b %-${UI_INNER}s %b|%b\n" "$C_BORDER" "$C_RESET" "" "$C_BORDER" "$C_RESET"
+}
+
+function frame_row() {
+  local text
+  text=$(truncate_text "$1" "$UI_INNER")
+  printf "%b|%b %-${UI_INNER}s %b|%b\n" "$C_BORDER" "$C_RESET" "$text" "$C_BORDER" "$C_RESET"
+}
+
+function frame_row_colored() {
+  local text color
+  text=$(truncate_text "$1" "$UI_INNER")
+  color="$2"
+  printf "%b|%b %b%-${UI_INNER}s%b %b|%b\n" "$C_BORDER" "$C_RESET" "$color" "$text" "$C_RESET" "$C_BORDER" "$C_RESET"
+}
+
+function frame_two_col() {
+  local left right col_width
+  col_width=$(((UI_INNER - 3) / 2))
+  left=$(truncate_text "$1" "$col_width")
+  right=$(truncate_text "$2" "$col_width")
+  printf "%b|%b %-${col_width}s %b|%b %-${col_width}s %b|%b\n" \
+    "$C_BORDER" "$C_RESET" "$left" "$C_BORDER" "$C_RESET" "$right" "$C_BORDER" "$C_RESET"
+}
+
+function frame_title() {
+  local title="$1"
+  local title_len=${#title}
+  local pad_left=$(((UI_INNER - title_len) / 2))
+  local pad_right=$((UI_INNER - title_len - pad_left))
+  [ "$pad_left" -lt 0 ] && pad_left=0
+  [ "$pad_right" -lt 0 ] && pad_right=0
+
+  printf "%b|%b%${pad_left}s%b%s%b%${pad_right}s%b|%b\n" \
+    "$C_BORDER" "$C_RESET" "" "$C_TITLE" "$title" "$C_RESET" "" "$C_BORDER" "$C_RESET"
+}
+
+function render_banner() {
+  frame_border
+  frame_row_colored "   ____ ___ _____ _        _    _   _ _   _  ____ _   _" "$C_ACCENT"
+  frame_row_colored "  / ___|_ _|_   _| |      / \\  | | | | \\ | |/ ___| | | |" "$C_ACCENT"
+  frame_row_colored " | |  _ | |  | | | |     / _ \\ | | | |  \\| | |   | |_| |" "$C_ACCENT"
+  frame_row_colored " | |_| || |  | | | |___ / ___ \\| |_| | |\\  | |___|  _  |" "$C_ACCENT"
+  frame_row_colored "  \\____|___| |_| |_____/_/   \\_\\\\___/|_| \\_|\\____|_| |_|" "$C_ACCENT"
+  frame_blank
+  frame_title "REPO COMMAND DECK"
+  frame_border
+}
+
+# ------------------------
+# STATUS
+# ------------------------
 
 function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
-  STATUS_LABEL=$(get_status_label "$CHANGES")
 
-  print_box_border
-  print_box_line "${C_TITLE}GITLAUNCH DASHBOARD${C_RESET}"
-  print_box_border
-  print_box_line "${C_LABEL}Repo${C_RESET}   : $REPO"
-  print_box_line "${C_LABEL}Branch${C_RESET} : $BRANCH"
-  print_box_line "Status : $STATUS_LABEL"
-  print_box_border
+  render_banner
+  frame_row "Repo   : $REPO"
+  frame_row "Branch : $BRANCH"
+  frame_row "Status : ${CHANGES} change(s)"
+  if [ "$CHANGES" -eq 0 ]; then
+    frame_row_colored "State  : CLEAN" "$C_GOOD"
+  else
+    frame_row_colored "State  : DIRTY" "$C_WARN"
+  fi
+  frame_border
 }
 
 # ------------------------
 # MENU
 # ------------------------
 function render_menu() {
-  print_box_border
-  print_box_line "${C_TITLE}ACTIONS${C_RESET}"
-  print_box_border
-  print_box_line "${C_LABEL}1)${C_RESET} Git status (full)"
-  print_box_line "${C_LABEL}2)${C_RESET} Git pull"
-  print_box_line "${C_LABEL}3)${C_RESET} AI commit + push"
-  print_box_line "${C_LABEL}4)${C_RESET} Safe push"
-  print_box_line "${C_LABEL}5)${C_RESET} Open repo"
-  print_box_line "${C_LABEL}6)${C_RESET} Dev mode (PRO)"
-  print_box_line "${C_LABEL}7)${C_RESET} Switch local repo"
-  print_box_line "${C_LABEL}8)${C_RESET} Do next action (AUTO)"
-  print_box_line "${C_LABEL}9)${C_RESET} Exit"
-  print_box_border
+  frame_border
+  frame_title "ACTIONS"
+  frame_border
+  frame_two_col "1  Git status" "2  Git pull"
+  frame_two_col "3  AI commit + push" "4  Safe push"
+  frame_two_col "5  Open repo" "6  Dev mode"
+  frame_two_col "7  Switch repo" "8  Auto action"
+  frame_two_col "9  Exit" ""
+  frame_border
 }
 
 function render_next_action() {
-  print_box_border
-  print_box_line "${C_TITLE}NEXT ACTION${C_RESET}"
-  print_box_border
-  print_box_line "$NEXT_ACTION_MESSAGE"
-  print_box_border
+  frame_border
+  frame_title "NEXT ACTION"
+  frame_border
+  frame_row_colored "$NEXT_ACTION_MESSAGE" "$NEXT_ACTION_COLOR"
+  frame_border
 }
 
 # ------------------------
@@ -175,31 +239,37 @@ function next_action() {
   BEHIND=$(git rev-list --count HEAD..@{u} 2>/dev/null)
 
   if echo "$CHANGES" | grep -q "UU"; then
-    NEXT_ACTION_MESSAGE="${C_BAD}Resolve merge conflicts${C_RESET}"
+    NEXT_ACTION_MESSAGE="Resolve merge conflicts"
+    NEXT_ACTION_COLOR="$C_BAD"
     return
   fi
 
   if [ -n "$CHANGES" ] && [ -z "$STAGED" ]; then
-    NEXT_ACTION_MESSAGE="${C_WARN}Stage your changes${C_RESET} (git add .)"
+    NEXT_ACTION_MESSAGE="Stage your changes (git add .)"
+    NEXT_ACTION_COLOR="$C_WARN"
     return
   fi
 
   if [ -n "$STAGED" ]; then
-    NEXT_ACTION_MESSAGE="${C_WARN}Commit your changes${C_RESET}"
+    NEXT_ACTION_MESSAGE="Commit your changes"
+    NEXT_ACTION_COLOR="$C_WARN"
     return
   fi
 
   if [ -n "$BEHIND" ] && [ "$BEHIND" -gt 0 ]; then
-    NEXT_ACTION_MESSAGE="${C_WARN}Pull latest changes${C_RESET}"
+    NEXT_ACTION_MESSAGE="Pull latest changes"
+    NEXT_ACTION_COLOR="$C_WARN"
     return
   fi
 
   if [ -n "$AHEAD" ] && [ "$AHEAD" -gt 0 ]; then
-    NEXT_ACTION_MESSAGE="${C_GOOD}Push your commits${C_RESET}"
+    NEXT_ACTION_MESSAGE="Push your commits"
+    NEXT_ACTION_COLOR="$C_GOOD"
     return
   fi
 
-  NEXT_ACTION_MESSAGE="${C_GOOD}Nothing to do${C_RESET}"
+  NEXT_ACTION_MESSAGE="Nothing to do"
+  NEXT_ACTION_COLOR="$C_GOOD"
 }
 
 # ------------------------
@@ -342,7 +412,7 @@ while true; do
   echo ""
   render_menu
 
-  printf "%bChoose [1-9]: %b" "$C_LABEL" "$C_RESET"
+  printf "%bgitlaunch%b %b[1-9]>%b " "$C_TITLE" "$C_RESET" "$C_ACCENT" "$C_RESET"
   read choice
 
   case $choice in
