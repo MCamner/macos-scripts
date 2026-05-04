@@ -6,7 +6,7 @@ source "$HOME/macos-scripts/tools/cli/mq-ui.sh"
 # FUNCTIONS
 # ==================================================
 
-# Function: suggest fallback.
+# Function: Implements the `suggest_fallback` shell routine.
 suggest_fallback() {
   echo
   echo "Suggested actions:"
@@ -14,14 +14,14 @@ suggest_fallback() {
   echo "- Restart session"
 }
 
-# Function: insight v2.
+# Function: Implements the `insight_v2` shell routine.
 insight_v2() {
   echo
   echo "Analysis:"
   ps -Ao pcpu,comm | sort -nr | awk 'NR>1 && NR<=4 {print "- " $2}'
 }
 
-# Function: memory insight.
+# Function: Implements the `memory_insight` shell routine.
 memory_insight() {
   echo
   section "MEMORY (Top consumers)"
@@ -35,7 +35,7 @@ memory_insight() {
 	    '
 }
 
-# Function: memory pressure v4.
+# Function: Implements the `memory_pressure_v4` shell routine.
 memory_pressure_v4() {
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
   $(vm_stat | awk '
@@ -84,7 +84,7 @@ memory_pressure_v4() {
   fi
 }
 
-# Function: combined insight v2.
+# Function: Implements the `combined_insight_v2` shell routine.
 combined_insight_v2() {
   echo
   section "COMBINED INSIGHT"
@@ -101,7 +101,7 @@ combined_insight_v2() {
   echo "Top Memory: $MEM_NAME ($(awk "BEGIN {print $MEM_RSS/1024}") MB)"
 }
 
-# Function: severity score.
+# Function: Implements the `severity_score` shell routine.
 severity_score() {
   echo
   section "HEALTH SCORE"
@@ -139,7 +139,7 @@ severity_score() {
   echo "Status: $STATUS"
 }
 
-# Function: no action mode.
+# Function: Implements the `no_action_mode` shell routine.
 no_action_mode() {
   [ -n "$HEALTH_SCORE" ] || return 1
   [ -n "$MEM_STATUS" ] || return 1
@@ -165,7 +165,7 @@ no_action_mode() {
   return 1
 }
 
-# Function: suggest kill.
+# Function: Implements the `suggest_kill` shell routine.
 suggest_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
@@ -187,7 +187,7 @@ suggest_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Function: smart kill.
+# Function: Implements the `smart_kill` shell routine.
 smart_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
@@ -212,7 +212,7 @@ smart_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Function: track offender.
+# Function: Implements the `track_offender` shell routine.
 track_offender() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -258,7 +258,7 @@ track_offender() {
   fi
 }
 
-# Function: score offenders.
+# Function: Implements the `score_offenders` shell routine.
 score_offenders() {
   echo
   section "OFFENDER RANKING"
@@ -291,7 +291,7 @@ score_offenders() {
   echo
 }
 
-# Function: top weighted action.
+# Function: Implements the `top_weighted_action` shell routine.
 top_weighted_action() {
   read PID CPU MEM NAME <<< \
   $(ps -Ao pid,pcpu,pmem,comm \
@@ -321,7 +321,7 @@ top_weighted_action() {
 # DECAY MODEL v1
 # ----------------------------
 
-# Function: track offender decay.
+# Function: Implements the `track_offender_decay` shell routine.
 track_offender_decay() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -333,11 +333,11 @@ track_offender_decay() {
 
   echo "$NOW|$NAME" >> "$LOG"
 
-  # behåll senaste 100 rader
+  # Keep the latest 100 rows.
   tail -n 100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
 }
 
-# Function: recent count.
+# Function: Implements the `recent_count` shell routine.
 recent_count() {
   LOG="$HOME/.mq/offenders.log"
   NOW=$(date +%s)
@@ -351,7 +351,7 @@ recent_count() {
 
     AGE=$((NOW - TS))
 
-    if [ "$AGE" -lt 300 ]; then   # 5 minuter
+    if [ "$AGE" -lt 300 ]; then   # 5 minutes
       if [[ "$(basename "$PROC")" == "$TARGET" ]]; then
         COUNT=$((COUNT + 1))
       fi
@@ -365,7 +365,7 @@ recent_count() {
 # MEMORY-WEIGHTED SCORING v3
 # ----------------------------
 
-# Function: score offenders v3.
+# Function: Implements the `score_offenders_v3` shell routine.
 score_offenders_v3() {
   echo
   section "OFFENDER RANKING (v3)"
@@ -382,7 +382,7 @@ score_offenders_v3() {
     CPU_INT=${CPU%%[.,]*}
     MEM_MB=$(awk "BEGIN {printf \"%.0f\", $RSS/1024}")
 
-    # recent count (om du har decay)
+    # Recent count when decay data exists.
     if command -v recent_count >/dev/null 2>&1; then
       COUNT=$(recent_count "$(basename "$NAME")")
     else
@@ -401,9 +401,9 @@ score_offenders_v3() {
   echo
 }
 
-# Function: top weighted action v3.
+# Function: Implements the `top_weighted_action_v3` shell routine.
 top_weighted_action_v3() {
-  # välj högst score från samma beräkning
+  # Select the highest score from the same calculation.
   TOP_LINE=$(ps -Ao pid,pcpu,pmem,rss,comm \
     | sort -k2 -nr \
     | head -n 8 \
@@ -440,7 +440,7 @@ top_weighted_action_v3() {
 
   CPU_INT=${CPU%%[.,]*}
 
-  # bara agera om verklig impact
+  # Act only when there is real impact.
   if [ "$CPU_INT" -lt 10 ]; then
     return
   fi
@@ -456,9 +456,9 @@ top_weighted_action_v3() {
 # AUDIO FILTERING v2
 # ----------------------------
 
-# Function: audio insight.
+# Function: Implements the `audio_insight` shell routine.
 audio_insight() {
-  # trigga bara om coreaudiod faktiskt syns högt
+  # Trigger only when coreaudiod appears high in the process list.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi coreaudiod; then
     return
   fi
@@ -468,7 +468,7 @@ audio_insight() {
 
   echo "coreaudiod active"
 
-  # om inga riktiga kandidater hittas → visa inget brus
+  # Skip noisy output when no likely candidates are found.
   CANDIDATES=$(ps -Ao comm | grep -E "ChatGPT|Chrome|Safari|Spotify|Music|VLC|zoom|Teams|Discord" | wc -l)
   if [ "$CANDIDATES" -eq 0 ]; then
     echo "No clear audio source detected"
@@ -478,7 +478,7 @@ audio_insight() {
   echo
   echo "Likely audio sources:"
 
-  # whitelist: appar som ofta använder ljud
+  # Allowlist apps that commonly use audio.
   ps -Ao pid,pcpu,rss,comm \
     | sort -k2 -nr \
     | head -n 20 \
@@ -486,11 +486,11 @@ audio_insight() {
       NR>1 {
         name=$4
 
-        # normalisera till basename
+        # Normalize to basename.
         n=name
         sub(".*/","",n)
 
-        # whitelist (lägg till vid behov)
+        # Allowlist, extend when needed.
         if (n ~ /(ChatGPT|Chrome|Safari|Firefox|Spotify|Music|QuickTime|VLC|zoom|Teams|Discord|Slack)/) {
           printf "%-18s cpu:%-5s mem:%5.0fMB\n", n, $2, $3/1024
         }
@@ -509,9 +509,9 @@ audio_insight() {
 # GUI-AWARE INSIGHT v1
 # ----------------------------
 
-# Function: gui insight.
+# Function: Implements the `gui_insight` shell routine.
 gui_insight() {
-  # trigga bara om WindowServer är top CPU
+  # Trigger only when WindowServer is a top CPU process.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi WindowServer; then
     return
   fi
@@ -531,11 +531,11 @@ gui_insight() {
       NR>1 {
         name=$4
 
-        # ta bort path → bara appnamn
+        # Remove path and keep only the app name.
         n=name
         sub(".*/","",n)
 
-        # filtrera bort system/irrelevant
+        # Filter to relevant app processes.
         if (n ~ /(Visual|Code|Chrome|Safari|Firefox|ChatGPT|Slack|Discord|Electron)/) {
           printf "%-18s cpu:%-5s mem:%5.0fMB\n", n, $2, $3/1024
         }
@@ -552,7 +552,7 @@ gui_insight() {
 # ROOT CAUSE ENGINE v1
 # ----------------------------
 
-# Function: root cause engine.
+# Function: Implements the `root_cause_engine` shell routine.
 root_cause_engine() {
   echo
   section "ROOT CAUSE"
@@ -610,12 +610,12 @@ root_cause_engine() {
       }
     ' > "$TMP"
 
-  # Välj topp (filtrera bort system/symptom)
+  # Select the top candidate after filtering system and symptom processes.
   TOP_LINE=$(awk -F'|' '
     {
       name=$1; max_mem=$2+0; top3_mem=$3+0; cpu=$4+0; cnt=$5+0
 
-      # filtrera bort symptom/system
+      # Filter symptom and system processes.
       if (name ~ /(WindowServer|coreaudiod|trustd|syspolicyd|kernel|launchd|loginwindow)/) next
 
       # impact scoring v4: max process + top 3 processes + CPU
@@ -663,7 +663,7 @@ root_cause_engine() {
   echo "- Close or restart $NAME"
 }
 
-# Function: trend engine v1.
+# Function: Implements the `trend_engine_v1` shell routine.
 trend_engine_v1() {
   [ -n "$ROOT_CAUSE_NAME" ] || return
   [ -n "$ROOT_MEM_TOP3" ] || return

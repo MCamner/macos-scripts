@@ -78,11 +78,8 @@ document_file() {
       return s
     }
 
-    function humanize(name, out) {
-      out = name
-      gsub(/[_-]+/, " ", out)
-      gsub(/[[:space:]]+/, " ", out)
-      return out
+    function generated_comment(name) {
+      return "# Function: Implements the `" name "` shell routine."
     }
 
     function function_name(line, candidate) {
@@ -112,16 +109,23 @@ document_file() {
       name = function_name($0)
       if (name != "") {
         prev = trim(pending)
-        if (!has_pending) {
-          print "# Function: " humanize(name) "."
+        expected = generated_comment(name)
+        if (prev ~ /^# Function:/) {
+          pending = expected
+          emit_pending()
+          if (prev != expected) {
+            added++
+          }
+        } else if (!has_pending) {
+          print expected
           added++
         } else if (prev !~ /^#/ && prev !~ /^$/) {
           emit_pending()
-          print "# Function: " humanize(name) "."
+          print expected
           added++
         } else if (prev == "") {
           emit_pending()
-          print "# Function: " humanize(name) "."
+          print expected
           added++
         } else {
           emit_pending()
