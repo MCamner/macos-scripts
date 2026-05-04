@@ -334,10 +334,8 @@ function render_menu() {
     return
   fi
 
-  frame_border
-  frame_title "READY / GUM SELECT"
-  frame_row "Use arrows, press Enter to run action."
-  frame_border
+  echo
+  printf "%bACTIONS%b\n" "$C_TITLE" "$C_RESET"
 }
 
 function render_next_action() {
@@ -360,6 +358,7 @@ function prompt_choice() {
     selected=$("$GUM_BIN" choose \
       --cursor="> " \
       --cursor.foreground="229" \
+      --item.foreground="229" \
       --selected.foreground="220" \
       --height=9 \
       "1. GIT STATUS" \
