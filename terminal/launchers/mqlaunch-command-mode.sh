@@ -177,11 +177,10 @@ dispatch_cli_command() {
     git)
       case "$sub" in
         ""|menu)
-          open_git_menu
+          open_git_menu "${3:-}"
           ;;
         *)
-          print_command_help "git"
-          return 2
+          open_git_menu "${2:-}"
           ;;
       esac
       return 0

@@ -756,12 +756,22 @@ themes_menu_loop() {
 }
 
 open_git_menu() {
+  local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
+  local git_repo=""
+
+  if [[ -n "$repo_arg" ]]; then
+    git_repo="$(git -C "$repo_arg" rev-parse --show-toplevel 2>/dev/null || true)"
+    [[ -n "$git_repo" ]] || git_repo="$repo_arg"
+  else
+    git_repo="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true)"
+    [[ -n "$git_repo" ]] || git_repo="$BASE_DIR"
+  fi
 
   if [[ -x "$git_script" ]]; then
-    "$git_script"
+    MQ_GIT_REPO="$git_repo" "$git_script"
   elif [[ -f "$git_script" ]]; then
-    zsh "$git_script"
+    MQ_GIT_REPO="$git_repo" zsh "$git_script"
   else
     print_header
     row "GIT MENU"
@@ -1276,10 +1286,10 @@ run_arg_command() {
     theme-macos) theme_cmd apply macos ;;
     release|rel) open_release_menu ;;
     workflows|workflow|wf) run_mqworkflows "$@" ;;
-    git|git-menu|gitmenu|menu-git) open_git_menu ;;
+    git|git-menu|gitmenu|menu-git) open_git_menu "${1:-}" ;;
     gitlaunch)
       legacy_alias_notice "mqlaunch gitlaunch" "mqlaunch git"
-      open_git_menu
+      open_git_menu "${1:-}"
       ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;

@@ -6,6 +6,7 @@ export LC_MESSAGES=C.UTF-8
 
 STATE_FILE=~/.gitlaunch_state
 DEFAULT_REPO=~/macos-scripts
+REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -55,6 +56,45 @@ function load_state() {
 # ------------------------
 # REPO SWITCHING
 # ------------------------
+function resolve_repo_path() {
+  local repo_path="$1"
+
+  case "$repo_path" in
+    \~) repo_path="$HOME" ;;
+    \~/*) repo_path="$HOME/${repo_path#\~/}" ;;
+  esac
+
+  if [[ "$repo_path" != /* ]]; then
+    repo_path="$(pwd)/$repo_path"
+  fi
+
+  (cd "$repo_path" 2>/dev/null && pwd) || return 1
+}
+
+function set_repo() {
+  local repo_path="$1"
+  local save="${2:-}"
+  local resolved_repo
+
+  resolved_repo=$(resolve_repo_path "$repo_path") || {
+    echo "Path not found: $repo_path"
+    sleep 1
+    return 1
+  }
+
+  resolved_repo=$(git -C "$resolved_repo" rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$resolved_repo" ]; then
+    echo "Not a git repo: $repo_path"
+    sleep 1
+    return 1
+  fi
+
+  REPO=$resolved_repo
+  if [ "$save" = "save" ]; then
+    save_state "set_repo"
+  fi
+}
+
 function switch_repo() {
   echo "Enter local repo path:"
   echo -n "> "
@@ -66,23 +106,7 @@ function switch_repo() {
     return
   fi
 
-  new_repo=${~new_repo}
-
-  if [ ! -d "$new_repo" ]; then
-    echo "Path not found: $new_repo"
-    sleep 1
-    return
-  fi
-
-  resolved_repo=$(git -C "$new_repo" rev-parse --show-toplevel 2>/dev/null)
-  if [ -z "$resolved_repo" ]; then
-    echo "Not a git repo: $new_repo"
-    sleep 1
-    return
-  fi
-
-  REPO=$resolved_repo
-  save_state "switch_repo"
+  set_repo "$new_repo" save || return
   echo "Switched to: $REPO"
   sleep 1
 }
@@ -91,7 +115,19 @@ function switch_repo() {
 # REPO DETECTION
 # ------------------------
 function detect_repo() {
-  REPO=$(git rev-parse --show-toplevel 2>/dev/null)
+  local detected=""
+
+  if [ -n "$REQUESTED_REPO" ]; then
+    set_repo "$REQUESTED_REPO" || REPO=""
+    REQUESTED_REPO=""
+  fi
+
+  if [ -z "$REPO" ]; then
+    detected=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)
+    if [ -n "$detected" ]; then
+      REPO=$detected
+    fi
+  fi
 
   if [ -z "$REPO" ]; then
     echo "⚠️ Not inside a git repo"
@@ -392,6 +428,8 @@ if load_state; then
 
     echo "Workspace restored"
     sleep 1
+  else
+    REPO=""
   fi
 fi
 
