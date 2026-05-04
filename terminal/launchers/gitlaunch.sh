@@ -10,6 +10,8 @@ REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
+  C_BOLD=$'\e[1m'
+  C_DIM=$'\e[2m'
   C_BORDER=$'\e[38;5;229m'
   C_ACCENT=$'\e[38;5;220m'
   C_TITLE=$'\e[1;38;5;229m'
@@ -20,8 +22,12 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_DIM=$'\e[38;5;245m'
   C_CYAN=$'\e[36m'
   C_YELLOW=$'\e[33m'
+  C_PINK=$'\e[95m'
+  C_MAGENTA=$'\e[35m'
 else
   C_RESET=""
+  C_BOLD=""
+  C_DIM=""
   C_BORDER=""
   C_ACCENT=""
   C_TITLE=""
@@ -32,11 +38,28 @@ else
   C_DIM=""
   C_CYAN=""
   C_YELLOW=""
+  C_PINK=""
+  C_MAGENTA=""
 fi
 
 GUM_BIN="$(command -v gum 2>/dev/null || true)"
 UI_WIDTH=62
 UI_INNER=$((UI_WIDTH - 4))
+
+# ------------------------
+# ASCII ART
+# ------------------------
+function render_ascii() {
+  printf "%b" "$C_PINK"
+  cat <<'EOF'
+   ____ ___ _____   _        _   _ _   _  ____ _   _ 
+  / ___|_ _|_   _| | |      / \ | | | | |/ ___| | | |
+ | |  _ | |  | |   | |     / _ \| | | | | |   | |_| |
+ | |_| || |  | |   | |___ / ___ \ |_| | | |___|  _  |
+  \____|___| |_|   |_____/_/   \_\___/ \____|_| |_|
+EOF
+  printf "%b" "$C_RESET"
+}
 
 # ------------------------
 # STATE MANAGEMENT
@@ -233,11 +256,12 @@ function frame_title() {
 }
 
 function render_banner() {
+  render_ascii
   frame_top
   frame_title "MQ REPO LAUNCHER"
-  frame_title "SYSTEM DIAGNOSTICS V1.3"
+  frame_title "NEON COMMAND SURFACE V2.0"
   frame_mid
-  frame_row_colored "  *  ATARI 1200XL MQ EDITION  *" "$C_ACCENT"
+  frame_row_colored "  *  PHOSPHOR GRID ACTIVE  *" "$C_PINK"
   frame_blank
   frame_mid
 }
