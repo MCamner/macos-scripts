@@ -181,25 +181,33 @@ function truncate_text() {
   fi
 }
 
-function frame_border() {
-  printf "%b+%s+%b\n" "$C_BORDER" "$(repeat_char "-" "$((UI_WIDTH - 2))")" "$C_RESET"
+function frame_top() {
+  printf "%b┌%s┐%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
+}
+
+function frame_mid() {
+  printf "%b├%s┤%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
+}
+
+function frame_bottom() {
+  printf "%b└%s┘%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
 function frame_blank() {
-  printf "%b|%b %-${UI_INNER}s %b|%b\n" "$C_BORDER" "$C_RESET" "" "$C_BORDER" "$C_RESET"
+  printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
 function frame_row() {
   local text
   text=$(truncate_text "$1" "$UI_INNER")
-  printf "%b|%b %-${UI_INNER}s %b|%b\n" "$C_BORDER" "$C_RESET" "$text" "$C_BORDER" "$C_RESET"
+  printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "$text" "$C_BORDER" "$C_RESET"
 }
 
 function frame_row_colored() {
   local text color
   text=$(truncate_text "$1" "$UI_INNER")
   color="$2"
-  printf "%b|%b %b%-${UI_INNER}s%b %b|%b\n" "$C_BORDER" "$C_RESET" "$color" "$text" "$C_RESET" "$C_BORDER" "$C_RESET"
+  printf "%b│%b %b%-${UI_INNER}s%b %b│%b\n" "$C_BORDER" "$C_RESET" "$color" "$text" "$C_RESET" "$C_BORDER" "$C_RESET"
 }
 
 function frame_two_col() {
@@ -207,7 +215,7 @@ function frame_two_col() {
   col_width=$(((UI_INNER - 3) / 2))
   left=$(truncate_text "$1" "$col_width")
   right=$(truncate_text "$2" "$col_width")
-  printf "%b|%b %-${col_width}s %b|%b %-${col_width}s %b|%b\n" \
+  printf "%b│%b %-${col_width}s %b│%b %-${col_width}s %b│%b\n" \
     "$C_BORDER" "$C_RESET" "$left" "$C_BORDER" "$C_RESET" "$right" "$C_BORDER" "$C_RESET"
 }
 
@@ -219,18 +227,18 @@ function frame_title() {
   [ "$pad_left" -lt 0 ] && pad_left=0
   [ "$pad_right" -lt 0 ] && pad_right=0
 
-  printf "%b|%b%${pad_left}s%b%s%b%${pad_right}s%b|%b\n" \
+  printf "%b│%b%${pad_left}s%b%s%b%${pad_right}s%b│%b\n" \
     "$C_BORDER" "$C_RESET" "" "$C_TITLE" "$title" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
 function render_banner() {
-  frame_border
+  frame_top
   frame_title "MQ REPO LAUNCHER"
   frame_title "SYSTEM DIAGNOSTICS V1.3"
-  frame_border
+  frame_mid
   frame_row_colored "  *  ATARI 1200XL MQ EDITION  *" "$C_ACCENT"
   frame_blank
-  frame_border
+  frame_mid
 }
 
 function remote_state() {
@@ -314,7 +322,7 @@ function status_check() {
     frame_row_colored "STATE  : DIRTY (${CHANGES} CHANGES)" "$C_WARN"
   fi
   frame_row "REMOTE : $REMOTE"
-  frame_border
+  frame_bottom
 }
 
 # ------------------------
@@ -346,9 +354,9 @@ function render_next_action() {
     return
   fi
 
-  frame_border
+  frame_top
   frame_row_colored "$NEXT_ACTION_MESSAGE" "$NEXT_ACTION_COLOR"
-  frame_border
+  frame_bottom
 }
 
 function prompt_choice() {
@@ -360,6 +368,7 @@ function prompt_choice() {
       --cursor.foreground="229" \
       --item.foreground="229" \
       --selected.foreground="220" \
+      --help.foreground="245" \
       --height=9 \
       "1. GIT STATUS" \
       "2. GIT PULL" \
