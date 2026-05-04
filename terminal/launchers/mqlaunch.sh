@@ -756,7 +756,7 @@ themes_menu_loop() {
 }
 
 open_git_menu() {
-  local git_script="/usr/local/bin/gitlaunch"
+  local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
 
   if [[ -x "$git_script" ]]; then
     "$git_script"
