@@ -3,7 +3,7 @@ set -euo pipefail
 
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
-RELEASE_REPO="${MQ_RELEASE_REPO:-$BASE_DIR}"
+RELEASE_REPO="${MQ_RELEASE_REPO:-}"
 RELEASE_SCRIPT=""
 CHANGELOG_FILE=""
 VERSION_FILE=""
@@ -29,6 +29,17 @@ refresh_release_paths() {
   RELEASE_SCRIPT="$RELEASE_REPO/release.sh"
   CHANGELOG_FILE="$RELEASE_REPO/CHANGELOG.md"
   VERSION_FILE="$RELEASE_REPO/VERSION"
+}
+
+default_release_repo() {
+  local detected=""
+
+  detected="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$detected" ]]; then
+    printf '%s\n' "$detected"
+  else
+    printf '%s\n' "$BASE_DIR"
+  fi
 }
 
 resolve_repo_path() {
@@ -71,6 +82,9 @@ choose_release_repo() {
 
   print_header
   row_bold "SELECT RELEASE REPO"
+  empty_row
+  row "Detected from current PATH:"
+  row " $(default_release_repo)"
   empty_row
   row "Current repo:"
   row " $RELEASE_REPO"
@@ -432,7 +446,10 @@ main() {
 
   if [[ -n "$repo_arg" ]]; then
     set_release_repo "$repo_arg" || exit 1
+  elif [[ -n "$RELEASE_REPO" ]]; then
+    set_release_repo "$RELEASE_REPO" || exit 1
   else
+    RELEASE_REPO="$(default_release_repo)"
     refresh_release_paths
   fi
 
