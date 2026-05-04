@@ -376,6 +376,9 @@ function prompt_choice() {
       --cursor.foreground="229" \
       --item.foreground="229" \
       --selected.foreground="220" \
+      --header="←↓↑→ navigate  •  enter submit" \
+      --header.foreground="220" \
+      --no-show-help \
       --height=9 \
       "1. GIT STATUS" \
       "2. GIT PULL" \
