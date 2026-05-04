@@ -10,16 +10,20 @@ REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
-  C_BORDER=$'\e[38;5;45m'
-  C_ACCENT=$'\e[38;5;81m'
-  C_TITLE=$'\e[1;38;5;51m'
-  C_LABEL=$'\e[38;5;117m'
+  C_BG=$'\e[48;5;18m'
+  C_BORDER=$'\e[38;5;229m'
+  C_ACCENT=$'\e[38;5;220m'
+  C_TITLE=$'\e[1;38;5;229m'
+  C_LABEL=$'\e[38;5;229m'
   C_GOOD=$'\e[92m'
   C_WARN=$'\e[93m'
   C_BAD=$'\e[91m'
   C_DIM=$'\e[38;5;245m'
+  C_CYAN=$'\e[36m'
+  C_YELLOW=$'\e[33m'
 else
   C_RESET=""
+  C_BG=""
   C_BORDER=""
   C_ACCENT=""
   C_TITLE=""
@@ -28,9 +32,12 @@ else
   C_WARN=""
   C_BAD=""
   C_DIM=""
+  C_CYAN=""
+  C_YELLOW=""
 fi
 
-UI_WIDTH=74
+GUM_BIN="$(command -v gum 2>/dev/null || true)"
+UI_WIDTH=62
 UI_INNER=$((UI_WIDTH - 4))
 
 # ------------------------
@@ -148,6 +155,15 @@ function detect_repo() {
 # ------------------------
 # UI
 # ------------------------
+function clear_screen() {
+  printf "%b" "$C_BG"
+  clear
+}
+
+function use_gum_menu() {
+  [[ -t 0 && -t 1 && -n "$GUM_BIN" ]]
+}
+
 function repeat_char() {
   local char="$1"
   local count="$2"
@@ -211,14 +227,58 @@ function frame_title() {
 
 function render_banner() {
   frame_border
-  frame_row_colored "   ____ ___ _____ _        _    _   _ _   _  ____ _   _" "$C_ACCENT"
-  frame_row_colored "  / ___|_ _|_   _| |      / \\  | | | | \\ | |/ ___| | | |" "$C_ACCENT"
-  frame_row_colored " | |  _ | |  | | | |     / _ \\ | | | |  \\| | |   | |_| |" "$C_ACCENT"
-  frame_row_colored " | |_| || |  | | | |___ / ___ \\| |_| | |\\  | |___|  _  |" "$C_ACCENT"
-  frame_row_colored "  \\____|___| |_| |_____/_/   \\_\\\\___/|_| \\_|\\____|_| |_|" "$C_ACCENT"
-  frame_blank
-  frame_title "REPO COMMAND DECK"
+  frame_title "MQ REPO LAUNCHER"
+  frame_title "SYSTEM DIAGNOSTICS V1.3"
   frame_border
+  frame_row_colored "  *  ATARI 1200XL MQ EDITION  *" "$C_ACCENT"
+  frame_blank
+  frame_border
+}
+
+function remote_state() {
+  local ahead behind
+
+  ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null)
+  behind=$(git rev-list --count HEAD..@{u} 2>/dev/null)
+
+  if [ -z "$ahead" ] || [ -z "$behind" ]; then
+    echo "NO UPSTREAM"
+  elif [ "$ahead" -gt 0 ] && [ "$behind" -gt 0 ]; then
+    echo "DIVERGED"
+  elif [ "$ahead" -gt 0 ]; then
+    echo "AHEAD $ahead"
+  elif [ "$behind" -gt 0 ]; then
+    echo "BEHIND $behind"
+  else
+    echo "OK"
+  fi
+}
+
+function fallback_border_top() {
+  printf "%b┌────────────────────────────────────────────────────────────────────────┐%b\n" "$C_CYAN" "$C_RESET"
+}
+
+function fallback_border_mid() {
+  printf "%b├────────────────────────────────────────────────────────────────────────┤%b\n" "$C_CYAN" "$C_RESET"
+}
+
+function fallback_border_bottom() {
+  printf "%b└────────────────────────────────────────────────────────────────────────┘%b\n" "$C_CYAN" "$C_RESET"
+}
+
+function fallback_row() {
+  local text
+  text=$(truncate_text "$1" 70)
+  printf "%b│%b %-70s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
+}
+
+function fallback_status_row() {
+  local label="$1"
+  local value="$2"
+  local color="${3:-}"
+  value=$(truncate_text "$value" 61)
+  printf "%b│%b %b%-7s%b: %b%-61s%b %b│%b\n" \
+    "$C_CYAN" "$C_RESET" "$C_TITLE" "$label" "$C_RESET" "$color" "$value" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
 # ------------------------
@@ -228,16 +288,34 @@ function render_banner() {
 function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
+  REMOTE=$(remote_state)
+
+  if ! use_gum_menu; then
+    fallback_border_top
+    fallback_row "${C_TITLE}GITHUB LAUNCHPAD${C_RESET}"
+    fallback_row "${C_YELLOW}REPO COMMAND DECK${C_RESET}"
+    fallback_border_mid
+    fallback_status_row "Repo" "$REPO"
+    fallback_status_row "Branch" "$BRANCH"
+    fallback_status_row "Status" "${CHANGES} change(s)"
+    if [ "$CHANGES" -eq 0 ]; then
+      fallback_status_row "State" "CLEAN" "$C_GOOD"
+    else
+      fallback_status_row "State" "DIRTY" "$C_BAD"
+    fi
+    fallback_status_row "Remote" "$REMOTE"
+    return
+  fi
 
   render_banner
-  frame_row "Repo   : $REPO"
-  frame_row "Branch : $BRANCH"
-  frame_row "Status : ${CHANGES} change(s)"
+  frame_row "PATH   : $REPO"
+  frame_row "BRANCH : ${BRANCH:u}"
   if [ "$CHANGES" -eq 0 ]; then
-    frame_row_colored "State  : CLEAN" "$C_GOOD"
+    frame_row_colored "STATE  : CLEAN" "$C_GOOD"
   else
-    frame_row_colored "State  : DIRTY" "$C_WARN"
+    frame_row_colored "STATE  : DIRTY (${CHANGES} CHANGES)" "$C_WARN"
   fi
+  frame_row "REMOTE : $REMOTE"
   frame_border
 }
 
@@ -245,23 +323,73 @@ function status_check() {
 # MENU
 # ------------------------
 function render_menu() {
+  if ! use_gum_menu; then
+    echo
+    printf "%b  ACTIONS%b\n" "$C_TITLE" "$C_RESET"
+    printf "  %b1%b Git status          %b2%b Git pull\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
+    printf "  %b3%b %bAI commit + push%b    %b4%b Safe push\n" \
+      "$C_CYAN" "$C_RESET" "$C_YELLOW" "$C_RESET" "$C_CYAN" "$C_RESET"
+    printf "  %b5%b Open repo           %b6%b Dev mode\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
+    printf "  %b7%b Switch repo         %b8%b Auto action\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
+    printf "  %b9  Exit%b\n" "$C_BAD" "$C_RESET"
+    echo
+    return
+  fi
+
   frame_border
-  frame_title "ACTIONS"
-  frame_border
-  frame_two_col "1  Git status" "2  Git pull"
-  frame_two_col "3  AI commit + push" "4  Safe push"
-  frame_two_col "5  Open repo" "6  Dev mode"
-  frame_two_col "7  Switch repo" "8  Auto action"
-  frame_two_col "9  Exit" ""
+  frame_title "READY / GUM SELECT"
+  frame_row "Use arrows, press Enter to run action."
   frame_border
 }
 
 function render_next_action() {
-  frame_border
-  frame_title "NEXT ACTION"
+  if ! use_gum_menu; then
+    fallback_border_mid
+    fallback_row "${C_TITLE}NEXT ACTION:${C_RESET} ${NEXT_ACTION_COLOR}${NEXT_ACTION_MESSAGE}${C_RESET}"
+    fallback_border_bottom
+    return
+  fi
+
   frame_border
   frame_row_colored "$NEXT_ACTION_MESSAGE" "$NEXT_ACTION_COLOR"
   frame_border
+}
+
+function prompt_choice() {
+  local selected
+
+  if use_gum_menu; then
+    selected=$("$GUM_BIN" choose \
+      --cursor="> " \
+      --cursor.foreground="229" \
+      --selected.foreground="220" \
+      --height=9 \
+      "1. GIT STATUS" \
+      "2. GIT PULL" \
+      "3. AI COMMIT" \
+      "4. SAFE PUSH" \
+      "5. OPEN REPO" \
+      "6. DEV MODE" \
+      "7. SWITCH REPO" \
+      "8. AUTO ACTION" \
+      "9. EXIT")
+
+    case "$selected" in
+      1.*) choice=1 ;;
+      2.*) choice=2 ;;
+      3.*) choice=3 ;;
+      4.*) choice=4 ;;
+      5.*) choice=5 ;;
+      6.*) choice=6 ;;
+      7.*) choice=7 ;;
+      8.*) choice=8 ;;
+      9.*) choice=9 ;;
+      *) choice=9 ;;
+    esac
+  else
+    printf " gitlaunch [1-9]> "
+    read choice
+  fi
 }
 
 # ------------------------
@@ -436,22 +564,23 @@ fi
 # ------------------------
 # MAIN LOOP
 # ------------------------
+trap 'printf "%b" "$C_RESET"' EXIT
+
 while true; do
   detect_repo
-  clear
+  clear_screen
   status_check
   next_action
   render_next_action
 
-  if [ -n "$(git status --porcelain)" ]; then
+  if use_gum_menu && [ -n "$(git status --porcelain)" ]; then
     analyze_diff
   fi
 
   echo ""
   render_menu
 
-  printf "%bgitlaunch%b %b[1-9]>%b " "$C_TITLE" "$C_RESET" "$C_ACCENT" "$C_RESET"
-  read choice
+  prompt_choice
 
   case $choice in
     1)
