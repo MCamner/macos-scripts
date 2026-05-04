@@ -364,12 +364,19 @@ create_github_release_only() {
   row_bold "GITHUB RELEASE"
   empty_row
 
+  local exit_code=0
   (
     cd "$RELEASE_REPO" || exit 1
     gh release create "$tag" \
       --title "Release $tag" \
       --notes-file "$CHANGELOG_FILE"
-  )
+  ) || exit_code=$?
+
+  if [[ $exit_code -ne 0 ]]; then
+    ui_err "GitHub release failed (exit $exit_code). Check network/API status and try again."
+  else
+    ui_ok "Release $tag created successfully."
+  fi
 
   print_footer
   pause_enter
