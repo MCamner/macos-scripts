@@ -4,6 +4,10 @@ normalize_cli_word() {
   printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'
 }
 
+# AI prompt helpers
+AI_PROMPTS="$HOME/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+[[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
+
 print_command_help() {
   local topic="${1:-}"
 
@@ -131,6 +135,28 @@ dispatch_cli_command() {
 
     demo)
       run_demo_mode
+      return 0
+      ;;
+
+    review|/review)
+      if declare -f mq_ai_prompt_review >/dev/null; then
+        mq_ai_prompt_review
+      else
+        echo "Missing helper: mq_ai_prompt_review"
+        echo "Expected: ~/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+        return 1
+      fi
+      return 0
+      ;;
+
+    ui|/ui)
+      if declare -f mq_ai_prompt_ui >/dev/null; then
+        mq_ai_prompt_ui
+      else
+        echo "Missing helper: mq_ai_prompt_ui"
+        echo "Expected: ~/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+        return 1
+      fi
       return 0
       ;;
 
