@@ -50,13 +50,23 @@ UI_INNER=$((UI_WIDTH - 4))
 # ASCII ART
 # ------------------------
 function render_ascii() {
+  printf "%b" "$C_CYAN"
+  cat <<'EOF'
+  ██████╗ ██╗████████╗
+ ██╔════╝ ██║╚══██╔══╝
+ ██║  ███╗██║   ██║
+ ██║   ██║██║   ██║
+ ╚██████╔╝██║   ██║
+  ╚═════╝ ╚═╝   ╚═╝
+EOF
   printf "%b" "$C_PINK"
   cat <<'EOF'
-   ____ ___ _____   _        _   _ _   _  ____ _   _ 
-  / ___|_ _|_   _| | |      / \ | | | | |/ ___| | | |
- | |  _ | |  | |   | |     / _ \| | | | | |   | |_| |
- | |_| || |  | |   | |___ / ___ \ |_| | | |___|  _  |
-  \____|___| |_|   |_____/_/   \_\___/ \____|_| |_|
+██╗      █████╗ ██╗   ██╗███╗  ██╗ ██████╗██╗  ██╗
+██║     ██╔══██╗██║   ██║████╗ ██║██╔════╝██║  ██║
+██║     ███████║██║   ██║██╔██╗██║██║     ███████║
+██║     ██╔══██║██║   ██║██║╚██╗██║██║     ██╔══██║
+╚██████╗██║  ██║╚██████╔╝██║ ╚████║╚██████╗██║  ██║
+ ╚═════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝
 EOF
   printf "%b" "$C_RESET"
 }
@@ -257,11 +267,11 @@ function frame_title() {
 
 function render_banner() {
   render_ascii
+  echo
   frame_top
   frame_title "MQ REPO LAUNCHER"
-  frame_title "NEON COMMAND SURFACE V2.0"
   frame_mid
-  frame_row_colored "  *  PHOSPHOR GRID ACTIVE  *" "$C_PINK"
+  frame_row_colored "  ★  PHOSPHOR GRID ACTIVE  ★" "$C_PINK"
   frame_blank
   frame_mid
 }
