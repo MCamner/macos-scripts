@@ -166,14 +166,8 @@ dispatch_cli_command() {
       ;;
 
     ask|/ask)
-      if declare -f mq_ai_prompt_ask >/dev/null; then
-        shift
-        mq_ai_prompt_ask "$@" || true
-      else
-        echo "Missing helper: mq_ai_prompt_ask"
-        echo "Expected: $AI_PROMPTS"
-      fi
-      pause_enter
+      shift
+      "$BASE_DIR/tools/scripts/ask.sh" "$@"
       return 0
       ;;
 

@@ -1,3 +1,6 @@
+# Secrets
+.env
+
 # macOS metadata
 .DS_Store
 **/.DS_Store

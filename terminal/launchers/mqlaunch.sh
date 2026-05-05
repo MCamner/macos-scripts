@@ -1296,6 +1296,7 @@ run_arg_command() {
     perf|performance) open_performance_menu ;;
     demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
+    ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
     doctor) "$BASE_DIR/tools/scripts/doctor.sh" ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
