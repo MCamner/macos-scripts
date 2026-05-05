@@ -20,10 +20,14 @@ print_header() {
 }
 
 print_footer() {
-  echo -e "\n${BLUE}----------------------------------------------------------------------------------------${NC}"
-  printf "${CYAN}Host: %s   User: %s${NC}\n" "$(scutil --get ComputerName 2>/dev/null || hostname)" "$(whoami)"
-  printf "Time: %s\n" "$(date '+%Y-%m-%d %H:%M:%S')"
-  echo -e "${BLUE}----------------------------------------------------------------------------------------${NC}"
+  local now host user_name
+  now="$(date '+%Y-%m-%d %H:%M:%S')"
+  host="$(hostname -s 2>/dev/null || hostname)"
+  user_name="${USER:-$(whoami)}"
+
+  printf '\n'
+  printf "Host: %s   User: %s\n" "$host" "$user_name"
+  printf "Time: %s\n" "$now"
 }
 
 row() {
