@@ -57,3 +57,32 @@ PROMPT
 
   mq_ai_copy_prompt "/ui" "$prompt"
 }
+
+mq_ai_prompt_ask() {
+  local question="${*:-}"
+
+  if [[ -z "$question" ]]; then
+    echo "Usage: mqlaunch ask \"your question\""
+    return 1
+  fi
+
+  local prompt
+  prompt="$(cat <<PROMPT
+Use repo-aware reasoning.
+
+You are answering a question about the macos-scripts repository.
+
+Question:
+$question
+
+Instructions:
+- Answer based on provided repo context when available.
+- If repo context is missing, ask for the relevant README, file tree, script, or command output.
+- Do not invent files, functions, or behavior.
+- Prefer concrete file paths and commands.
+- Keep the answer practical and concise.
+PROMPT
+)"
+
+  mq_ai_copy_prompt "/ask" "$prompt"
+}

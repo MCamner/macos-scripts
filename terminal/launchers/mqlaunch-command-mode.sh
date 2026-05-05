@@ -80,6 +80,7 @@ Quick commands:
   mqlaunch theme-macos
   mqlaunch review
   mqlaunch ui
+  mqlaunch ask "your question"
   mqlaunch release-check
   mqlaunch version
   mqlaunch notes
@@ -158,6 +159,18 @@ dispatch_cli_command() {
         mq_ai_prompt_ui
       else
         echo "Missing helper: mq_ai_prompt_ui"
+        echo "Expected: $AI_PROMPTS"
+        return 1
+      fi
+      return 0
+      ;;
+
+    ask|/ask)
+      if declare -f mq_ai_prompt_ask >/dev/null; then
+        shift
+        mq_ai_prompt_ask "$@" || return 1
+      else
+        echo "Missing helper: mq_ai_prompt_ask"
         echo "Expected: $AI_PROMPTS"
         return 1
       fi
