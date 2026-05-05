@@ -1332,6 +1332,16 @@ run_arg_command() {
     *)
       echo "${C_ERR}Unknown command:${C_RESET} $cmd"
       echo
+      echo "Try:"
+      echo "  mqlaunch ask \"Vad betyder kommandot: $cmd $*\""
+      echo
+
+      if declare -f mq_ai_prompt_ask >/dev/null; then
+        echo "Copying an /ask prompt for this unknown command..."
+        mq_ai_prompt_ask "Vad betyder kommandot '$cmd $*' i mqlaunch, och finns det ett liknande kommando?"
+        return 0
+      fi
+
       show_help
       exit 1
       ;;

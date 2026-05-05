@@ -11,6 +11,11 @@ mq_ai_copy_prompt() {
 
   printf '%s\n' "$prompt" | pbcopy
   echo "Copied $name prompt to clipboard."
+  echo "→ Paste in ChatGPT with Cmd+V, then press Enter."
+}
+
+mq_ai_open_chatgpt() {
+  open "https://chatgpt.com/" >/dev/null 2>&1 || true
 }
 
 mq_ai_prompt_review() {
@@ -31,8 +36,8 @@ Lead with findings, ordered by severity. Include file/line references when avail
 Recommend concrete fixes. Keep summaries brief and avoid theory unless it directly supports a practical next step.
 PROMPT
 )"
-
   mq_ai_copy_prompt "/review" "$prompt"
+  mq_ai_open_chatgpt
 }
 
 mq_ai_prompt_ui() {
@@ -54,20 +59,45 @@ Make the actual terminal workflow usable first. Keep decoration subordinate to c
 Verify that text fits in common terminal widths, commands are reachable, and output remains readable in light and dark themes.
 PROMPT
 )"
-
   mq_ai_copy_prompt "/ui" "$prompt"
+  mq_ai_open_chatgpt
 }
 
 mq_ai_prompt_ask() {
   local question="$*"
   local repo_root branch status_short prompt
 
+  if [[ "${1:-}" == "quick" ]]; then
+    shift
+    question="$*"
+
+    if [[ -z "$question" ]]; then
+      cat <<'HELP'
+Usage:
+  mqlaunch ask quick "your question"
+
+Example:
+  mqlaunch ask quick "Hur dödar jag en process på macOS?"
+HELP
+      return 0
+    fi
+
+    prompt="Answer briefly and practically. Prefer concrete commands when useful.
+
+Question:
+$question"
+
+    mq_ai_copy_prompt "/ask quick" "$prompt"
+    mq_ai_open_chatgpt
+    return 0
+  fi
+
   repo_root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || echo "$HOME/macos-scripts")"
   branch="$(git -C "$repo_root" branch --show-current 2>/dev/null || echo "unknown")"
   status_short="$(git -C "$repo_root" status --short 2>/dev/null | head -n 20 || true)"
 
   if [[ -z "$question" ]]; then
-    cat <<'EOF'
+    cat <<'HELP'
 Usage:
   mqlaunch ask "your question"
 
@@ -76,11 +106,11 @@ Good questions:
   mqlaunch ask "Hur felsöker jag att mqlaunch inte hittar ett kommando?"
   mqlaunch ask "Vad gör safe_run_ai?"
   mqlaunch ask "Hur förbättrar jag mqlaunch som CLI-produkt?"
-EOF
+HELP
     return 0
   fi
 
-  prompt="$(cat <<EOF
+  prompt="$(cat <<PROMPT
 Use repo-aware reasoning.
 
 You are answering a question about the macos-scripts repository.
@@ -106,9 +136,9 @@ Instructions:
 - Do not invent files, functions, or behavior.
 - Prefer concrete file paths and commands.
 - Keep the answer practical and concise.
-EOF
+PROMPT
 )"
 
   mq_ai_copy_prompt "/ask" "$prompt"
-  open "https://chatgpt.com/" >/dev/null 2>&1 || true
+  mq_ai_open_chatgpt
 }
