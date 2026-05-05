@@ -177,7 +177,7 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    release-check|check-release)
+    release-check|/release-check|check-release)
       "$BASE_DIR/terminal/release/mq-release-check.sh"
       return 0
       ;;
@@ -193,12 +193,7 @@ dispatch_cli_command() {
       ;;
 
     atlas|/atlas)
-      if [[ -x "$BASE_DIR/tools/scripts/atlas.sh" ]]; then
-        "$BASE_DIR/tools/scripts/atlas.sh"
-      else
-        echo "atlas: not found"
-        return 1
-      fi
+      safe_run_ai atlas
       return 0
       ;;
 

@@ -28,7 +28,7 @@ print_main_menu() {
   print_header
   render_main_menu_panel
   render_command_surface
-  MQ_MAIN_MENU_RENDERED_LINES=64
+  MQ_MAIN_MENU_RENDERED_LINES=66
 }
 
 surface_terminal_width() {
@@ -153,7 +153,7 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
   surface_split_row "/review" "/ui" "$width" "$panel_color"
-  surface_split_row "/ask" "release-check" "$width" "$panel_color"
+  surface_split_row "/ask" "/release-check" "$width" "$panel_color"
   surface_split_row "/doctor" "/scan   /atlas" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
@@ -242,6 +242,7 @@ render_command_surface() {
   HOST_NAME="$(hostname -s)"
   TIME="$(date '+%Y-%m-%d %H:%M:%S')"
   width="$(surface_terminal_width)"
+  MQ_SURFACE_WIDTH="$width"
   git_state="$(surface_git_state)"
   system_state="System: Stable"
   activity="Activity: Monitoring"
@@ -278,10 +279,12 @@ render_command_surface() {
   else
     surface_split_row "Welcome back ${USER_NAME}!" "Tips: $tip" "$width" "$SURFACE_COLOR"
     surface_split_row "Mode: Interactive" "Git: $git_state" "$width" "$SURFACE_COLOR"
+    surface_row "" "$width" "$SURFACE_COLOR"
     surface_dual_figure_row "▄▄████▄▄" " ▄▄██▄▄ " "" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
     surface_dual_figure_row "████████" "█▀████▀█" "$system_state" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
     surface_dual_figure_row "██▄██▄██" "██▀██▀██" "Repo: macos-scripts" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
     surface_dual_figure_row " ▄█▀▀█▄ " " ▀▄██▄▀ " "$activity" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_row "" "$width" "$SURFACE_COLOR"
     surface_split_row "Host: ${HOST_NAME}" "User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
     surface_split_row "Time: ${TIME}" "X. Exit launcher" "$width" "$SURFACE_COLOR"
   fi
@@ -372,7 +375,7 @@ run_main_shell_command() {
 
 read_main_choice() {
   local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
-  prompt_width="$(surface_terminal_width)"
+  prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> option, mqlaunch command, shell command, or x to exit"
   if [[ -t 1 ]]; then
