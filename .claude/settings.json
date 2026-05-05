@@ -8,5 +8,19 @@
       "Bash(gh release list *)",
       "Bash(gh release view *)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty' 2>/dev/null); [[ \"$f\" == *.sh ]] && { h=$(head -1 \"$f\" 2>/dev/null); if echo \"$h\" | grep -q 'zsh'; then zsh -n \"$f\" 2>&1 && echo '{\"suppressOutput\":true}' || echo \"{\\\"systemMessage\\\":\\\"Syntax error in $f (zsh -n failed)\\\"}\"; else bash -n \"$f\" 2>&1 && echo '{\"suppressOutput\":true}' || echo \"{\\\"systemMessage\\\":\\\"Syntax error in $f (bash -n failed)\\\"}\"; fi; } || echo '{\"suppressOutput\":true}'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
