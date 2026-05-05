@@ -318,6 +318,7 @@ run_main_shell_command() {
 }
 
 read_main_choice() {
+  local label="${1:-mqlaunch}"
   local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
   prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
@@ -342,7 +343,7 @@ read_main_choice() {
 
   if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 && "$pin_prompt" -eq 1 ]]; then
     local prompt input cursor key old_stty
-    prompt="mqlaunch > "
+    prompt="${label} > "
     input=""
     cursor=0
 
@@ -407,7 +408,7 @@ read_main_choice() {
   # clears the lower part of the rendered menu.
   if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
     local prompt input cursor key old_stty
-    prompt="mqlaunch > "
+    prompt="${label} > "
     input=""
     cursor=0
 
@@ -466,7 +467,7 @@ read_main_choice() {
 
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-  read_prompt "${C_TITLE}mqlaunch > ${C_RESET}" "mqlaunch > "
+  read_prompt "${C_TITLE}${label} > ${C_RESET}" "${label} > "
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   choice="$REPLY"
 }
