@@ -108,7 +108,20 @@ mqlaunch system check
 mqlaunch dev
 mqlaunch tools
 mqlaunch demo
+mqlaunch release-check
 ```
+
+---
+
+## 🚢 Release workflow
+
+Run the release check before every push:
+
+```bash
+mqlaunch release-check
+```
+
+It checks repo status, scans staged changes with `gitleaks` when available, shows recent commits, and refreshes the `/review` and `/ui` AI check prompts.
 
 ---
 
