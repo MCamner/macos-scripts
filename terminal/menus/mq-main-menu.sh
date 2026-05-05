@@ -354,7 +354,7 @@ handle_main_prompt_command() {
   esac
 
   if command -v dispatch_cli_command >/dev/null 2>&1; then
-    if dispatch_cli_command "$normalized"; then
+    if dispatch_cli_command $normalized; then
       return 0
     fi
   fi

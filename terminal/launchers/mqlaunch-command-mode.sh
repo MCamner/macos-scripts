@@ -149,7 +149,6 @@ dispatch_cli_command() {
       else
         echo "Missing helper: mq_ai_prompt_review"
         echo "Expected: $AI_PROMPTS"
-        return 1
       fi
       return 0
       ;;
@@ -160,7 +159,6 @@ dispatch_cli_command() {
       else
         echo "Missing helper: mq_ai_prompt_ui"
         echo "Expected: $AI_PROMPTS"
-        return 1
       fi
       return 0
       ;;
@@ -168,11 +166,10 @@ dispatch_cli_command() {
     ask|/ask)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         shift
-        mq_ai_prompt_ask "$@" || return 1
+        mq_ai_prompt_ask "$@" || true
       else
         echo "Missing helper: mq_ai_prompt_ask"
         echo "Expected: $AI_PROMPTS"
-        return 1
       fi
       return 0
       ;;
