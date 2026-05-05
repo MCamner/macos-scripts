@@ -16,17 +16,19 @@ mq_ai_copy_prompt() {
 mq_ai_prompt_review() {
   local prompt
   prompt="$(cat <<'PROMPT'
-You are reviewing code changes.
+Use repo-product-auditor.
 
-Focus on the highest-signal issues first:
-- correctness bugs
-- regressions
-- missing tests
-- security or data-loss risk
-- confusing UX or unclear behavior
+You are auditing this repository as a product, not only reviewing a diff.
+
+Focus on the highest-signal product and repo issues first:
+- broken or confusing workflows
+- unclear command names, prompts, or UX
+- mismatches between intent, docs, and implementation
+- missing verification for important user paths
+- correctness, regression, security, or data-loss risks
 
 Lead with findings, ordered by severity. Include file/line references when available.
-Keep summaries brief and avoid theory unless it directly supports a concrete fix.
+Recommend concrete fixes. Keep summaries brief and avoid theory unless it directly supports a practical next step.
 PROMPT
 )"
 
@@ -36,18 +38,20 @@ PROMPT
 mq_ai_prompt_ui() {
   local prompt
   prompt="$(cat <<'PROMPT'
-You are improving a user interface.
+Use terminal-ui-polisher.
+
+You are improving a terminal UI, CLI, or TUI experience for mqlaunch.
 
 Prioritize:
-- clear hierarchy
-- discoverable controls
-- responsive layout
-- readable labels
-- consistent spacing and states
-- practical, polished interactions
+- clear command hierarchy
+- discoverable terminal actions
+- readable labels and help text
+- consistent spacing, prompts, and states
+- keyboard-friendly flows
+- practical, polished CLI/TUI interactions
 
-Build the actual usable screen first. Keep decoration subordinate to clarity.
-Verify that text fits, controls are reachable, and the UI works on mobile and desktop.
+Make the actual terminal workflow usable first. Keep decoration subordinate to clarity.
+Verify that text fits in common terminal widths, commands are reachable, and output remains readable in light and dark themes.
 PROMPT
 )"
 

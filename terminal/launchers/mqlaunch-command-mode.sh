@@ -5,7 +5,8 @@ normalize_cli_word() {
 }
 
 # AI prompt helpers
-AI_PROMPTS="$HOME/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
 [[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
 
 print_command_help() {
@@ -145,7 +146,7 @@ dispatch_cli_command() {
         mq_ai_prompt_review
       else
         echo "Missing helper: mq_ai_prompt_review"
-        echo "Expected: ~/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+        echo "Expected: $AI_PROMPTS"
         return 1
       fi
       return 0
@@ -156,7 +157,7 @@ dispatch_cli_command() {
         mq_ai_prompt_ui
       else
         echo "Missing helper: mq_ai_prompt_ui"
-        echo "Expected: ~/macos-scripts/terminal/ai-prompts/mq-ai-prompts.sh"
+        echo "Expected: $AI_PROMPTS"
         return 1
       fi
       return 0
