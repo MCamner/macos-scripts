@@ -199,7 +199,6 @@ print_footer() {
   printf '\n'
   row "Host: ${host}   User: ${user_name}"
   row "Time: ${now}"
-  border
 }
 
 print_main_footer() {
