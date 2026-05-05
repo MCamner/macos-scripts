@@ -153,6 +153,7 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
   surface_split_row "/review" "/ui" "$width" "$panel_color"
+  surface_split_row "/ask" "release-check" "$width" "$panel_color"
   surface_split_row "/doctor" "/scan   /atlas" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
