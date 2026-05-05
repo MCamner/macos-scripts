@@ -434,7 +434,7 @@ system_check() {
   fi
 
   if [[ -L "$BIN_LINK" ]]; then
-    if [[ "$link_target" == "$MQ_SCRIPT" ]]; then
+    if [[ "$link_target" == "$BASE_DIR/bin/mqlaunch" || "$link_target" == "$MQ_SCRIPT" ]]; then
       row "[OK]   ~/bin/mqlaunch symlink correct"
     else
       row "[FAIL] ~/bin/mqlaunch points elsewhere"
