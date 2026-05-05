@@ -80,6 +80,7 @@ Quick commands:
   mqlaunch theme-macos
   mqlaunch review
   mqlaunch ui
+  mqlaunch release-check
   mqlaunch version
   mqlaunch notes
   mqlaunch about
@@ -160,6 +161,11 @@ dispatch_cli_command() {
         echo "Expected: $AI_PROMPTS"
         return 1
       fi
+      return 0
+      ;;
+
+    release-check|check-release)
+      "$BASE_DIR/terminal/release/mq-release-check.sh"
       return 0
       ;;
 
