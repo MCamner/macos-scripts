@@ -26,7 +26,7 @@ if ! command -v perf_health_score >/dev/null 2>&1; then
 fi
 
 render_performance_panel() {
-  local width panel_color score status color output warnings
+  local width panel_color score perf_status color output warnings
   width="$(surface_terminal_width)"
   
   if [[ -t 1 ]]; then
@@ -37,11 +37,11 @@ render_performance_panel() {
 
   output="$(perf_health_score)"
   score="$(echo "$output" | sed -n '1p')"
-  status="$(perf_score_status "$score")"
+  perf_status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
   surface_top "Performance Hub" "$width" "$panel_color"
-  surface_row "Health Score: ${color}${score}/100${C_RESET} ($status)" "$width" "$panel_color"
+  surface_row "Health Score: ${color}${score}/100${C_RESET} ($perf_status)" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "MONITORING" "$width" "$panel_color"

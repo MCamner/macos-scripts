@@ -215,18 +215,18 @@ perf_health_score() {
 }
 
 command_perf_health_score() {
-  local output score status color warnings width
+  local output score perf_status color warnings width
   width="$(surface_terminal_width)"
   
   output="$(perf_health_score)"
   score="$(echo "$output" | sed -n '1p')"
   warnings="$(echo "$output" | sed '1d' | sed '1d')"
-  status="$(perf_score_status "$score")"
+  perf_status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
   print_header
   surface_top "Performance Health Score" "$width" "$C_INFO"
-  surface_row "Score:  ${color}${score}/100${C_RESET} ($status)" "$width" ""
+  surface_row "Score:  ${color}${score}/100${C_RESET} ($perf_status)" "$width" ""
   surface_row "" "$width" ""
   
   surface_row "SIGNALS" "$width" "$C_INFO"
@@ -248,7 +248,7 @@ command_perf_health_score() {
 }
 
 command_perf_overview() {
-  local cpu_line mem_pressure disk_line ip_addr battery_line score_output score status color warnings width
+  local cpu_line mem_pressure disk_line ip_addr battery_line score_output score perf_status color warnings width
   width="$(surface_terminal_width)"
 
   cpu_line="$(uptime)"
@@ -260,12 +260,12 @@ command_perf_overview() {
   score_output="$(perf_health_score)"
   score="$(echo "$score_output" | sed -n '1p')"
   warnings="$(echo "$score_output" | sed '1d' | sed '1d')"
-  status="$(perf_score_status "$score")"
+  perf_status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
   print_header
   surface_top "Performance Overview" "$width" "$C_INFO"
-  surface_row "Health score: ${color}${score}/100${C_RESET} ($status)" "$width" ""
+  surface_row "Health score: ${color}${score}/100${C_RESET} ($perf_status)" "$width" ""
   surface_row "" "$width" ""
   
   surface_row "SYSTEM STATE" "$width" "$C_INFO"
@@ -445,20 +445,20 @@ command_perf_quick_watch() {
   while true; do
     local score_output
     local score
-    local status
+    local perf_status
     local disk_line
     local batt_line
 
     score_output="$(perf_health_score)"
     score="$(echo "$score_output" | sed -n '1p')"
-    status="$(perf_score_status "$score")"
+    perf_status="$(perf_score_status "$score")"
     disk_line="$(perf_disk_line_root)"
     batt_line="$(perf_battery_line)"
 
     clear
     print_section "Quick Watch"
     print_kv "Time:" "$(date)"
-    print_kv "Health:" "$score/100 ($status)"
+    print_kv "Health:" "$score/100 ($perf_status)"
     echo
     print_divider
     echo
