@@ -215,59 +215,47 @@ perf_health_score() {
 }
 
 command_perf_health_score() {
-  print_header
-  print_section "Performance Health Score"
-
-  local output
-  local score
-  local status
-  local color
-  local warnings
-
+  local output score status color warnings width
+  width="$(surface_terminal_width)"
+  
   output="$(perf_health_score)"
   score="$(echo "$output" | sed -n '1p')"
   warnings="$(echo "$output" | sed '1d' | sed '1d')"
   status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
-  echo -e "Score:  ${color}${score}/100${C_RESET}"
-  echo "Status: $status"
-  echo
-
-  print_warning_block "$warnings"
-  echo
-
-  print_section "Signals"
-  print_kv "Load (1m):" "$(perf_load_1m)"
-  print_kv "CPU cores:" "$(perf_cpu_count)"
-  print_kv "Disk (/):" "$(perf_disk_percent_root)%"
-  print_kv "Battery:" "$(perf_battery_display)%"
-  print_kv "Memory pressure:" "$(perf_memory_pressure_level)"
-  print_kv "Network IP:" "$(perf_network_display)"
-
+  print_header
+  surface_top "Performance Health Score" "$width" "$C_INFO"
+  surface_row "Score:  ${color}${score}/100${C_RESET} ($status)" "$width" ""
+  surface_row "" "$width" ""
+  
+  surface_row "SIGNALS" "$width" "$C_INFO"
+  surface_split_row "Load (1m): $(perf_load_1m)" "CPU cores: $(perf_cpu_count)" "$width" ""
+  surface_split_row "Disk (/): $(perf_disk_percent_root)%" "Battery: $(perf_battery_display)%" "$width" ""
+  surface_split_row "Memory: $(perf_memory_pressure_level)" "Network: $(perf_network_display)" "$width" ""
+  
+  if [[ -n "$warnings" && "$warnings" != "No major issues detected" ]]; then
+    surface_row "" "$width" ""
+    surface_row "WARNINGS" "$width" "$C_WARN"
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      surface_row "! $line" "$width" ""
+    done <<< "$warnings"
+  fi
+  
+  surface_bottom "$width" "$C_INFO"
   pause_enter
 }
 
 command_perf_overview() {
-  print_header
-  print_section "Performance Overview"
-
-  local cpu_line
-  local mem_pressure
-  local disk_line
-  local ip_addr
-  local battery_line
-  local score_output
-  local score
-  local status
-  local color
-  local warnings
+  local cpu_line mem_pressure disk_line ip_addr battery_line score_output score status color warnings width
+  width="$(surface_terminal_width)"
 
   cpu_line="$(uptime)"
-  mem_pressure="$(perf_memory_pressure_tail)"
-  disk_line="$(perf_disk_line_root)"
+  mem_pressure="$(perf_memory_pressure_level)"
+  disk_line="$(perf_disk_percent_root)%"
   ip_addr="$(perf_network_display)"
-  battery_line="$(perf_battery_line)"
+  battery_line="$(perf_battery_display)%"
 
   score_output="$(perf_health_score)"
   score="$(echo "$score_output" | sed -n '1p')"
@@ -275,32 +263,26 @@ command_perf_overview() {
   status="$(perf_score_status "$score")"
   color="$(perf_score_color "$score")"
 
-  echo -e "Health score: ${color}${score}/100${C_RESET} ($status)"
-  print_divider
-  echo
-
-  echo "Uptime / Load:"
-  echo "$cpu_line"
-  echo
-
-  echo "Disk (/):"
-  echo "$disk_line"
-  echo
-
-  echo "Network IP:"
-  echo "$ip_addr"
-  echo
-
-  echo "Battery:"
-  echo "$battery_line"
-  echo
-
-  echo "Memory pressure:"
-  echo "$mem_pressure"
-  echo
-
-  print_warning_block "$warnings"
-
+  print_header
+  surface_top "Performance Overview" "$width" "$C_INFO"
+  surface_row "Health score: ${color}${score}/100${C_RESET} ($status)" "$width" ""
+  surface_row "" "$width" ""
+  
+  surface_row "SYSTEM STATE" "$width" "$C_INFO"
+  surface_row "Load: $cpu_line" "$width" ""
+  surface_row "Disk: $disk_line   Memory: $mem_pressure   Battery: $battery_line" "$width" ""
+  surface_row "Network IP: $ip_addr" "$width" ""
+  
+  if [[ -n "$warnings" && "$warnings" != "No major issues detected" ]]; then
+    surface_row "" "$width" ""
+    surface_row "WARNINGS" "$width" "$C_WARN"
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      surface_row "! $line" "$width" ""
+    done <<< "$warnings"
+  fi
+  
+  surface_bottom "$width" "$C_INFO"
   pause_enter
 }
 

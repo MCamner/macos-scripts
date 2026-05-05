@@ -50,6 +50,65 @@ else
 fi
 
 # ------------------------------------------------------------
+# Command Surface (v3) styling
+# ------------------------------------------------------------
+surface_terminal_width() {
+  local cols width
+  cols="$(tput cols 2>/dev/null || true)"
+  [[ "$cols" =~ ^[0-9]+$ ]] || cols="${BOX_INNER:-92}"
+
+  width="$cols"
+  (( width > 112 )) && width=112
+  (( width < 60 )) && width=60
+  printf "%s" "$width"
+}
+
+surface_pad() {
+  local text="$1"
+  local width="$2"
+  printf "%-*.*s" "$width" "$width" "$text"
+}
+
+surface_top() {
+  local title="$1"
+  local width="$2"
+  local color="$3"
+  local fill=$(( width - 5 - ${#title} ))
+  (( fill < 0 )) && fill=0
+  printf "%b┌─ %s %s┐%b\n" "$color" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
+}
+
+surface_bottom() {
+  local width="$1"
+  local color="$2"
+  printf "%b└%s┘%b\n" "$color" "$(repeat_char $(( width - 2 )) "─")" "$C_RESET"
+}
+
+surface_row() {
+  local text="$1"
+  local width="$2"
+  local color="$3"
+  local inner=$(( width - 4 ))
+  printf "%b│ %s │%b\n" "$color" "$(surface_pad "$text" "$inner")" "$C_RESET"
+}
+
+surface_split_row() {
+  local left="$1"
+  local right="$2"
+  local width="$3"
+  local color="$4"
+  local inner left_width right_width
+  inner=$(( width - 4 ))
+  left_width=$(( inner / 2 ))
+  right_width=$(( inner - left_width - 1 ))
+  printf "%b│ %s %s │%b\n" \
+    "$color" \
+    "$(surface_pad "$left" "$left_width")" \
+    "$(surface_pad "$right" "$right_width")" \
+    "$C_RESET"
+}
+
+# ------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------
 repeat_char() {
