@@ -57,6 +57,13 @@ else
   status_warn "gitleaks not installed"
 fi
 
+section "SYSTEM CHECK"
+if [[ -x "$BASE_DIR/tools/scripts/doctor.sh" ]]; then
+  "$BASE_DIR/tools/scripts/doctor.sh"
+else
+  status_warn "doctor.sh not found"
+fi
+
 section "RECENT COMMITS"
 git log --oneline -5
 
@@ -77,6 +84,7 @@ section "RELEASE CHECKLIST"
 cat <<'CHECKLIST'
   [ ] git status is clean or expected
   [ ] no staged secrets found
+  [ ] doctor check reviewed
   [ ] /review prompt checked
   [ ] /ui prompt checked
   [ ] README/help text updated if commands changed
