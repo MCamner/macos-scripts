@@ -371,21 +371,18 @@ function status_check() {
 # MENU
 # ------------------------
 function render_menu() {
-  if ! use_gum_menu; then
-    echo
-    printf "%b  ACTIONS%b\n" "$C_TITLE" "$C_RESET"
-    printf "  %b1%b Git status          %b2%b Git pull\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
-    printf "  %b3%b %bAI commit + push%b    %b4%b Safe push\n" \
-      "$C_CYAN" "$C_RESET" "$C_YELLOW" "$C_RESET" "$C_CYAN" "$C_RESET"
-    printf "  %b5%b Open repo           %b6%b Dev mode\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
-    printf "  %b7%b Switch repo         %b8%b Auto action\n" "$C_CYAN" "$C_RESET" "$C_CYAN" "$C_RESET"
-    printf "  %b9  Exit%b\n" "$C_BAD" "$C_RESET"
-    echo
-    return
-  fi
-
   echo
-  printf "%bACTIONS%b\n" "$C_TITLE" "$C_RESET"
+  frame_top
+  frame_row_colored "1. GIT STATUS" "$C_LABEL"
+  frame_row_colored "2. GIT PULL" "$C_LABEL"
+  frame_row_colored "3. AI COMMIT" "$C_LABEL"
+  frame_row_colored "4. SAFE PUSH" "$C_LABEL"
+  frame_row_colored "5. OPEN REPO" "$C_LABEL"
+  frame_row_colored "6. DEV MODE" "$C_LABEL"
+  frame_row_colored "7. SWITCH REPO" "$C_LABEL"
+  frame_row_colored "8. AUTO ACTION" "$C_LABEL"
+  frame_row_colored "9. EXIT" "$C_BAD"
+  frame_bottom
 }
 
 function render_next_action() {
@@ -402,44 +399,22 @@ function render_next_action() {
 }
 
 function prompt_choice() {
-  local selected
+  local prompt_sep input old_stty
+  prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
 
-  if use_gum_menu; then
-    selected=$("$GUM_BIN" choose \
-      --cursor="> " \
-      --cursor.foreground="229" \
-      --item.foreground="229" \
-      --selected.foreground="220" \
-      --header="←↓↑→ navigate  •  enter submit" \
-      --header.foreground="220" \
-      --no-show-help \
-      --height=9 \
-      "1. GIT STATUS" \
-      "2. GIT PULL" \
-      "3. AI COMMIT" \
-      "4. SAFE PUSH" \
-      "5. OPEN REPO" \
-      "6. DEV MODE" \
-      "7. SWITCH REPO" \
-      "8. AUTO ACTION" \
-      "9. EXIT")
+  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
+  printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
 
-    case "$selected" in
-      1.*) choice=1 ;;
-      2.*) choice=2 ;;
-      3.*) choice=3 ;;
-      4.*) choice=4 ;;
-      5.*) choice=5 ;;
-      6.*) choice=6 ;;
-      7.*) choice=7 ;;
-      8.*) choice=8 ;;
-      9.*) choice=9 ;;
-      *) choice=9 ;;
-    esac
-  else
-    printf " gitlaunch [1-9]> "
-    read choice
-  fi
+  old_stty="$(stty -g)"
+  stty -echo -icanon min 1 time 0 2>/dev/null || true
+  IFS= read -r -k 1 input 2>/dev/null || input=""
+  stty "$old_stty" 2>/dev/null || true
+
+  printf "%s\n" "$input"
+  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
+  printf "%b>> press 1-9%b\n" "$C_DIM" "$C_RESET"
+
+  choice="$input"
 }
 
 # ------------------------
