@@ -124,8 +124,28 @@ read_prompt() {
 }
 
 read_menu_choice() {
-  local prompt="$1"
-  read_prompt "${C_TITLE}${prompt}${C_RESET}" "$prompt"
+  local raw_prompt="$1"
+  local sep_width hint sep
+
+  sep_width="${BOX_INNER:-88}"
+  sep="$(repeat_char "$sep_width" "─")"
+
+  # Extract the hint portion e.g. "[1-10,b]" from the prompt string
+  hint="$(printf '%s' "$raw_prompt" | grep -oE '\[[^]]+\]' | head -1)"
+  [[ -z "$hint" ]] && hint="option"
+
+  printf "\n%b%s%b\n" "${C_TITLE:-}" "$sep" "${C_RESET:-}"
+  printf "%bmqlaunch > %b" "${C_TITLE:-}" "${C_RESET:-}"
+
+  REPLY=""
+  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+    vared -p "" -c REPLY
+  else
+    IFS= read -r REPLY
+  fi
+
+  printf "%b%s%b\n" "${C_TITLE:-}" "$sep" "${C_RESET:-}"
+  printf "%b>> %s%b\n" "${C_DIM:-}" "$hint" "${C_RESET:-}"
 }
 
 set_terminal_title() {
