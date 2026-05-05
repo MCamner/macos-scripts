@@ -182,6 +182,26 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    doctor|/doctor)
+      "$BASE_DIR/tools/scripts/doctor.sh"
+      return 0
+      ;;
+
+    scan|/scan)
+      "$BASE_DIR/tools/scripts/scan.sh"
+      return 0
+      ;;
+
+    atlas|/atlas)
+      if [[ -x "$BASE_DIR/tools/scripts/atlas.sh" ]]; then
+        "$BASE_DIR/tools/scripts/atlas.sh"
+      else
+        echo "atlas: not found"
+        return 1
+      fi
+      return 0
+      ;;
+
     system)
       case "$sub" in
         ""|menu)
