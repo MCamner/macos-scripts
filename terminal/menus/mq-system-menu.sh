@@ -31,7 +31,7 @@ open_system_menu() {
     row2 " b. Back" " x. Exit"
 
     print_footer
-    read_menu_choice "Select option [1-15,b,x] > " || return
+    read_menu_choice "Select option [1-15,b,x] > " "system" || return
     choice="$REPLY"
     echo
 

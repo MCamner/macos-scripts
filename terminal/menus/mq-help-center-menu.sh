@@ -23,7 +23,7 @@ open_help_center_menu() {
     row2 " b. Back" " x. Exit"
 
     print_footer
-    read_menu_choice "Select option [1-6,b,x] > " || return
+    read_menu_choice "Select option [1-6,b,x] > " "help" || return
     choice="$REPLY"
     echo
 

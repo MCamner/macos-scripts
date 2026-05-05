@@ -26,7 +26,7 @@ open_apps_menu() {
     row2 " b. Back" " x. Exit"
 
     print_footer
-    read_menu_choice "Select option [1-14,b,x] > " || return
+    read_menu_choice "Select option [1-14,b,x] > " "apps" || return
     choice="$REPLY"
     echo
 

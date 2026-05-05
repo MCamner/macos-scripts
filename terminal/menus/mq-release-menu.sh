@@ -406,7 +406,7 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-10,b] > " || return
+    read_menu_choice "Select option [1-10,b] > " "release" || return
     choice="$REPLY"
     echo
 

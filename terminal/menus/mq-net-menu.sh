@@ -33,7 +33,7 @@ net_menu_loop() {
 
   while true; do
     print_net_menu
-    read_menu_choice "Select net option [1-5,b] > " || break
+    read_menu_choice "Select net option [1-5,b] > " "network" || break
     choice="$REPLY"
     echo
 

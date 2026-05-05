@@ -39,7 +39,7 @@ ai_menu_loop() {
 
   while true; do
     print_ai_menu
-    read_menu_choice "Select AI mode [1-9,b] > " || break
+    read_menu_choice "Select AI mode [1-9,b] > " "ai" || break
     choice="$REPLY"
     echo
 

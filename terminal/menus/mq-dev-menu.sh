@@ -44,7 +44,7 @@ dev_menu_loop() {
 
   while true; do
     print_dev_menu
-    read_menu_choice "Select dev option [1-12,b] > " || break
+    read_menu_choice "Select dev option [1-12,b] > " "dev" || break
     choice="$REPLY"
     echo
 
