@@ -31,8 +31,12 @@ open_system_menu() {
     row2 " b. Back" " x. Exit"
 
     print_footer
-    read_menu_choice "Select option [1-15,b,x] > " "system" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice || return
+    else
+      printf "\nmqlaunch > "
+      read -r choice
+    fi
     echo
 
     case "$choice" in
