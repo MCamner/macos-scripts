@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(zsh -n *)",
+      "Bash(bash -n *)",
+      "Bash(curl -s *)",
+      "Bash(gh repo view *)",
+      "Bash(gh release list *)",
+      "Bash(gh release view *)"
+    ]
+  }
+}
