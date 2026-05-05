@@ -59,18 +59,44 @@ PROMPT
 }
 
 mq_ai_prompt_ask() {
-  local question="${*:-}"
+  local question="$*"
+  local repo_root branch status_short
+
+  repo_root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || echo "$HOME/macos-scripts")"
+  branch="$(git -C "$repo_root" branch --show-current 2>/dev/null || echo "unknown")"
+  status_short="$(git -C "$repo_root" status --short 2>/dev/null | head -n 20 || true)"
 
   if [[ -z "$question" ]]; then
-    echo "Usage: mqlaunch ask \"your question\""
-    return 1
+    cat <<'EOF'
+Usage:
+  mqlaunch ask "your question"
+
+Good examples:
+  mqlaunch ask "Förklara hur command routing fungerar i mqlaunch.sh"
+  mqlaunch ask "Hur felsöker jag att mqlaunch inte hittar ett kommando?"
+  mqlaunch ask "Vad gör safe_run_ai?"
+  mqlaunch ask "Hur förbättrar jag detta repo som CLI-produkt?"
+EOF
+    return 0
   fi
 
   local prompt
-  prompt="$(cat <<PROMPT
+  prompt="$(cat <<EOF
 Use repo-aware reasoning.
 
 You are answering a question about the macos-scripts repository.
+
+Repo:
+$repo_root
+
+Current directory:
+$PWD
+
+Git branch:
+$branch
+
+Git status:
+${status_short:-clean}
 
 Question:
 $question
@@ -81,7 +107,7 @@ Instructions:
 - Do not invent files, functions, or behavior.
 - Prefer concrete file paths and commands.
 - Keep the answer practical and concise.
-PROMPT
+EOF
 )"
 
   mq_ai_copy_prompt "/ask" "$prompt"
