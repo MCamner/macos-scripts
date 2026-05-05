@@ -64,8 +64,9 @@ surface_terminal_width() {
 }
 
 surface_visible_len() {
-  local stripped
-  stripped="$(printf '%s' "$1" | sed 's/\033\[[0-9;]*[mKHJsu]//g')"
+  local esc stripped
+  esc="$(printf '\033')"
+  stripped="$(printf '%s' "$1" | sed "s/${esc}\[[0-9;]*[mKHJsu]//g")"
   printf '%d' "${#stripped}"
 }
 
