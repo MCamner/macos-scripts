@@ -71,17 +71,16 @@ mq_ai_prompt_ask() {
 Usage:
   mqlaunch ask "your question"
 
-Good examples:
+Good questions:
   mqlaunch ask "Förklara hur command routing fungerar i mqlaunch.sh"
   mqlaunch ask "Hur felsöker jag att mqlaunch inte hittar ett kommando?"
   mqlaunch ask "Vad gör safe_run_ai?"
-  mqlaunch ask "Hur förbättrar jag detta repo som CLI-produkt?"
+  mqlaunch ask "Hur förbättrar jag mqlaunch som CLI-produkt?"
 EOF
     return 0
   fi
 
-  local prompt
-  prompt="$(cat <<EOF
+  cat <<EOF
 Use repo-aware reasoning.
 
 You are answering a question about the macos-scripts repository.
@@ -108,7 +107,4 @@ Instructions:
 - Prefer concrete file paths and commands.
 - Keep the answer practical and concise.
 EOF
-)"
-
-  mq_ai_copy_prompt "/ask" "$prompt"
 }
