@@ -383,7 +383,7 @@ dispatch_cli_command() {
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"
-        mq_ai_prompt_ask "$cmd $*"
+        mq_ai_prompt_ask "$@"
         return 0
       fi
       return 1
