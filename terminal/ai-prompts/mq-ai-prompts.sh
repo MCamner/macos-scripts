@@ -60,7 +60,7 @@ PROMPT
 
 mq_ai_prompt_ask() {
   local question="$*"
-  local repo_root branch status_short
+  local repo_root branch status_short prompt
 
   repo_root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || echo "$HOME/macos-scripts")"
   branch="$(git -C "$repo_root" branch --show-current 2>/dev/null || echo "unknown")"
@@ -80,7 +80,7 @@ EOF
     return 0
   fi
 
-  cat <<EOF
+  prompt="$(cat <<EOF
 Use repo-aware reasoning.
 
 You are answering a question about the macos-scripts repository.
@@ -107,4 +107,8 @@ Instructions:
 - Prefer concrete file paths and commands.
 - Keep the answer practical and concise.
 EOF
+)"
+
+  mq_ai_copy_prompt "/ask" "$prompt"
+  open "https://chatgpt.com/" >/dev/null 2>&1 || true
 }
