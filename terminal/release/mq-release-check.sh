@@ -29,6 +29,11 @@ status_warn() {
   echo "  ⚠ $1"
 }
 
+print_section() { section "$1"; }
+pass()          { status_ok "$1"; }
+warn()          { status_warn "$1"; }
+fail()          { echo "  ✘ $1"; }
+
 title() {
   echo "MQ RELEASE CHECK"
   rule 72
@@ -91,11 +96,6 @@ cat <<'CHECKLIST'
   [ ] version/changelog updated if this is a release
   [ ] tests or syntax checks passed
 CHECKLIST
-
-echo
-rule 72
-echo "Status: release-check complete"
-
 
 check_changelog_matches_commits() {
   print_section "CHANGELOG / COMMITS"
@@ -164,3 +164,7 @@ check_changelog_matches_commits() {
 
 
 check_changelog_matches_commits || exit 1
+
+echo
+rule 72
+echo "Status: release-check complete"
