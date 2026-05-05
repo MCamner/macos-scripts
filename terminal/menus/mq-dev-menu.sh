@@ -44,8 +44,12 @@ dev_menu_loop() {
 
   while true; do
     print_dev_menu
-    read_menu_choice "Select dev option [1-12,b] > " "dev" || break
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice || break
+    else
+      printf "\nmqlaunch > "
+      read -r choice
+    fi
     echo
 
     if ! handle_dev_menu_choice "$choice"; then
