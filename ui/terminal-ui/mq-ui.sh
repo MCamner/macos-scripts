@@ -63,10 +63,20 @@ surface_terminal_width() {
   printf "%s" "$width"
 }
 
+surface_visible_len() {
+  local stripped
+  stripped="$(printf '%s' "$1" | sed 's/\033\[[0-9;]*[mKHJsu]//g')"
+  printf '%d' "${#stripped}"
+}
+
 surface_pad() {
   local text="$1"
   local width="$2"
-  printf "%-*.*s" "$width" "$width" "$text"
+  local visible pad
+  visible="$(surface_visible_len "$text")"
+  pad=$(( width - visible ))
+  (( pad < 0 )) && pad=0
+  printf "%s%*s" "$text" "$pad" ""
 }
 
 surface_top() {
