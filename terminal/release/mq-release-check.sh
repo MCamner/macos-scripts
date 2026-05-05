@@ -95,3 +95,72 @@ CHECKLIST
 echo
 rule 72
 echo "Status: release-check complete"
+
+
+check_changelog_matches_commits() {
+  print_section "CHANGELOG / COMMITS"
+
+  local version
+  version="$(cat VERSION 2>/dev/null | tr -d '[:space:]')"
+
+  if [[ -z "$version" ]]; then
+    fail "VERSION file missing or empty"
+    return 1
+  fi
+
+  if [[ ! -f CHANGELOG.md ]]; then
+    fail "CHANGELOG.md missing"
+    return 1
+  fi
+
+  if ! grep -qE "^## \[?v?${version}\]?" CHANGELOG.md; then
+    fail "CHANGELOG.md has no entry for version ${version}"
+    echo "Expected heading like:"
+    echo "  ## [${version}] - YYYY-MM-DD"
+    return 1
+  fi
+
+  local previous_tag
+  previous_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+
+  if [[ -z "$previous_tag" ]]; then
+    warn "No previous tag found; skipping commit/changelog comparison"
+    return 0
+  fi
+
+  local commit_count
+  commit_count="$(git log --oneline "${previous_tag}..HEAD" | wc -l | tr -d ' ')"
+
+  if [[ "$commit_count" == "0" ]]; then
+    pass "No commits since ${previous_tag}"
+    return 0
+  fi
+
+  echo "Commits since ${previous_tag}: ${commit_count}"
+
+  local changelog_block
+  changelog_block="$(awk "
+    /^## / {
+      if (found) exit
+      if (\$0 ~ /\\[?v?${version}\\]?/) found=1
+    }
+    found { print }
+  " CHANGELOG.md)"
+
+  local bullet_count
+  bullet_count="$(printf '%s\n' "$changelog_block" | grep -E '^[*-] ' | wc -l | tr -d ' ')"
+
+  if [[ "$bullet_count" == "0" ]]; then
+    fail "Version ${version} exists in CHANGELOG.md but has no bullet entries"
+    return 1
+  fi
+
+  pass "CHANGELOG.md contains version ${version} with ${bullet_count} documented change(s)"
+
+  echo
+  echo "Recent commits:"
+  git log --oneline "${previous_tag}..HEAD" | sed 's/^/  - /'
+}
+
+
+check_changelog_matches_commits || exit 1

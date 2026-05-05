@@ -150,6 +150,7 @@ dispatch_cli_command() {
         echo "Missing helper: mq_ai_prompt_review"
         echo "Expected: $AI_PROMPTS"
       fi
+      pause_enter
       return 0
       ;;
 
@@ -160,6 +161,7 @@ dispatch_cli_command() {
         echo "Missing helper: mq_ai_prompt_ui"
         echo "Expected: $AI_PROMPTS"
       fi
+      pause_enter
       return 0
       ;;
 
@@ -171,21 +173,25 @@ dispatch_cli_command() {
         echo "Missing helper: mq_ai_prompt_ask"
         echo "Expected: $AI_PROMPTS"
       fi
+      pause_enter
       return 0
       ;;
 
     release-check|/release-check|check-release)
       "$BASE_DIR/terminal/release/mq-release-check.sh"
+      pause_enter
       return 0
       ;;
 
     doctor|/doctor)
       "$BASE_DIR/tools/scripts/doctor.sh"
+      pause_enter
       return 0
       ;;
 
     scan|/scan)
       "$BASE_DIR/tools/scripts/scan.sh"
+      pause_enter
       return 0
       ;;
 
