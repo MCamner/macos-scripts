@@ -70,7 +70,6 @@ open_performance_menu() {
     # Reuse the main choice reader logic for consistency
     if command -v read_main_choice >/dev/null 2>&1; then
       read_main_choice || return
-      choice="$REPLY"
     else
       printf "\nmqlaunch > "
       read -r choice
