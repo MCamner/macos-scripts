@@ -118,13 +118,13 @@ perf_score_status() {
 perf_score_color() {
   local score="$1"
   if (( score >= 90 )); then
-    printf "%b" "$C_GREEN"
+    printf "%b" "${C_GREEN:-$'\033[32m'}"
   elif (( score >= 75 )); then
-    printf "%b" "$C_CYAN"
+    printf "%b" "${C_CYAN:-$'\033[36m'}"
   elif (( score >= 55 )); then
-    printf "%b" "$C_YELLOW"
+    printf "%b" "${C_YELLOW:-$'\033[33m'}"
   else
-    printf "%b" "$C_RED"
+    printf "%b" "${C_RED:-$'\033[31m'}"
   fi
 }
 
