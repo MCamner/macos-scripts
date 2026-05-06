@@ -1358,6 +1358,15 @@ run_arg_command() {
 
 # --- Entry --------------------------------------------------
 if [[ $# -gt 0 ]]; then
+  # Atlas REPL — intercept before dispatch to avoid ai-mode.sh routing
+  case "${1:l}" in
+    atlas)
+      shift
+      mq_ai_run_atlas "$@"
+      exit 0
+      ;;
+  esac
+
   if dispatch_cli_command "$@"; then
     exit 0
   else
