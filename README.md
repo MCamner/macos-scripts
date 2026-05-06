@@ -6,10 +6,10 @@
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
-**Turn scattered shell commands into structured workflows**
+Turn scattered shell commands into structured workflows.
 
-👉 **View case study:**  
-https://mcamner.github.io/macos-scripts/case.html
+👉 **View case study:**
+[mcamner.github.io/macos-scripts/case.html](https://mcamner.github.io/macos-scripts/case.html)
 
 Stop memorizing commands. Start running workflows.
 
@@ -20,7 +20,9 @@ Stop memorizing commands. Start running workflows.
 ### Option 1 — Install (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
+curl -fsSL \
+  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
+  | bash
 ```
 
 ### Option 2 — Clone
@@ -90,7 +92,7 @@ This project turns:
 
 ## 🧠 Core idea
 
-**One command → structured workflows → repeatable execution**
+One command → structured workflows → repeatable execution
 
 * single entrypoint: `mqlaunch`
 * organized workflows (Dev, System, Performance, Git, Release, Tools)
@@ -125,7 +127,8 @@ mqlaunch ask "how does command routing work?"
 mqlaunch ask "what does doctor.sh check?"
 ```
 
-Start an interactive session with Atlas — a senior systems engineer embedded in mqlaunch:
+Start an interactive session with Atlas — a senior systems engineer
+embedded in mqlaunch:
 
 ```bash
 mqlaunch atlas
@@ -184,7 +187,8 @@ Stored in `~/.mqlaunch_nickname`.
 mq scan
 ```
 
-Ranks CPU and memory offenders, highlights repeat offenders, and gives practical recommendations for what to close or restart.
+Ranks CPU and memory offenders, highlights repeat offenders, and gives
+practical recommendations for what to close or restart.
 
 ---
 
@@ -194,10 +198,10 @@ Ranks CPU and memory offenders, highlights repeat offenders, and gives practical
 mqlaunch doctor
 ```
 
-- checks required tools (git, brew, node, python, jq)
-- validates repo state (branch, dirty tree, required files)
-- evaluates workflow readiness (Git, Release, Dev, System)
-- highlights issues and gives actionable recommendations
+* checks required tools (git, brew, node, python, jq)
+* validates repo state (branch, dirty tree, required files)
+* evaluates workflow readiness (Git, Release, Dev, System)
+* highlights issues and gives actionable recommendations
 
 ---
 
@@ -241,11 +245,11 @@ macos-scripts/
 
 ## ⚖️ Design principles
 
-- keep it simple  
-- structure > more tools  
-- optimize for real usage  
-- make workflows repeatable  
-- reduce cognitive load  
+* keep it simple
+* structure > more tools
+* optimize for real usage
+* make workflows repeatable
+* reduce cognitive load
 
 ---
 
@@ -254,6 +258,8 @@ macos-scripts/
 See how macos-scripts is designed as a structured CLI system:
 
 👉 [mcamner.github.io/macos-scripts/case.html](https://mcamner.github.io/macos-scripts/case.html)
+
+---
 
 ## 📈 Real use case
 
@@ -269,16 +275,16 @@ mqlaunch system check
 
 ## 🔭 Roadmap
 
-- workflow validation / health checks  
-- plugin-style extensions  
-- remote execution support  
-- improved onboarding  
+* workflow validation / health checks
+* plugin-style extensions
+* remote execution support
+* improved onboarding
 
 ---
 
 ## 🤝 Contributing
 
-PRs welcome.  
+PRs welcome.
 If you have ideas for workflows or improvements — open an issue.
 
 ---
