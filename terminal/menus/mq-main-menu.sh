@@ -295,10 +295,19 @@ handle_main_prompt_command() {
     bundle|debug|debug-bundle|support) run_debug_bundle || true; return 0 ;;
     repo|base|macos-scripts) open_base_dir; return 0 ;;
     guide|terminal-guide) open_terminal_guide; return 0 ;;
+    ask\ *|/ask\ *)
+      local _ask_args="${original#* }"
+      "$BASE_DIR/tools/scripts/ask.sh" "$_ask_args"
+      return 0
+      ;;
+    ask|/ask)
+      "$BASE_DIR/tools/scripts/ask.sh"
+      return 0
+      ;;
   esac
 
   if command -v dispatch_cli_command >/dev/null 2>&1; then
-    if dispatch_cli_command $normalized; then
+    if dispatch_cli_command ${=normalized}; then
       return 0
     fi
   fi
