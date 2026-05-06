@@ -527,9 +527,18 @@ auto_release() {
     esac
   fi
 
-  # Auto-generate changelog section if missing
+  # Auto-generate changelog section if missing, then commit it
   if [[ -f "$CHANGELOG_FILE" ]] && ! grep -q "$version" "$CHANGELOG_FILE"; then
-    generate_changelog_section "$version" "$CHANGELOG_FILE"
+    generate_changelog_section "$version" "$CHANGELOG_FILE" || return 1
+    if ! git -C "$RELEASE_REPO" diff --quiet "$CHANGELOG_FILE" 2>/dev/null; then
+      (cd "$RELEASE_REPO" && git add "$CHANGELOG_FILE" && \
+        git commit -m "docs: add changelog section for $version") || {
+        ui_err "Failed to commit changelog. Fix manually and retry."
+        pause_enter
+        return 1
+      }
+      ui_ok "Changelog committed."
+    fi
   fi
 
   print_header
