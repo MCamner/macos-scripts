@@ -382,6 +382,79 @@ create_github_release_only() {
   pause_enter
 }
 
+generate_changelog_section() {
+  local version="$1"
+  local changelog="$2"
+  local today last_tag commits entry confirm
+
+  today="$(date +%F)"
+  last_tag="$(git -C "$RELEASE_REPO" describe --tags --abbrev=0 2>/dev/null || true)"
+
+  if [[ -n "$last_tag" ]]; then
+    commits="$(git -C "$RELEASE_REPO" log "${last_tag}..HEAD" --oneline --no-merges 2>/dev/null || true)"
+  else
+    commits="$(git -C "$RELEASE_REPO" log --oneline --no-merges --max-count=20 2>/dev/null || true)"
+  fi
+
+  print_header
+  row_bold "AUTO RELEASE — CHANGELOG"
+  empty_row
+  row "Genererar sektion för $version baserat på commits sedan $last_tag:"
+  empty_row
+
+  if [[ -n "$commits" ]]; then
+    while IFS= read -r line; do
+      row "  $line"
+    done <<< "$commits"
+  else
+    row "  (inga commits hittades)"
+  fi
+
+  empty_row
+  print_footer
+
+  printf "%bSkriv in changelog-sektion automatiskt? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || {
+    ui_warn "Hoppar över changelog-generering. Lägg till manuellt."
+    pause_enter
+    return 1
+  }
+
+  # Build the new section
+  entry="## [$version] - $today"$'\n'
+  entry+=$'\n'
+  entry+="### Changed"$'\n'
+  entry+=$'\n'
+  if [[ -n "$commits" ]]; then
+    while IFS= read -r line; do
+      entry+="* ${line#* }"$'\n'
+    done <<< "$commits"
+  else
+    entry+="* Release $version"$'\n'
+  fi
+  entry+=$'\n'"---"$'\n'
+
+  # Insert after the header block (first blank line after the intro paragraph)
+  local header_end
+  header_end="$(grep -n "^All notable" "$changelog" | head -1 | cut -d: -f1)"
+
+  if [[ -n "$header_end" ]]; then
+    local before after
+    before="$(head -n "$((header_end + 1))" "$changelog")"
+    after="$(tail -n "+$((header_end + 2))" "$changelog")"
+    printf '%s\n\n%s\n%s\n' "$before" "$entry" "$after" > "$changelog"
+  else
+    # Fallback: prepend after first line
+    local rest
+    rest="$(tail -n +2 "$changelog")"
+    printf '%s\n\n%s\n%s\n' "$(head -1 "$changelog")" "$entry" "$rest" > "$changelog"
+  fi
+
+  ui_ok "Changelog-sektion för $version skriven."
+  pause_enter
+}
+
 auto_release() {
   local version confirm dry_status
 
@@ -395,9 +468,10 @@ auto_release() {
   row "Version: $version"
   empty_row
   row "Steps:"
-  row " 1. Dry run"
-  row " 2. Live release"
-  row " 3. Create GitHub release"
+  row " 1. Auto-generate changelog (if missing)"
+  row " 2. Dry run"
+  row " 3. Live release"
+  row " 4. Create GitHub release"
   empty_row
   print_footer
 
@@ -405,36 +479,9 @@ auto_release() {
   read -r confirm
   [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
 
-  # Check changelog before dry run
+  # Auto-generate changelog section if missing
   if [[ -f "$CHANGELOG_FILE" ]] && ! grep -q "$version" "$CHANGELOG_FILE"; then
-    print_header
-    row_bold "AUTO RELEASE — CHANGELOG"
-    empty_row
-    ui_warn "CHANGELOG.md saknar sektion för $version."
-    empty_row
-    row "Lägg till en sektion innan dry run körs:"
-    row " ## [$version] - $(date +%F)"
-    row " ### Changed"
-    row " * ..."
-    print_footer
-
-    printf "%bÖppna CHANGELOG nu? [y/N]: %b" "$C_TITLE" "$C_RESET"
-    read -r confirm
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-      if command -v code >/dev/null 2>&1; then
-        code "$CHANGELOG_FILE"
-      else
-        open "$CHANGELOG_FILE"
-      fi
-      printf "%bTryck Enter när du är klar med CHANGELOG..%b" "$C_TITLE" "$C_RESET"
-      read -r _
-    fi
-
-    if ! grep -q "$version" "$CHANGELOG_FILE"; then
-      ui_err "CHANGELOG innehåller fortfarande inte $version. Avbryter."
-      pause_enter
-      return 1
-    fi
+    generate_changelog_section "$version" "$CHANGELOG_FILE"
   fi
 
   print_header
