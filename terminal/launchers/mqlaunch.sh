@@ -88,6 +88,12 @@ if [[ -f "$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh" ]]; then
   source "$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"
 fi
 
+# AI prompts
+if [[ -f "$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
+fi
+
 # Dev menu module
 if [[ -f "$BASE_DIR/terminal/menus/mq-dev-menu.sh" ]]; then
   # shellcheck disable=SC1091
@@ -1322,7 +1328,7 @@ run_arg_command() {
     launchers|launcher-folder) open_launcher_folder ;;
     guide|terminal-guide) open_terminal_guide ;;
     netlaunch|net) open_net_menu ;;
-    atlas) shift; if declare -f mq_ai_run_atlas >/dev/null; then mq_ai_run_atlas "$@"; else safe_run_ai atlas; fi ;;
+    atlas) mq_ai_run_atlas "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
