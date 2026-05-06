@@ -97,7 +97,7 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
   surface_split_row "/review" "/ui" "$width" "$panel_color"
-  surface_split_row "/ask \"din fråga\"" "/release-check" "$width" "$panel_color"
+  surface_split_row "/ask \"din fråga\"" "/chat" "$width" "$panel_color"
   surface_split_row "/doctor" "/scan   /atlas" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
@@ -304,6 +304,10 @@ handle_main_prompt_command() {
     ask|/ask)
       "$BASE_DIR/tools/scripts/ask.sh"
       pause_enter
+      return 0
+      ;;
+    chat|/chat)
+      "$BASE_DIR/tools/scripts/chat.sh"
       return 0
       ;;
   esac

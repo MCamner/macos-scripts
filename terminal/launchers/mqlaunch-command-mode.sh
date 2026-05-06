@@ -171,6 +171,11 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    chat|/chat)
+      "$BASE_DIR/tools/scripts/chat.sh"
+      return 0
+      ;;
+
     release-check|/release-check|check-release)
       "$BASE_DIR/terminal/release/mq-release-check.sh"
       pause_enter

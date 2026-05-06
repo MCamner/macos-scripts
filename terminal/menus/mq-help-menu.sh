@@ -109,6 +109,7 @@ show_command_index() {
   row_bold "AI"
   row " mqlaunch ask \"din fråga\"       Fråga om repot — svar direkt i terminalen"
   row " mqlaunch ask quick \"fråga\"     Kort svar utan repo-kontext"
+  row " mqlaunch chat                  Konversationsläge med minne"
   row " mqlaunch review                Kopiera code review-prompt till clipboard"
   row " mqlaunch ui                    Kopiera UI-prompt till clipboard"
 
