@@ -1166,63 +1166,86 @@ run_demo_mode() {
   print_header
   row_bold "DEMO MODE"
   empty_row
-  row "A quick scripted tour of the current mqlaunch surface."
-  row "Delay between steps: ${delay}s"
+  row "A guided tour of the mqlaunch surface."
+  row "Press Enter to advance each step."
   print_footer
-  sleep "$delay"
+  pause_enter
 
   print_header
-  row_bold "STEP 1 / SYSTEM CHECK"
+  row_bold "STEP 1 / 5 — SYSTEM CHECK"
   empty_row
   row "[OK]   Base dir: $BASE_DIR"
   row "[OK]   Active command: $active_cmd"
   row "[OK]   Repo state: $repo_state"
   row "[OK]   Prompt files: $prompt_count"
+  empty_row
+  row "Run anytime:"
+  row "  mqlaunch doctor"
+  row "  mqlaunch system check"
   print_footer
-  sleep "$delay"
+  pause_enter
 
   print_header
-  row_bold "STEP 2 / PERFORMANCE SNAPSHOT"
+  row_bold "STEP 2 / 5 — PERFORMANCE SNAPSHOT"
   empty_row
   row "Load:    $load_line"
   row "Disk /:  $disk_line"
   row "Network: $ip_addr"
   row "Battery: $battery_line"
+  empty_row
+  row "Run anytime:"
+  row "  mqlaunch perf"
+  row "  mq scan"
   print_footer
-  sleep "$delay"
+  pause_enter
 
   print_header
-  row_bold "STEP 3 / THEME STATUS"
+  row_bold "STEP 3 / 5 — THEME STATUS"
   empty_row
   row "Current theme: $theme_variant"
   row "Theme source:  $theme_state"
-  row "Try:           mqlaunch theme"
-  row "Apply macOS:   mqlaunch theme-macos"
-  row "Reset theme:   mqlaunch theme-reset"
+  empty_row
+  row "Commands:"
+  row "  mqlaunch theme          open theme menu"
+  row "  mqlaunch theme-macos    apply macOS theme"
+  row "  mqlaunch theme-reset    reset to default"
   print_footer
-  sleep "$delay"
+  pause_enter
 
   print_header
-  row_bold "STEP 4 / VERSION"
+  row_bold "STEP 4 / 5 — VERSION"
   empty_row
-  row "Project:        macos-scripts"
-  row "Version:        $version"
-  row "Launcher:       $MQ_SCRIPT"
-  row "Current mode:   command-driven + menu-backed"
+  row "Project:   macos-scripts"
+  row "Version:   $version"
+  row "Launcher:  $MQ_SCRIPT"
+  empty_row
+  row "Commands:"
+  row "  mqlaunch version"
+  row "  mqlaunch notes"
+  row "  mqlaunch release"
   print_footer
-  sleep "$delay"
+  pause_enter
 
   print_header
-  row_bold "STEP 5 / TRY THESE COMMANDS"
+  row_bold "STEP 5 / 5 — WHAT TO TRY NEXT"
   empty_row
-  row " mqlaunch system check"
-  row " mqlaunch release notes"
-  row " mqlaunch theme-macos"
-  row " mqlaunch dev"
-  row " mqlaunch workflows"
+  row "WORKFLOWS"
+  row "  mqlaunch system check"
+  row "  mqlaunch dev"
+  row "  mqlaunch workflows"
+  row "  mqlaunch release"
+  empty_row
+  row "AI ASSISTANT"
+  row "  mqlaunch ask \"what does doctor.sh check?\""
+  row "  mqlaunch atlas"
+  empty_row
+  row "RELEASE"
+  row "  mqlaunch release-check"
+  row "  mqlaunch release-notes"
   print_footer
-  echo
-  row "Demo complete."
+  pause_enter
+
+  row "Demo complete. Run  mqlaunch  to open the full menu."
 }
 
 legacy_alias_notice() {
