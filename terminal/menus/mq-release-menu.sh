@@ -382,6 +382,78 @@ create_github_release_only() {
   pause_enter
 }
 
+auto_release() {
+  local version confirm dry_status
+
+  prompt_version "AUTO RELEASE" || return 1
+  version="$REPLY"
+
+  print_header
+  row_bold "AUTO RELEASE — PREVIEW"
+  empty_row
+  row "Repo:    $RELEASE_REPO"
+  row "Version: $version"
+  empty_row
+  row "Steps:"
+  row " 1. Dry run"
+  row " 2. Live release"
+  row " 3. Create GitHub release"
+  empty_row
+  print_footer
+
+  printf "%bProceed with auto release %s? [y/N]: %b" "$C_TITLE" "$version" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
+
+  print_header
+  row_bold "AUTO RELEASE — DRY RUN"
+  empty_row
+  dry_status=0
+  (cd "$RELEASE_REPO" && "$RELEASE_SCRIPT" --dry-run "$version") || dry_status=$?
+
+  if [[ $dry_status -ne 0 ]]; then
+    empty_row
+    ui_err "Dry run failed (exit $dry_status). Aborting."
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  empty_row
+  row "Dry run OK."
+  print_footer
+
+  printf "%bDry run passed. Run live release? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled after dry run."; pause_enter; return 1; }
+
+  print_header
+  row_bold "AUTO RELEASE — LIVE"
+  empty_row
+  (cd "$RELEASE_REPO" && "$RELEASE_SCRIPT" "$version") || {
+    ui_err "Live release failed. Check output above."
+    print_footer
+    pause_enter
+    return 1
+  }
+  empty_row
+  row "Release $version complete."
+  print_footer
+
+  printf "%bCreate GitHub release for %s? [y/N]: %b" "$C_TITLE" "$version" "$C_RESET"
+  read -r confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    (
+      cd "$RELEASE_REPO"
+      gh release create "$version" \
+        --title "Release $version" \
+        --notes-file "$CHANGELOG_FILE"
+    ) && ui_ok "GitHub release $version created." || ui_err "GitHub release failed."
+  fi
+
+  pause_enter
+}
+
 print_menu() {
   print_header
   row_bold "RELEASE"
@@ -394,7 +466,7 @@ print_menu() {
   row2 " 5. Run release" " 6. Create GitHub release"
   row2 " 7. View changelog" " 8. Show latest tags"
   row2 " 9. Open changelog" "10. Open release script"
-  row2 " b. Back" ""
+  row2 "11. Auto release" " b. Back"
 
   print_footer
 }
@@ -406,8 +478,12 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-10,b] > " "release" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "release" || return
+    else
+      read_menu_choice "Select option [1-11,b] > " "release" || return
+      choice="$REPLY"
+    fi
     echo
 
     case "$choice" in
@@ -421,6 +497,7 @@ menu_loop() {
       8) show_tags ;;
       9) open_changelog_in_editor ;;
       10) open_release_script_in_editor ;;
+      11) require_release_script && auto_release || true ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
