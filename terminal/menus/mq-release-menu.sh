@@ -405,6 +405,38 @@ auto_release() {
   read -r confirm
   [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
 
+  # Check changelog before dry run
+  if [[ -f "$CHANGELOG_FILE" ]] && ! grep -q "$version" "$CHANGELOG_FILE"; then
+    print_header
+    row_bold "AUTO RELEASE — CHANGELOG"
+    empty_row
+    ui_warn "CHANGELOG.md saknar sektion för $version."
+    empty_row
+    row "Lägg till en sektion innan dry run körs:"
+    row " ## [$version] - $(date +%F)"
+    row " ### Changed"
+    row " * ..."
+    print_footer
+
+    printf "%bÖppna CHANGELOG nu? [y/N]: %b" "$C_TITLE" "$C_RESET"
+    read -r confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+      if command -v code >/dev/null 2>&1; then
+        code "$CHANGELOG_FILE"
+      else
+        open "$CHANGELOG_FILE"
+      fi
+      printf "%bTryck Enter när du är klar med CHANGELOG..%b" "$C_TITLE" "$C_RESET"
+      read -r _
+    fi
+
+    if ! grep -q "$version" "$CHANGELOG_FILE"; then
+      ui_err "CHANGELOG innehåller fortfarande inte $version. Avbryter."
+      pause_enter
+      return 1
+    fi
+  fi
+
   print_header
   row_bold "AUTO RELEASE — DRY RUN"
   empty_row
