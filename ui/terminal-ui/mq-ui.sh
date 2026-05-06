@@ -238,8 +238,16 @@ short_host() {
   hostname -s 2>/dev/null || hostname
 }
 
+get_nickname() {
+  if [[ -f "$HOME/.mqlaunch_nickname" ]]; then
+    cat "$HOME/.mqlaunch_nickname"
+  else
+    echo "${USER:-Användare}"
+  fi
+}
+
 print_header() {
-  local dashboard
+  local dashboard nickname
 
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
     dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
@@ -250,12 +258,14 @@ print_header() {
     fi
   fi
 
+  nickname="$(get_nickname)"
+
   clear_screen
   border
   header_dual_row "$APP_TITLE" "        .-."
   header_dual_row "$APP_SUBTITLE" "       (o o)"
   header_dual_row "$APP_AUTHOR" "       | O \\"
-  header_dual_row "" "        \\   \\"
+  header_dual_row "Hej, $nickname!" "        \\   \\"
   header_dual_row "" "         \`~~~'"
   border
 }

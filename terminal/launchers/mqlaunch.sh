@@ -1303,6 +1303,15 @@ run_arg_command() {
     demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
     ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
+    nickname-set|nick-set|nick)
+      if [[ -n "${1:-}" ]]; then
+        printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"
+        echo "Smeknamn sparat: $*"
+      else
+        echo "Nuvarande smeknamn: $(get_nickname)"
+        echo "Ändra: mqlaunch nickname-set <smeknamn>"
+      fi
+      ;;
     doctor) "$BASE_DIR/tools/scripts/doctor.sh" ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
