@@ -171,6 +171,12 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    fix|/fix)
+      shift
+      "$BASE_DIR/tools/scripts/fix.sh" "$@"
+      return 0
+      ;;
+
     chat|/chat)
       "$BASE_DIR/tools/scripts/chat.sh"
       return 0

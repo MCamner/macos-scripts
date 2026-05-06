@@ -1326,6 +1326,7 @@ run_arg_command() {
     demo) run_demo_mode ;;
     version|ver|about) show_version_info ;;
     ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
+    fix) "$BASE_DIR/tools/scripts/fix.sh" "$@" ;;
     nickname-set|nick-set|nick)
       if [[ -n "${1:-}" ]]; then
         printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"
