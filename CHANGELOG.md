@@ -4,6 +4,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-05-06
+
+### Changed
+
+* Improve demo mode — pause_enter between steps, add AI and release commands
+* Fix all 16 markdownlint errors in README.md
+* Update README — add AI/Atlas/nickname/release sections, fix lint
+* gitlaunch: replace 9. EXIT with b. BACK
+* Git menu: remove option 9 (git log), b/9 both map to Back
+* Auto-generate changelog section from git commits before dry run
+* update documentation
+* Prompt to open CHANGELOG before dry run if version section is missing
+* Add nickname support — shown in header, set via mqlaunch nickname-set
+* Intercept atlas at entry point before dispatch reaches ai-mode.sh
+* Fix atlas routing — source ai-prompts directly in mqlaunch.sh
+* Add Atlas REPL — interactive AI session with mq atlas
+* Add git push --tags between live release and GitHub release in auto_release
+* Add Auto Release (option 11) to release menu
+* Fix ask usage hint to English on main menu
+* Add mqlaunch chat — conversational AI mode with memory
+* Show ask usage hint on main menu start page
+* Add AI section to command index and help text
+* Use read_main_choice in help menu for consistent prompt style
+* Add pause_enter after ask in REPL so answer stays visible
+* Fix ask routing in REPL — zsh no-split bug
+* Fix ask.sh truncating multiline responses
+* update shell scripts
+* update shell scripts
+* Fix cmd variable name in unknown command fallback
+* update project files
+* Route unknown commands to /ask in command-mode layer
+* Improve mqlaunch ask UX and fallback
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* update shell scripts
+
+---
+
 ## [0.1.8] - 2026-05-05
 
 ### Added
