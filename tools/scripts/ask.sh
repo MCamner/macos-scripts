@@ -51,13 +51,14 @@ RESPONSE="$(curl -s https://api.openai.com/v1/responses \
 printf "\r\033[2K"
 
 TEXT="$(echo "$RESPONSE" | jq -r '
-  ( .output[]
+  first(
+    .output[]
     | select(.type == "message")
     | .content[]
     | select(.type == "output_text")
     | .text
   ) // .error.message // "No response"
-' 2>/dev/null | head -1)"
+' 2>/dev/null)"
 
 if [[ -z "$TEXT" || "$TEXT" == "null" ]]; then
   echo "Error: $(echo "$RESPONSE" | jq -r '.error.message // "unexpected response"')"
