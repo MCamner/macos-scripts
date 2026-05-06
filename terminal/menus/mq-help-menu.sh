@@ -105,6 +105,13 @@ show_command_index() {
   row " mqlaunch theme-macos  Apply macOS theme"
   row " mqlaunch theme-reset  Reset theme"
 
+  empty_row
+  row_bold "AI"
+  row " mqlaunch ask \"din fråga\"       Fråga om repot — svar direkt i terminalen"
+  row " mqlaunch ask quick \"fråga\"     Kort svar utan repo-kontext"
+  row " mqlaunch review                Kopiera code review-prompt till clipboard"
+  row " mqlaunch ui                    Kopiera UI-prompt till clipboard"
+
   print_footer
   pause_enter
 }
@@ -163,17 +170,19 @@ UTILITY
   mqlaunch theme          Open Themes menu
   mqlaunch theme-macos    Apply macOS theme
   mqlaunch theme-reset    Reset theme
-  mqlaunch review         Copy review prompt to clipboard
-  mqlaunch ui             Copy UI prompt to clipboard
+
+AI
+  mqlaunch ask "din fråga"       Fråga om repot — svar direkt i terminalen
+  mqlaunch ask quick "fråga"     Kort svar utan repo-kontext
+  mqlaunch review                Kopiera code review-prompt till clipboard
+  mqlaunch ui                    Kopiera UI-prompt till clipboard
 
 POPULAR FLOWS
   mqlaunch
   mqlaunch perf
   mqlaunch system check
   mqlaunch doctor
-  mqlaunch dev
-  mqlaunch tools
+  mqlaunch ask "vad gör scan?"
   mqlaunch review
-  mqlaunch ui
 HELP
 }
