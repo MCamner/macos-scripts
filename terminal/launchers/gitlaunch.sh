@@ -381,7 +381,7 @@ function render_menu() {
   frame_row_colored "6. DEV MODE" "$C_LABEL"
   frame_row_colored "7. SWITCH REPO" "$C_LABEL"
   frame_row_colored "8. AUTO ACTION" "$C_LABEL"
-  frame_row_colored "9. EXIT" "$C_BAD"
+  frame_row_colored "b. BACK" "$C_LABEL"
   frame_bottom
 }
 
@@ -676,8 +676,8 @@ while true; do
       git push
       read
       ;;
-    9)
-      exit
+    9|b|B)
+      break
       ;;
     *)
       echo "Invalid"
