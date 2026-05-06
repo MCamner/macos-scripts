@@ -80,7 +80,7 @@ mqlaunch perf
 
 ## 🎯 What this solves
 
-Most environments don’t lack tools — they lack structure.
+Most environments don't lack tools — they lack structure.
 
 This project turns:
 
@@ -93,27 +93,70 @@ This project turns:
 **One command → structured workflows → repeatable execution**
 
 * single entrypoint: `mqlaunch`
-* organized workflows (Dev, System, Performance, Tools)
-* works as menu and direct CLI
+* organized workflows (Dev, System, Performance, Git, Release, Tools)
+* works as interactive menu and direct CLI
+* built-in AI assistant via `mqlaunch ask` and `mqlaunch atlas`
 
 ---
 
 ## 🧰 Common commands
 
 ```bash
-mqlaunch
-mqlaunch perf
-mq scan
-mqlaunch system check
-mqlaunch dev
-mqlaunch tools
-mqlaunch demo
-mqlaunch release-check
+mqlaunch                         # interactive menu
+mqlaunch perf                    # performance overview
+mqlaunch system check            # system health
+mqlaunch dev                     # dev workflows
+mqlaunch git                     # git menu
+mqlaunch release                 # release menu
+mqlaunch ask "your question"     # AI repo assistant
+mqlaunch atlas                   # AI REPL session
+mqlaunch doctor                  # environment check
+mqlaunch demo                    # guided demo
 ```
 
 ---
 
+## 🤖 AI assistant
+
+Ask questions about the repo directly in the terminal:
+
+```bash
+mqlaunch ask "how does command routing work?"
+mqlaunch ask "what does doctor.sh check?"
+```
+
+Start an interactive session with Atlas — a senior systems engineer embedded in mqlaunch:
+
+```bash
+mqlaunch atlas
+```
+
+```text
+atlas> why is my push being blocked?
+atlas> explain the release flow
+atlas> exit
+```
+
+Atlas answers inline without opening a browser.
+
+---
+
 ## 🚢 Release workflow
+
+Auto Release handles the full release cycle in one flow:
+
+```bash
+mqlaunch release
+# → select option 11: Auto Release
+```
+
+Steps:
+
+1. Auto-generate changelog section from commits since last tag
+2. Dry run — validates VERSION, README badge, and CHANGELOG
+3. Live release — bumps version, tags, updates files
+4. Git push + push tags
+5. Create GitHub release
 
 Run the release check before every push:
 
@@ -121,7 +164,17 @@ Run the release check before every push:
 mqlaunch release-check
 ```
 
-It checks repo status, scans staged changes with `gitleaks` when available, shows recent commits, and refreshes the `/review` and `/ui` AI check prompts.
+---
+
+## 🏷️ Nickname
+
+Set a name that appears in every menu header:
+
+```bash
+mqlaunch nickname-set "your name"
+```
+
+Stored in `~/.mqlaunch_nickname`.
 
 ---
 
@@ -134,35 +187,17 @@ mq scan
 Ranks CPU and memory offenders, highlights repeat offenders, and gives practical recommendations for what to close or restart.
 
 ---
+
 ## 🩺 Health check
-
-Before diving into workflows, verify your environment.
-
-Run:
 
 ```bash
 mqlaunch doctor
 ```
-
-What it does:
 
 - checks required tools (git, brew, node, python, jq)
 - validates repo state (branch, dirty tree, required files)
 - evaluates workflow readiness (Git, Release, Dev, System)
 - highlights issues and gives actionable recommendations
-
-Example use:
-
-```bash
-mqlaunch doctor
-```
-
-→ quickly understand if your environment is ready  
-→ fix issues before running workflows  
-→ reduce debugging time and surprises
-
-💡 Tip  
-Run this after install or when something feels off.
 
 ---
 
@@ -177,19 +212,16 @@ mqlaunch demo
 ## 🖼️ Screenshots
 
 ### Main Menu
-<p align="center">
-  <img src="docs/screenshots/main-menu.png" width="700"/>
-</p>
+
+![Main menu screenshot](docs/screenshots/main-menu.png)
 
 ### Performance Menu
-<p align="center">
-  <img src="docs/screenshots/performance-menu.png" width="700"/>
-</p>
+
+![Performance menu screenshot](docs/screenshots/performance-menu.png)
 
 ### Release Flow
-<p align="center">
-  <img src="docs/screenshots/release-flow.png" width="700"/>
-</p>
+
+![Release flow screenshot](docs/screenshots/release-flow.png)
 
 ---
 
@@ -198,7 +230,7 @@ mqlaunch demo
 ```text
 macos-scripts/
 ├── bin/               # CLI entrypoints
-├── terminal/          # menus, launchers, themes
+├── terminal/          # menus, launchers, themes, AI prompts
 ├── tools/             # scripts and utilities
 ├── system/            # macOS helpers
 ├── automation/        # workflows
@@ -221,19 +253,11 @@ macos-scripts/
 
 See how macos-scripts is designed as a structured CLI system:
 
-👉 https://mcamner.github.io/macos-scripts/case.html
+👉 [mcamner.github.io/macos-scripts/case.html](https://mcamner.github.io/macos-scripts/case.html)
 
 ## 📈 Real use case
 
-Example:
-
 Instead of remembering 5–10 system commands during troubleshooting:
-
-- open CLI  
-- search commands  
-- run manually  
-
-You run:
 
 ```bash
 mqlaunch system check
