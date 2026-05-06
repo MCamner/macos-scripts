@@ -468,16 +468,64 @@ auto_release() {
   row "Version: $version"
   empty_row
   row "Steps:"
-  row " 1. Auto-generate changelog (if missing)"
-  row " 2. Dry run"
-  row " 3. Live release"
-  row " 4. Create GitHub release"
+  row " 1. Check working tree (commit or stash if dirty)"
+  row " 2. Auto-generate changelog (if missing)"
+  row " 3. Dry run"
+  row " 4. Live release"
+  row " 5. Create GitHub release"
   empty_row
   print_footer
 
   printf "%bProceed with auto release %s? [y/N]: %b" "$C_TITLE" "$version" "$C_RESET"
   read -r confirm
   [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
+
+  # Check for unclean working tree
+  if ! git -C "$RELEASE_REPO" diff --quiet --ignore-submodules HEAD 2>/dev/null; then
+    local dirty_files
+    dirty_files="$(git -C "$RELEASE_REPO" status --short)"
+
+    print_header
+    row_bold "AUTO RELEASE — UNCOMMITTED CHANGES"
+    empty_row
+    ui_warn "Working tree is not clean:"
+    empty_row
+    while IFS= read -r line; do row "  $line"; done <<< "$dirty_files"
+    empty_row
+    row "  c) Commit all changes"
+    row "  s) Stash changes"
+    row "  x) Abort"
+    print_footer
+
+    printf "%b[c/s/x]: %b" "$C_TITLE" "$C_RESET"
+    read -r confirm
+    case "$confirm" in
+      c|C)
+        printf "%bCommit message: %b" "$C_TITLE" "$C_RESET"
+        read -r msg
+        msg="${msg:-chore: prepare release $version}"
+        (cd "$RELEASE_REPO" && git add -A && git commit -m "$msg") || {
+          ui_err "Commit failed."
+          pause_enter
+          return 1
+        }
+        ui_ok "Committed."
+        ;;
+      s|S)
+        (cd "$RELEASE_REPO" && git stash push -m "auto-release stash before $version") || {
+          ui_err "Stash failed."
+          pause_enter
+          return 1
+        }
+        ui_ok "Stashed."
+        ;;
+      *)
+        ui_warn "Aborted."
+        pause_enter
+        return 1
+        ;;
+    esac
+  fi
 
   # Auto-generate changelog section if missing
   if [[ -f "$CHANGELOG_FILE" ]] && ! grep -q "$version" "$CHANGELOG_FILE"; then
