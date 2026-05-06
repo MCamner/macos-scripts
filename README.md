@@ -97,7 +97,7 @@ One command → structured workflows → repeatable execution
 * single entrypoint: `mqlaunch`
 * organized workflows (Dev, System, Performance, Git, Release, Tools)
 * works as interactive menu and direct CLI
-* built-in AI assistant via `mqlaunch ask` and `mqlaunch atlas`
+* built-in AI for questions, code generation, and error fixes
 
 ---
 
@@ -111,6 +111,7 @@ mqlaunch dev                     # dev workflows
 mqlaunch git                     # git menu
 mqlaunch release                 # release menu
 mqlaunch ask "your question"     # AI repo assistant
+mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
 mqlaunch doctor                  # environment check
 mqlaunch demo                    # guided demo
@@ -141,6 +142,31 @@ atlas> exit
 ```
 
 Atlas answers inline without opening a browser.
+
+---
+
+## 🔧 Fix and generate code
+
+Get copy-paste ready shell commands for errors and tasks:
+
+```bash
+mqlaunch fix "ERROR: CHANGELOG does not contain version 0.1.9"
+mqlaunch fix "write a function that checks if a port is in use"
+mqlaunch fix "add option 13 'View stash' to the git menu"
+```
+
+Output is always runnable — `cat` heredocs, `sed`, `mkdir` — no theory:
+
+```bash
+# Add changelog section for 0.1.9
+cat >> CHANGELOG.md << 'EOF'
+## [0.1.9] - 2026-05-07
+### Changed
+* ...
+EOF
+```
+
+Copy, paste, run. Uses repo context from the vector store.
 
 ---
 
