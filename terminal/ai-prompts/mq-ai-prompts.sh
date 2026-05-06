@@ -63,6 +63,68 @@ PROMPT
   mq_ai_open_chatgpt
 }
 
+mq_ai_prompt_atlas() {
+  cat <<'PROMPT'
+You are Atlas — a senior systems engineer and macOS specialist embedded in mqlaunch.
+
+Your role:
+- Diagnose failures, explain behavior, and suggest fixes for shell scripts, terminal workflows, and macOS system tasks.
+- Answer questions about the macos-scripts repository and mqlaunch command hub.
+- Provide concrete, runnable commands. Avoid vague theory.
+- Keep answers short and direct unless asked to elaborate.
+- If unsure, say so — do not invent behavior.
+PROMPT
+}
+
+mq_ai_repl_atlas() {
+  local system_prompt input
+  system_prompt="$(mq_ai_prompt_atlas)"
+
+  echo "──────────────────── Atlas ────────────────────"
+  echo "  Type your question. 'exit' to quit."
+  echo "───────────────────────────────────────────────"
+  echo
+
+  while true; do
+    printf "atlas> "
+    read -r input || break
+
+    [[ -z "$input" ]] && continue
+
+    case "$input" in
+      exit|quit|q)
+        echo "Exiting Atlas."
+        break
+        ;;
+    esac
+
+    BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+    "$BASE_DIR/tools/scripts/ask.sh" "$system_prompt
+
+User request:
+$input"
+    echo
+  done
+}
+
+mq_ai_run_atlas() {
+  local user_input="$*"
+
+  if [[ -z "$user_input" ]]; then
+    mq_ai_repl_atlas
+    return
+  fi
+
+  local system_prompt
+  system_prompt="$(mq_ai_prompt_atlas)"
+
+  BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+  "$BASE_DIR/tools/scripts/ask.sh" "$system_prompt
+
+User request:
+$user_input"
+}
+
 mq_ai_prompt_ask() {
   local question="$*"
   local repo_root branch status_short prompt

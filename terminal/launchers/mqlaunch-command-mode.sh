@@ -195,7 +195,12 @@ dispatch_cli_command() {
       ;;
 
     atlas|/atlas)
-      safe_run_ai atlas
+      shift
+      if declare -f mq_ai_run_atlas >/dev/null; then
+        mq_ai_run_atlas "$@"
+      else
+        safe_run_ai atlas
+      fi
       return 0
       ;;
 

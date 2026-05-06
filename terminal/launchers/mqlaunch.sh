@@ -1322,7 +1322,8 @@ run_arg_command() {
     launchers|launcher-folder) open_launcher_folder ;;
     guide|terminal-guide) open_terminal_guide ;;
     netlaunch|net) open_net_menu ;;
-    auto|one|atlas|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
+    atlas) shift; if declare -f mq_ai_run_atlas >/dev/null; then mq_ai_run_atlas "$@"; else safe_run_ai atlas; fi ;;
+    auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
     pulse) "$BASE_DIR/tools/scripts/pulse.sh" ;;
