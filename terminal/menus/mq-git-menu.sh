@@ -506,8 +506,8 @@ print_menu() {
   row2 " 3. Suggest commit message" " 4. Next recommended action"
   row2 " 5. Stage selected files" " 6. Commit staged changes"
   row2 " 7. Safe push" " 8. Pull with rebase"
-  row2 " 9. Recent git log" "10. Open repo on GitHub"
-  row2 "11. Open local repo folder" "12. Change repo path"
+  row2 "10. Open repo on GitHub" "11. Open local repo folder"
+  row2 "12. Change repo path" ""
   row2 " b. Back" ""
 
   print_footer
@@ -518,7 +518,7 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-12,b] > " "git" || return
+    read_menu_choice "Select option [1-8,10-12,b] > " "git" || return
     choice="$REPLY"
     echo
 
@@ -535,7 +535,7 @@ menu_loop() {
       10) open_repo_github ;;
       11) open_local_repo ;;
       12) choose_repo ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|9) return ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done
