@@ -298,10 +298,12 @@ handle_main_prompt_command() {
     ask\ *|/ask\ *)
       local _ask_args="${original#* }"
       "$BASE_DIR/tools/scripts/ask.sh" "$_ask_args"
+      pause_enter
       return 0
       ;;
     ask|/ask)
       "$BASE_DIR/tools/scripts/ask.sh"
+      pause_enter
       return 0
       ;;
   esac
