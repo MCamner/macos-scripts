@@ -438,7 +438,15 @@ auto_release() {
   }
   empty_row
   row "Release $version complete."
+  row "Pushing commits and tags..."
   print_footer
+
+  (cd "$RELEASE_REPO" && git push && git push --tags) || {
+    ui_err "Push failed. Fix and push manually before creating GitHub release."
+    pause_enter
+    return 1
+  }
+  ui_ok "Pushed."
 
   printf "%bCreate GitHub release for %s? [y/N]: %b" "$C_TITLE" "$version" "$C_RESET"
   read -r confirm
