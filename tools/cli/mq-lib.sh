@@ -4,7 +4,7 @@
 # MQ LIB (minimal stable v2)
 # --------------------------------------------------
 
-BASE_DIR="$HOME/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 
 # ----------------------------
 # Commands
@@ -53,5 +53,5 @@ mq_help() {
 }
 
 mq_watch() {
-  "$HOME/macos-scripts/tools/scripts/watch.sh"
+  "$BASE_DIR/tools/scripts/watch.sh"
 }

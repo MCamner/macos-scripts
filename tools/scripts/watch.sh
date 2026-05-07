@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 INTERVAL="${1:-2}"
-SCAN="$HOME/macos-scripts/tools/scripts/scan.sh"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+SCAN="$BASE_DIR/tools/scripts/scan.sh"
 
 # init screen
 tput civis  # hide cursor

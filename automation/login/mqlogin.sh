@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DEFAULT_PROJECT_ROOT="$HOME/macos-scripts"
+DEFAULT_PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 
 if [[ ! -d "$PROJECT_ROOT/.git" && -d "$DEFAULT_PROJECT_ROOT" ]]; then
   PROJECT_ROOT="$DEFAULT_PROJECT_ROOT"

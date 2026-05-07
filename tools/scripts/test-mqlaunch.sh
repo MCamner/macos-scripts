@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
-PROJECT_ROOT="$HOME/macos-scripts"
+PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 LEGACY="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
 V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 TOOLS_BRIDGE="$PROJECT_ROOT/terminal/bridges/tools-bridge.sh"

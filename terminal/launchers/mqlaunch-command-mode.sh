@@ -82,6 +82,7 @@ Quick commands:
   mqlaunch ui
   mqlaunch ask "your question"
   mqlaunch release-check
+  mqlaunch selftest
   mqlaunch version
   mqlaunch notes
   mqlaunch about
@@ -184,6 +185,12 @@ dispatch_cli_command() {
 
     release-check|/release-check|check-release)
       "$BASE_DIR/terminal/release/mq-release-check.sh"
+      pause_enter
+      return 0
+      ;;
+
+    selftest|/selftest|test-all)
+      "$BASE_DIR/tools/scripts/test-all.sh"
       pause_enter
       return 0
       ;;

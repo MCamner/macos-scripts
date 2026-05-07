@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PROJECT_NAME="${1:-macos-scripts}"
-PROJECT_DIR="${2:-$HOME/macos-scripts}"
+PROJECT_DIR="${2:-${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 PROJECT_URL="${3:-https://github.com/MCamner/macos-scripts}"
 LOG_DIR="$HOME/.macos-scripts/logs"
 TIMESTAMP="$(date '+%Y-%m-%d_%H-%M-%S')"

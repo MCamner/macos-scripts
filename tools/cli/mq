@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-BASE_DIR="$HOME/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 LIB="$BASE_DIR/tools/cli/mq-lib.sh"
 
 [ -f "$LIB" ] && source "$LIB"

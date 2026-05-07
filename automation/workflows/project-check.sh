@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PROJECT_NAME="${1:-macos-scripts}"
-PROJECT_DIR="${2:-$HOME/macos-scripts}"
+PROJECT_DIR="${2:-${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 LOG_DIR="$HOME/.macos-scripts/logs"
 TIMESTAMP="$(date '+%Y-%m-%d_%H-%M-%S')"
 LOG_FILE="$LOG_DIR/${PROJECT_NAME}_check_${TIMESTAMP}.log"

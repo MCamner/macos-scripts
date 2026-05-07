@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-source "$HOME/macos-scripts/tools/cli/mq-ui.sh"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+
+source "$BASE_DIR/tools/cli/mq-ui.sh"
 
 # ==================================================
 # FUNCTIONS

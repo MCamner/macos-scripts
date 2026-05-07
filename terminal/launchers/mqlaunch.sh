@@ -14,7 +14,7 @@ APP_TITLE="MQLAUNCH"
 APP_SUBTITLE="Branded Neon Command Surface"
 APP_AUTHOR="Author Mattias Camner"
 
-BASE_DIR="$HOME/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 
 # Performance bridge
 if [[ -f "$BASE_DIR/terminal/bridges/performance-bridge.sh" ]]; then
@@ -173,7 +173,7 @@ open_folder_screen() {
 
 resolve_prompt_dir() {
   local candidate
-  for candidate in "$HOME/macos-scripts/ai-prompts" "$PROMPT_DIR"; do
+  for candidate in "$BASE_DIR/ai-prompts" "$PROMPT_DIR"; do
     if [[ -d "$candidate" ]]; then
       print -r -- "$candidate"
       return 0

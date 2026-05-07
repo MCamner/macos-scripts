@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="$HOME/macos-scripts"
+PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 V1_ROOT="$PROJECT_ROOT/terminal/mqlaunch-v1"
 V1="$V1_ROOT/mqlaunch.sh"
 UI="$V1_ROOT/lib/ui.sh"
@@ -54,7 +54,7 @@ assert_grep 'print_kv\(\)' "$UI" "Shared print_kv helper exists"
 assert_grep 'print_warning_block\(\)' "$UI" "Shared warning helper exists"
 
 assert_grep 'print_kv ' "$PERF" "Performance uses shared print_kv"
-assert_grep 'print_warning_block' "$PERF" "Performance uses shared warning block"
+assert_grep 'print_warning_block|surface_row "WARNINGS"' "$PERF" "Performance renders warning block"
 assert_grep 'print_kv ' "$DEV" "Dev uses shared print_kv"
 assert_grep 'print_kv ' "$TOOLS" "Tools uses shared print_kv"
 

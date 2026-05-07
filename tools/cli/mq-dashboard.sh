@@ -4,7 +4,7 @@ set -u
 
 APP_TITLE="MQ AI DASHBOARD"
 REFRESH_DELAY=0.15
-BASE_DIR="$HOME/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
 PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
@@ -222,4 +222,3 @@ main_loop() {
 }
 
 main_loop
-

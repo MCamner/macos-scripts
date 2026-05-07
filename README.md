@@ -114,6 +114,7 @@ mqlaunch ask "your question"     # AI repo assistant
 mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
 mqlaunch doctor                  # environment check
+mqlaunch selftest                # smoke tests + shell lint
 mqlaunch demo                    # guided demo
 ```
 
@@ -228,6 +229,17 @@ mqlaunch doctor
 * validates repo state (branch, dirty tree, required files)
 * evaluates workflow readiness (Git, Release, Dev, System)
 * highlights issues and gives actionable recommendations
+
+---
+
+## 🧪 Selftest
+
+```bash
+mqlaunch selftest
+```
+
+Runs launcher smoke checks, v1 compatibility checks, and shell lint for
+supported bash/sh scripts.
 
 ---
 
