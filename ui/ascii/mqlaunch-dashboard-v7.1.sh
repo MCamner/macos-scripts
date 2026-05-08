@@ -330,6 +330,31 @@ mq_severity_meter() {
   printf '%s%s%s %s' "$color" "$bar" "$C_RESET" "$severity"
 }
 
+mq_git_next_action() {
+  local staged="${1:-0}"
+  local unstaged="${2:-0}"
+  local untracked="${3:-0}"
+  local ahead_behind="${4:-}"
+
+  if (( staged + unstaged + untracked == 0 )); then
+    case "$ahead_behind" in
+      *"↑0 ↓0") printf '%s' "Nothing to commit" ;;
+      *"↑"*) printf '%s' "Push local commits" ;;
+      *"↓"*) printf '%s' "Pull latest changes" ;;
+      *) printf '%s' "Nothing to commit" ;;
+    esac
+    return
+  fi
+
+  if (( unstaged > 0 || untracked > 0 )); then
+    printf '%s' "Review diff, then stage selected files"
+  elif (( staged > 0 )); then
+    printf '%s' "Commit staged changes"
+  else
+    printf '%s' "Review git status"
+  fi
+}
+
 mqlaunch_dashboard_v71() {
   local title="${1:-MQLAUNCH}"
   local subtitle="${2:-Branded Neon Command Surface}"
@@ -338,6 +363,7 @@ mqlaunch_dashboard_v71() {
   local width compact
   local mode_color state_color severity severity_color
   local user host now shell_name os_name cwd repo branch dirty counts staged unstaged untracked ahead_behind
+  local total_changes next_action workspace_summary
   local mem_widget batt_widget bar_max
 
   width="$(mq_term_width)"
@@ -367,9 +393,11 @@ mqlaunch_dashboard_v71() {
 
   bar_max=$(( staged + unstaged + untracked ))
   (( bar_max < 5 )) && bar_max=5
+  total_changes=$(( staged + unstaged + untracked ))
 
   severity="$(mq_dirty_severity "$staged" "$unstaged" "$untracked")"
   severity_color="$(mq_dirty_severity_color "$severity")"
+  next_action="$(mq_git_next_action "$staged" "$unstaged" "$untracked" "$ahead_behind")"
 
   mode_color="$(mq_mode_color "$mode")"
   state_color="$(mq_state_color "$dirty")"
@@ -405,23 +433,36 @@ mqlaunch_dashboard_v71() {
   mq_box_bottom "$width"
   echo
 
-  mq_box_top "GIT WIDGETS" "$width"
-  if (( compact == 1 )); then
-    mq_box_single "REPO     ${repo:-N/A}" "$width"
-    mq_box_single "BRANCH   ${branch:-N/A}" "$width"
-    mq_box_single "STATE    ${dirty:-N/A}" "$width"
-    mq_box_single "UPSTREAM ${ahead_behind:-N/A}" "$width"
-    mq_box_single "SEVERITY $(mq_severity_meter "$severity" "$severity_color" 18)" "$width"
-    mq_box_single "$(mq_bar "STAGED  " "$staged" "$bar_max" 18 "$ACCENT_GREEN")" "$width"
-    mq_box_single "$(mq_bar "UNSTAGED" "$unstaged" "$bar_max" 18 "$ACCENT_YELLOW")" "$width"
-    mq_box_single "$(mq_bar "UNTRACK " "$untracked" "$bar_max" 18 "$ACCENT_RED")" "$width"
+  if (( total_changes == 0 )); then
+    mq_box_top "WORKSPACE" "$width"
+    if (( compact == 1 )); then
+      mq_box_single "REPO     ${repo:-N/A}" "$width"
+      mq_box_single "BRANCH   ${branch:-N/A}" "$width"
+      mq_box_single "GIT      clean   UPSTREAM ${ahead_behind:-N/A}" "$width"
+      mq_box_single "NEXT     ${next_action}" "$width"
+    else
+      workspace_summary="Repo ${repo:-N/A}   Branch ${branch:-N/A}   Git clean   Upstream ${ahead_behind:-N/A}"
+      mq_box_single "$workspace_summary" "$width"
+      mq_box_single "Next ${next_action}" "$width"
+    fi
   else
-    mq_box_row "REPO     ${repo:-N/A}" "BRANCH   ${branch:-N/A}" "$width"
-    mq_box_row "STATE    ${dirty:-N/A}" "UPSTREAM ${ahead_behind:-N/A}" "$width"
-    mq_box_single "SEVERITY $(mq_severity_meter "$severity" "$severity_color" 34)" "$width"
-    mq_box_single "$(mq_bar "STAGED  " "$staged" "$bar_max" 34 "$ACCENT_GREEN")" "$width"
-    mq_box_single "$(mq_bar "UNSTAGED" "$unstaged" "$bar_max" 34 "$ACCENT_YELLOW")" "$width"
-    mq_box_single "$(mq_bar "UNTRACK " "$untracked" "$bar_max" 34 "$ACCENT_RED")" "$width"
+    mq_box_top "GIT ACTION" "$width"
+    if (( compact == 1 )); then
+      mq_box_single "REPO     ${repo:-N/A}" "$width"
+      mq_box_single "BRANCH   ${branch:-N/A}" "$width"
+      mq_box_single "DIRTY    ${total_changes} files   UPSTREAM ${ahead_behind:-N/A}" "$width"
+      mq_box_single "$(mq_bar "STAGED  " "$staged" "$bar_max" 18 "$ACCENT_GREEN")" "$width"
+      mq_box_single "$(mq_bar "UNSTAGED" "$unstaged" "$bar_max" 18 "$ACCENT_YELLOW")" "$width"
+      mq_box_single "$(mq_bar "UNTRACK " "$untracked" "$bar_max" 18 "$ACCENT_RED")" "$width"
+      mq_box_single "NEXT     ${next_action}" "$width"
+    else
+      mq_box_row "REPO     ${repo:-N/A}" "BRANCH   ${branch:-N/A}" "$width"
+      mq_box_row "DIRTY    ${total_changes} files" "UPSTREAM ${ahead_behind:-N/A}" "$width"
+      mq_box_single "$(mq_bar "STAGED  " "$staged" "$bar_max" 34 "$ACCENT_GREEN")" "$width"
+      mq_box_single "$(mq_bar "UNSTAGED" "$unstaged" "$bar_max" 34 "$ACCENT_YELLOW")" "$width"
+      mq_box_single "$(mq_bar "UNTRACK " "$untracked" "$bar_max" 34 "$ACCENT_RED")" "$width"
+      mq_box_single "NEXT     ${next_action}" "$width"
+    fi
   fi
   mq_box_bottom "$width"
   echo
