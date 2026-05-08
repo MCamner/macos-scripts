@@ -5,6 +5,7 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 VECTOR_STORE_ID="${MQ_TERMINAL_GUIDE_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}"
+REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
 
 load_env_file() {
   local file="$1"
@@ -43,12 +44,12 @@ hal-terminal-guide.sh - ask or run commands grounded in the mac terminal guide
 Usage:
   tools/scripts/hal-terminal-guide.sh
   tools/scripts/hal-terminal-guide.sh ask "question"
-  tools/scripts/hal-terminal-guide.sh run "öppna Google Chrome"
+  tools/scripts/hal-terminal-guide.sh run "open Google Chrome"
   tools/scripts/hal-terminal-guide.sh open-guide
 
 Examples:
-  tools/scripts/hal-terminal-guide.sh ask "hur öppnar jag en app från terminalen?"
-  tools/scripts/hal-terminal-guide.sh run "öppna Google Chrome"
+  tools/scripts/hal-terminal-guide.sh ask "how do I open an app from Terminal?"
+  tools/scripts/hal-terminal-guide.sh run "open Google Chrome"
 USAGE
 }
 
@@ -82,42 +83,73 @@ safe_intent_command() {
   lower="$(lower_text "$query")"
 
   case "$lower" in
-    *"öppna google chrome"*|*"open google chrome"*|*"starta google chrome"*|*"öppna chrome"*|*"open chrome"*)
-      app="Google Chrome"
-      printf 'app|%s|open -a "%s"\n' "$app" "$app"
-      return 0
-      ;;
-    *"öppna safari"*|*"open safari"*|*"starta safari"*)
-      app="Safari"
-      printf 'app|%s|open -a "%s"\n' "$app" "$app"
-      return 0
-      ;;
-    *"öppna finder"*|*"open finder"*|*"starta finder"*)
+    1|finder|*"öppna finder"*|*"open finder"*|*"starta finder"*)
       app="Finder"
       printf 'app|%s|open -a "%s"\n' "$app" "$app"
       return 0
       ;;
-    *"öppna terminal"*|*"open terminal"*|*"starta terminal"*)
-      app="Terminal"
+    2|safari|*"öppna safari"*|*"open safari"*|*"starta safari"*)
+      app="Safari"
       printf 'app|%s|open -a "%s"\n' "$app" "$app"
       return 0
       ;;
-    *"öppna visual studio code"*|*"open visual studio code"*|*"öppna vs code"*|*"open vs code"*)
-      app="Visual Studio Code"
+    3|chrome|google\ chrome|*"öppna google chrome"*|*"open google chrome"*|*"starta google chrome"*|*"öppna chrome"*|*"open chrome"*)
+      app="Google Chrome"
       printf 'app|%s|open -a "%s"\n' "$app" "$app"
       return 0
       ;;
-    *"öppna system settings"*|*"open system settings"*|*"öppna systeminställningar"*)
+    4|spotify|*"öppna spotify"*|*"open spotify"*|*"starta spotify"*)
+      app="Spotify"
+      printf 'app|%s|open -a "%s"\n' "$app" "$app"
+      return 0
+      ;;
+    5|xcode|*"öppna xcode"*|*"open xcode"*|*"starta xcode"*)
+      app="Xcode"
+      printf 'app|%s|open -a "%s"\n' "$app" "$app"
+      return 0
+      ;;
+    6|system\ settings|settings|*"öppna system settings"*|*"open system settings"*|*"öppna systeminställningar"*)
       app="System Settings"
       printf 'app|%s|open -a "%s"\n' "$app" "$app"
       return 0
       ;;
-    *"öppna downloads"*|*"open downloads"*|*"öppna hämtade filer"*)
+    7|downloads|download|*"öppna downloads"*|*"open downloads"*|*"öppna hämtade filer"*)
       path="$HOME/Downloads"
       printf 'path|%s|open "%s"\n' "$path" "$path"
       return 0
       ;;
-    *"öppna guide"*|*"open guide"*|*"terminal guide"*|*"terminalguiden"*)
+    8|home|home\ folder|*"open home folder"*|*"öppna home"*|*"open home"*)
+      path="$HOME"
+      printf 'path|%s|open "%s"\n' "$path" "$path"
+      return 0
+      ;;
+    9|utilities|utilities\ folder|*"open utilities folder"*|*"öppna utilities"*|*"open utilities"*)
+      path="/Applications/Utilities"
+      printf 'path|%s|open "%s"\n' "$path" "$path"
+      return 0
+      ;;
+    10|applications|applications\ folder|*"open applications folder"*|*"öppna applications"*|*"open applications"*)
+      path="/Applications"
+      printf 'path|%s|open "%s"\n' "$path" "$path"
+      return 0
+      ;;
+    11|lock|lock\ screen|*"lås skärm"*|*"lock screen"*|*"lock mac"*)
+      printf 'lock|Lock screen|CGSession -suspend\n'
+      return 0
+      ;;
+    12|sleep|sleep\ display|*"sleep display"*|*"turn off display"*|*"släck skärm"*)
+      printf 'sleep|Sleep display|pmset displaysleepnow\n'
+      return 0
+      ;;
+    13|restart\ finder|*"restart finder"*|*"starta om finder"*)
+      printf 'restart_finder|Restart Finder|killall Finder\n'
+      return 0
+      ;;
+    14|repo|repo\ browser|repo\ in\ browser|*"repo in browser"*|*"open repo"*|*"öppna repo"*)
+      printf 'url|Repo in browser|open "%s"\n' "$REPO_URL"
+      return 0
+      ;;
+    guide|open\ guide|*"öppna guide"*|*"open guide"*|*"terminal guide"*|*"terminalguiden"*)
       printf 'guide|mac terminal guide|open guide\n'
       return 0
       ;;
@@ -151,11 +183,49 @@ execute_safe_intent() {
     guide)
       open_guide
       ;;
+    url)
+      open "$REPO_URL"
+      ;;
+    lock)
+      if [[ -x "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" ]]; then
+        "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
+      else
+        osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}' >/dev/null 2>&1
+      fi
+      ;;
+    sleep)
+      pmset displaysleepnow
+      ;;
+    restart_finder)
+      killall Finder >/dev/null 2>&1
+      ;;
     *)
       printf 'Unsupported safe action: %s\n' "$kind" >&2
       return 1
       ;;
   esac
+}
+
+print_hal_menu() {
+  cat <<'MENU'
+
+HAL
+
+APPS
+ 1. Finder                  2. Safari                  3. Google Chrome
+ 4. Spotify                 5. Xcode                   6. System Settings
+
+FOLDERS
+ 7. Downloads               8. Home
+ 9. Utilities              10. Applications
+
+QUICK ACTIONS
+11. Lock screen            12. Sleep display
+13. Restart Finder         14. Repo in browser
+
+Type a number, a command, or a question.
+Commands: /guide, /quit
+MENU
 }
 
 local_guide_search() {
@@ -196,7 +266,7 @@ ask_vector_store() {
       model: "gpt-4.1-mini",
       input: (
         "You are HAL Terminal Guide for mqlaunch. Use file search from the mac terminal guide. " +
-        "Answer in Swedish when the user writes Swedish. Be concise and practical. " +
+        "Answer in English unless the user explicitly asks for another language. Be concise and practical. " +
         "Prefer safe macOS terminal commands from the guide. " +
         "If a command is potentially destructive or uses sudo, warn before showing it. " +
         "Question: " + $q
@@ -208,7 +278,7 @@ ask_vector_store() {
   response="$(curl -s https://api.openai.com/v1/responses \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
-    -d "$payload")"
+    -d "$payload" || true)"
   printf '\r\033[2K'
 
   text="$(printf '%s' "$response" | jq -r '
@@ -253,9 +323,7 @@ prompt_loop() {
   local query
 
   while true; do
-    printf '\nHAL Terminal Guide\n'
-    printf 'Type a question or command. Examples: "öppna Google Chrome", "hur listar jag filer?"\n'
-    printf 'Commands: /guide, /quit\n'
+    print_hal_menu
     printf 'hal > '
     read -r query || return
 

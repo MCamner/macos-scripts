@@ -1167,6 +1167,7 @@ notes	Show release notes
 check	Run self-check
 bundle	Create debug bundle
 repo	Open repo root in browser
+hal	Open HAL command menu
 guide	Open terminal guide
 commands	Show command index
 EOF
@@ -1344,7 +1345,14 @@ run_arg_command() {
     downloads) open_downloads_folder ;;
     home) open_home_folder ;;
     utilities) open_utilities_folder ;;
-    applications|apps) open_applications_folder ;;
+    applications) open_applications_folder ;;
+    apps|hal|guide-ai|terminal-guide-ai)
+      if [[ -n "${1:-}" ]]; then
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
+      else
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+      fi
+      ;;
     ip|network) show_network_info ;;
     lock) lock_screen ;;
     sleep) sleep_display ;;
@@ -1384,13 +1392,6 @@ run_arg_command() {
     version|ver|about) show_version_info ;;
     ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
     fix) "$BASE_DIR/tools/scripts/fix.sh" "$@" ;;
-    hal|guide-ai|terminal-guide-ai)
-      if [[ -n "${1:-}" ]]; then
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
-      else
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
-      fi
-      ;;
     nickname-set|nick-set|nick)
       if [[ -n "${1:-}" ]]; then
         printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"

@@ -94,7 +94,7 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
-  surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
@@ -258,7 +258,7 @@ handle_main_menu_choice() {
     p|P) open_performance_menu ;;
     n|N) show_network_info ;;
     h|H) system_check ;;
-    a|A) open_apps_menu ;;
+    a|A) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
 
     # EXIT
@@ -291,7 +291,8 @@ handle_main_prompt_command() {
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
-    apps|applications) open_apps_menu; return 0 ;;
+    hal|apps) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"; return 0 ;;
+    applications) open_applications_folder; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
@@ -492,7 +493,7 @@ read_main_choice() {
 
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-  read_prompt "${C_TITLE}${label} > ${C_RESET}" "${label} > "
+  read_prompt "${C_TITLE}${label} > ${C_RESET}" "${label} > " || return 1
   printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
   choice="$REPLY"
 }

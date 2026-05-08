@@ -78,7 +78,7 @@ Quick commands:
   mqlaunch check
   mqlaunch self-check
   mqlaunch debug
-  mqlaunch apps
+  mqlaunch hal
   mqlaunch theme
   mqlaunch theme-macos
   mqlaunch review
@@ -96,7 +96,7 @@ Quick commands:
   mqlaunch workspace save
   mqlaunch workspace restore
   mqlaunch hal
-  mqlaunch hal "öppna Google Chrome"
+  mqlaunch hal "open Google Chrome"
 
 Subcommands:
   mqlaunch system perf
@@ -403,8 +403,13 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    apps)
-      open_apps_menu
+    apps|hal|guide-ai|terminal-guide-ai)
+      if [[ -n "${2:-}" ]]; then
+        shift
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
+      else
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+      fi
       return 0
       ;;
 
@@ -415,16 +420,6 @@ dispatch_cli_command() {
 
     docwrite|document-functions-write|update-comments)
       "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
-      return 0
-      ;;
-
-    hal|guide-ai|terminal-guide-ai)
-      if [[ -n "${2:-}" ]]; then
-        shift
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
-      else
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
-      fi
       return 0
       ;;
 
