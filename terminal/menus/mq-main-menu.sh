@@ -96,7 +96,7 @@ render_main_menu_panel() {
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
   surface_row "DOCS" "$width" "$panel_color"
-  surface_split_row "d. Document preview" "u. Update comments" "$width" "$panel_color"
+  surface_split_row "d. Document preview" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -260,7 +260,6 @@ handle_main_menu_choice() {
     a|A) open_apps_menu ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
     d|D) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
-    u|U) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite ;;
 
     # EXIT
     x|X)
@@ -294,7 +293,7 @@ handle_main_prompt_command() {
     check|health|system\ check) system_check; return 0 ;;
     apps|applications) open_apps_menu; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
-    docfunc|document-functions|document\ functions|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
+    docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     clear|cls) clear; return 0 ;;
     version|ver) show_version_info || true; return 0 ;;
