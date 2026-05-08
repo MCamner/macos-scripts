@@ -9,6 +9,8 @@ SHOW_DIFF=0
 SUMMARY=0
 BACKUP=0
 STYLE="simple"
+BACKUP_ROOT="$ROOT_DIR/backups/scripts"
+BACKUP_TIMESTAMP=""
 TARGETS=()
 EXCLUDES=()
 SCANNED_FILES=0
@@ -27,7 +29,7 @@ Options:
   --check                  Exit 1 if any file would change
   --diff                   Show a unified diff for planned changes
   --summary                Print scan totals at the end
-  --backup                 Create .bak.TIMESTAMP files before --write updates
+  --backup                 Save backups under backups/scripts before --write updates
   --exclude PATTERN        Skip paths matching a shell glob pattern
   --style simple|function|name
                            Comment style to generate (default: simple)
@@ -150,9 +152,32 @@ should_exclude() {
   return 1
 }
 
+backup_file() {
+  local file="$1"
+  local relative backup_path backup_dir
+
+  if [[ -z "$BACKUP_TIMESTAMP" ]]; then
+    BACKUP_TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+  fi
+
+  if [[ "$file" == "$ROOT_DIR/"* ]]; then
+    relative="${file#"$ROOT_DIR"/}"
+  else
+    relative="$file"
+  fi
+  relative="${relative#./}"
+  relative="${relative#/}"
+  backup_path="$BACKUP_ROOT/$BACKUP_TIMESTAMP/$relative"
+  backup_dir="$(dirname "$backup_path")"
+
+  mkdir -p "$backup_dir"
+  cp "$file" "$backup_path"
+  printf 'Backup saved %s\n' "$backup_path"
+}
+
 document_file() {
   local file="$1"
-  local tmp changed timestamp
+  local tmp changed
   tmp="$(mktemp "${TMPDIR:-/tmp}/mq-doc-functions.XXXXXX")"
 
   awk -v style="$STYLE" '
@@ -364,8 +389,7 @@ document_file() {
 
   if [[ "$WRITE" -eq 1 ]]; then
     if [[ "$BACKUP" -eq 1 ]]; then
-      timestamp="$(date +%Y%m%d-%H%M%S)"
-      cp "$file" "$file.bak.$timestamp"
+      backup_file "$file"
     fi
     cp "$tmp" "$file"
     printf 'Updated %s (%s comments)\n' "$file" "$changed"

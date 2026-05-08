@@ -352,7 +352,7 @@ run_document_functions_update() {
   row "This will add or refresh generated function comments in:"
   print_document_function_targets
   empty_row
-  row "Backups will be created as .bak.TIMESTAMP before files are changed."
+  row "Backups will be saved under backups/scripts before files are changed."
   empty_row
 
   printf 'Update comments now? [y/N] '

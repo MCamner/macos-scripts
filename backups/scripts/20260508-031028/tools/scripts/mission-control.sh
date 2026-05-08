@@ -4,65 +4,53 @@ set -euo pipefail
 APP_NAME="MISSION CONTROL"
 WIDTH=68
 
-# Handles line.
 line() {
   printf '═%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Handles subline.
 subline() {
   printf '─%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Handles section.
 section() {
   printf '\n%s\n' "$1"
   subline
 }
 
-# Handles kv.
 kv() {
   printf '%-20s %s\n' "$1" "$2"
 }
 
-# Handles safe cmd.
 safe_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Gets hostname.
 get_hostname() {
   scutil --get ComputerName 2>/dev/null || hostname
 }
 
-# Gets user.
 get_user() {
   whoami
 }
 
-# Gets shell name.
 get_shell_name() {
   basename "${SHELL:-unknown}"
 }
 
-# Gets now.
 get_now() {
   date '+%Y-%m-%d %H:%M:%S'
 }
 
-# Gets uptime pretty.
 get_uptime_pretty() {
   uptime | sed 's/^.*up *//; s/, *[0-9]* users.*$//'
 }
 
-# Gets cpu load.
 get_cpu_load() {
   uptime | awk -F'load averages?: ' '{print $2}' | sed 's/^ *//'
 }
 
-# Gets mem info.
 get_mem_info() {
   if ! safe_cmd vm_stat; then
     echo "vm_stat unavailable"
@@ -95,12 +83,10 @@ print(f"Used {used_gb:.1f} GB / Total {total_gb:.1f} GB / Free {free_gb:.1f} GB"
 PY
 }
 
-# Gets disk info.
 get_disk_info() {
   df -h / | awk 'NR==2 {print "Used " $3 " / Size " $2 " / Free " $4 " (" $5 " used)"}'
 }
 
-# Gets primary ip.
 get_primary_ip() {
   local ip
   ip="$(ipconfig getifaddr en0 2>/dev/null || true)"
@@ -114,12 +100,10 @@ get_primary_ip() {
   fi
 }
 
-# Gets default route.
 get_default_route() {
   route -n get default 2>/dev/null | awk '/gateway:/{print $2}' || true
 }
 
-# Gets wifi name.
 get_wifi_name() {
   local airport
   airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
@@ -128,7 +112,6 @@ get_wifi_name() {
   fi
 }
 
-# Gets battery info.
 get_battery_info() {
   if safe_cmd pmset; then
     local raw
@@ -139,7 +122,6 @@ get_battery_info() {
   fi
 }
 
-# Gets git info.
 get_git_info() {
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     local branch dirty
@@ -155,12 +137,10 @@ get_git_info() {
   fi
 }
 
-# Handles top processes.
 top_processes() {
   ps -Ao pid,comm,%cpu,%mem -r | head -n 6
 }
 
-# Prints header.
 print_header() {
   clear || true
   line
@@ -168,7 +148,6 @@ print_header() {
   line
 }
 
-# Runs the main entry point.
 main() {
   print_header
 
