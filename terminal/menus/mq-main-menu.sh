@@ -95,7 +95,7 @@ render_main_menu_panel() {
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
-  surface_split_row "r. REPL" "" "$width" "$panel_color"
+  surface_split_row "r. REPL" "z. Restart mqlaunch" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -260,6 +260,7 @@ handle_main_menu_choice() {
     h|H) system_check ;;
     a|A) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
+    z|Z) restart_mqlaunch ;;
 
     # EXIT
     x|X)
@@ -294,6 +295,7 @@ handle_main_prompt_command() {
     hal|apps) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"; return 0 ;;
     applications) open_applications_folder; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
+    restart|reload|relaunch|z) restart_mqlaunch; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;

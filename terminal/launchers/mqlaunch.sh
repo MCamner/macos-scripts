@@ -355,6 +355,21 @@ restart_finder() {
   killall Finder >/dev/null 2>&1
 }
 
+# Restarts mqlaunch by replacing the current process.
+restart_mqlaunch() {
+  local target="${1:-menu}"
+  shift || true
+
+  if [[ -x "$MQ_SCRIPT" ]]; then
+    exec "$MQ_SCRIPT" "$target" "$@"
+  elif [[ -f "$MQ_SCRIPT" ]]; then
+    exec zsh "$MQ_SCRIPT" "$target" "$@"
+  fi
+
+  echo "${C_ERR}mqlaunch script not found:${C_RESET} $MQ_SCRIPT"
+  return 1
+}
+
 # Shows date time.
 show_date_time() {
   print_header
@@ -806,7 +821,7 @@ themes_menu_loop() {
 # Opens git menu.
 open_git_menu() {
   local repo_arg="${1:-}"
-  local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
+  local git_script="$BASE_DIR/terminal/menus/mq-git-menu.sh"
   local git_path=""
 
   if [[ -n "$repo_arg" ]]; then
@@ -818,7 +833,7 @@ open_git_menu() {
   if [[ -x "$git_script" ]]; then
     MQ_GIT_REPO="$git_path" "$git_script"
   elif [[ -f "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" zsh "$git_script"
+    MQ_GIT_REPO="$git_path" bash "$git_script"
   else
     print_header
     row "GIT MENU"
@@ -1357,6 +1372,7 @@ run_arg_command() {
     ip|network) show_network_info ;;
     lock) lock_screen ;;
     sleep) sleep_display ;;
+    restart|reload|relaunch) restart_mqlaunch "$@" ;;
     restart-finder|finder-restart) restart_finder ;;
     date|time) show_date_time ;;
     repo) open_repo_browser ;;

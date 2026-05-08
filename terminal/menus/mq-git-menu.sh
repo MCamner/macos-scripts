@@ -17,7 +17,7 @@ else
   exit 1
 fi
 
-CURRENT_REPO="$BASE_DIR"
+CURRENT_REPO="${MQ_GIT_REPO:-$BASE_DIR}"
 
 ensure_repo() {
   if [[ ! -d "$CURRENT_REPO/.git" ]]; then

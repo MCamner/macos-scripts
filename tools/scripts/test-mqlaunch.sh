@@ -54,7 +54,9 @@ assert_cmd_ok "V1 launcher help works" bash "$V1" help
 assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance route exists in launcher"
 assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
 assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
+assert_grep 'restart\|reload\|relaunch\).*restart_mqlaunch' "$LEGACY" "mqlaunch restart route exists"
 assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"
+assert_grep 'terminal/menus/mq-git-menu\.sh' "$LEGACY" "Git route uses surface git menu"
 assert_grep 'RELEASE_SCRIPT="\$RELEASE_REPO/release\.sh"' "$RELEASE_MENU" "Release menu points at root release script"
 
 assert_grep 'render_main_menu_panel' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu panel exists"
@@ -64,6 +66,7 @@ assert_grep 'surface_split_row "3\. Git" "4\. Release"' "$PROJECT_ROOT/terminal/
 assert_grep 'surface_split_row "5\. Dev" "6\. Help"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Dev and Help"
 assert_grep 'surface_split_row "p\. Performance" "n\. Network"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Performance and Network quick access"
 assert_grep 'surface_split_row "h\. Health Check" "a\. HAL"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Health Check and HAL quick access"
+assert_grep 'surface_split_row "r\. REPL" "z\. Restart mqlaunch"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains restart quick access"
 assert_grep 'render_help_center_panel' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center panel exists"
 assert_grep 'surface_top "Help"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center uses surface panel"
 assert_grep 'surface_split_row "1\. Command index" "2\. About / Status"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center contains reference actions"
