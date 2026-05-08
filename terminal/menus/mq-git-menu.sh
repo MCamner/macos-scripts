@@ -22,18 +22,18 @@ print_header() {
   nickname="$(get_nickname)"
 
   clear_screen
-  printf '%s\n' "----------------------------------------------------------------------------------------"
-  printf '%s\n' "  __  __   ____       ____   ___  ______"
-  printf '%s\n' " |  \/  | / __ \     / __ \ / _ \/_  __/"
-  printf '%s\n' " | |\/| || |  | |   | |  | | | | | |"
-  printf '%s\n' " | |  | || |__| |   | |__| | |_| | |"
-  printf '%s\n' " |_|  |_| \___\_\    \____/ \___/  |_|"
-  printf '%s\n' ""
-  printf '%s\n' " MQ Git"
+  printf '%b%s%b\n' "$C_TITLE" "════════════════════════════════════════════════════════════════════════════════════════" "$C_RESET"
+  printf '%b%s%b\n' "$C_TITLE" "  __  __   ____       ____   ___  ______" "$C_RESET"
+  printf '%b%s%b\n' "$C_TITLE" " |  \/  | / __ \     / __ \ / _ \/_  __/" "$C_RESET"
+  printf '%b%s%b\n' "$C_TITLE" " | |\/| || |  | |   | |  | | | | | |   " "$C_RESET"
+  printf '%b%s%b\n' "$C_TITLE" " | |  | || |__| |   | |__| | |_| | |   " "$C_RESET"
+  printf '%b%s%b\n' "$C_TITLE" " |_|  |_| \___\_\    \____/ \___/  |_|  " "$C_RESET"
+  printf '\n'
+  printf '%b%s%b\n' "$C_BOLD" " MQ Git" "$C_RESET"
   printf '%s\n' " Git Workspace and Safe Repo Actions"
   printf '%s\n' " Author Mattias Camner"
   printf '%s\n' " Hej, $nickname!"
-  printf '%s\n' "----------------------------------------------------------------------------------------"
+  printf '%b%s%b\n' "$C_TITLE" "════════════════════════════════════════════════════════════════════════════════════════" "$C_RESET"
 }
 
 CURRENT_REPO="${MQ_GIT_REPO:-$BASE_DIR}"
