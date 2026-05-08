@@ -27,6 +27,7 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_DARK_YELLOW=$'\e[38;5;100m'
   C_PINK=$'\e[95m'
   C_MAGENTA=$'\e[35m'
+  C_WHITE=$'\e[1;97m'
 else
   C_RESET=""
   C_BOLD=""
@@ -45,6 +46,7 @@ else
   C_DARK_YELLOW=""
   C_PINK=""
   C_MAGENTA=""
+  C_WHITE=""
 fi
 
 GUM_BIN="$(command -v gum 2>/dev/null || true)"
@@ -418,7 +420,7 @@ function render_menu() {
   frame_row_colored "5. OPEN REPO" "$C_LABEL"
   frame_row_colored "6. DEV MODE" "$C_LABEL"
   frame_row_colored "7. SWITCH REPO" "$C_LABEL"
-  frame_row_colored "8. AUTO ACTION" "$C_LABEL"
+  frame_row_colored "8. AUTO ACTION" "$C_WHITE"
   frame_row_colored "b. BACK" "$C_LABEL"
   frame_bottom
 }
