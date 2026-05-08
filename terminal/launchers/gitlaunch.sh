@@ -612,7 +612,7 @@ function suggest_commit() {
 # ------------------------
 # WORKSPACE RESUME
 # ------------------------
-if load_state; then
+if [[ -z "$REQUESTED_REPO" ]] && load_state; then
   echo "🔁 Resume last workspace?"
   echo "Repo: $REPO"
   echo -n "(y/n): "
