@@ -149,6 +149,13 @@ lower_text() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+trim_text() {
+  local text="$1"
+  text="${text#"${text%%[![:space:]]*}"}"
+  text="${text%"${text##*[![:space:]]}"}"
+  printf '%s' "$text"
+}
+
 safe_intent_command() {
   local query app path lower
   query="$1"
@@ -230,6 +237,92 @@ safe_intent_command() {
   return 1
 }
 
+extract_shell_command() {
+  local query lower command first
+  query="$(trim_text "$1")"
+  lower="$(lower_text "$query")"
+
+  case "$query" in
+    \!*)
+      command="${query#!}"
+      trim_text "$command"
+      return 0
+      ;;
+  esac
+
+  case "$lower" in
+    run\ *|execute\ *|exec\ *|kör\ *|kor\ *)
+      command="${query#* }"
+      trim_text "$command"
+      return 0
+      ;;
+  esac
+
+  first="${query%% *}"
+  case "$first" in
+    pwd|date|whoami|hostname|uptime|ls|ll|la|tree|df|du|find|rg|grep|cat|less|head|tail|wc|which|type|command|git)
+      printf '%s\n' "$query"
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+is_blocked_shell_command() {
+  local command lower
+  command="$1"
+  lower="$(lower_text "$command")"
+
+  case "$lower" in
+    *"sudo "*|sudo|\
+    *" rm -rf "*|rm\ -rf*|*" rm -r "*|rm\ -r*|\
+    *"mkfs"*|*"diskutil erase"*|*"diskutil partition"*|\
+    *"dd if="*|*"shutdown"*|*"reboot"*|*"halt"*|\
+    *":(){:"*|*" chmod -r 777"*|chmod\ -r\ 777*|\
+    *" chown -r "*|chown\ -r*|killall\ *|*" killall "*)
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+execute_shell_command() {
+  local command confirm shell_bin status
+  command="$(trim_text "$1")"
+  shell_bin="${SHELL:-/bin/zsh}"
+
+  if [[ -z "$command" ]]; then
+    printf 'HAL: no command to run.\n'
+    return 0
+  fi
+
+  if is_blocked_shell_command "$command"; then
+    printf 'HAL: I will not run that command automatically.\n'
+    printf 'Command: %s\n' "$command"
+    printf 'Reason: it looks destructive, privileged, or process-killing.\n'
+    return 0
+  fi
+
+  printf 'HAL: I can run this terminal command.\n'
+  printf 'Command: %s\n' "$command"
+  printf 'Run it now? [y/N] '
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || {
+    printf 'Cancelled.\n'
+    return 0
+  }
+
+  printf '\n'
+  set +e
+  "$shell_bin" -lc "$command"
+  status=$?
+  set -e
+  printf '\nHAL: command exited with status %s.\n' "$status"
+  return 0
+}
+
 execute_safe_intent() {
   local intent="$1"
   local kind label command confirm
@@ -299,7 +392,7 @@ print_hal_menu() {
   hal_split_row "13. Restart Finder" "14. Repo in browser" "$width"
   hal_row "" "$width"
   hal_row "Type a number, a command, or a question." "$width"
-  hal_row "Commands: /guide, /quit" "$width"
+  hal_row "Commands: ! <command>, run <command>, /guide, /quit" "$width"
   hal_bottom "$width"
 }
 
@@ -328,7 +421,7 @@ read_hal_prompt() {
     printf '%s\n' "$line"
     printf 'hal > \n'
     printf '%s\n' "$line"
-    printf '>> press 1-14, type a command, or /quit\n'
+    printf '>> press 1-14, use ! <command>, or /quit\n'
     printf '\033[3A\rhal > '
     read -r query || return 1
     printf '\033[2B\r'
@@ -339,7 +432,7 @@ read_hal_prompt() {
   printf 'hal > '
   read -r query || return 1
   printf '%s\n' "$line"
-  printf '>> press 1-14, type a command, or /quit\n'
+  printf '>> press 1-14, use ! <command>, or /quit\n'
 }
 
 ask_vector_store() {
@@ -402,10 +495,15 @@ ask_vector_store() {
 handle_query() {
   local mode="$1"
   local query="$2"
-  local intent
+  local intent shell_command
 
   if intent="$(safe_intent_command "$query")"; then
     execute_safe_intent "$intent"
+    return
+  fi
+
+  if shell_command="$(extract_shell_command "$query")"; then
+    execute_shell_command "$shell_command"
     return
   fi
 
