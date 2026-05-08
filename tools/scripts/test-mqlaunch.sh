@@ -64,6 +64,9 @@ assert_grep 'surface_split_row "3\. Git" "4\. Release"' "$PROJECT_ROOT/terminal/
 assert_grep 'surface_split_row "5\. Dev" "6\. Help"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Dev and Help"
 assert_grep 'surface_split_row "p\. Performance" "n\. Network"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Performance and Network quick access"
 assert_grep 'surface_split_row "h\. Health Check" "a\. HAL"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Health Check and HAL quick access"
+assert_grep 'render_help_center_panel' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center panel exists"
+assert_grep 'surface_top "Help"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center uses surface panel"
+assert_grep 'surface_split_row "1\. Command index" "2\. About / Status"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center contains reference actions"
 
 echo
 echo "All legacy + bridge checks passed."
