@@ -318,6 +318,30 @@ local_guide_search() {
     | sed -n '1,5p'
 }
 
+read_hal_prompt() {
+  local width line
+  width="$(hal_width)"
+  line="$(hal_repeat "$width" "─")"
+  query=""
+
+  if [[ -t 0 && -t 1 ]]; then
+    printf '%s\n' "$line"
+    printf 'hal > \n'
+    printf '%s\n' "$line"
+    printf '>> press 1-14, type a command, or /quit\n'
+    printf '\033[3A\rhal > '
+    read -r query || return 1
+    printf '\033[2B\r'
+    return 0
+  fi
+
+  printf '%s\n' "$line"
+  printf 'hal > '
+  read -r query || return 1
+  printf '%s\n' "$line"
+  printf '>> press 1-14, type a command, or /quit\n'
+}
+
 ask_vector_store() {
   local question="$1"
   local payload response text
@@ -395,17 +419,11 @@ handle_query() {
 }
 
 prompt_loop() {
-  local query width line
-  width="$(hal_width)"
-  line="$(hal_repeat "$width" "─")"
+  local query
 
   while true; do
     print_hal_menu
-    printf '%s\n' "$line"
-    printf 'hal > '
-    read -r query || return
-    printf '%s\n' "$line"
-    printf '>> press 1-14, type a command, or /quit\n'
+    read_hal_prompt || return
 
     case "$query" in
       "" ) continue ;;
