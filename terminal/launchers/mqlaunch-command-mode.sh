@@ -414,12 +414,12 @@ dispatch_cli_command() {
       ;;
 
     docfunc|document-functions)
-      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc
+      MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc
       return 0
       ;;
 
     docwrite|document-functions-write|update-comments)
-      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
+      MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
       return 0
       ;;
 

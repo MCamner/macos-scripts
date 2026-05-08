@@ -873,12 +873,13 @@ run_mqworkflows() {
 # Opens tools menu.
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
+  local work_dir="$PWD"
 
   if [[ -x "$tools_script" ]]; then
-    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
+    MQ_WORK_DIR="$work_dir" MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   elif [[ -f "$tools_script" ]]; then
     chmod +x "$tools_script" 2>/dev/null || true
-    MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
+    MQ_WORK_DIR="$work_dir" MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
   else
     print_header
     row "TOOLS MENU"
@@ -1413,9 +1414,9 @@ run_arg_command() {
       open_dev_menu
       ;;
     tools) open_tools_menu ;;
-    docfunc|document-functions) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
+    docfunc|document-functions) MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
     docwrite|document-functions-write|update-comments)
-      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
+      MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
       ;;
     tools-menu|toolsmenu|menu-tools|tools-v1|menu-tools-v1)
       legacy_alias_notice "mqlaunch $cmd" "mqlaunch tools"

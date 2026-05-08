@@ -2,6 +2,12 @@
 set -euo pipefail
 
 BASE_DIR="${HOME}/macos-scripts"
+WORK_DIR="${MQ_WORK_DIR:-$PWD}"
+
+if repo_root="$(git -C "$WORK_DIR" rev-parse --show-toplevel 2>/dev/null)"; then
+  WORK_DIR="$repo_root"
+fi
+
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
 # shellcheck disable=SC2034
@@ -23,8 +29,8 @@ fi
 
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
-DOCUMENT_FUNCTION_TARGETS=(tools/scripts terminal/menus terminal/launchers)
-DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*')
+DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
+DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*/.git/*')
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 DASHBOARD="$BASE_DIR/ui/dashboards/mq-dashboard.sh"
 THEMES_DIR="$BASE_DIR/terminal/themes"
@@ -32,6 +38,16 @@ LAUNCHERS_DIR="$BASE_DIR/terminal/launchers"
 MENUS_DIR="$BASE_DIR/terminal/menus"
 GUIDE_HTML="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 GUIDE_URL="https://mcamner.github.io/macos-scripts/"
+
+normalize_document_function_target() {
+  local target="$1"
+
+  if [[ "$target" = /* ]]; then
+    printf '%s\n' "$target"
+  else
+    printf '%s/%s\n' "$WORK_DIR" "$target"
+  fi
+}
 
 run_system_check() {
   if [[ -x "$SYSTEM_CHECK" ]]; then
@@ -97,6 +113,10 @@ show_paths() {
   row " $BASE_DIR"
   empty_row
 
+  row "WORK_DIR"
+  row " $WORK_DIR"
+  empty_row
+
   row "MQLAUNCH"
   row " $MQLAUNCH"
   empty_row
@@ -138,9 +158,9 @@ run_document_functions_preview() {
   empty_row
 
   if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
-    "$DOCUMENT_FUNCTIONS" "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
+    run_document_functions_command "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
   elif [[ -f "$DOCUMENT_FUNCTIONS" ]]; then
-    bash "$DOCUMENT_FUNCTIONS" "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
+    run_document_functions_command "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
   else
     row "document-functions.sh not found:"
     row " $DOCUMENT_FUNCTIONS"
@@ -154,9 +174,9 @@ run_document_functions_preview() {
 
 run_document_functions_command() {
   if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
-    "$DOCUMENT_FUNCTIONS" "$@"
+    MACOS_SCRIPTS_HOME="$WORK_DIR" "$DOCUMENT_FUNCTIONS" "$@"
   else
-    bash "$DOCUMENT_FUNCTIONS" "$@"
+    MACOS_SCRIPTS_HOME="$WORK_DIR" bash "$DOCUMENT_FUNCTIONS" "$@"
   fi
 }
 
@@ -173,10 +193,10 @@ select_document_function_targets() {
   SELECTED_DOCUMENT_FUNCTION_TARGETS=()
 
   row "Choose what to $action:"
-  row " a. Active script areas (default)"
-  row " 1. tools/scripts"
-  row " 2. terminal/menus"
-  row " 3. terminal/launchers"
+  row " a. Current repo/path (default)"
+  row " 1. tools/scripts in current path"
+  row " 2. terminal/menus in current path"
+  row " 3. terminal/launchers in current path"
   row " 4. One script/path"
   row " c. Custom list"
   row " q. Cancel"
@@ -191,13 +211,13 @@ select_document_function_targets() {
       SELECTED_DOCUMENT_FUNCTION_TARGETS=("${DOCUMENT_FUNCTION_TARGETS[@]}")
       ;;
     1)
-      SELECTED_DOCUMENT_FUNCTION_TARGETS=(tools/scripts)
+      SELECTED_DOCUMENT_FUNCTION_TARGETS=("$(normalize_document_function_target "tools/scripts")")
       ;;
     2)
-      SELECTED_DOCUMENT_FUNCTION_TARGETS=(terminal/menus)
+      SELECTED_DOCUMENT_FUNCTION_TARGETS=("$(normalize_document_function_target "terminal/menus")")
       ;;
     3)
-      SELECTED_DOCUMENT_FUNCTION_TARGETS=(terminal/launchers)
+      SELECTED_DOCUMENT_FUNCTION_TARGETS=("$(normalize_document_function_target "terminal/launchers")")
       ;;
     4)
       printf 'Script/path > '
@@ -206,7 +226,7 @@ select_document_function_targets() {
         ui_warn "No path entered."
         return 1
       fi
-      SELECTED_DOCUMENT_FUNCTION_TARGETS=("$custom")
+      SELECTED_DOCUMENT_FUNCTION_TARGETS=("$(normalize_document_function_target "$custom")")
       ;;
     c|C)
       row "Enter space-separated files or directories."
@@ -217,7 +237,7 @@ select_document_function_targets() {
         return 1
       fi
       for target in $custom; do
-        SELECTED_DOCUMENT_FUNCTION_TARGETS+=("$target")
+        SELECTED_DOCUMENT_FUNCTION_TARGETS+=("$(normalize_document_function_target "$target")")
       done
       ;;
     q|Q|n|N)
