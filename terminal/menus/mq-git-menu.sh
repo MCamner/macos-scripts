@@ -17,6 +17,25 @@ else
   exit 1
 fi
 
+print_header() {
+  local nickname
+  nickname="$(get_nickname)"
+
+  clear_screen
+  printf '%s\n' "----------------------------------------------------------------------------------------"
+  printf '%s\n' "  __  __   ____       ____   ___  ______"
+  printf '%s\n' " |  \/  | / __ \     / __ \ / _ \/_  __/"
+  printf '%s\n' " | |\/| || |  | |   | |  | | | | | |"
+  printf '%s\n' " | |  | || |__| |   | |__| | |_| | |"
+  printf '%s\n' " |_|  |_| \___\_\    \____/ \___/  |_|"
+  printf '%s\n' ""
+  printf '%s\n' " MQ Git"
+  printf '%s\n' " Git Workspace and Safe Repo Actions"
+  printf '%s\n' " Author Mattias Camner"
+  printf '%s\n' " Hej, $nickname!"
+  printf '%s\n' "----------------------------------------------------------------------------------------"
+}
+
 CURRENT_REPO="${MQ_GIT_REPO:-$BASE_DIR}"
 
 ensure_repo() {

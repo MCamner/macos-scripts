@@ -13,16 +13,18 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_RESET=$'\e[0m'
   C_BOLD=$'\e[1m'
   C_DIM=$'\e[2m'
-  C_BORDER=$'\e[38;5;229m'
-  C_ACCENT=$'\e[38;5;220m'
-  C_TITLE=$'\e[1;38;5;229m'
-  C_LABEL=$'\e[38;5;229m'
+  C_BORDER=$'\e[38;5;136m'
+  C_ACCENT=$'\e[38;5;178m'
+  C_TITLE=$'\e[1;38;5;178m'
+  C_LABEL=$'\e[38;5;179m'
   C_GOOD=$'\e[92m'
   C_WARN=$'\e[93m'
   C_BAD=$'\e[91m'
   C_DIM=$'\e[38;5;245m'
   C_CYAN=$'\e[36m'
   C_YELLOW=$'\e[33m'
+  C_AMBER=$'\e[38;5;136m'
+  C_DARK_YELLOW=$'\e[38;5;100m'
   C_PINK=$'\e[95m'
   C_MAGENTA=$'\e[35m'
 else
@@ -39,6 +41,8 @@ else
   C_DIM=""
   C_CYAN=""
   C_YELLOW=""
+  C_AMBER=""
+  C_DARK_YELLOW=""
   C_PINK=""
   C_MAGENTA=""
 fi
@@ -51,23 +55,23 @@ UI_INNER=$((UI_WIDTH - 4))
 # ASCII ART
 # ------------------------
 function render_ascii() {
-  printf "%b" "$C_CYAN"
+  printf "%b" "$C_DARK_YELLOW"
   cat <<'EOF'
-  ██████╗ ██╗████████╗
- ██╔════╝ ██║╚══██╔══╝
- ██║  ███╗██║   ██║
- ██║   ██║██║   ██║
- ╚██████╔╝██║   ██║
-  ╚═════╝ ╚═╝   ╚═╝
+   ▄████  ██▓▄▄▄█████▓
+  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒
+ ▒██░▄▄▄░▒██▒▒ ▓██░ ▒░
+ ░▓█  ██▓░██░░ ▓██▓ ░
+ ░▒▓███▀▒░██░  ▒██▒ ░
+  ░▒   ▒ ░▓    ▒ ░░
 EOF
-  printf "%b" "$C_PINK"
+  printf "%b" "$C_AMBER"
   cat <<'EOF'
-██╗      █████╗ ██╗   ██╗███╗  ██╗ ██████╗██╗  ██╗
-██║     ██╔══██╗██║   ██║████╗ ██║██╔════╝██║  ██║
-██║     ███████║██║   ██║██╔██╗██║██║     ███████║
-██║     ██╔══██║██║   ██║██║╚██╗██║██║     ██╔══██║
-╚██████╗██║  ██║╚██████╔╝██║ ╚████║╚██████╗██║  ██║
- ╚═════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝
+ ██▓    ▄▄▄       █    ██  ███▄    █  ▄████▄   ██░ ██
+▓██▒   ▒████▄     ██  ▓██▒ ██ ▀█   █ ▒██▀ ▀█  ▓██░ ██▒
+▒██░   ▒██  ▀█▄  ▓██  ▒██░▓██  ▀█ ██▒▒▓█    ▄ ▒██▀▀██░
+▒██░   ░██▄▄▄▄██ ▓▓█  ░██░▓██▒  ▐▌██▒▒▓▓▄ ▄██▒░▓█ ░██
+░██████▒▓█   ▓██▒▒▒█████▓ ▒██░   ▓██░▒ ▓███▀ ░░▓█▒░██▓
+░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒
 EOF
   printf "%b" "$C_RESET"
 }
@@ -296,7 +300,7 @@ function render_banner() {
   frame_top
   frame_title "MQ REPO LAUNCHER"
   frame_mid
-  frame_row_colored "  ★  PHOSPHOR GRID ACTIVE  ★" "$C_PINK"
+  frame_row_colored "  ★  AMBER COMMIT DECK ACTIVE  ★" "$C_ACCENT"
   frame_blank
   frame_mid
 }
