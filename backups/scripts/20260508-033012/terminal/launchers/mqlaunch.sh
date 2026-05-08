@@ -118,7 +118,6 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-help-menu.sh"
 fi
 
-# Prints header.
 print_header() {
   clear
   if [[ -f "$DASHBOARD_V71" ]]; then
@@ -140,7 +139,6 @@ open_app() {
   }
 }
 
-# Opens path.
 open_path() {
   local path="$1"
   if [[ -e "$path" ]]; then
@@ -151,7 +149,6 @@ open_path() {
   fi
 }
 
-# Opens folder screen.
 open_folder_screen() {
   local title="$1"
   local target="$2"
@@ -174,7 +171,6 @@ open_folder_screen() {
   fi
 }
 
-# Resolves prompt dir.
 resolve_prompt_dir() {
   local candidate
   for candidate in "$BASE_DIR/ai-prompts" "$PROMPT_DIR"; do
@@ -186,7 +182,6 @@ resolve_prompt_dir() {
   return 1
 }
 
-# Resolves ai status.
 resolve_ai_status() {
   if [[ -x "$AI_SCRIPT" ]]; then
     print -r -- "OK"
@@ -197,7 +192,6 @@ resolve_ai_status() {
   fi
 }
 
-# Handles safe run ai.
 safe_run_ai() {
   local mode="$1"
 
@@ -221,7 +215,6 @@ safe_run_ai() {
   fi
 }
 
-# Runs git screen.
 run_git_screen() {
   local title="$1"
   local cmd="$2"
@@ -243,7 +236,6 @@ run_git_screen() {
   pause_enter
 }
 
-# Copies network info.
 copy_network_info() {
   local wifi_ip gateway dns payload
   wifi_ip="$(ipconfig getifaddr en0 2>/dev/null || echo "-")"
@@ -274,7 +266,6 @@ DNS: $dns"
   fi
 }
 
-# Opens network settings.
 open_network_settings() {
   print_header
   row "OPEN NETWORK SETTINGS"
@@ -284,7 +275,6 @@ open_network_settings() {
   open "x-apple.systempreferences:com.apple.Network-Settings.extension"
 }
 
-# Pings test.
 ping_test() {
   print_header
   row "PING TEST"
@@ -297,7 +287,6 @@ ping_test() {
   pause_enter
 }
 
-# Shows dns gateway.
 show_dns_gateway() {
   local gateway dns
   gateway="$(route -n get default 2>/dev/null | awk '/gateway:/{print $2; exit}')"
@@ -336,7 +325,6 @@ show_network_info() {
   pause_enter
 }
 
-# Locks screen.
 lock_screen() {
   if [[ -x "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" ]]; then
     "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
@@ -345,17 +333,14 @@ lock_screen() {
   fi
 }
 
-# Sleeps display.
 sleep_display() {
   pmset displaysleepnow
 }
 
-# Restarts finder.
 restart_finder() {
   killall Finder >/dev/null 2>&1
 }
 
-# Shows date time.
 show_date_time() {
   print_header
   row "DATE AND TIME"
@@ -366,7 +351,6 @@ show_date_time() {
   pause_enter
 }
 
-# Opens repo browser.
 open_repo_browser() {
   print_header
   row "OPEN REPO IN BROWSER"
@@ -377,7 +361,6 @@ open_repo_browser() {
   open "$REPO_URL"
 }
 
-# Opens terminal guide.
 open_terminal_guide() {
   local html="$BASE_DIR/docs/mac-terminal-guide.html"
   local readme="$BASE_DIR/tools/mac-terminal-guide/README.md"
@@ -393,7 +376,6 @@ open_terminal_guide() {
   fi
 }
 
-# Handles system check.
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
@@ -500,27 +482,22 @@ system_check() {
   pause_enter
 }
 
-# Opens downloads folder.
 open_downloads_folder() {
   open_folder_screen "OPEN DOWNLOADS FOLDER" "$HOME/Downloads" "Downloads folder missing:"
 }
 
-# Opens home folder.
 open_home_folder() {
   open_folder_screen "OPEN HOME FOLDER" "$HOME" "Home folder missing:"
 }
 
-# Opens utilities folder.
 open_utilities_folder() {
   open_folder_screen "OPEN UTILITIES FOLDER" "/Applications/Utilities" "Utilities folder missing:"
 }
 
-# Opens applications folder.
 open_applications_folder() {
   open_folder_screen "OPEN APPLICATIONS FOLDER" "/Applications" "Applications folder missing:"
 }
 
-# Opens ai prompts folder.
 open_ai_prompts_folder() {
   local target=""
   target="$(resolve_prompt_dir 2>/dev/null || true)"
@@ -544,7 +521,6 @@ open_ai_prompts_folder() {
   fi
 }
 
-# Shows prompt files.
 show_prompt_files() {
   local resolved_prompt_dir=""
   local -a files
@@ -587,12 +563,10 @@ show_prompt_files() {
   pause_enter
 }
 
-# Edits mqlaunch.
 edit_mqlaunch() {
   ${EDITOR:-nano} "$MQ_SCRIPT"
 }
 
-# Backs up prompts.
 backup_prompts() {
   local resolved_prompt_dir=""
   local stamp backup_file
@@ -636,57 +610,46 @@ backup_prompts() {
   pause_enter
 }
 
-# Opens base dir.
 open_base_dir() {
   open_folder_screen "OPEN MACOS-SCRIPTS FOLDER" "$BASE_DIR" "Base dir missing:"
 }
 
-# Opens launcher folder.
 open_launcher_folder() {
   open_folder_screen "OPEN LAUNCHER FOLDER" "$BASE_DIR/terminal/launchers" "Launcher folder missing:"
 }
 
-# Opens tweaks menu.
 open_tweaks_menu() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" menu
 }
 
-# Shows tweaks status.
 show_tweaks_status() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" status
 }
 
-# Runs tweaks workstation.
 run_tweaks_workstation() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" workstation
 }
 
-# Runs tweaks dev.
 run_tweaks_dev() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" dev
 }
 
-# Runs tweaks clean.
 run_tweaks_clean() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" clean
 }
 
-# Runs tweaks fast.
 run_tweaks_fast() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" fast
 }
 
-# Runs tweaks all.
 run_tweaks_all() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" all
 }
 
-# Reverts tweaks latest.
 revert_tweaks_latest() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" revert-latest
 }
 
-# Backs up mqlaunch.
 backup_mqlaunch() {
   local stamp backup_file
   stamp="$(date '+%Y%m%d-%H%M%S')"
@@ -715,7 +678,6 @@ backup_mqlaunch() {
   pause_enter
 }
 
-# Handles theme cmd.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
   local cmd="${1:-current}"
@@ -738,7 +700,6 @@ theme_cmd() {
   fi
 }
 
-# Handles theme current variant.
 theme_current_variant() {
   local zshrc="$HOME/.zshrc"
 
@@ -749,7 +710,6 @@ theme_current_variant() {
   fi
 }
 
-# Handles theme source state.
 theme_source_state() {
   local zshrc="$HOME/.zshrc"
 
@@ -760,7 +720,6 @@ theme_source_state() {
   fi
 }
 
-# Prints themes menu.
 print_themes_menu() {
   print_header
   row "THEMES"
@@ -774,7 +733,6 @@ print_themes_menu() {
   print_footer
 }
 
-# Handles themes menu loop.
 themes_menu_loop() {
   local choice
 
@@ -803,7 +761,6 @@ themes_menu_loop() {
   done
 }
 
-# Opens git menu.
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
@@ -830,7 +787,6 @@ open_git_menu() {
   fi
 }
 
-# Opens release menu.
 open_release_menu() {
   local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
   if [[ -x "$release_menu" ]]; then
@@ -849,7 +805,6 @@ open_release_menu() {
   fi
 }
 
-# Runs mqworkflows.
 run_mqworkflows() {
   local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
 
@@ -870,7 +825,6 @@ run_mqworkflows() {
   fi
 }
 
-# Opens tools menu.
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 
@@ -890,7 +844,6 @@ open_tools_menu() {
   fi
 }
 
-# Gets repo version.
 get_repo_version() {
   local version_file="$BASE_DIR/VERSION"
 
@@ -901,7 +854,6 @@ get_repo_version() {
   fi
 }
 
-# Shows version info.
 show_version_info() {
   print_header
   row_bold "VERSION INFO"
@@ -926,7 +878,6 @@ show_version_info() {
   pause_enter
 }
 
-# Runs self check.
 run_self_check() {
   print_header
   row_bold "SELF-CHECK"
@@ -959,7 +910,6 @@ run_self_check() {
   return $rc
 }
 
-# Runs debug bundle.
 run_debug_bundle() {
   print_header
   row_bold "DEBUG BUNDLE"
@@ -992,7 +942,6 @@ run_debug_bundle() {
   return $rc
 }
 
-# Shows release notes.
 show_release_notes() {
   print_header
   row_bold "RELEASE NOTES"
@@ -1017,7 +966,6 @@ show_release_notes() {
   pause_enter
 }
 
-# Runs mqlogin.
 run_mqlogin() {
   local login_script="$BASE_DIR/automation/login/mqlogin.sh"
   local login_menu="$BASE_DIR/terminal/menus/mq-login-menu.sh"
@@ -1043,7 +991,6 @@ run_mqlogin() {
   "$login_script" "$@"
 }
 
-# Runs mqshortcuts.
 run_mqshortcuts() {
   local shortcuts_script="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
   local shortcuts_menu="$BASE_DIR/terminal/menus/mq-shortcuts-menu.sh"
@@ -1069,7 +1016,6 @@ run_mqshortcuts() {
   "$shortcuts_script" "$@"
 }
 
-# Shows about dashboard.
 show_about_dashboard() {
   print_header
   row_bold "ABOUT / STATUS"
@@ -1126,7 +1072,6 @@ show_about_dashboard() {
   pause_enter
 }
 
-# Runs command palette.
 run_command_palette() {
   local fzf_bin selected selected_cmd
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
@@ -1187,7 +1132,6 @@ EOF
   esac
 }
 
-# Runs demo mode.
 run_demo_mode() {
   local delay version prompt_dir prompt_count repo_state load_line disk_line ip_addr battery_line active_cmd
   local theme_variant theme_state
@@ -1302,7 +1246,6 @@ run_demo_mode() {
   row "Demo complete. Run  mqlaunch  to open the full menu."
 }
 
-# Handles legacy alias notice.
 legacy_alias_notice() {
   local old_cmd="$1"
   local new_cmd="$2"
@@ -1315,7 +1258,6 @@ legacy_alias_notice() {
   print_footer
 }
 
-# Handles tweaks menu loop.
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
 
@@ -1328,7 +1270,6 @@ tweaks_menu_loop() {
   fi
 }
 
-# Runs arg command.
 run_arg_command() {
   local cmd="${1:l}"
   shift || true

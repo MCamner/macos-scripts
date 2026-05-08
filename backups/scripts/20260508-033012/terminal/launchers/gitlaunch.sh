@@ -84,7 +84,6 @@ function save_state() {
   } > "$STATE_FILE"
 }
 
-# Handles load state.
 function load_state() {
   if [ -f "$STATE_FILE" ]; then
     source $STATE_FILE
@@ -112,7 +111,6 @@ function resolve_repo_path() {
   (cd "$repo_path" 2>/dev/null && pwd) || return 1
 }
 
-# Sets repo.
 function set_repo() {
   local repo_path="$1"
   local save="${2:-}"
@@ -138,7 +136,6 @@ function set_repo() {
   fi
 }
 
-# Handles switch repo.
 function switch_repo() {
   echo "Enter local repo path:"
   echo -n "> "
@@ -204,19 +201,16 @@ function clear_screen() {
   clear
 }
 
-# Handles use gum menu.
 function use_gum_menu() {
   [[ -t 0 && -t 1 && -n "$GUM_BIN" ]]
 }
 
-# Handles repeat char.
 function repeat_char() {
   local char="$1"
   local count="$2"
   printf "%${count}s" "" | tr " " "$char"
 }
 
-# Handles truncate text.
 function truncate_text() {
   local text="$1"
   local max="$2"
@@ -230,34 +224,28 @@ function truncate_text() {
   fi
 }
 
-# Handles frame top.
 function frame_top() {
   printf "%b┌%s┐%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame mid.
 function frame_mid() {
   printf "%b├%s┤%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame bottom.
 function frame_bottom() {
   printf "%b└%s┘%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame blank.
 function frame_blank() {
   printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame row.
 function frame_row() {
   local text
   text=$(truncate_text "$1" "$UI_INNER")
   printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "$text" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame row colored.
 function frame_row_colored() {
   local text color
   text=$(truncate_text "$1" "$UI_INNER")
@@ -265,7 +253,6 @@ function frame_row_colored() {
   printf "%b│%b %b%-${UI_INNER}s%b %b│%b\n" "$C_BORDER" "$C_RESET" "$color" "$text" "$C_RESET" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame two col.
 function frame_two_col() {
   local left right col_width
   col_width=$(((UI_INNER - 3) / 2))
@@ -275,7 +262,6 @@ function frame_two_col() {
     "$C_BORDER" "$C_RESET" "$left" "$C_BORDER" "$C_RESET" "$right" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame title.
 function frame_title() {
   local title="$1"
   local title_len=${#title}
@@ -289,7 +275,6 @@ function frame_title() {
     "$C_BORDER" "$C_RESET" "" "$C_TITLE" "$title" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
-# Handles render banner.
 function render_banner() {
   render_ascii
   echo
@@ -301,7 +286,6 @@ function render_banner() {
   frame_mid
 }
 
-# Handles remote state.
 function remote_state() {
   local ahead behind
 
@@ -321,29 +305,24 @@ function remote_state() {
   fi
 }
 
-# Handles fallback border top.
 function fallback_border_top() {
   printf "%b┌────────────────────────────────────────────────────────────────────────┐%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback border mid.
 function fallback_border_mid() {
   printf "%b├────────────────────────────────────────────────────────────────────────┤%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback border bottom.
 function fallback_border_bottom() {
   printf "%b└────────────────────────────────────────────────────────────────────────┘%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback row.
 function fallback_row() {
   local text
   text=$(truncate_text "$1" 70)
   printf "%b│%b %-70s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback row colored.
 function fallback_row_colored() {
   local text color
   text=$(truncate_text "$1" 70)
@@ -351,7 +330,6 @@ function fallback_row_colored() {
   printf "%b│%b %b%-70s%b %b│%b\n" "$C_CYAN" "$C_RESET" "$color" "$text" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback status row.
 function fallback_status_row() {
   local label="$1"
   local value="$2"
@@ -365,7 +343,6 @@ function fallback_status_row() {
 # STATUS
 # ------------------------
 
-# Handles status check.
 function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
@@ -419,7 +396,6 @@ function render_menu() {
   frame_bottom
 }
 
-# Handles render next action.
 function render_next_action() {
   if ! use_gum_menu; then
     fallback_border_mid
@@ -433,7 +409,6 @@ function render_next_action() {
   frame_bottom
 }
 
-# Handles prompt choice.
 function prompt_choice() {
   local prompt_sep input old_stty
   prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
