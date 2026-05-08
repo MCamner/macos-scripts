@@ -495,6 +495,9 @@ function prompt_choice() {
 
   if [[ -t 0 ]]; then
     old_stty="$(stty -g)"
+    local _drain
+    stty min 0 time 0 2>/dev/null || true
+    while IFS= read -r -k 1 _drain 2>/dev/null; do :; done
     stty -echo -icanon min 1 time 0 2>/dev/null || true
     IFS= read -r -k 1 input 2>/dev/null || input=""
     stty "$old_stty" 2>/dev/null || true
