@@ -266,6 +266,14 @@ function frame_top() {
   printf "%b┌%s┐%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
+# Handles frame top titled.
+function frame_top_titled() {
+  local title="$1"
+  local rest=$(( UI_WIDTH - 5 - ${#title} ))
+  (( rest < 0 )) && rest=0
+  printf "%b┌─ %b%s%b %s┐%b\n" "$C_BORDER" "$C_TITLE" "$title" "$C_BORDER" "$(repeat_char "─" "$rest")" "$C_RESET"
+}
+
 # Handles frame mid.
 function frame_mid() {
   printf "%b├%s┤%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
@@ -436,8 +444,18 @@ function status_check() {
 # MENU
 # ------------------------
 function render_menu() {
+  local git_state host_name
+  host_name="$(hostname -s 2>/dev/null || echo unknown)"
+  if [[ "${CHANGES:-0}" -eq 0 ]]; then
+    git_state="Clean"
+  else
+    git_state="Dirty (${CHANGES})"
+  fi
+
   echo
-  frame_top
+  frame_top_titled "Gitlaunch"
+  frame_row "Host: $host_name   User: ${USER:-mansys}   Git: $git_state"
+  frame_mid
   frame_row_colored "1. GIT STATUS" "$C_LABEL"
   frame_row_colored "2. GIT PULL" "$C_LABEL"
   frame_row_colored "3. AI COMMIT" "$C_LABEL"
