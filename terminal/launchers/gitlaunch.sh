@@ -452,7 +452,6 @@ function render_menu() {
     git_state="Dirty (${CHANGES})"
   fi
 
-  echo
   frame_top_titled "Gitlaunch"
   frame_row "Host: $host_name   User: ${USER:-mansys}   Git: $git_state"
   frame_mid
