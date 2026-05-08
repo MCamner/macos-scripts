@@ -7,6 +7,7 @@ export LC_MESSAGES=C.UTF-8
 STATE_FILE=~/.gitlaunch_state
 DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
+WORK_DIR=""
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -77,6 +78,7 @@ EOF
 function save_state() {
   {
     print -r -- "REPO=${(qqq)REPO}"
+    print -r -- "WORK_DIR=${(qqq)WORK_DIR}"
     print -r -- "LAST_ACTION=${(qqq)1}"
     print -r -- "TIMESTAMP=${(qqq)$(date)}"
   } > "$STATE_FILE"
@@ -112,15 +114,15 @@ function resolve_repo_path() {
 function set_repo() {
   local repo_path="$1"
   local save="${2:-}"
-  local resolved_repo
+  local resolved_path resolved_repo
 
-  resolved_repo=$(resolve_repo_path "$repo_path") || {
+  resolved_path=$(resolve_repo_path "$repo_path") || {
     echo "Path not found: $repo_path"
     sleep 1
     return 1
   }
 
-  resolved_repo=$(git -C "$resolved_repo" rev-parse --show-toplevel 2>/dev/null)
+  resolved_repo=$(git -C "$resolved_path" rev-parse --show-toplevel 2>/dev/null)
   if [ -z "$resolved_repo" ]; then
     echo "Not a git repo: $repo_path"
     sleep 1
@@ -128,6 +130,7 @@ function set_repo() {
   fi
 
   REPO=$resolved_repo
+  WORK_DIR=$resolved_path
   if [ "$save" = "save" ]; then
     save_state "set_repo"
   fi
@@ -154,6 +157,7 @@ function switch_repo() {
 # ------------------------
 function detect_repo() {
   local detected=""
+  local detected_path=""
 
   if [ -n "$REQUESTED_REPO" ]; then
     set_repo "$REQUESTED_REPO" || REPO=""
@@ -164,6 +168,8 @@ function detect_repo() {
     detected=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)
     if [ -n "$detected" ]; then
       REPO=$detected
+      detected_path=$(pwd)
+      WORK_DIR=$detected_path
     fi
   fi
 
@@ -175,12 +181,16 @@ function detect_repo() {
     read choice
 
     case $choice in
-      1) REPO=$DEFAULT_REPO ;;
+      1)
+        REPO=$DEFAULT_REPO
+        WORK_DIR=$DEFAULT_REPO
+        ;;
       *) exit ;;
     esac
   fi
 
-  cd "$REPO" || exit
+  [ -n "$WORK_DIR" ] || WORK_DIR="$REPO"
+  cd "$WORK_DIR" || exit
 }
 
 # ------------------------
@@ -344,6 +354,7 @@ function status_check() {
     fallback_row_colored "REPO COMMAND DECK" "$C_YELLOW"
     fallback_border_mid
     fallback_status_row "Repo" "$REPO"
+    fallback_status_row "Path" "${WORK_DIR:-$REPO}"
     fallback_status_row "Branch" "$BRANCH"
     fallback_status_row "Status" "${CHANGES} change(s)"
     if [ "$CHANGES" -eq 0 ]; then
@@ -356,7 +367,7 @@ function status_check() {
   fi
 
   render_banner
-  frame_row "PATH   : $REPO"
+  frame_row "PATH   : ${WORK_DIR:-$REPO}"
   frame_row "BRANCH : ${BRANCH:u}"
   if [ "$CHANGES" -eq 0 ]; then
     frame_row_colored "STATE  : CLEAN" "$C_GOOD"
@@ -409,10 +420,14 @@ function prompt_choice() {
   printf "\033[3A"
   printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
 
-  old_stty="$(stty -g)"
-  stty -echo -icanon min 1 time 0 2>/dev/null || true
-  IFS= read -r -k 1 input 2>/dev/null || input=""
-  stty "$old_stty" 2>/dev/null || true
+  if [[ -t 0 ]]; then
+    old_stty="$(stty -g)"
+    stty -echo -icanon min 1 time 0 2>/dev/null || true
+    IFS= read -r -k 1 input 2>/dev/null || input=""
+    stty "$old_stty" 2>/dev/null || true
+  else
+    IFS= read -r input || input="b"
+  fi
 
   printf "%s\n" "$input"
   printf "\033[2B"
@@ -579,7 +594,7 @@ if load_state; then
   read resume
 
   if [[ "$resume" == "y" ]]; then
-    cd "$REPO"
+    cd "${WORK_DIR:-$REPO}"
     echo "🚀 Restoring workspace..."
 
     echo "Workspace restored"
@@ -654,10 +669,10 @@ while true; do
       save_state "dev_mode"
 
       open -a "ChatGPT Atlas"
-      open -a Terminal "$REPO"
+      open -a Terminal "${WORK_DIR:-$REPO}"
 
       if command -v code >/dev/null 2>&1; then
-        code "$REPO"
+        code "${WORK_DIR:-$REPO}"
       fi
 
       REPO_NAME=$(basename "$REPO")

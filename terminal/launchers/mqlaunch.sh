@@ -764,20 +764,18 @@ themes_menu_loop() {
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
-  local git_repo=""
+  local git_path=""
 
   if [[ -n "$repo_arg" ]]; then
-    git_repo="$(git -C "$repo_arg" rev-parse --show-toplevel 2>/dev/null || true)"
-    [[ -n "$git_repo" ]] || git_repo="$repo_arg"
+    git_path="$repo_arg"
   else
-    git_repo="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true)"
-    [[ -n "$git_repo" ]] || git_repo="$BASE_DIR"
+    git_path="$(pwd)"
   fi
 
   if [[ -x "$git_script" ]]; then
-    MQ_GIT_REPO="$git_repo" "$git_script"
+    MQ_GIT_REPO="$git_path" "$git_script"
   elif [[ -f "$git_script" ]]; then
-    MQ_GIT_REPO="$git_repo" zsh "$git_script"
+    MQ_GIT_REPO="$git_path" zsh "$git_script"
   else
     print_header
     row "GIT MENU"
