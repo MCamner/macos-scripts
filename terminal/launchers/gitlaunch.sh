@@ -28,6 +28,7 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_PINK=$'\e[95m'
   C_MAGENTA=$'\e[35m'
   C_WHITE=$'\e[1;97m'
+  C_BLINK=$'\e[5m'
 else
   C_RESET=""
   C_BOLD=""
@@ -47,6 +48,7 @@ else
   C_PINK=""
   C_MAGENTA=""
   C_WHITE=""
+  C_BLINK=""
 fi
 
 GUM_BIN="$(command -v gum 2>/dev/null || true)"
@@ -57,24 +59,47 @@ UI_INNER=$((UI_WIDTH - 4))
 # ASCII ART
 # ------------------------
 function render_ascii() {
-  printf "%b" "$C_DARK_YELLOW"
-  cat <<'EOF'
-   ▄████  ██▓▄▄▄█████▓
-  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒
- ▒██░▄▄▄░▒██▒▒ ▓██░ ▒░
- ░▓█  ██▓░██░░ ▓██▓ ░
- ░▒▓███▀▒░██░  ▒██▒ ░
-  ░▒   ▒ ░▓    ▒ ░░
-EOF
+  local pulse line
+  local -a pulses dark_lines amber_lines
+
+  pulses=(
+    "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+    "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+    "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+  )
+  for pulse in "${pulses[@]}"; do
+    printf "%b  %s%b\r" "$C_AMBER" "$pulse" "$C_RESET"
+    sleep 0.05
+  done
+  printf "\033[2K"
+
+  dark_lines=(
+    "   ▄████  ██▓▄▄▄█████▓"
+    "  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒"
+    " ▒██░▄▄▄░▒██▒▒ ▓██░ ▒░"
+    " ░▓█  ██▓░██░░ ▓██▓ ░ "
+    " ░▒▓███▀▒░██░  ▒██▒ ░ "
+    "  ░▒   ▒ ░▓    ▒ ░░   "
+  )
+  amber_lines=(
+    " ██▓    ▄▄▄       █    ██  ███▄    █  ▄████▄   ██░ ██ "
+    "▓██▒   ▒████▄     ██  ▓██▒ ██ ▀█   █ ▒██▀ ▀█  ▓██░ ██▒"
+    "▒██░   ▒██  ▀█▄  ▓██  ▒██░▓██  ▀█ ██▒▒▓█    ▄ ▒██▀▀██░"
+    "▒██░   ░██▄▄▄▄██ ▓▓█  ░██░▓██▒  ▐▌██▒▒▓▓▄ ▄██▒░▓█ ░██ "
+    "░██████▒▓█   ▓██▒▒▒█████▓ ▒██░   ▓██░▒ ▓███▀ ░░▓█▒░██▓"
+    "░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒"
+  )
+
+  printf "%b" "$C_TITLE"
+  for line in "${dark_lines[@]}"; do
+    printf '%s\n' "$line"
+    sleep 0.03
+  done
   printf "%b" "$C_AMBER"
-  cat <<'EOF'
- ██▓    ▄▄▄       █    ██  ███▄    █  ▄████▄   ██░ ██
-▓██▒   ▒████▄     ██  ▓██▒ ██ ▀█   █ ▒██▀ ▀█  ▓██░ ██▒
-▒██░   ▒██  ▀█▄  ▓██  ▒██░▓██  ▀█ ██▒▒▓█    ▄ ▒██▀▀██░
-▒██░   ░██▄▄▄▄██ ▓▓█  ░██░▓██▒  ▐▌██▒▒▓▓▄ ▄██▒░▓█ ░██
-░██████▒▓█   ▓██▒▒▒█████▓ ▒██░   ▓██░▒ ▓███▀ ░░▓█▒░██▓
-░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒
-EOF
+  for line in "${amber_lines[@]}"; do
+    printf '%s\n' "$line"
+    sleep 0.03
+  done
   printf "%b" "$C_RESET"
 }
 
@@ -302,7 +327,7 @@ function render_banner() {
   frame_top
   frame_title "MQ REPO LAUNCHER"
   frame_mid
-  frame_row_colored "  ★  AMBER COMMIT DECK ACTIVE  ★" "$C_ACCENT"
+  frame_row_colored "  ★  AMBER COMMIT DECK ACTIVE  ★" "${C_ACCENT}${C_BLINK}"
   frame_blank
   frame_mid
 }
