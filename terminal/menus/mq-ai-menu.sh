@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 
 print_ai_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row "AI MODES"
-  empty_row
-
-  row2 " 1. Auto Mode" " 2. Atlas One"
-  row2 " 3. Atlas Router" " 4. Decision"
-  row2 " 5. Research" " 6. Root Cause"
-  row2 " 7. Problem Solving" " 8. Prompt Debugger"
-  row2 " 9. AI Menu" " b. Back"
-
-  print_footer
+  surface_panel_header "AI Modes" "AI" "$width" "$panel_color"
+  surface_row "MODES" "$width" "$panel_color"
+  surface_split_row "1. Auto Mode" "2. Atlas One" "$width" "$panel_color"
+  surface_split_row "3. Atlas Router" "4. Decision" "$width" "$panel_color"
+  surface_split_row "5. Research" "6. Root Cause" "$width" "$panel_color"
+  surface_split_row "7. Problem Solving" "8. Prompt Debugger" "$width" "$panel_color"
+  surface_split_row "9. AI Menu" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 handle_ai_menu_choice() {

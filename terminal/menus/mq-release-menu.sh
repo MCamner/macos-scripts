@@ -599,20 +599,29 @@ auto_release() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "RELEASE"
-  empty_row
-  row "Repo: $RELEASE_REPO"
-  empty_row
-
-  row2 " 1. Release status" " 2. Change repo"
-  row2 " 3. Initialize files" " 4. Dry run release"
-  row2 " 5. Run release" " 6. Create GitHub release"
-  row2 " 7. View changelog" " 8. Show latest tags"
-  row2 " 9. Open changelog" "10. Open release script"
-  row2 "11. Auto release" " b. Back"
-
-  print_footer
+  surface_panel_header "Release" "Release" "$width" "$panel_color"
+  surface_row "Repo: $RELEASE_REPO" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "CHECKS" "$width" "$panel_color"
+  surface_split_row "1. Release status" "2. Change repo" "$width" "$panel_color"
+  surface_split_row "3. Initialize files" "4. Dry run release" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "SHIP" "$width" "$panel_color"
+  surface_split_row "5. Run release" "6. Create GitHub release" "$width" "$panel_color"
+  surface_split_row "11. Auto release" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "REFERENCE" "$width" "$panel_color"
+  surface_split_row "7. View changelog" "8. Show latest tags" "$width" "$panel_color"
+  surface_split_row "9. Open changelog" "10. Open release script" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {

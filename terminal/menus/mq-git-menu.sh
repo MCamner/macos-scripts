@@ -496,21 +496,27 @@ open_local_repo() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "GIT MENU"
-  empty_row
-  row "Repo: $CURRENT_REPO"
-  empty_row
-
-  row2 " 1. Repo status" " 2. Diff risk analysis"
-  row2 " 3. Suggest commit message" " 4. Next recommended action"
-  row2 " 5. Stage selected files" " 6. Commit staged changes"
-  row2 " 7. Safe push" " 8. Pull with rebase"
-  row2 "10. Open repo on GitHub" "11. Open local repo folder"
-  row2 "12. Change repo path" ""
-  row2 " b. Back" ""
-
-  print_footer
+  surface_panel_header "Git Menu" "Git" "$width" "$panel_color"
+  surface_row "Repo: $CURRENT_REPO" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "WORKSPACE" "$width" "$panel_color"
+  surface_split_row "1. Repo status" "2. Diff risk analysis" "$width" "$panel_color"
+  surface_split_row "3. Suggest commit message" "4. Next recommended action" "$width" "$panel_color"
+  surface_split_row "5. Stage selected files" "6. Commit staged changes" "$width" "$panel_color"
+  surface_split_row "7. Safe push" "8. Pull with rebase" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "NAVIGATION" "$width" "$panel_color"
+  surface_split_row "10. Open repo on GitHub" "11. Open local repo folder" "$width" "$panel_color"
+  surface_split_row "12. Change repo path" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {

@@ -1,31 +1,37 @@
 #!/usr/bin/env bash
 
+render_apps_panel() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
+  surface_panel_header "Apps / Shortcuts" "Apps" "$width" "$panel_color"
+  surface_row "APPS" "$width" "$panel_color"
+  surface_split_row "1. Finder" "2. Safari" "$width" "$panel_color"
+  surface_split_row "3. Google Chrome" "4. Spotify" "$width" "$panel_color"
+  surface_split_row "5. Xcode" "6. System Settings" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "FOLDERS" "$width" "$panel_color"
+  surface_split_row "7. Downloads" "8. Home" "$width" "$panel_color"
+  surface_split_row "9. Utilities" "10. Applications" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "QUICK ACTIONS" "$width" "$panel_color"
+  surface_split_row "11. Lock screen" "12. Sleep display" "$width" "$panel_color"
+  surface_split_row "13. Restart Finder" "14. Repo in browser" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
 open_apps_menu() {
   local choice
 
   while true; do
     print_header
-    row_bold "APPS / SHORTCUTS"
-    empty_row
-
-    row "APPS"
-    row3 " 1. Finder" " 2. Safari" " 3. Google Chrome"
-    row3 " 4. Spotify" " 5. Xcode" " 6. System Settings"
-
-    empty_row
-    row "FOLDERS"
-    row2 " 7. Downloads" " 8. Home"
-    row2 " 9. Utilities" "10. Applications"
-
-    empty_row
-    row "QUICK ACTIONS"
-    row2 "11. Lock screen" "12. Sleep display"
-    row2 "13. Restart Finder" "14. Repo in browser"
-
-    empty_row
-    row2 " b. Back" " x. Exit"
-
-    print_footer
+    render_apps_panel
     if command -v read_main_choice >/dev/null 2>&1; then
       read_main_choice || return
     else

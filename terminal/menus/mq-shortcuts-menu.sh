@@ -161,16 +161,23 @@ show_shortcuts_help() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "SHORTCUTS"
-  empty_row
-
-  row2 " 1. List shortcuts" " 2. List folders"
-  row2 " 3. Search shortcuts" " 4. Run shortcut"
-  row2 " 5. View shortcut" " 6. Open Shortcuts app"
-  row2 " 7. Show mqshortcuts help" " b. Back"
-
-  print_footer
+  surface_panel_header "Shortcuts" "Shortcuts" "$width" "$panel_color"
+  surface_row "BROWSE" "$width" "$panel_color"
+  surface_split_row "1. List shortcuts" "2. List folders" "$width" "$panel_color"
+  surface_split_row "3. Search shortcuts" "4. Run shortcut" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "ACTIONS" "$width" "$panel_color"
+  surface_split_row "5. View shortcut" "6. Open Shortcuts app" "$width" "$panel_color"
+  surface_split_row "7. Show mqshortcuts help" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {

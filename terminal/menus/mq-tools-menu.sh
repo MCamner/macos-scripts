@@ -429,19 +429,28 @@ document_functions_menu_loop() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "TOOLS MENU"
-  empty_row
-
-  row2 " 1. Run system check" " 2. Open repo folder"
-  row2 " 3. Open launchers folder" " 4. Open themes folder"
-  row2 " 5. Open menus folder" " 6. Open dashboard"
-  row2 " 7. Open terminal guide" " 8. Show key paths"
-  row2 " 9. Show git status" "10. Boot Maker"
-  row2 "11. Blackout Mode" "12. Document functions"
-  row2 " b. Back" ""
-
-  print_footer
+  surface_panel_header "Tools Menu" "Tools" "$width" "$panel_color"
+  surface_row "SYSTEM" "$width" "$panel_color"
+  surface_split_row "1. Run system check" "2. Open repo folder" "$width" "$panel_color"
+  surface_split_row "3. Open launchers folder" "4. Open themes folder" "$width" "$panel_color"
+  surface_split_row "5. Open menus folder" "6. Open dashboard" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "REFERENCE" "$width" "$panel_color"
+  surface_split_row "7. Open terminal guide" "8. Show key paths" "$width" "$panel_color"
+  surface_split_row "9. Show git status" "10. Boot Maker" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "ACTIONS" "$width" "$panel_color"
+  surface_split_row "11. Blackout Mode" "12. Document functions" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {

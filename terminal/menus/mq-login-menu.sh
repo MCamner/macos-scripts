@@ -97,17 +97,23 @@ show_login_help() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "LOGIN"
-  empty_row
-
-  row2 " 1. Start session menu" " 2. Start session about"
-  row2 " 3. Start session check" " 4. Inline menu session"
-  row2 " 5. Inline about session" " 6. Quiet inline menu"
-  row2 " 7. Quiet inline about" " 8. Show mqlogin help"
-  row2 " b. Back" ""
-
-  print_footer
+  surface_panel_header "Login" "Login" "$width" "$panel_color"
+  surface_row "SESSION" "$width" "$panel_color"
+  surface_split_row "1. Start session menu" "2. Start session about" "$width" "$panel_color"
+  surface_split_row "3. Start session check" "4. Inline menu session" "$width" "$panel_color"
+  surface_split_row "5. Inline about session" "6. Quiet inline menu" "$width" "$panel_color"
+  surface_split_row "7. Quiet inline about" "8. Show mqlogin help" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {

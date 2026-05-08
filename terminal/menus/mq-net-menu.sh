@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 
 print_net_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row "NET LAUNCH"
-  empty_row
-
-  row2 " 1. Show IP + network info" " 2. Ping test"
-  row2 " 3. Show DNS + gateway" " 4. Open Network Settings"
-  row2 " 5. Copy IP info to clipboard" " b. Back"
-
-  print_footer
+  surface_panel_header "Network" "Network" "$width" "$panel_color"
+  surface_row "TOOLS" "$width" "$panel_color"
+  surface_split_row "1. Show IP + network info" "2. Ping test" "$width" "$panel_color"
+  surface_split_row "3. Show DNS + gateway" "4. Open Network Settings" "$width" "$panel_color"
+  surface_split_row "5. Copy IP info to clipboard" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 handle_net_menu_choice() {

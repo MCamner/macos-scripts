@@ -67,6 +67,17 @@ assert_grep 'surface_split_row "h\. Health Check" "a\. HAL"' "$PROJECT_ROOT/term
 assert_grep 'render_help_center_panel' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center panel exists"
 assert_grep 'surface_top "Help"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center uses surface panel"
 assert_grep 'surface_split_row "1\. Command index" "2\. About / Status"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center contains reference actions"
+assert_grep 'surface_panel_header "System"' "$PROJECT_ROOT/terminal/menus/mq-system-menu.sh" "System menu uses surface panel"
+assert_grep 'surface_panel_header "Prompt Tools"' "$PROJECT_ROOT/terminal/menus/mq-dev-menu.sh" "Dev menu uses surface panel"
+assert_grep 'surface_panel_header "AI Modes"' "$PROJECT_ROOT/terminal/menus/mq-ai-menu.sh" "AI menu uses surface panel"
+assert_grep 'surface_panel_header "Network"' "$PROJECT_ROOT/terminal/menus/mq-net-menu.sh" "Network menu uses surface panel"
+assert_grep 'surface_panel_header "Apps / Shortcuts"' "$PROJECT_ROOT/terminal/menus/mq-apps-menu.sh" "Apps menu uses surface panel"
+assert_grep 'surface_panel_header "Git Menu"' "$PROJECT_ROOT/terminal/menus/mq-git-menu.sh" "Git menu uses surface panel"
+assert_grep 'surface_panel_header "Release"' "$PROJECT_ROOT/terminal/menus/mq-release-menu.sh" "Release menu uses surface panel"
+assert_grep 'surface_panel_header "Tools Menu"' "$PROJECT_ROOT/terminal/menus/mq-tools-menu.sh" "Tools menu uses surface panel"
+assert_grep 'surface_panel_header "Workflows"' "$PROJECT_ROOT/terminal/menus/mq-workflows-menu.sh" "Workflows menu uses surface panel"
+assert_grep 'surface_panel_header "Shortcuts"' "$PROJECT_ROOT/terminal/menus/mq-shortcuts-menu.sh" "Shortcuts menu uses surface panel"
+assert_grep 'surface_panel_header "Login"' "$PROJECT_ROOT/terminal/menus/mq-login-menu.sh" "Login menu uses surface panel"
 
 echo
 echo "All legacy + bridge checks passed."

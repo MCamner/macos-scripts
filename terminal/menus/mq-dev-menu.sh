@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
 
 print_dev_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_menu_title "PROMPT TOOLS"
-  empty_row
-
-  row2 " 1. Open AI Prompts folder" " 2. Show prompt files"
-  row2 " 3. Edit mqlaunch" " 4. Backup prompts"
-  row2 " 5. Backup mqlaunch" " 6. Open macos-scripts folder"
-  row2 " 7. Open launcher folder" " 8. HAL terminal guide"
-  row2 " 9. Git Menu" "10. Net Launch"
-  row2 "11. Themes" "12. Tools Menu"
-  row2 " b. Back" ""
-
-  print_footer
+  surface_panel_header "Prompt Tools" "Dev" "$width" "$panel_color"
+  surface_row "PROMPTS" "$width" "$panel_color"
+  surface_split_row "1. Open AI Prompts folder" "2. Show prompt files" "$width" "$panel_color"
+  surface_split_row "3. Edit mqlaunch" "4. Backup prompts" "$width" "$panel_color"
+  surface_split_row "5. Backup mqlaunch" "6. Open macos-scripts folder" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "NAVIGATION" "$width" "$panel_color"
+  surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
+  surface_split_row "9. Git Menu" "10. Net Launch" "$width" "$panel_color"
+  surface_split_row "11. Themes" "12. Tools Menu" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 handle_dev_menu_choice() {

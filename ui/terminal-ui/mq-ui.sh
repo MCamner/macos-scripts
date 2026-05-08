@@ -119,6 +119,39 @@ surface_split_row() {
     "$C_RESET"
 }
 
+surface_git_state() {
+  local count
+  count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+
+  if [[ -z "$count" || "$count" == "0" ]]; then
+    printf "Clean"
+  else
+    printf "Dirty (%s)" "$count"
+  fi
+}
+
+surface_panel_color() {
+  if [[ -t 1 ]]; then
+    printf '\033[0;37m'
+  fi
+}
+
+surface_panel_header() {
+  local title="$1"
+  local mode="${2:-$1}"
+  local width="$3"
+  local color="$4"
+  local host user git_state
+
+  host="$(hostname -s 2>/dev/null || echo unknown)"
+  user="${USER:-unknown}"
+  git_state="$(surface_git_state)"
+
+  surface_top "$title" "$width" "$color"
+  surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$color"
+  surface_row "" "$width" "$color"
+}
+
 # ------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------

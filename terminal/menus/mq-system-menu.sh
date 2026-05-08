@@ -1,36 +1,40 @@
 #!/usr/bin/env bash
 
+render_system_panel() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
+  surface_panel_header "System" "System" "$width" "$panel_color"
+  surface_row "OBSERVABILITY" "$width" "$panel_color"
+  surface_split_row "1. Performance" "2. Network" "$width" "$panel_color"
+  surface_split_row "3. Network Ghost" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "HEALTH / SAFETY" "$width" "$panel_color"
+  surface_split_row "4. Doctor" "5. Self-check" "$width" "$panel_color"
+  surface_split_row "6. Debug bundle" "7. System check" "$width" "$panel_color"
+  surface_split_row "8. Vault Scan" "9. Reap" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "SESSION / CONTROL" "$width" "$panel_color"
+  surface_split_row "10. Lock screen" "11. Sleep display" "$width" "$panel_color"
+  surface_split_row "12. Restart Finder" "13. Show date and time" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "NAVIGATION" "$width" "$panel_color"
+  surface_split_row "14. Repo folder" "15. Repo in browser" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
 open_system_menu() {
   local choice
 
   while true; do
     print_header
-    row_menu_title "SYSTEM"
-    empty_row
-
-    row "OBSERVABILITY"
-    row2 " 1. Performance"   " 2. Network"
-    row2 " 3. Network Ghost" ""
-
-    empty_row
-    row "HEALTH / SAFETY"
-    row2 " 4. Doctor"        " 5. Self-check"
-    row2 " 6. Debug bundle"  " 7. System check"
-    row2 " 8. Vault Scan"    " 9. Reap"
-
-    empty_row
-    row "SESSION / CONTROL"
-    row2 "10. Lock screen"   "11. Sleep display"
-    row2 "12. Restart Finder" "13. Show date and time"
-
-    empty_row
-    row "NAVIGATION"
-    row2 "14. Repo folder" "15. Repo in browser"
-
-    empty_row
-    row2 " b. Back" " x. Exit"
-
-    print_footer
+    render_system_panel
     if command -v read_main_choice >/dev/null 2>&1; then
       read_main_choice "system" || return
     else

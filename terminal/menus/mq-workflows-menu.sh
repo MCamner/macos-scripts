@@ -228,18 +228,27 @@ restore_workspace_snapshot() {
 }
 
 print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
   print_header
-  row_bold "WORKFLOWS"
-  empty_row
-
-  row2 " 1. Workflows status" " 2. Run project boot"
-  row2 " 3. Custom project boot" " 4. Run project check"
-  row2 " 5. Custom project check" " 6. Open workflows folder"
-  row2 " 7. Open workflows README" " 8. Workspace snapshots"
-  row2 " 9. Save workspace" "10. Restore workspace"
-  row2 " b. Back" ""
-
-  print_footer
+  surface_panel_header "Workflows" "Workflows" "$width" "$panel_color"
+  surface_row "PROJECT" "$width" "$panel_color"
+  surface_split_row "1. Workflows status" "2. Run project boot" "$width" "$panel_color"
+  surface_split_row "3. Custom project boot" "4. Run project check" "$width" "$panel_color"
+  surface_split_row "5. Custom project check" "6. Open workflows folder" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "REFERENCE" "$width" "$panel_color"
+  surface_split_row "7. Open workflows README" "8. Workspace snapshots" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "WORKSPACE" "$width" "$panel_color"
+  surface_split_row "9. Save workspace" "10. Restore workspace" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 menu_loop() {
