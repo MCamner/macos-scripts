@@ -7,6 +7,78 @@ GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 VECTOR_STORE_ID="${MQ_TERMINAL_GUIDE_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
 
+hal_width() {
+  local cols
+  cols="$(tput cols 2>/dev/null || echo 80)"
+  (( cols < 64 )) && cols=64
+  (( cols > 80 )) && cols=80
+  printf '%s\n' "$cols"
+}
+
+hal_repeat() {
+  local count="$1"
+  local char="${2:- }"
+  local out=""
+
+  while (( count > 0 )); do
+    out+="$char"
+    (( count-- ))
+  done
+
+  printf '%s' "$out"
+}
+
+hal_pad() {
+  local text="$1"
+  local width="$2"
+  local len pad
+  len="${#text}"
+
+  if (( len > width )); then
+    printf '%s' "${text:0:width}"
+    return
+  fi
+
+  pad=$(( width - len ))
+  printf '%s%s' "$text" "$(hal_repeat "$pad" " ")"
+}
+
+hal_top() {
+  local title="$1"
+  local width="$2"
+  local inner rest
+  inner=$(( width - 4 ))
+  rest=$(( inner - ${#title} - 1 ))
+  (( rest < 0 )) && rest=0
+
+  printf '┌─ %s %s┐\n' "$title" "$(hal_repeat "$rest" "─")"
+}
+
+hal_row() {
+  local text="$1"
+  local width="$2"
+  local inner
+  inner=$(( width - 4 ))
+  printf '│ %s │\n' "$(hal_pad "$text" "$inner")"
+}
+
+hal_split_row() {
+  local left="$1"
+  local right="$2"
+  local width="$3"
+  local inner left_width right_width
+  inner=$(( width - 4 ))
+  left_width=$(( inner / 2 ))
+  right_width=$(( inner - left_width ))
+
+  printf '│ %s%s │\n' "$(hal_pad "$left" "$left_width")" "$(hal_pad "$right" "$right_width")"
+}
+
+hal_bottom() {
+  local width="$1"
+  printf '└%s┘\n' "$(hal_repeat "$(( width - 2 ))" "─")"
+}
+
 load_env_file() {
   local file="$1"
   local line key value
@@ -207,25 +279,28 @@ execute_safe_intent() {
 }
 
 print_hal_menu() {
-  cat <<'MENU'
+  local width
+  width="$(hal_width)"
 
-HAL
-
-APPS
- 1. Finder                  2. Safari                  3. Google Chrome
- 4. Spotify                 5. Xcode                   6. System Settings
-
-FOLDERS
- 7. Downloads               8. Home
- 9. Utilities              10. Applications
-
-QUICK ACTIONS
-11. Lock screen            12. Sleep display
-13. Restart Finder         14. Repo in browser
-
-Type a number, a command, or a question.
-Commands: /guide, /quit
-MENU
+  hal_top "HAL" "$width"
+  hal_row "Terminal Guide and Safe macOS Actions" "$width"
+  hal_row "" "$width"
+  hal_row "APPS" "$width"
+  hal_split_row " 1. Finder" " 2. Safari" "$width"
+  hal_split_row " 3. Google Chrome" " 4. Spotify" "$width"
+  hal_split_row " 5. Xcode" " 6. System Settings" "$width"
+  hal_row "" "$width"
+  hal_row "FOLDERS" "$width"
+  hal_split_row " 7. Downloads" " 8. Home" "$width"
+  hal_split_row " 9. Utilities" "10. Applications" "$width"
+  hal_row "" "$width"
+  hal_row "QUICK ACTIONS" "$width"
+  hal_split_row "11. Lock screen" "12. Sleep display" "$width"
+  hal_split_row "13. Restart Finder" "14. Repo in browser" "$width"
+  hal_row "" "$width"
+  hal_row "Type a number, a command, or a question." "$width"
+  hal_row "Commands: /guide, /quit" "$width"
+  hal_bottom "$width"
 }
 
 local_guide_search() {
@@ -324,6 +399,8 @@ prompt_loop() {
 
   while true; do
     print_hal_menu
+    printf '────────────────────────────────────────────────────────────────────────────────\n'
+    printf '>> option, command, question, or /quit\n'
     printf 'hal > '
     read -r query || return
 
