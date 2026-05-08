@@ -6,12 +6,17 @@ UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 WORKFLOWS_DIR="$BASE_DIR/automation/workflows"
 PROJECT_BOOT_SCRIPT="$WORKFLOWS_DIR/project-boot.sh"
 PROJECT_CHECK_SCRIPT="$WORKFLOWS_DIR/project-check.sh"
+WORKSPACE_SCRIPT="$WORKFLOWS_DIR/workspace.sh"
 WORKFLOWS_README="$WORKFLOWS_DIR/README.md"
 AUTOMATION_README="$BASE_DIR/automation/README.md"
 
+# shellcheck disable=SC2034
 APP_TITLE="MQ Workflows"
+# shellcheck disable=SC2034
 APP_SUBTITLE="Project Workflows and Automation"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
@@ -52,6 +57,21 @@ require_project_check() {
   fi
 }
 
+require_workspace() {
+  if [[ ! -x "$WORKSPACE_SCRIPT" ]]; then
+    print_header
+    row_bold "WORKFLOWS"
+    empty_row
+    row "Missing or non-executable script:"
+    row " $WORKSPACE_SCRIPT"
+    row "Run:"
+    row " chmod +x $WORKSPACE_SCRIPT"
+    print_footer
+    pause_enter
+    return 1
+  fi
+}
+
 run_project_boot_default() {
   require_project_boot || return 1
 
@@ -76,11 +96,11 @@ run_project_boot_custom() {
   empty_row
   row "Leave fields blank to use defaults."
   print_footer
-  printf "${C_TITLE}Project name: ${C_RESET}"
+  printf '%bProject name: %b' "$C_TITLE" "$C_RESET"
   read -r project_name
-  printf "${C_TITLE}Project directory: ${C_RESET}"
+  printf '%bProject directory: %b' "$C_TITLE" "$C_RESET"
   read -r project_dir
-  printf "${C_TITLE}Project URL: ${C_RESET}"
+  printf '%bProject URL: %b' "$C_TITLE" "$C_RESET"
   read -r project_url
 
   project_name="${project_name:-macos-scripts}"
@@ -122,9 +142,9 @@ run_project_check_custom() {
   empty_row
   row "Leave fields blank to use defaults."
   print_footer
-  printf "${C_TITLE}Project name: ${C_RESET}"
+  printf '%bProject name: %b' "$C_TITLE" "$C_RESET"
   read -r project_name
-  printf "${C_TITLE}Project directory: ${C_RESET}"
+  printf '%bProject directory: %b' "$C_TITLE" "$C_RESET"
   read -r project_dir
 
   project_name="${project_name:-macos-scripts}"
@@ -178,6 +198,7 @@ show_workflows_status() {
   row "Workflows dir:  $WORKFLOWS_DIR"
   row "Project boot:   $PROJECT_BOOT_SCRIPT"
   row "Project check:  $PROJECT_CHECK_SCRIPT"
+  row "Workspace:      $WORKSPACE_SCRIPT"
 
   if [[ -f "$WORKFLOWS_README" ]]; then
     row "README:         $WORKFLOWS_README"
@@ -189,6 +210,23 @@ show_workflows_status() {
   pause_enter
 }
 
+open_workspace_menu() {
+  require_workspace || return 1
+  "$WORKSPACE_SCRIPT" menu
+}
+
+save_workspace_snapshot() {
+  require_workspace || return 1
+  "$WORKSPACE_SCRIPT" save
+  pause_enter
+}
+
+restore_workspace_snapshot() {
+  require_workspace || return 1
+  "$WORKSPACE_SCRIPT" restore
+  pause_enter
+}
+
 print_menu() {
   print_header
   row_bold "WORKFLOWS"
@@ -197,7 +235,9 @@ print_menu() {
   row2 " 1. Workflows status" " 2. Run project boot"
   row2 " 3. Custom project boot" " 4. Run project check"
   row2 " 5. Custom project check" " 6. Open workflows folder"
-  row2 " 7. Open workflows README" " b. Back"
+  row2 " 7. Open workflows README" " 8. Workspace snapshots"
+  row2 " 9. Save workspace" "10. Restore workspace"
+  row2 " b. Back" ""
 
   print_footer
 }
@@ -207,7 +247,7 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-7,b] > " "workflows" || return
+    read_menu_choice "Select option [1-10,b] > " "workflows" || return
     choice="$REPLY"
     echo
 
@@ -219,6 +259,9 @@ menu_loop() {
       5) run_project_check_custom ;;
       6) open_workflows_folder ;;
       7) open_workflows_readme ;;
+      8) open_workspace_menu ;;
+      9) save_workspace_snapshot ;;
+      10) restore_workspace_snapshot ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -239,6 +282,9 @@ Commands:
   boot-custom   Run custom project boot
   check         Run default project check
   check-custom  Run custom project check
+  workspace     Open workspace snapshots menu
+  save          Save current workspace snapshot
+  restore       Restore latest workspace snapshot
   readme        Open workflows README
   help          Show this help
 USAGE
@@ -254,6 +300,9 @@ main() {
     boot-custom) run_project_boot_custom ;;
     check) run_project_check_default ;;
     check-custom) run_project_check_custom ;;
+    workspace) open_workspace_menu ;;
+    save) save_workspace_snapshot ;;
+    restore) restore_workspace_snapshot ;;
     readme) open_workflows_readme ;;
     help|-h|--help) usage ;;
     *)

@@ -92,6 +92,9 @@ Quick commands:
   mqlaunch index
   mqlaunch docfunc
   mqlaunch docwrite
+  mqlaunch workspace
+  mqlaunch workspace save
+  mqlaunch workspace restore
 
 Subcommands:
   mqlaunch system perf
@@ -142,6 +145,30 @@ dispatch_cli_command() {
       else
         run_mqworkflows
       fi
+      return 0
+      ;;
+
+    workspace|snapshots)
+      case "$sub" in
+        ""|menu)
+          run_mqworkflows workspace
+          ;;
+        save)
+          run_mqworkflows save
+          ;;
+        list)
+          "$BASE_DIR/automation/workflows/workspace.sh" list
+          ;;
+        latest|show)
+          "$BASE_DIR/automation/workflows/workspace.sh" show "${3:-latest}"
+          ;;
+        restore)
+          "$BASE_DIR/automation/workflows/workspace.sh" restore "${3:-latest}"
+          ;;
+        *)
+          "$BASE_DIR/automation/workflows/workspace.sh" "$sub" "${3:-}"
+          ;;
+      esac
       return 0
       ;;
 

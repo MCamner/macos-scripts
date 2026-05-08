@@ -89,7 +89,7 @@ render_main_menu_panel() {
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
-  surface_split_row "7. Script comments" "" "$width" "$panel_color"
+  surface_split_row "7. Script comments" "8. Workspace" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
@@ -252,6 +252,7 @@ handle_main_menu_choice() {
     5) open_dev_menu ;;
     6) open_help_center_menu ;;
     7) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
+    8) run_mqworkflows workspace ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
@@ -294,6 +295,7 @@ handle_main_prompt_command() {
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
+    workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;
     clear|cls) clear; return 0 ;;
     version|ver) show_version_info || true; return 0 ;;
     notes|changelog|release\ notes) show_release_notes || true; return 0 ;;

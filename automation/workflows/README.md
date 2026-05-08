@@ -28,6 +28,16 @@ Runs a quick health check for a project workspace by verifying:
 - common project files such as `README.md`, `VERSION`, and `CHANGELOG.md`
 - key local scripts such as `bin/mqlaunch` and `tools/scripts/test-all.sh`
 
+### `workspace.sh`
+
+Saves and restores lightweight workspace snapshots:
+
+- current working directory
+- git repo root, branch, upstream, ahead/behind counts
+- dirty/clean status and changed files
+- recent files near the current workspace
+- snapshot metadata under `backups/workspaces/`
+
 ## Usage
 
 From the repo root:
@@ -35,6 +45,8 @@ From the repo root:
 ```bash
 bash automation/workflows/project-boot.sh
 bash automation/workflows/project-check.sh
+bash automation/workflows/workspace.sh save
+bash automation/workflows/workspace.sh restore
 ```
 
 With custom values:
@@ -56,5 +68,8 @@ Useful launcher entrypoints:
 - `mqlaunch workflows`
 - `mqlaunch workflows boot`
 - `mqlaunch workflows check`
+- `mqlaunch workspace`
+- `mqlaunch workspace save`
+- `mqlaunch workspace restore`
 
 The goal is to keep workflow logic here and let `mqlaunch` act as the entry surface.
