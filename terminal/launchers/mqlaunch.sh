@@ -1348,6 +1348,10 @@ run_arg_command() {
       open_dev_menu
       ;;
     tools) open_tools_menu ;;
+    docfunc|document-functions) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
+    docwrite|document-functions-write|update-comments)
+      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
+      ;;
     tools-menu|toolsmenu|menu-tools|tools-v1|menu-tools-v1)
       legacy_alias_notice "mqlaunch $cmd" "mqlaunch tools"
       open_tools_menu

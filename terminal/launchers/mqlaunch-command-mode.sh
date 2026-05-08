@@ -7,6 +7,7 @@ normalize_cli_word() {
 # AI prompt helpers
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
+# shellcheck disable=SC1090
 [[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
 
 print_command_help() {
@@ -87,6 +88,8 @@ Quick commands:
   mqlaunch notes
   mqlaunch about
   mqlaunch index
+  mqlaunch docfunc
+  mqlaunch docwrite
 
 Subcommands:
   mqlaunch system perf
@@ -370,6 +373,16 @@ dispatch_cli_command() {
 
     apps)
       open_apps_menu
+      return 0
+      ;;
+
+    docfunc|document-functions)
+      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc
+      return 0
+      ;;
+
+    docwrite|document-functions-write|update-comments)
+      "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
       return 0
       ;;
 

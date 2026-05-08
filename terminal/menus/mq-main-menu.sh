@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+: "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
+
 main_menu_is_sourced() {
   if [[ -n "${ZSH_EVAL_CONTEXT:-}" ]]; then
     [[ ":$ZSH_EVAL_CONTEXT:" == *:file:* ]]
@@ -93,6 +95,8 @@ render_main_menu_panel() {
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
+  surface_row "DOCS" "$width" "$panel_color"
+  surface_split_row "d. Document preview" "u. Update comments" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -255,6 +259,8 @@ handle_main_menu_choice() {
     h|H) system_check ;;
     a|A) open_apps_menu ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
+    d|D) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
+    u|U) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite ;;
 
     # EXIT
     x|X)
@@ -282,12 +288,14 @@ handle_main_prompt_command() {
     git|git-menu|gitmenu) open_git_menu; return 0 ;;
     release|rel) open_release_menu; return 0 ;;
     dev) open_dev_menu; return 0 ;;
-    help|h|?|commands|index) open_help_center_menu; return 0 ;;
+    help|h|\?|commands|index) open_help_center_menu; return 0 ;;
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
     apps|applications) open_apps_menu; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
+    docfunc|document-functions|document\ functions|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
+    docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     clear|cls) clear; return 0 ;;
     version|ver) show_version_info || true; return 0 ;;
     notes|changelog|release\ notes) show_release_notes || true; return 0 ;;
@@ -313,6 +321,8 @@ handle_main_prompt_command() {
   esac
 
   if command -v dispatch_cli_command >/dev/null 2>&1; then
+    # zsh-style splitting is intentional when this menu is sourced by mqlaunch.
+    # shellcheck disable=SC2086
     if dispatch_cli_command ${=normalized}; then
       return 0
     fi

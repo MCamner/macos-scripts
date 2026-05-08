@@ -23,6 +23,8 @@ fi
 
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
+DOCUMENT_FUNCTION_TARGETS=(tools/scripts terminal/menus terminal/launchers)
+DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*')
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 DASHBOARD="$BASE_DIR/ui/dashboards/mq-dashboard.sh"
 THEMES_DIR="$BASE_DIR/terminal/themes"
@@ -136,12 +138,60 @@ run_document_functions_preview() {
   empty_row
 
   if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
-    "$DOCUMENT_FUNCTIONS" --summary --exclude '*.bak.*' tools/scripts terminal/menus terminal/launchers
+    "$DOCUMENT_FUNCTIONS" "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
   elif [[ -f "$DOCUMENT_FUNCTIONS" ]]; then
-    bash "$DOCUMENT_FUNCTIONS" --summary --exclude '*.bak.*' tools/scripts terminal/menus terminal/launchers
+    bash "$DOCUMENT_FUNCTIONS" "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
   else
     row "document-functions.sh not found:"
     row " $DOCUMENT_FUNCTIONS"
+  fi
+
+  print_footer
+  if [[ -t 0 ]]; then
+    pause_enter
+  fi
+}
+
+run_document_functions_update() {
+  local confirm
+
+  print_header
+  row_bold "UPDATE FUNCTION COMMENTS"
+  empty_row
+  row "This will add or refresh generated function comments in:"
+  row " tools/scripts"
+  row " terminal/menus"
+  row " terminal/launchers"
+  empty_row
+  row "Backups will be created as .bak.TIMESTAMP before files are changed."
+  empty_row
+
+  if [[ ! -f "$DOCUMENT_FUNCTIONS" ]]; then
+    row "document-functions.sh not found:"
+    row " $DOCUMENT_FUNCTIONS"
+    print_footer
+    if [[ -t 0 ]]; then
+      pause_enter
+    fi
+    return 1
+  fi
+
+  printf 'Update comments now? [y/N] '
+  read -r confirm
+  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    ui_warn "Cancelled."
+    print_footer
+    if [[ -t 0 ]]; then
+      pause_enter
+    fi
+    return 0
+  fi
+
+  empty_row
+  if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
+    "$DOCUMENT_FUNCTIONS" --write --backup "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
+  else
+    bash "$DOCUMENT_FUNCTIONS" --write --backup "${DOCUMENT_FUNCTION_ARGS[@]}" "${DOCUMENT_FUNCTION_TARGETS[@]}"
   fi
 
   print_footer
@@ -161,6 +211,7 @@ print_menu() {
   row2 " 7. Open terminal guide" " 8. Show key paths"
   row2 " 9. Show git status" "10. Boot Maker"
   row2 "11. Blackout Mode" "12. Document functions"
+  row2 "13. Update function comments" ""
   row2 " b. Back" ""
 
   print_footer
@@ -171,7 +222,7 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-12,b] > " "tools" || return
+    read_menu_choice "Select option [1-13,b] > " "tools" || return
     choice="$REPLY"
     echo
 
@@ -188,6 +239,7 @@ menu_loop() {
     10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
     11) "$BASE_DIR/tools/scripts/blackout.sh"; pause_enter ;;
     12) run_document_functions_preview ;;
+    13) run_document_functions_update ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -209,6 +261,7 @@ Commands:
   paths       Show key paths
   git         Show git status
   docfunc     Preview missing shell function comments
+  docwrite    Add/update shell function comments with backups
 USAGE
 }
 
@@ -223,6 +276,7 @@ main() {
     paths) show_paths ;;
     git) show_git_status ;;
     docfunc|document-functions) run_document_functions_preview ;;
+    docwrite|document-functions-write) run_document_functions_update ;;
     help|-h|--help) usage ;;
     *)
       ui_err "Unknown command: $cmd"
