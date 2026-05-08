@@ -4,9 +4,13 @@ set -euo pipefail
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
+# shellcheck disable=SC2034
 APP_TITLE="MQ Tools Menu"
+# shellcheck disable=SC2034
 APP_SUBTITLE="Reusable Terminal Module"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
@@ -18,6 +22,7 @@ else
 fi
 
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
+DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 DASHBOARD="$BASE_DIR/ui/dashboards/mq-dashboard.sh"
 THEMES_DIR="$BASE_DIR/terminal/themes"
@@ -125,6 +130,26 @@ show_git_status() {
   pause_enter
 }
 
+run_document_functions_preview() {
+  print_header
+  row_bold "DOCUMENT FUNCTIONS"
+  empty_row
+
+  if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
+    "$DOCUMENT_FUNCTIONS" --summary --exclude '*.bak.*' tools/scripts terminal/menus terminal/launchers
+  elif [[ -f "$DOCUMENT_FUNCTIONS" ]]; then
+    bash "$DOCUMENT_FUNCTIONS" --summary --exclude '*.bak.*' tools/scripts terminal/menus terminal/launchers
+  else
+    row "document-functions.sh not found:"
+    row " $DOCUMENT_FUNCTIONS"
+  fi
+
+  print_footer
+  if [[ -t 0 ]]; then
+    pause_enter
+  fi
+}
+
 print_menu() {
   print_header
   row_bold "TOOLS MENU"
@@ -135,7 +160,7 @@ print_menu() {
   row2 " 5. Open menus folder" " 6. Open dashboard"
   row2 " 7. Open terminal guide" " 8. Show key paths"
   row2 " 9. Show git status" "10. Boot Maker"
-  row2 "11. Blackout Mode" ""
+  row2 "11. Blackout Mode" "12. Document functions"
   row2 " b. Back" ""
 
   print_footer
@@ -146,7 +171,7 @@ menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-11,b] > " "tools" || return
+    read_menu_choice "Select option [1-12,b] > " "tools" || return
     choice="$REPLY"
     echo
 
@@ -162,6 +187,7 @@ menu_loop() {
       9) show_git_status ;;
     10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
     11) "$BASE_DIR/tools/scripts/blackout.sh"; pause_enter ;;
+    12) run_document_functions_preview ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -182,6 +208,7 @@ Commands:
   guide       Open terminal guide
   paths       Show key paths
   git         Show git status
+  docfunc     Preview missing shell function comments
 USAGE
 }
 
@@ -195,6 +222,7 @@ main() {
     guide) open_guide ;;
     paths) show_paths ;;
     git) show_git_status ;;
+    docfunc|document-functions) run_document_functions_preview ;;
     help|-h|--help) usage ;;
     *)
       ui_err "Unknown command: $cmd"
