@@ -89,13 +89,13 @@ render_main_menu_panel() {
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
+  surface_split_row "7. Script comments" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
-  surface_split_row "d. Document preview" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -251,6 +251,7 @@ handle_main_menu_choice() {
     4) open_release_menu ;;
     5) open_dev_menu ;;
     6) open_help_center_menu ;;
+    7) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
@@ -258,7 +259,6 @@ handle_main_menu_choice() {
     h|H) system_check ;;
     a|A) open_apps_menu ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
-    d|D) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
 
     # EXIT
     x|X)
