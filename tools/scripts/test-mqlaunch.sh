@@ -63,7 +63,7 @@ assert_grep 'surface_split_row "1\. Workflows" "2\. System"' "$PROJECT_ROOT/term
 assert_grep 'surface_split_row "3\. Git" "4\. Release"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Git and Release"
 assert_grep 'surface_split_row "5\. Dev" "6\. Help"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Dev and Help"
 assert_grep 'surface_split_row "p\. Performance" "n\. Network"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Performance and Network quick access"
-assert_grep 'surface_split_row "h\. Health Check" "a\. Apps"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Health Check and Apps quick access"
+assert_grep 'surface_split_row "h\. Health Check" "a\. HAL"' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu contains Health Check and HAL quick access"
 
 echo
 echo "All legacy + bridge checks passed."
