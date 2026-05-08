@@ -95,7 +95,6 @@ render_main_menu_panel() {
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. Apps" "$width" "$panel_color"
   surface_split_row "r. REPL" "" "$width" "$panel_color"
-  surface_row "DOCS" "$width" "$panel_color"
   surface_split_row "d. Document preview" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
