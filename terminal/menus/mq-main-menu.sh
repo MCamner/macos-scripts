@@ -258,7 +258,19 @@ handle_main_menu_choice() {
     p|P) open_performance_menu ;;
     n|N) show_network_info ;;
     h|H) system_check ;;
-    a|A) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
+    a|A)
+      "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+      if [[ -f "$HOME/.hal_nav" ]]; then
+        local _hal_target
+        _hal_target="$(cat "$HOME/.hal_nav")"
+        rm -f "$HOME/.hal_nav"
+        if [[ -d "$_hal_target" ]]; then
+          cd "$_hal_target" || true
+          printf 'HAL: navigated to %s\n' "$_hal_target"
+          sleep 1
+        fi
+      fi
+      ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
     z|Z) restart_mqlaunch ;;
 

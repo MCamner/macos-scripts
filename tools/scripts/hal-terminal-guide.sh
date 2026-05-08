@@ -6,6 +6,7 @@ GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 VECTOR_STORE_ID="${MQ_TERMINAL_GUIDE_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
+HAL_NAV_PENDING=0
 
 hal_width() {
   local cols
@@ -156,6 +157,59 @@ trim_text() {
   printf '%s' "$text"
 }
 
+resolve_nav_dir() {
+  local name lower
+  name="$(trim_text "$1")"
+  lower="$(lower_text "$name")"
+
+  case "$lower" in
+    macos-scripts|macos_scripts|"macos scripts"|mqlaunch|mq|scripts)
+      printf '%s' "${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"; return 0 ;;
+    downloads|download|"hämtade filer"|hämtningar)
+      printf '%s' "$HOME/Downloads"; return 0 ;;
+    documents|document|dokument|dokumenten)
+      printf '%s' "$HOME/Documents"; return 0 ;;
+    desktop|skrivbord|skrivbordet)
+      printf '%s' "$HOME/Desktop"; return 0 ;;
+    home|hem|hemkatalog|~)
+      printf '%s' "$HOME"; return 0 ;;
+    applications|appar|apps)
+      printf '%s' "/Applications"; return 0 ;;
+    utilities|verktyg)
+      printf '%s' "/Applications/Utilities"; return 0 ;;
+    zephyr|"zephyr-workbench"|zephyr_workbench)
+      printf '%s' "$HOME/zephyr-workbench"; return 0 ;;
+    design|"design-prototyp"|design_prototyp)
+      printf '%s' "$HOME/design-prototyp"; return 0 ;;
+    *)
+      if [[ "$name" == /* ]] && [[ -d "$name" ]]; then
+        printf '%s' "$name"; return 0
+      fi
+      if [[ "$name" == ~* ]]; then
+        local expanded="${name/#\~/$HOME}"
+        [[ -d "$expanded" ]] && { printf '%s' "$expanded"; return 0; }
+      fi
+      if [[ -d "$HOME/$name" ]]; then
+        printf '%s' "$HOME/$name"; return 0
+      fi
+      return 1
+      ;;
+  esac
+}
+
+extract_nav_target() {
+  local lower="$1" result trigger
+  local triggers=("gå till " "navigera till " "öppna katalogen " "öppna mappen " "öppna katalog " "öppna mapp " "go to " "navigate to " "cd to ")
+  for trigger in "${triggers[@]}"; do
+    if [[ "$lower" == *"$trigger"* ]]; then
+      result="${lower##*$trigger}"
+      result="$(trim_text "$result")"
+      [[ -n "$result" ]] && { printf '%s' "$result"; return 0; }
+    fi
+  done
+  return 1
+}
+
 safe_intent_command() {
   local query app path lower
   query="$1"
@@ -231,6 +285,21 @@ safe_intent_command() {
     guide|open\ guide|*"öppna guide"*|*"open guide"*|*"terminal guide"*|*"terminalguiden"*)
       printf 'guide|mac terminal guide|open guide\n'
       return 0
+      ;;
+    *"gå till"*|*"navigera till"*|*"öppna katalog"*|*"öppna mapp"*|*"go to "*)
+      local nav_name nav_path
+      if nav_name="$(extract_nav_target "$lower")" && nav_path="$(resolve_nav_dir "$nav_name")"; then
+        printf 'cd|%s|cd "%s"\n' "$nav_path" "$nav_path"
+        return 0
+      fi
+      ;;
+    cd\ *)
+      local nav_name nav_path
+      nav_name="$(trim_text "${lower#cd }")"
+      if [[ -n "$nav_name" ]] && nav_path="$(resolve_nav_dir "$nav_name")"; then
+        printf 'cd|%s|cd "%s"\n' "$nav_path" "$nav_path"
+        return 0
+      fi
       ;;
   esac
 
@@ -364,6 +433,14 @@ execute_safe_intent() {
     restart_finder)
       killall Finder >/dev/null 2>&1
       ;;
+    cd)
+      if [[ ! -d "$label" ]]; then
+        printf 'HAL: directory not found: %s\n' "$label"
+        return 1
+      fi
+      printf '%s\n' "$label" > "${HOME}/.hal_nav"
+      HAL_NAV_PENDING=1
+      ;;
     *)
       printf 'Unsupported safe action: %s\n' "$kind" >&2
       return 1
@@ -391,8 +468,8 @@ print_hal_menu() {
   hal_split_row "11. Lock screen" "12. Sleep display" "$width"
   hal_split_row "13. Restart Finder" "14. Repo in browser" "$width"
   hal_row "" "$width"
-  hal_row "Type a number, a command, or a question." "$width"
-  hal_row "Commands: ! <command>, run <command>, /guide, /quit" "$width"
+  hal_row "Type a number, question, or 'gå till <katalog>'" "$width"
+  hal_row "Commands: ! <cmd>, cd <dir>, run <cmd>, /guide, /quit" "$width"
   hal_bottom "$width"
 }
 
@@ -527,7 +604,10 @@ prompt_loop() {
       "" ) continue ;;
       /quit|quit|exit|q) break ;;
       /guide) open_guide ;;
-      *) handle_query "ask" "$query" ;;
+      *)
+        handle_query "ask" "$query"
+        [[ "${HAL_NAV_PENDING:-0}" -eq 1 ]] && break
+        ;;
     esac
   done
 }
