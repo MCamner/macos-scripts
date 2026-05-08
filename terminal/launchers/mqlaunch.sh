@@ -1384,6 +1384,13 @@ run_arg_command() {
     version|ver|about) show_version_info ;;
     ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
     fix) "$BASE_DIR/tools/scripts/fix.sh" "$@" ;;
+    hal|guide-ai|terminal-guide-ai)
+      if [[ -n "${1:-}" ]]; then
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
+      else
+        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+      fi
+      ;;
     nickname-set|nick-set|nick)
       if [[ -n "${1:-}" ]]; then
         printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"
