@@ -395,14 +395,17 @@ handle_query() {
 }
 
 prompt_loop() {
-  local query
+  local query width line
+  width="$(hal_width)"
+  line="$(hal_repeat "$width" "─")"
 
   while true; do
     print_hal_menu
-    printf '────────────────────────────────────────────────────────────────────────────────\n'
-    printf '>> option, command, question, or /quit\n'
+    printf '%s\n' "$line"
     printf 'hal > '
     read -r query || return
+    printf '%s\n' "$line"
+    printf '>> press 1-14, type a command, or /quit\n'
 
     case "$query" in
       "" ) continue ;;
