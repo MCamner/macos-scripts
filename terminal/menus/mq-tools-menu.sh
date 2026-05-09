@@ -361,6 +361,100 @@ run_document_functions_check_selected() {
   pause_if_interactive
 }
 
+# Runs auto comment flow: check → update → commit.
+auto_document_functions() {
+  local confirm check_status
+
+  print_header
+  row_bold "AUTO COMMENT — PREVIEW"
+  empty_row
+  row "Repo: $WORK_DIR"
+  empty_row
+  row "Steps:"
+  row " 1. Select target"
+  row " 2. Check which files need updates"
+  row " 3. Update function comments"
+  row " 4. Optionally commit changes"
+  empty_row
+  print_footer
+
+  printf "%bProceed with auto comment? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
+
+  if [[ ! -f "$DOCUMENT_FUNCTIONS" ]]; then
+    ui_err "document-functions.sh not found: $DOCUMENT_FUNCTIONS"
+    pause_enter
+    return 1
+  fi
+
+  # Select target
+  print_header
+  row_bold "AUTO COMMENT — SELECT TARGET"
+  empty_row
+  if ! select_document_function_targets "auto-comment"; then
+    print_footer
+    pause_enter
+    return 0
+  fi
+  print_footer
+
+  # Check which files need updates
+  print_header
+  row_bold "AUTO COMMENT — CHECK"
+  empty_row
+  check_status=0
+  run_document_functions_command --check "${DOCUMENT_FUNCTION_ARGS[@]}" "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}" || check_status=$?
+
+  if [[ $check_status -eq 0 ]]; then
+    empty_row
+    ui_ok "All function comments are current. Nothing to update."
+    print_footer
+    pause_enter
+    return 0
+  fi
+
+  empty_row
+  row "Files need function comment updates."
+  print_footer
+
+  printf "%bRun update? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  [[ "$confirm" =~ ^[Yy]$ ]] || { ui_warn "Cancelled."; pause_enter; return 1; }
+
+  # Update
+  print_header
+  row_bold "AUTO COMMENT — UPDATE"
+  empty_row
+  run_document_functions_command --write --backup "${DOCUMENT_FUNCTION_ARGS[@]}" "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
+  empty_row
+  ui_ok "Function comments updated."
+  print_footer
+
+  # Optionally commit
+  if git -C "$WORK_DIR" diff --quiet 2>/dev/null && git -C "$WORK_DIR" diff --cached --quiet 2>/dev/null; then
+    ui_warn "No git changes detected after update."
+    pause_enter
+    return 0
+  fi
+
+  printf "%bCommit changes? [y/N]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    printf "%bCommit message [docs: update function comments]: %b" "$C_TITLE" "$C_RESET"
+    read -r msg
+    msg="${msg:-docs: update function comments}"
+    (cd "$WORK_DIR" && git add -A && git commit -m "$msg") || {
+      ui_err "Commit failed."
+      pause_enter
+      return 1
+    }
+    ui_ok "Committed."
+  fi
+
+  pause_enter
+}
+
 # Runs document functions update.
 run_document_functions_update() {
   local confirm
@@ -426,7 +520,8 @@ print_document_functions_menu() {
   surface_row "" "$width" "$color"
   surface_split_row " 1. Preview active areas" " 2. Preview selected" "$width" "$color"
   surface_split_row " 3. Diff selected" " 4. Check selected" "$width" "$color"
-  surface_split_row " 5. Update selected" " b. Back" "$width" "$color"
+  surface_split_row " 5. Update selected" " 6. Auto comment" "$width" "$color"
+  surface_split_row " b. Back" "" "$width" "$color"
   surface_bottom "$width" "$color"
 }
 
@@ -436,7 +531,7 @@ document_functions_menu_loop() {
 
   while true; do
     print_document_functions_menu
-    read_menu_choice "Select option [1-5,b] > " "docs" || return
+    read_menu_choice "Select option [1-6,b] > " "docs" || return
     choice="$REPLY"
     echo
 
@@ -446,6 +541,7 @@ document_functions_menu_loop() {
       3) run_document_functions_diff_selected ;;
       4) run_document_functions_check_selected ;;
       5) run_document_functions_update ;;
+      6) auto_document_functions ;;
       b|B) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
