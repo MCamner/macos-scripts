@@ -777,16 +777,21 @@ theme_source_state() {
 
 # Prints themes menu.
 print_themes_menu() {
+  local width color
+  width="$(surface_terminal_width)"
+  color="$(surface_panel_color)"
+
   print_header
-  row "THEMES"
-  empty_row
-
-  row2 " 1. Current theme" " 2. Apply amber"
-  row2 " 3. Apply green" " 4. Apply minimal"
-  row2 " 5. Apply ice" " 6. Apply macos"
-  row2 " 7. Reset theme" " b. Back"
-
-  print_footer
+  surface_panel_header "Themes" "Themes" "$width" "$color"
+  surface_row "Host: $(hostname -s 2>/dev/null)   User: ${USER:-unknown}   Git: $(surface_git_state)" "$width" "$color"
+  surface_row "" "$width" "$color"
+  surface_split_row " 1. Current theme" " 2. Apply amber" "$width" "$color"
+  surface_split_row " 3. Apply green" " 4. Apply minimal" "$width" "$color"
+  surface_split_row " 5. Apply ice" " 6. Apply macos" "$width" "$color"
+  surface_split_row " 7. Reset theme" " b. Back" "$width" "$color"
+  surface_row "" "$width" "$color"
+  surface_bottom "$width" "$color"
+  printf '\n'
 }
 
 # Handles themes menu loop.
@@ -794,11 +799,6 @@ themes_menu_loop() {
   local choice
 
   while true; do
-    clear
-    if [[ -f "$DASHBOARD_V71" ]]; then
-      bash "$DASHBOARD_V71" "MQLAUNCH" "Branded Neon Command Surface" "ONLINE"
-      echo
-    fi
     print_themes_menu
     read_menu_choice "Select theme option [1-7,b] > " || return
     choice="$REPLY"

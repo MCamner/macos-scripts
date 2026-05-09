@@ -95,7 +95,7 @@ render_main_menu_panel() {
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
-  surface_split_row "7. Script comments" "8. Workspace" "$width" "$panel_color"
+  surface_split_row "7. Document functions" "8. Workspace" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
