@@ -781,7 +781,7 @@ print_themes_menu() {
   width="$(surface_terminal_width)"
   color="$(surface_panel_color)"
 
-  print_header
+  clear_screen
   surface_panel_header "Themes" "Themes" "$width" "$color"
   surface_split_row " 1. Current theme" " 2. Apply amber" "$width" "$color"
   surface_split_row " 3. Apply green" " 4. Apply minimal" "$width" "$color"
