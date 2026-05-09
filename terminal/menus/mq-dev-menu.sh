@@ -40,7 +40,7 @@ handle_dev_menu_choice() {
     8) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
     9) open_git_menu ;;
     10) net_menu_loop ;;
-    11) themes_menu_loop ;;
+    11) open_themes_menu ;;
     12) open_tools_menu ;;
     b|B) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;

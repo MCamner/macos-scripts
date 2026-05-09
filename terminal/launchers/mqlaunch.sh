@@ -730,6 +730,26 @@ backup_mqlaunch() {
   pause_enter
 }
 
+# Opens themes menu.
+open_themes_menu() {
+  local themes_script="$BASE_DIR/terminal/menus/mq-themes-menu.sh"
+
+  if [[ -x "$themes_script" ]]; then
+    MQ_USE_DASHBOARD_HEADER=1 "$themes_script"
+  elif [[ -f "$themes_script" ]]; then
+    chmod +x "$themes_script" 2>/dev/null || true
+    MQ_USE_DASHBOARD_HEADER=1 bash "$themes_script"
+  else
+    print_header
+    row "THEMES MENU"
+    empty_row
+    row "Themes menu not found:"
+    row " $themes_script"
+    print_footer
+    pause_enter
+  fi
+}
+
 # Handles theme cmd.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
@@ -773,48 +793,6 @@ theme_source_state() {
   else
     echo "MISSING"
   fi
-}
-
-# Prints themes menu.
-print_themes_menu() {
-  local width color
-  width="$(surface_terminal_width)"
-  color="$(surface_panel_color)"
-
-  bash "$DASHBOARD_V71" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
-  printf '\n'
-  surface_panel_header "Themes" "Themes" "$width" "$color"
-  surface_split_row " 1. Current theme" " 2. Apply amber" "$width" "$color"
-  surface_split_row " 3. Apply green" " 4. Apply minimal" "$width" "$color"
-  surface_split_row " 5. Apply ice" " 6. Apply macos" "$width" "$color"
-  surface_split_row " 7. Reset theme" " b. Back" "$width" "$color"
-  surface_row "" "$width" "$color"
-  surface_bottom "$width" "$color"
-  printf '\n'
-}
-
-# Handles themes menu loop.
-themes_menu_loop() {
-  local choice
-
-  while true; do
-    print_themes_menu
-    read_menu_choice "Select theme option [1-7,b] > " "themes" || return
-    choice="$REPLY"
-    echo
-
-    case "$choice" in
-      1) theme_cmd current; pause_enter ;;
-      2) theme_cmd apply amber ;;
-      3) theme_cmd apply green ;;
-      4) theme_cmd apply minimal ;;
-      5) theme_cmd apply ice ;;
-      6) theme_cmd apply macos ;;
-      7) theme_cmd reset ;;
-      b|B|0) break ;;
-      *) echo "${C_ERR}Invalid theme selection:${C_RESET} $choice"; pause_enter ;;
-    esac
-  done
 }
 
 # Opens git menu.
@@ -1386,7 +1364,7 @@ run_arg_command() {
     tweaks-all) run_tweaks_all ;;
     tweaks-revert|revert-tweaks) revert_tweaks_latest ;;
     dashboard|dash) open_dashboard ;;
-    theme|themes) themes_menu_loop ;;
+    theme|themes) open_themes_menu ;;
     theme-current) theme_cmd current ;;
     theme-reset) theme_cmd reset ;;
     theme-amber) theme_cmd apply amber ;;
