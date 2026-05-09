@@ -30,7 +30,7 @@ fi
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
 DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
-DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*/.git/*')
+DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*.bak' --exclude '*/.git/*' --exclude '*/backups/*')
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 DASHBOARD="$BASE_DIR/ui/dashboards/mq-dashboard.sh"
 THEMES_DIR="$BASE_DIR/terminal/themes"
