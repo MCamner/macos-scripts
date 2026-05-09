@@ -8,6 +8,7 @@ STATE_FILE=~/.gitlaunch_state
 DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
+_BANNER_SHOWN=0
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -62,17 +63,6 @@ function render_ascii() {
   local pulse line
   local -a pulses dark_lines amber_lines
 
-  pulses=(
-    "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-    "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
-    "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
-  )
-  for pulse in "${pulses[@]}"; do
-    printf "%b  %s%b\r" "$C_AMBER" "$pulse" "$C_RESET"
-    sleep 0.05
-  done
-  printf "\033[2K"
-
   dark_lines=(
     "   ▄████  ██▓▄▄▄█████▓"
     "  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒"
@@ -90,16 +80,35 @@ function render_ascii() {
     "░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒"
   )
 
-  printf "%b" "$C_TITLE"
-  for line in "${dark_lines[@]}"; do
-    printf '%s\n' "$line"
-    sleep 0.03
-  done
-  printf "%b" "$C_AMBER"
-  for line in "${amber_lines[@]}"; do
-    printf '%s\n' "$line"
-    sleep 0.03
-  done
+  if [[ "$_BANNER_SHOWN" -eq 0 ]]; then
+    _BANNER_SHOWN=1
+    pulses=(
+      "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+      "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+      "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+    )
+    for pulse in "${pulses[@]}"; do
+      printf "%b  %s%b\r" "$C_AMBER" "$pulse" "$C_RESET"
+      sleep 0.05
+    done
+    printf "\033[2K"
+    printf "%b" "$C_TITLE"
+    for line in "${dark_lines[@]}"; do
+      printf '%s\n' "$line"
+      sleep 0.03
+    done
+    printf "%b" "$C_AMBER"
+    for line in "${amber_lines[@]}"; do
+      printf '%s\n' "$line"
+      sleep 0.03
+    done
+  else
+    printf "%b" "$C_TITLE"
+    for line in "${dark_lines[@]}"; do printf '%s\n' "$line"; done
+    printf "%b" "$C_AMBER"
+    for line in "${amber_lines[@]}"; do printf '%s\n' "$line"; done
+  fi
+
   printf "%b" "$C_RESET"
 }
 
@@ -335,7 +344,7 @@ function render_banner() {
   frame_top
   frame_title "MQ REPO LAUNCHER"
   frame_mid
-  frame_row_colored "  ★  AMBER COMMIT DECK ACTIVE  ★" "${C_ACCENT}${C_BLINK}"
+  frame_row_colored "  ★  AMBER COMMIT DECK ACTIVE  ★" "$C_ACCENT"
   frame_blank
   frame_mid
 }
@@ -495,9 +504,6 @@ function prompt_choice() {
 
   if [[ -t 0 ]]; then
     old_stty="$(stty -g)"
-    local _drain
-    stty min 0 time 0 2>/dev/null || true
-    while IFS= read -r -k 1 _drain 2>/dev/null; do :; done
     stty -echo -icanon min 1 time 0 2>/dev/null || true
     IFS= read -r -k 1 input 2>/dev/null || input=""
     stty "$old_stty" 2>/dev/null || true
