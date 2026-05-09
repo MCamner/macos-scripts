@@ -783,8 +783,6 @@ print_themes_menu() {
 
   print_header
   surface_panel_header "Themes" "Themes" "$width" "$color"
-  surface_row "Host: $(hostname -s 2>/dev/null)   User: ${USER:-unknown}   Git: $(surface_git_state)" "$width" "$color"
-  surface_row "" "$width" "$color"
   surface_split_row " 1. Current theme" " 2. Apply amber" "$width" "$color"
   surface_split_row " 3. Apply green" " 4. Apply minimal" "$width" "$color"
   surface_split_row " 5. Apply ice" " 6. Apply macos" "$width" "$color"
@@ -800,7 +798,7 @@ themes_menu_loop() {
 
   while true; do
     print_themes_menu
-    read_menu_choice "Select theme option [1-7,b] > " || return
+    read_menu_choice "Select theme option [1-7,b] > " "themes" || return
     choice="$REPLY"
     echo
 
