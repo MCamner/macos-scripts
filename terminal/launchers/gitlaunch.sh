@@ -455,10 +455,10 @@ function status_check() {
 function render_menu() {
   local git_state host_name
   host_name="$(hostname -s 2>/dev/null || echo unknown)"
-  if [[ "${CHANGES:-0}" -eq 0 ]]; then
+  if [[ -z "${CHANGES}" ]]; then
     git_state="Clean"
   else
-    git_state="Dirty (${CHANGES})"
+    git_state="Dirty"
   fi
 
   frame_top_titled "Gitlaunch"
@@ -492,7 +492,7 @@ function render_next_action() {
 
 # Handles prompt choice.
 function prompt_choice() {
-  local prompt_sep input old_stty
+  local prompt_sep input
   prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
 
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
@@ -502,13 +502,11 @@ function prompt_choice() {
   printf "\033[3A"
   printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
 
+  input=""
   if [[ -t 0 ]]; then
-    old_stty="$(stty -g)"
-    stty -echo -icanon min 1 time 0 2>/dev/null || true
-    IFS= read -r -k 1 input 2>/dev/null || input=""
-    stty "$old_stty" 2>/dev/null || true
+    read -r -k 1 input || true
   else
-    IFS= read -r input || input="b"
+    IFS= read -r input || true
   fi
 
   printf "%s\n" "$input"

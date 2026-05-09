@@ -416,15 +416,18 @@ run_document_functions_update() {
 
 # Prints document functions menu.
 print_document_functions_menu() {
-  print_header
-  row_bold "DOCUMENT FUNCTIONS"
-  empty_row
+  local width color
+  width="$(surface_terminal_width)"
+  color="$(surface_panel_color)"
 
-  row2 " 1. Preview active areas" " 2. Preview selected"
-  row2 " 3. Diff selected" " 4. Check selected"
-  row2 " 5. Update selected" " b. Back"
-
-  print_footer
+  clear_screen
+  surface_top "Document Functions" "$width" "$color"
+  surface_row "Host: $(hostname -s 2>/dev/null)   User: ${USER:-unknown}   Git: $(surface_git_state)" "$width" "$color"
+  surface_row "" "$width" "$color"
+  surface_split_row " 1. Preview active areas" " 2. Preview selected" "$width" "$color"
+  surface_split_row " 3. Diff selected" " 4. Check selected" "$width" "$color"
+  surface_split_row " 5. Update selected" " b. Back" "$width" "$color"
+  surface_bottom "$width" "$color"
 }
 
 # Documents functions menu loop.
