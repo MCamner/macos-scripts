@@ -272,10 +272,11 @@ mqlaunch demo
 ```text
 macos-scripts/
 ├── bin/               # CLI entrypoints
-├── terminal/          # menus, launchers, themes, AI prompts
+├── terminal/          # menus, launchers, themes
 ├── tools/             # scripts and utilities
 ├── system/            # macOS helpers
 ├── automation/        # workflows
+├── ai-prompts/        # AI assistant prompts
 └── ui/                # terminal UI
 ```
 

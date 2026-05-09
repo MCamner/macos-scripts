@@ -84,3 +84,5 @@ Example from `mqlaunch.sh`:
 
 ```bash
 DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
+bash "$DASHBOARD_V71" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
+```
