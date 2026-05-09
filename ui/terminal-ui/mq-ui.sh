@@ -249,17 +249,18 @@ read_prompt() {
 read_menu_choice() {
   local raw_prompt="$1"
   local label="${2:-mqlaunch}"
-  local sep_width hint sep
+  local sep_width hint sep sep_color
 
-  sep_width=$(( $(surface_terminal_width) - 4 ))
+  sep_width="$(surface_terminal_width)"
   sep="$(repeat_char "$sep_width" "─")"
+  sep_color="$(surface_panel_color)"
 
   hint="$(printf '%s' "$raw_prompt" | grep -oE '\[[^]]+\]' | head -1)"
   [[ -z "$hint" ]] && hint="option"
 
-  printf "\n%b%s%b\n" "${C_TITLE:-}" "$sep" "${C_RESET:-}"
+  printf "\n%b%s%b\n" "$sep_color" "$sep" "${C_RESET:-}"
   printf "%b%s > %b\n" "${C_TITLE:-}" "$label" "${C_RESET:-}"
-  printf "%b%s%b\n" "${C_TITLE:-}" "$sep" "${C_RESET:-}"
+  printf "%b%s%b\n" "$sep_color" "$sep" "${C_RESET:-}"
   printf "%b>> %s%b\n" "${C_DIM:-}" "$hint" "${C_RESET:-}"
   printf "\033[3A\r"
   printf "%b%s > %b" "${C_TITLE:-}" "$label" "${C_RESET:-}"
