@@ -158,10 +158,16 @@ check_changelog_matches_commits() {
   " CHANGELOG.md)"
 
   local bullet_count
-  bullet_count="$(printf '%s\n' "$changelog_block" | grep -E '^[*-] ' | wc -l | tr -d ' ')"
+  bullet_count="$(printf '%s\n' "$changelog_block" \
+    | grep -E '^[*-] ' \
+    | grep -Ev '^[*-][[:space:]]*$' \
+    | grep -Evi '^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|todo|tbd|placeholder)[[:space:]]*$' \
+    | wc -l \
+    | tr -d ' ')"
 
   if [[ "$bullet_count" == "0" ]]; then
-    fail "Version ${version} exists in CHANGELOG.md but has no bullet entries"
+    fail "Version ${version} exists in CHANGELOG.md but has no real bullet entries"
+    echo "Replace placeholders such as 'Initial release setup' with concrete changes."
     return 1
   fi
 

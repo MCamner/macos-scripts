@@ -401,6 +401,57 @@ create_github_release_only() {
   pause_enter
 }
 
+# Extracts one changelog section.
+changelog_section_for_version() {
+  local version="$1"
+  local changelog="$2"
+
+  awk "
+    /^## / {
+      if (found) exit
+      if (\$0 ~ /\[?v?${version}\]?/) found=1
+    }
+    found { print }
+  " "$changelog"
+}
+
+# Checks whether a changelog section has real release notes.
+changelog_section_has_real_entries() {
+  local version="$1"
+  local changelog="$2"
+  local section bullet_count
+
+  [[ -f "$changelog" ]] || return 1
+  section="$(changelog_section_for_version "$version" "$changelog")"
+  [[ -n "$section" ]] || return 1
+
+  bullet_count="$(printf '%s\n' "$section" \
+    | grep -E '^[*-] ' \
+    | grep -Ev '^[*-][[:space:]]*$' \
+    | grep -Evi '^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|todo|tbd|placeholder)[[:space:]]*$' \
+    | wc -l \
+    | tr -d ' ')"
+
+  [[ "$bullet_count" != "0" ]]
+}
+
+# Removes one changelog section so it can be regenerated cleanly.
+remove_changelog_section_for_version() {
+  local version="$1"
+  local changelog="$2"
+  local tmp_file
+
+  tmp_file="$(mktemp)"
+  awk "
+    /^## / {
+      if (skip && \$0 !~ /\[?v?${version}\]?/) skip=0
+      if (\$0 ~ /\[?v?${version}\]?/) { skip=1; next }
+    }
+    !skip { print }
+  " "$changelog" > "$tmp_file"
+  mv "$tmp_file" "$changelog"
+}
+
 # Handles generate changelog section.
 generate_changelog_section() {
   local version="$1"
@@ -455,6 +506,11 @@ generate_changelog_section() {
   fi
   entry+=$'\n'"---"$'\n'
 
+  # Replace a missing, empty, or placeholder section instead of duplicating it.
+  if grep -qE "^## \[?v?${version}\]?" "$changelog"; then
+    remove_changelog_section_for_version "$version" "$changelog"
+  fi
+
   # Insert after the header block (first blank line after the intro paragraph)
   local header_end
   header_end="$(grep -n "^All notable" "$changelog" | head -1 | cut -d: -f1)"
@@ -490,7 +546,7 @@ auto_release() {
   empty_row
   row "Steps:"
   row " 1. Check working tree (commit or stash if dirty)"
-  row " 2. Auto-generate changelog (if missing)"
+  row " 2. Auto-generate changelog (if missing/thin)"
   row " 3. Dry run"
   row " 4. Live release"
   row " 5. Create GitHub release"
@@ -548,8 +604,8 @@ auto_release() {
     esac
   fi
 
-  # Auto-generate changelog section if missing, then commit it
-  if [[ -f "$CHANGELOG_FILE" ]] && ! grep -q "$version" "$CHANGELOG_FILE"; then
+  # Auto-generate changelog section if missing, empty, or placeholder-only, then commit it
+  if [[ -f "$CHANGELOG_FILE" ]] && ! changelog_section_has_real_entries "$version" "$CHANGELOG_FILE"; then
     generate_changelog_section "$version" "$CHANGELOG_FILE" || return 1
     if ! git -C "$RELEASE_REPO" diff --quiet "$CHANGELOG_FILE" 2>/dev/null; then
       (cd "$RELEASE_REPO" && git add "$CHANGELOG_FILE" && \
