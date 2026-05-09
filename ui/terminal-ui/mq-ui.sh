@@ -251,7 +251,7 @@ read_menu_choice() {
   local label="${2:-mqlaunch}"
   local sep_width hint sep
 
-  sep_width="${BOX_INNER:-88}"
+  sep_width=$(( $(surface_terminal_width) - 4 ))
   sep="$(repeat_char "$sep_width" "─")"
 
   hint="$(printf '%s' "$raw_prompt" | grep -oE '\[[^]]+\]' | head -1)"
