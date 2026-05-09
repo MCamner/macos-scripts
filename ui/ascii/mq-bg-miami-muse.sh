@@ -15,6 +15,7 @@ MQ_NEON_CYAN="\033[96m"
 MQ_DIM_BLUE="\033[38;5;24m"
 MQ_FOG="\033[38;5;250m"
 
+# Handles mq bg bladerunner.
 mq_bg_bladerunner() {
   cat <<EOF
 ${MQ_NEON_BLUE}┌──────────────────────────────────────────────────────────────────────────────┐${C_RESET}

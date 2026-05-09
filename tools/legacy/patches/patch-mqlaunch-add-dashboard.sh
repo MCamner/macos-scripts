@@ -19,6 +19,7 @@ original = text
 # 1) Add open_dashboard() if missing
 # ------------------------------------------------------------
 dashboard_func = r'''
+# Opens dashboard.
 open_dashboard() {
   local dashboard_script="$BASE_DIR/ui/dashboards/mq-dashboard.sh"
 

@@ -11,10 +11,12 @@
 : "${C_CYAN:=\033[36m}"
 : "${C_WHITE:=\033[37m}"
 
+# Handles mq strip ansi.
 mq_strip_ansi() {
   printf '%s' "$1" | perl -pe 's/\e\[[0-9;]*m//g'
 }
 
+# Handles mq repeat char.
 mq_repeat_char() {
   local char="${1:--}"
   local count="${2:-80}"
@@ -26,6 +28,7 @@ mq_repeat_char() {
   printf '%s' "$out"
 }
 
+# Handles mq fit text.
 mq_fit_text() {
   local text="$1"
   local width="${2:-88}"
@@ -42,6 +45,7 @@ mq_fit_text() {
   printf '%s' "$text"
 }
 
+# Handles mq pad right.
 mq_pad_right() {
   local text="$1"
   local width="${2:-88}"
@@ -54,16 +58,19 @@ mq_pad_right() {
   printf "%*s" "$pad" ""
 }
 
+# Handles mq git branch.
 mq_git_branch() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git branch --show-current 2>/dev/null
 }
 
+# Handles mq repo root name.
 mq_repo_root_name() {
   git rev-parse --show-toplevel >/dev/null 2>&1 || return 0
   basename "$(git rev-parse --show-toplevel 2>/dev/null)"
 }
 
+# Handles mq dashboard.
 mq_dashboard() {
   local title="${1:-MQLaunch}"
   local subtitle="${2:-Modular Terminal Framework}"

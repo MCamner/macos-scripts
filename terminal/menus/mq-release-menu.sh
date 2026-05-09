@@ -25,12 +25,14 @@ else
   exit 1
 fi
 
+# Handles refresh release paths.
 refresh_release_paths() {
   RELEASE_SCRIPT="$RELEASE_REPO/release.sh"
   CHANGELOG_FILE="$RELEASE_REPO/CHANGELOG.md"
   VERSION_FILE="$RELEASE_REPO/VERSION"
 }
 
+# Handles default release repo.
 default_release_repo() {
   local detected=""
 
@@ -42,6 +44,7 @@ default_release_repo() {
   fi
 }
 
+# Resolves repo path.
 resolve_repo_path() {
   local path="$1"
 
@@ -57,6 +60,7 @@ resolve_repo_path() {
   (cd "$path" 2>/dev/null && pwd) || return 1
 }
 
+# Sets release repo.
 set_release_repo() {
   local path="$1"
   local resolved
@@ -77,6 +81,7 @@ set_release_repo() {
   refresh_release_paths
 }
 
+# Chooses release repo.
 choose_release_repo() {
   local path=""
 
@@ -104,6 +109,7 @@ choose_release_repo() {
   set_release_repo "$path"
 }
 
+# Handles require release script.
 require_release_script() {
   if [[ ! -x "$RELEASE_SCRIPT" ]]; then
     print_header
@@ -119,6 +125,7 @@ require_release_script() {
   fi
 }
 
+# Handles init release files.
 init_release_files() {
   local version today confirm
 
@@ -188,6 +195,7 @@ EOF_CHANGELOG
   pause_enter
 }
 
+# Handles current version.
 current_version() {
   if [[ -f "$VERSION_FILE" ]]; then
     head -n 1 "$VERSION_FILE"
@@ -196,10 +204,12 @@ current_version() {
   fi
 }
 
+# Handles latest tag.
 latest_tag() {
   git -C "$RELEASE_REPO" describe --tags --abbrev=0 2>/dev/null || true
 }
 
+# Shows release status.
 show_release_status() {
   print_header
   row_bold "RELEASE STATUS"
@@ -215,6 +225,7 @@ show_release_status() {
   pause_enter
 }
 
+# Shows changelog.
 show_changelog() {
   print_header
   row_bold "CHANGELOG"
@@ -233,6 +244,7 @@ show_changelog() {
   pause_enter
 }
 
+# Shows tags.
 show_tags() {
   print_header
   row_bold "LATEST TAGS"
@@ -244,6 +256,7 @@ show_tags() {
   pause_enter
 }
 
+# Opens changelog in editor.
 open_changelog_in_editor() {
   print_header
   row_bold "OPEN CHANGELOG"
@@ -259,6 +272,7 @@ open_changelog_in_editor() {
   fi
 }
 
+# Opens release script in editor.
 open_release_script_in_editor() {
   print_header
   row_bold "OPEN RELEASE SCRIPT"
@@ -274,6 +288,7 @@ open_release_script_in_editor() {
   fi
 }
 
+# Handles prompt version.
 prompt_version() {
   local prompt="$1"
 
@@ -292,6 +307,7 @@ prompt_version() {
   fi
 }
 
+# Runs release command.
 run_release_command() {
   local title="$1"
   local status=0
@@ -318,6 +334,7 @@ run_release_command() {
   return "$status"
 }
 
+# Runs release dry.
 run_release_dry() {
   local version=""
   prompt_version "DRY RUN RELEASE" || return 1
@@ -325,6 +342,7 @@ run_release_dry() {
   run_release_command "DRY RUN RELEASE" --dry-run "$version"
 }
 
+# Runs release live.
 run_release_live() {
   local version=""
   prompt_version "RUN RELEASE" || return 1
@@ -332,6 +350,7 @@ run_release_live() {
   run_release_command "RUN RELEASE" "$version"
 }
 
+# Handles create github release only.
 create_github_release_only() {
   local tag=""
   local latest=""
@@ -382,6 +401,7 @@ create_github_release_only() {
   pause_enter
 }
 
+# Handles generate changelog section.
 generate_changelog_section() {
   local version="$1"
   local changelog="$2"
@@ -455,6 +475,7 @@ generate_changelog_section() {
   pause_enter
 }
 
+# Handles auto release.
 auto_release() {
   local version confirm dry_status
 
@@ -598,6 +619,7 @@ auto_release() {
   pause_enter
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -624,6 +646,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
 
@@ -657,6 +680,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-release-menu.sh - interactive release menu
@@ -677,6 +701,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
   local repo_arg="${2:-}"

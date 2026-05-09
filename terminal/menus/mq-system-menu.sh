@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles render system panel.
 render_system_panel() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -29,6 +30,7 @@ render_system_panel() {
   printf '\n'
 }
 
+# Opens system menu.
 open_system_menu() {
   local choice
 

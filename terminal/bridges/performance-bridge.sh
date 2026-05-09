@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Opens performance menu.
 open_performance_menu() {
   local v3_perf_menu="$BASE_DIR/terminal/menus/mq-performance-menu.sh"
 
@@ -21,6 +22,7 @@ open_performance_menu() {
   fi
 }
 
+# Runs performance command.
 run_performance_command() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
   local subcmd="${1:-performance}"
@@ -40,6 +42,7 @@ open_v1_performance_menu() {
   open_performance_menu "$@"
 }
 
+# Runs v1 performance command.
 run_v1_performance_command() {
   run_performance_command "$@"
 }

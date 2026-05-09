@@ -10,34 +10,42 @@ path = Path.home() / "macos-scripts" / "terminal" / "launchers" / "mqlaunch.sh"
 text = path.read_text()
 
 func_block = '''
+# Opens tweaks menu.
 open_tweaks_menu() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" menu
 }
 
+# Shows tweaks status.
 show_tweaks_status() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" status
 }
 
+# Runs tweaks workstation.
 run_tweaks_workstation() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" workstation
 }
 
+# Runs tweaks dev.
 run_tweaks_dev() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" dev
 }
 
+# Runs tweaks clean.
 run_tweaks_clean() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" clean
 }
 
+# Runs tweaks fast.
 run_tweaks_fast() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" fast
 }
 
+# Runs tweaks all.
 run_tweaks_all() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" all
 }
 
+# Reverts tweaks latest.
 revert_tweaks_latest() {
   bash "$BASE_DIR/system/tweaks/macos-tweaks.sh" revert-latest
 }

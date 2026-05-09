@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Opens v1 tools menu.
 open_v1_tools_menu() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
 
@@ -13,6 +14,7 @@ open_v1_tools_menu() {
   fi
 }
 
+# Runs v1 tools command.
 run_v1_tools_command() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
   local subcmd="${1:-tools}"

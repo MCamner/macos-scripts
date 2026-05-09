@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Prints dev menu.
 print_dev_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -24,6 +25,7 @@ print_dev_menu() {
   printf '\n'
 }
 
+# Handles handle dev menu choice.
 handle_dev_menu_choice() {
   local choice="$1"
 
@@ -47,6 +49,7 @@ handle_dev_menu_choice() {
   return 0
 }
 
+# Handles dev menu loop.
 dev_menu_loop() {
   local choice
 
@@ -66,6 +69,7 @@ dev_menu_loop() {
   done
 }
 
+# Opens dev menu.
 open_dev_menu() {
   dev_menu_loop
 }

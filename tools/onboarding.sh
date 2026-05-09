@@ -4,10 +4,12 @@ set -euo pipefail
 APP_TITLE="macos-scripts"
 CMD="mqlaunch"
 
+# Prints line.
 print_line() {
   printf '%s\n' "$1"
 }
 
+# Runs the main entry point.
 main() {
   clear || true
   print_line "============================================================"

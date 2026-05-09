@@ -39,23 +39,29 @@ C_RESET="\033[0m"
 # Layout
 # ----------------------------
 
+# Handles hr.
 hr() {
   printf "%*s\n" "$(tput cols)" '' | tr ' ' '─'
 }
 
+# Handles header.
 header() {
   echo -e "${C_TITLE}$1${C_RESET}"
   hr
 }
 
+# Handles section.
 section() {
   echo
   echo -e "${C_TITLE}$1${C_RESET}"
   hr
 }
 
+# Handles ok.
 ok()   { printf "${C_OK}✔ %-30s${C_RESET}\n" "$1"; }
+# Handles warn.
 warn() { printf "${C_WARN}⚠ %-30s${C_RESET}\n" "$1"; }
+# Handles err.
 err()  { printf "${C_ERR}✖ %-30s${C_RESET}\n" "$1"; }
 
 # Blink helper (used for CRITICAL)

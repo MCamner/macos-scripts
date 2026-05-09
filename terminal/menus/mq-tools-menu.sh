@@ -39,6 +39,7 @@ MENUS_DIR="$BASE_DIR/terminal/menus"
 GUIDE_HTML="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 GUIDE_URL="https://mcamner.github.io/macos-scripts/"
 
+# Normalizes document function target.
 normalize_document_function_target() {
   local target="$1"
 
@@ -49,6 +50,7 @@ normalize_document_function_target() {
   fi
 }
 
+# Runs system check.
 run_system_check() {
   if [[ -x "$SYSTEM_CHECK" ]]; then
     "$SYSTEM_CHECK"
@@ -63,22 +65,27 @@ run_system_check() {
   fi
 }
 
+# Opens repo.
 open_repo() {
   open "$BASE_DIR"
 }
 
+# Opens launchers.
 open_launchers() {
   open "$LAUNCHERS_DIR"
 }
 
+# Opens themes.
 open_themes() {
   open "$THEMES_DIR"
 }
 
+# Opens menus.
 open_menus() {
   open "$MENUS_DIR"
 }
 
+# Opens dashboard.
 open_dashboard() {
   if [[ -x "$DASHBOARD" ]]; then
     bash "$DASHBOARD" menu
@@ -96,6 +103,7 @@ open_dashboard() {
   fi
 }
 
+# Opens guide.
 open_guide() {
   if [[ -f "$GUIDE_HTML" ]]; then
     open "$GUIDE_HTML"
@@ -104,6 +112,7 @@ open_guide() {
   fi
 }
 
+# Shows paths.
 show_paths() {
   print_header
   row_bold "KEY PATHS"
@@ -136,6 +145,7 @@ show_paths() {
   pause_enter
 }
 
+# Shows git status.
 show_git_status() {
   print_header
   row_bold "GIT STATUS"
@@ -152,6 +162,7 @@ show_git_status() {
   pause_enter
 }
 
+# Runs document functions preview.
 run_document_functions_preview() {
   print_header
   row_bold "DOCUMENT FUNCTIONS"
@@ -172,6 +183,7 @@ run_document_functions_preview() {
   fi
 }
 
+# Runs document functions command.
 run_document_functions_command() {
   if [[ -x "$DOCUMENT_FUNCTIONS" ]]; then
     MACOS_SCRIPTS_HOME="$WORK_DIR" "$DOCUMENT_FUNCTIONS" "$@"
@@ -180,12 +192,14 @@ run_document_functions_command() {
   fi
 }
 
+# Handles pause if interactive.
 pause_if_interactive() {
   if [[ -t 0 ]]; then
     pause_enter
   fi
 }
 
+# Handles select document function targets.
 select_document_function_targets() {
   local action="${1:-update}"
   local selection custom target
@@ -253,6 +267,7 @@ select_document_function_targets() {
   return 0
 }
 
+# Prints document function targets.
 print_document_function_targets() {
   local target
 
@@ -261,6 +276,7 @@ print_document_function_targets() {
   done
 }
 
+# Runs document functions preview selected.
 run_document_functions_preview_selected() {
   print_header
   row_bold "DOCUMENT FUNCTIONS PREVIEW"
@@ -287,6 +303,7 @@ run_document_functions_preview_selected() {
   pause_if_interactive
 }
 
+# Runs document functions diff selected.
 run_document_functions_diff_selected() {
   print_header
   row_bold "DOCUMENT FUNCTIONS DIFF"
@@ -313,6 +330,7 @@ run_document_functions_diff_selected() {
   pause_if_interactive
 }
 
+# Runs document functions check selected.
 run_document_functions_check_selected() {
   print_header
   row_bold "DOCUMENT FUNCTIONS CHECK"
@@ -343,6 +361,7 @@ run_document_functions_check_selected() {
   pause_if_interactive
 }
 
+# Runs document functions update.
 run_document_functions_update() {
   local confirm
 
@@ -395,6 +414,7 @@ run_document_functions_update() {
   fi
 }
 
+# Prints document functions menu.
 print_document_functions_menu() {
   print_header
   row_bold "DOCUMENT FUNCTIONS"
@@ -407,6 +427,7 @@ print_document_functions_menu() {
   print_footer
 }
 
+# Documents functions menu loop.
 document_functions_menu_loop() {
   local choice
 
@@ -428,6 +449,7 @@ document_functions_menu_loop() {
   done
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -453,6 +475,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
 
@@ -481,6 +504,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-tools-menu.sh - reusable tools menu
@@ -501,6 +525,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

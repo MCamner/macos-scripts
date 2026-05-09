@@ -19,6 +19,7 @@ original = text
 # 1) Add backup_mqlaunch() before menu section
 # ------------------------------------------------------------
 backup_func = r'''
+# Backs up mqlaunch.
 backup_mqlaunch() {
   local stamp backup_file
   stamp="$(date '+%Y%m%d-%H%M%S')"

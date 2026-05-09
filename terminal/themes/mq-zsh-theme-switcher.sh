@@ -20,6 +20,7 @@ else
   exit 1
 fi
 
+# Handles theme list.
 theme_list() {
   cat <<'LIST'
 amber
@@ -30,6 +31,7 @@ macos
 LIST
 }
 
+# Handles theme description.
 theme_description() {
   case "$1" in
     amber)   echo "Retro amber + MQ feel" ;;
@@ -41,6 +43,7 @@ theme_description() {
   esac
 }
 
+# Handles current variant.
 current_variant() {
   if grep -Eq '^export MQ_ZSH_VARIANT=' "$ZSHRC" 2>/dev/null; then
     grep -E '^export MQ_ZSH_VARIANT=' "$ZSHRC" | tail -n 1 | sed -E 's/^export MQ_ZSH_VARIANT="?([^"]+)"?/\1/'
@@ -49,10 +52,12 @@ current_variant() {
   fi
 }
 
+# Handles theme source present.
 theme_source_present() {
   grep -Fq 'source "$HOME/macos-scripts/terminal/themes/mq-zsh-theme-v3.zsh"' "$ZSHRC" 2>/dev/null
 }
 
+# Backs up zshrc.
 backup_zshrc() {
   mkdir -p "$BACKUP_DIR"
   local backup_file="$BACKUP_DIR/.zshrc.backup-$(date +%Y%m%d-%H%M%S)"
@@ -65,6 +70,7 @@ backup_zshrc() {
   fi
 }
 
+# Handles clean existing theme lines.
 clean_existing_theme_lines() {
   local tmp
   tmp="$(mktemp)"
@@ -77,6 +83,7 @@ clean_existing_theme_lines() {
   fi
 }
 
+# Handles apply theme.
 apply_theme() {
   local variant="$1"
 
@@ -114,6 +121,7 @@ apply_theme() {
   pause_enter
 }
 
+# Handles reset theme.
 reset_theme() {
   local backup_file
   backup_file="$(backup_zshrc)"
@@ -132,6 +140,7 @@ reset_theme() {
   pause_enter
 }
 
+# Shows current.
 show_current() {
   print_header
   row_bold "CURRENT THEME"
@@ -148,6 +157,7 @@ show_current() {
   pause_enter
 }
 
+# Shows list.
 show_list() {
   print_header
   row_bold "AVAILABLE THEMES"
@@ -160,6 +170,7 @@ show_list() {
   pause_enter
 }
 
+# Prints menu.
 print_menu() {
   print_header
   row_bold "ZSH THEME SWITCHER"
@@ -174,6 +185,7 @@ print_menu() {
   print_footer
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
   while true; do
@@ -197,6 +209,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-zsh-theme-switcher.sh - switch MQ zsh theme variants
@@ -215,6 +228,7 @@ Examples:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

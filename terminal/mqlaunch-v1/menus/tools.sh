@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu tools.
 menu_tools() {
   local choice
 

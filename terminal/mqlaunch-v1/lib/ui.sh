@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Prints header.
 print_header() {
   clear
   printf "%b\n" "${C_BOLD}${C_BLUE}mqlaunch v1${C_RESET}"
@@ -7,30 +8,36 @@ print_header() {
   printf "\n"
 }
 
+# Prints section.
 print_section() {
   printf "\n%b\n" "${C_BOLD}$1${C_RESET}"
 }
 
+# Prints menu item.
 print_menu_item() {
   local key="$1"
   local label="$2"
   printf "  ${C_CYAN}%-4s${C_RESET} %s\n" "$key" "$label"
 }
 
+# Prints footer hint.
 print_footer_hint() {
   printf "\n%b\n" "${C_DIM}Type a command, number, or x to exit.${C_RESET}"
 }
 
+# Prints divider.
 print_divider() {
   printf '%*s\n' 52 '' | tr ' ' '-'
 }
 
+# Prints kv.
 print_kv() {
   local key="$1"
   local value="$2"
   printf "%-18s %s\n" "$key" "$value"
 }
 
+# Prints warning block.
 print_warning_block() {
   local warnings="$1"
 

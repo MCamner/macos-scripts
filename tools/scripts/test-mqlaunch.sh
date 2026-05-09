@@ -10,15 +10,18 @@ PERF_BRIDGE="$PROJECT_ROOT/terminal/bridges/performance-bridge.sh"
 RELEASE_SCRIPT="$PROJECT_ROOT/release.sh"
 RELEASE_MENU="$PROJECT_ROOT/terminal/menus/mq-release-menu.sh"
 
+# Handles pass.
 pass() {
   echo "[PASS] $1"
 }
 
+# Handles fail.
 fail() {
   echo "[FAIL] $1"
   exit 1
 }
 
+# Handles assert file.
 assert_file() {
   local path="$1"
   local label="$2"
@@ -26,6 +29,7 @@ assert_file() {
   pass "$label exists"
 }
 
+# Handles assert grep.
 assert_grep() {
   local pattern="$1"
   local file="$2"
@@ -34,6 +38,7 @@ assert_grep() {
   pass "$label"
 }
 
+# Handles assert cmd ok.
 assert_cmd_ok() {
   local label="$1"
   shift

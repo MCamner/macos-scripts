@@ -6,6 +6,7 @@ if ! command -v surface_top >/dev/null 2>&1; then
   [[ -f "$BASE_DIR/ui/terminal-ui/mq-ui.sh" ]] && source "$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 fi
 
+# Handles help center git state.
 help_center_git_state() {
   local count
   count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
@@ -17,6 +18,7 @@ help_center_git_state() {
   fi
 }
 
+# Handles render help center panel.
 render_help_center_panel() {
   local width panel_color host user git_state mode
   width="$(surface_terminal_width)"
@@ -56,6 +58,7 @@ render_help_center_panel() {
   printf '\n'
 }
 
+# Opens help center menu.
 open_help_center_menu() {
   local choice
 

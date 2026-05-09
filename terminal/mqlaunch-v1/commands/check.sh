@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command run self check.
 command_run_self_check() {
   local check_script="$PROJECT_ROOT/tools/scripts/system-check.sh"
 

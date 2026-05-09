@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command show command index.
 command_show_command_index() {
   print_header
   print_section "Command Index"

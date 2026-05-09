@@ -17,6 +17,7 @@ else
   exit 1
 fi
 
+# Prints header.
 print_header() {
   local nickname
   nickname="$(get_nickname)"
@@ -38,6 +39,7 @@ print_header() {
 
 CURRENT_REPO="${MQ_GIT_REPO:-$BASE_DIR}"
 
+# Ensures repo is ready.
 ensure_repo() {
   if [[ ! -d "$CURRENT_REPO/.git" ]]; then
     print_header
@@ -51,10 +53,12 @@ ensure_repo() {
   fi
 }
 
+# Handles repo name.
 repo_name() {
   basename "$CURRENT_REPO"
 }
 
+# Normalizes remote url.
 normalize_remote_url() {
   local remote_url="$1"
 
@@ -76,6 +80,7 @@ normalize_remote_url() {
   echo "${remote_url%.git}"
 }
 
+# Handles github web url.
 github_web_url() {
   local remote_url=""
   remote_url="$(git -C "$CURRENT_REPO" remote get-url origin 2>/dev/null || true)"
@@ -83,6 +88,7 @@ github_web_url() {
   normalize_remote_url "$remote_url"
 }
 
+# Gets ahead behind.
 get_ahead_behind() {
   local upstream="$1"
   local counts left right
@@ -96,6 +102,7 @@ get_ahead_behind() {
   printf '%s %s\n' "$left" "$right"
 }
 
+# Chooses repo.
 choose_repo() {
   local path=""
 
@@ -124,6 +131,7 @@ choose_repo() {
   pause_enter
 }
 
+# Shows status.
 show_status() {
   ensure_repo || return 1
 
@@ -153,6 +161,7 @@ show_status() {
   pause_enter
 }
 
+# Analyzes diff.
 analyze_diff() {
   ensure_repo || return 1
 
@@ -219,6 +228,7 @@ analyze_diff() {
   pause_enter
 }
 
+# Suggests commit.
 suggest_commit() {
   ensure_repo || return 1
 
@@ -264,6 +274,7 @@ suggest_commit() {
   pause_enter
 }
 
+# Handles next action.
 next_action() {
   ensure_repo || return 1
 
@@ -313,6 +324,7 @@ next_action() {
   pause_enter
 }
 
+# Stages selected.
 stage_selected() {
   ensure_repo || return 1
 
@@ -347,6 +359,7 @@ stage_selected() {
   pause_enter
 }
 
+# Commits changes.
 commit_changes() {
   ensure_repo || return 1
 
@@ -380,6 +393,7 @@ commit_changes() {
   pause_enter
 }
 
+# Handles safe push.
 safe_push() {
   ensure_repo || return 1
 
@@ -445,6 +459,7 @@ safe_push() {
   pause_enter
 }
 
+# Pulls rebase.
 pull_rebase() {
   ensure_repo || return 1
 
@@ -466,6 +481,7 @@ pull_rebase() {
   pause_enter
 }
 
+# Shows log.
 show_log() {
   ensure_repo || return 1
 
@@ -477,6 +493,7 @@ show_log() {
   pause_enter
 }
 
+# Opens repo github.
 open_repo_github() {
   ensure_repo || return 1
 
@@ -502,6 +519,7 @@ open_repo_github() {
   open "$url"
 }
 
+# Opens local repo.
 open_local_repo() {
   ensure_repo || return 1
 
@@ -514,6 +532,7 @@ open_local_repo() {
   open "$CURRENT_REPO"
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -538,6 +557,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice=""
 
@@ -566,6 +586,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-git-menu.sh - interactive git menu
@@ -583,6 +604,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

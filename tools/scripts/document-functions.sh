@@ -17,6 +17,7 @@ SCANNED_FILES=0
 CHANGED_FILES=0
 CHANGED_COMMENTS=0
 
+# Prints usage information.
 usage() {
   cat <<'EOF'
 document-functions.sh — add short comments above undocumented shell functions
@@ -112,6 +113,7 @@ if [[ ${#TARGETS[@]} -eq 0 ]]; then
   TARGETS=("tools/scripts")
 fi
 
+# Checks whether shell file applies.
 is_shell_file() {
   local file="$1"
 
@@ -123,6 +125,7 @@ is_shell_file() {
   head -n 1 "$file" 2>/dev/null | grep -Eq '^#!.*\b(bash|zsh|sh)\b'
 }
 
+# Collects files.
 collect_files() {
   local target="$1"
 
@@ -135,6 +138,7 @@ collect_files() {
   fi
 }
 
+# Handles should exclude.
 should_exclude() {
   local file="$1"
   local pattern
@@ -152,6 +156,7 @@ should_exclude() {
   return 1
 }
 
+# Backs up file.
 backup_file() {
   local file="$1"
   local relative backup_path backup_dir
@@ -175,6 +180,7 @@ backup_file() {
   printf 'Backup saved %s\n' "$backup_path"
 }
 
+# Documents file.
 document_file() {
   local file="$1"
   local tmp changed
@@ -322,6 +328,7 @@ document_file() {
       return ""
     }
 
+# Handles emit pending.
     function emit_pending() {
       if (has_pending) {
         print pending
@@ -402,10 +409,13 @@ document_file() {
 
 cd "$ROOT_DIR"
 
+SELF="$(realpath "$0" 2>/dev/null || printf '%s' "$0")"
+
 for target in "${TARGETS[@]}"; do
   while IFS= read -r file; do
     should_exclude "$file" && continue
     is_shell_file "$file" || continue
+    [[ "$file" -ef "$SELF" ]] && continue
     SCANNED_FILES=$((SCANNED_FILES + 1))
     document_file "$file"
   done < <(collect_files "$target")

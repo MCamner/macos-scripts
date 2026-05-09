@@ -19,6 +19,7 @@ original = text
 # 1) Add theme helper functions if missing
 # ------------------------------------------------------------
 theme_block = r'''
+# Handles theme cmd.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
   local cmd="${1:-list}"
@@ -41,6 +42,7 @@ theme_cmd() {
   fi
 }
 
+# Prints themes menu.
 print_themes_menu() {
   print_header
   row "THEMES"
@@ -57,6 +59,7 @@ print_themes_menu() {
   printf "${C_TITLE}Select theme option [0-10]: ${C_RESET}"
 }
 
+# Handles themes menu loop.
 themes_menu_loop() {
   local choice
 

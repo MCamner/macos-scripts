@@ -14,6 +14,7 @@ CHANGELOG_FILE="CHANGELOG.md"
 ORIG_VERSION_CONTENT=""
 ORIG_README_CONTENT=""
 
+# Shows usage.
 show_usage() {
   cat <<'USAGE'
 Usage:
@@ -51,14 +52,17 @@ Safety:
 USAGE
 }
 
+# Handles log step.
 log_step() {
   printf '==> %s\n' "$1"
 }
 
+# Handles error.
 error() {
   printf 'ERROR: %s\n' "$1" >&2
 }
 
+# Handles rollback local changes.
 rollback_local_changes() {
   local rolled_back=false
 
@@ -77,6 +81,7 @@ rollback_local_changes() {
   fi
 }
 
+# Handles on error.
 on_error() {
   error "Release command failed with exit code: $?"
   rollback_local_changes || true
@@ -84,6 +89,7 @@ on_error() {
 
 trap on_error ERR
 
+# Handles require clean tree.
 require_clean_tree() {
   if ! git diff --quiet || ! git diff --cached --quiet; then
     error "Git working tree is not clean. Commit or stash changes first."
@@ -96,11 +102,13 @@ require_clean_tree() {
   fi
 }
 
+# Handles require file.
 require_file() {
   local file="$1"
   [[ -f "$file" ]] || { error "Required file missing: $file"; exit 1; }
 }
 
+# Handles require changelog version.
 require_changelog_version() {
   local version="$1"
 
@@ -110,6 +118,7 @@ require_changelog_version() {
   fi
 }
 
+# Handles update version file.
 update_version_file() {
   local version="$1"
   log_step "Updating VERSION -> ${version}"
@@ -117,6 +126,7 @@ update_version_file() {
   printf '%s\n' "${version}" > "${VERSION_FILE}"
 }
 
+# Handles update readme badge.
 update_readme_badge() {
   local version="$1"
 
@@ -131,6 +141,7 @@ update_readme_badge() {
   fi
 }
 
+# Handles init changelog section.
 init_changelog_section() {
   local version="$1"
   local today tmp_file
@@ -160,6 +171,7 @@ init_changelog_section() {
   printf 'Initialized CHANGELOG.md template for version %s\n' "${version}"
 }
 
+# Prints summary.
 print_summary() {
   local tag="v${VERSION}"
 
@@ -174,6 +186,7 @@ GitHub  : $( [[ "${GITHUB_RELEASE}" == true ]] && echo enabled || echo disabled 
 EOF_SUMMARY
 }
 
+# Handles create release commit and tag.
 create_release_commit_and_tag() {
   local version="$1"
   local tag="v${version}"
@@ -183,6 +196,7 @@ create_release_commit_and_tag() {
   git tag -a "${tag}" -m "${tag}"
 }
 
+# Handles push release.
 push_release() {
   local version="$1"
   local tag="v${version}"
@@ -191,6 +205,7 @@ push_release() {
   git push origin "${tag}"
 }
 
+# Handles create github release.
 create_github_release() {
   local version="$1"
   local tag="v${version}"

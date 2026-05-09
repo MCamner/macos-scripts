@@ -40,6 +40,7 @@ new_theme_block = r'''theme_cmd() {
   fi
 }
 
+# Prints themes menu.
 print_themes_menu() {
   print_header
   row "THEMES"
@@ -54,6 +55,7 @@ print_themes_menu() {
   printf "${C_TITLE}Select theme option [0-6]: ${C_RESET}"
 }
 
+# Handles themes menu loop.
 themes_menu_loop() {
   local choice
 

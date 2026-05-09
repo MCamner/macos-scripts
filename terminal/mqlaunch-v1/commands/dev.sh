@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command git status.
 command_git_status() {
   print_header
   print_section "Git Status"
@@ -7,6 +8,7 @@ command_git_status() {
   pause_enter
 }
 
+# Handles command git pull.
 command_git_pull() {
   print_header
   print_section "Git Pull"
@@ -14,6 +16,7 @@ command_git_pull() {
   pause_enter
 }
 
+# Handles command git push.
 command_git_push() {
   print_header
   print_section "Git Push"
@@ -21,6 +24,7 @@ command_git_push() {
   pause_enter
 }
 
+# Handles command git log recent.
 command_git_log_recent() {
   print_header
   print_section "Recent Commits"
@@ -28,6 +32,7 @@ command_git_log_recent() {
   pause_enter
 }
 
+# Handles command git branch current.
 command_git_branch_current() {
   print_header
   print_section "Current Branch"
@@ -38,18 +43,22 @@ command_git_branch_current() {
   pause_enter
 }
 
+# Handles command repo open root.
 command_repo_open_root() {
   open_path "$PROJECT_ROOT"
 }
 
+# Handles command repo open terminal.
 command_repo_open_terminal() {
   open_path "$PROJECT_ROOT/terminal"
 }
 
+# Handles command repo open tools.
 command_repo_open_tools() {
   open_path "$PROJECT_ROOT/tools"
 }
 
+# Handles command repo open ai prompts.
 command_repo_open_ai_prompts() {
   if [[ -d "$PROJECT_ROOT/ai-prompts" ]]; then
     open_path "$PROJECT_ROOT/ai-prompts"
@@ -60,6 +69,7 @@ command_repo_open_ai_prompts() {
   fi
 }
 
+# Handles command edit v1 launcher.
 command_edit_v1_launcher() {
   local target="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 
@@ -70,6 +80,7 @@ command_edit_v1_launcher() {
   fi
 }
 
+# Handles command dev repo health.
 command_dev_repo_health() {
   print_header
   print_section "Repo Health"

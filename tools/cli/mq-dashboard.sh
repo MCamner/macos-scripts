@@ -21,36 +21,44 @@ C_RED=$'\033[31m'
 C_MAGENTA=$'\033[35m'
 C_WHITE=$'\033[37m'
 
+# Sets terminal title.
 set_terminal_title() {
   print -Pn "\e]0;${APP_TITLE}\a"
 }
 
+# Handles line.
 line() {
   echo "${C_BLUE}======================================================================${C_RESET}"
 }
 
+# Handles small line.
 small_line() {
   echo "${C_DIM}----------------------------------------------------------------------${C_RESET}"
 }
 
+# Handles clear screen.
 clear_screen() {
   clear
 }
 
+# Handles pause enter.
 pause_enter() {
   read -r "?Press Enter to continue..."
 }
 
+# Handles pause brief.
 pause_brief() {
   sleep "$REFRESH_DELAY"
 }
 
+# Handles bring terminal front.
 bring_terminal_front() {
   osascript >/dev/null 2>&1 <<'APPLESCRIPT'
 tell application "Terminal" to activate
 APPLESCRIPT
 }
 
+# Handles safe run ai.
 safe_run_ai() {
   local mode="$1"
   if [ -x "$AI_SCRIPT" ]; then
@@ -61,6 +69,7 @@ safe_run_ai() {
   fi
 }
 
+# Shows status.
 show_status() {
   local now shell_name prompt_count ai_state
   now="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -85,6 +94,7 @@ show_status() {
   echo "${C_DIM} Prompt Files:${C_RESET} $prompt_count"
 }
 
+# Shows quick actions.
 show_quick_actions() {
   echo "${C_BOLD}${C_MAGENTA} AI MODES${C_RESET}"
   echo "${C_GREEN}  1)${C_RESET} Auto Mode"
@@ -98,6 +108,7 @@ show_quick_actions() {
   echo "${C_GREEN}  9)${C_RESET} AI Menu"
 }
 
+# Shows system actions.
 show_system_actions() {
   echo "${C_BOLD}${C_YELLOW} SYSTEM${C_RESET}"
   echo "${C_YELLOW} 10)${C_RESET} Open ChatGPT"
@@ -109,10 +120,12 @@ show_system_actions() {
   echo "${C_YELLOW}  0)${C_RESET} Exit"
 }
 
+# Opens chatgpt.
 open_chatgpt() {
   open "https://chatgpt.com/"
 }
 
+# Opens prompt dir.
 open_prompt_dir() {
   if [ -d "$PROMPT_DIR" ]; then
     open "$PROMPT_DIR"
@@ -122,10 +135,12 @@ open_prompt_dir() {
   fi
 }
 
+# Opens repo.
 open_repo() {
   open "$REPO_URL"
 }
 
+# Shows prompt files.
 show_prompt_files() {
   clear_screen
   line
@@ -140,6 +155,7 @@ show_prompt_files() {
   pause_enter
 }
 
+# Handles health check.
 health_check() {
   clear_screen
   line
@@ -175,6 +191,7 @@ health_check() {
   pause_enter
 }
 
+# Prints dashboard.
 print_dashboard() {
   clear_screen
   set_terminal_title
@@ -190,6 +207,7 @@ print_dashboard() {
   echo
 }
 
+# Handles main loop.
 main_loop() {
   while true; do
     print_dashboard

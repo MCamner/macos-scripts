@@ -34,6 +34,7 @@ zstyle ':vcs_info:*' max-exports 2
 zstyle ':vcs_info:git:*' formats '%b'
 zstyle ':vcs_info:git:*' actionformats '%b|%a'
 
+# Handles mq git dirty.
 mq_git_dirty() {
   command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
 
@@ -44,6 +45,7 @@ mq_git_dirty() {
   [[ -n "$dirty" ]] && print -r -- "$dirty"
 }
 
+# Handles mq prompt git.
 mq_prompt_git() {
   command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
 
@@ -67,10 +69,12 @@ mq_prompt_git() {
 typeset -g MQ_CMD_START=0
 typeset -g MQ_CMD_DURATION=""
 
+# Handles mq preexec.
 mq_preexec() {
   MQ_CMD_START=$EPOCHSECONDS
 }
 
+# Handles mq format duration.
 mq_format_duration() {
   local s="$1"
 
@@ -85,6 +89,7 @@ mq_format_duration() {
   fi
 }
 
+# Handles mq precmd.
 mq_precmd() {
   local last_status="$?"
   local now="$EPOCHSECONDS"
@@ -110,10 +115,12 @@ mq_set_title() {
   print -Pn "\e]0;%n@%m: %~\a"
 }
 
+# Handles mq short path.
 mq_short_path() {
   print -Pn "%2~"
 }
 
+# Handles mq prompt symbol.
 mq_prompt_symbol() {
   local last_status="$1"
 
@@ -124,6 +131,7 @@ mq_prompt_symbol() {
   fi
 }
 
+# Handles mq prompt right.
 mq_prompt_right() {
   local last_status="$1"
   local status_seg=""

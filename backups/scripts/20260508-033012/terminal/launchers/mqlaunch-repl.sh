@@ -16,11 +16,13 @@ C_ACCENT='\033[36m'     # cyan
 C_OK='\033[32m'         # green
 C_ERR='\033[31m'        # red
 
+# Gets git branch.
 get_git_branch() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git rev-parse --abbrev-ref HEAD 2>/dev/null || true
 }
 
+# Gets status symbol.
 get_status_symbol() {
   if [[ "$MQ_LAST_STATUS" -eq 0 ]]; then
     printf "%b✔%b" "$C_OK" "$C_RESET"
@@ -29,6 +31,7 @@ get_status_symbol() {
   fi
 }
 
+# Gets context line.
 get_context_line() {
   local cwd branch status context
   cwd="${PWD/#$HOME/~}"
@@ -42,15 +45,21 @@ get_context_line() {
   printf "%b%s%b" "$C_DIM" "$context" "$C_RESET"
 }
 
+# Runs menu.
 run_menu() {
   exec "$BASE_DIR/terminal/launchers/mqlaunch.sh"
 }
 
+# Runs doctor.
 run_doctor() { "$BASE_DIR/tools/scripts/doctor.sh"; }
+# Runs perf.
 run_perf() { "$BASE_DIR/terminal/bridges/performance-bridge.sh"; }
+# Runs dev.
 run_dev() { "$BASE_DIR/terminal/bridges/dev-bridge.sh"; }
+# Runs tools.
 run_tools() { "$BASE_DIR/terminal/menus/mq-tools-menu.sh"; }
 
+# Runs system.
 run_system() {
   if [[ "${1:-}" == "check" ]]; then
     "$BASE_DIR/tools/scripts/system-check.sh"
@@ -59,6 +68,7 @@ run_system() {
   fi
 }
 
+# Prints help.
 print_help() {
   cat <<'HELP'
 
@@ -69,6 +79,7 @@ Aliases: d, p, t, sys, sc
 HELP
 }
 
+# Prints where.
 print_where() {
   local cwd branch
   cwd="${PWD/#$HOME/~}"
@@ -80,6 +91,7 @@ print_where() {
   echo "git:   ${branch:-"-"}"
 }
 
+# Normalizes aliases.
 normalize_aliases() {
   case "$1" in
     h) echo "help" ;;
@@ -93,6 +105,7 @@ normalize_aliases() {
   esac
 }
 
+# Runs shell fallback.
 run_shell_fallback() {
   local line="$1"
   echo
@@ -101,6 +114,7 @@ run_shell_fallback() {
   "$MQ_SHELL" -lc "$line"
 }
 
+# Handles dispatch command.
 dispatch_command() {
   local line="$1"
 
@@ -124,6 +138,7 @@ dispatch_command() {
   esac
 }
 
+# Handles read prompt input.
 read_prompt_input() {
   local line context_line
   context_line="$(get_context_line)"
@@ -150,6 +165,7 @@ read_prompt_input() {
   REPLY="$line"
 }
 
+# Runs the main entry point.
 main() {
   local line status
 

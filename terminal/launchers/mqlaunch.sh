@@ -355,7 +355,7 @@ restart_finder() {
   killall Finder >/dev/null 2>&1
 }
 
-# Restarts mqlaunch by replacing the current process.
+# Restarts mqlaunch.
 restart_mqlaunch() {
   local target="${1:-menu}"
   shift || true

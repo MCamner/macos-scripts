@@ -18,10 +18,12 @@ NEON_GREEN="${C_GREEN}"
 NEON_YELLOW="${C_YELLOW}"
 NEON_RED="${C_RED}"
 
+# Handles mq strip ansi.
 mq_strip_ansi() {
   printf '%s' "$1" | perl -pe 's/\e\[[0-9;]*m//g'
 }
 
+# Handles mq repeat.
 mq_repeat() {
   local char="${1:--}"
   local count="${2:-80}"
@@ -33,12 +35,14 @@ mq_repeat() {
   printf '%s' "$out"
 }
 
+# Handles mq len.
 mq_len() {
   local s="$1"
   s="$(mq_strip_ansi "$s")"
   printf '%s' "${#s}"
 }
 
+# Handles mq truncate.
 mq_truncate() {
   local text="$1"
   local width="${2:-40}"
@@ -51,6 +55,7 @@ mq_truncate() {
   fi
 }
 
+# Handles mq pad right.
 mq_pad_right() {
   local text="$1"
   local width="${2:-40}"
@@ -62,16 +67,19 @@ mq_pad_right() {
   printf "%*s" "$pad" ""
 }
 
+# Handles mq git branch.
 mq_git_branch() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git branch --show-current 2>/dev/null
 }
 
+# Handles mq git repo.
 mq_git_repo() {
   git rev-parse --show-toplevel >/dev/null 2>&1 || return 0
   basename "$(git rev-parse --show-toplevel 2>/dev/null)"
 }
 
+# Handles mq git dirty.
 mq_git_dirty() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
@@ -81,26 +89,32 @@ mq_git_dirty() {
   fi
 }
 
+# Handles mq user.
 mq_user() {
   printf '%s' "${USER:-unknown}"
 }
 
+# Handles mq host.
 mq_host() {
   hostname -s 2>/dev/null || hostname 2>/dev/null || printf '%s' "unknown"
 }
 
+# Handles mq time.
 mq_time() {
   date '+%Y-%m-%d %H:%M:%S'
 }
 
+# Handles mq shell name.
 mq_shell_name() {
   basename "${SHELL:-shell}"
 }
 
+# Handles mq os name.
 mq_os_name() {
   uname -s
 }
 
+# Handles mq box line.
 mq_box_line() {
   local left="$1"
   local fill="$2"
@@ -109,6 +123,7 @@ mq_box_line() {
   printf '%s%s%s\n' "$left" "$(mq_repeat "$fill" $((width - 2)))" "$right"
 }
 
+# Handles mq print row.
 mq_print_row() {
   local left="$1"
   local right="$2"
@@ -125,6 +140,7 @@ mq_print_row() {
     "$(mq_pad_right "$right" "$right_width")"
 }
 
+# Handles mq dashboard v3.
 mq_dashboard_v3() {
   local title="${1:-MQLaunch v3}"
   local subtitle="${2:-Cyberpunk CRT Control Surface}"

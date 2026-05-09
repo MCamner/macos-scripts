@@ -2,6 +2,7 @@
 
 : "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 
+# Handles main menu is sourced.
 main_menu_is_sourced() {
   if [[ -n "${ZSH_EVAL_CONTEXT:-}" ]]; then
     [[ ":$ZSH_EVAL_CONTEXT:" == *:file:* ]]
@@ -11,6 +12,7 @@ main_menu_is_sourced() {
   [[ "${BASH_SOURCE[0]:-}" != "$0" ]]
 }
 
+# Handles main menu direct entry.
 main_menu_direct_entry() {
   local base_dir launcher
   base_dir="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
@@ -26,6 +28,7 @@ main_menu_direct_entry() {
   exit 1
 }
 
+# Prints main menu.
 print_main_menu() {
   print_header
   render_main_menu_panel
@@ -33,6 +36,7 @@ print_main_menu() {
   MQ_MAIN_MENU_RENDERED_LINES=66
 }
 
+# Handles surface action word.
 surface_action_word() {
   local index="$1"
   case $(( index % 10 )) in
@@ -49,6 +53,7 @@ surface_action_word() {
   esac
 }
 
+# Handles surface accept scramble.
 surface_accept_scramble() {
   local color="$1"
   local selected="$2"
@@ -66,6 +71,7 @@ surface_accept_scramble() {
   sleep 0.04
 }
 
+# Handles render main menu panel.
 render_main_menu_panel() {
   local width panel_color host user git_state mode
   width="$(surface_terminal_width)"
@@ -109,6 +115,7 @@ render_main_menu_panel() {
   printf '\n'
 }
 
+# Handles surface dual figure row.
 surface_dual_figure_row() {
   local left_art="$1"
   local right_art="$2"
@@ -143,6 +150,7 @@ surface_dual_figure_row() {
     "$C_RESET"
 }
 
+# Handles surface compact dual figure row.
 surface_compact_dual_figure_row() {
   local left_art="$1"
   local right_art="$2"
@@ -173,6 +181,7 @@ surface_compact_dual_figure_row() {
     "$C_RESET"
 }
 
+# Handles surface git state.
 surface_git_state() {
   local count
   count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
@@ -183,6 +192,7 @@ surface_git_state() {
   fi
 }
 
+# Handles render command surface.
 render_command_surface() {
   local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR ALT_FIGURE_COLOR width git_state tip activity system_state
   USER_NAME="${USER:-$(whoami)}"
@@ -238,6 +248,7 @@ render_command_surface() {
   surface_bottom "$width" "$SURFACE_COLOR"
 }
 
+# Handles handle main menu choice.
 handle_main_menu_choice() {
   local choice="$1"
   local normalized
@@ -288,6 +299,7 @@ handle_main_menu_choice() {
   esac
 }
 
+# Handles handle main prompt command.
 handle_main_prompt_command() {
   local normalized="$1"
   local original="$2"
@@ -346,6 +358,7 @@ handle_main_prompt_command() {
   run_main_shell_command "$original"
 }
 
+# Runs main shell command.
 run_main_shell_command() {
   local command_line="$1"
   local shell_bin="${SHELL:-/bin/zsh}"
@@ -357,6 +370,7 @@ run_main_shell_command() {
   pause_enter
 }
 
+# Handles read main choice.
 read_main_choice() {
   local label="${1:-mqlaunch}"
   local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
@@ -512,6 +526,7 @@ read_main_choice() {
   choice="$REPLY"
 }
 
+# Handles main loop.
 main_loop() {
   local choice
 

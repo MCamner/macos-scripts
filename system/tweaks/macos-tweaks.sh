@@ -35,12 +35,17 @@ C_YELLOW='\033[33m'
 C_BLUE='\033[34m'
 C_CYAN='\033[36m'
 
+# Handles log.
 log()  { printf "%b%s%b\n" "$C_BLUE" "$1" "$C_RESET"; }
+# Handles ok.
 ok()   { printf "%b%s%b\n" "$C_GREEN" "$1" "$C_RESET"; }
+# Handles warn.
 warn() { printf "%b%s%b\n" "$C_YELLOW" "$1" "$C_RESET"; }
+# Handles err.
 err()  { printf "%b%s%b\n" "$C_RED" "$1" "$C_RESET" >&2; }
 
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 $SCRIPT_NAME - macOS tweaks utility
@@ -66,10 +71,12 @@ Options:
 USAGE
 }
 
+# Ensures backup dir is ready.
 ensure_backup_dir() {
   mkdir -p "$BACKUP_DIR"
 }
 
+# Runs cmd.
 run_cmd() {
   local cmd="$1"
   if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -80,12 +87,14 @@ run_cmd() {
   fi
 }
 
+# Handles read pref.
 read_pref() {
   local domain="$1"
   local key="$2"
   defaults read "$domain" "$key" 2>/dev/null || true
 }
 
+# Prints pref.
 print_pref() {
   local label="$1"
   local domain="$2"
@@ -96,6 +105,7 @@ print_pref() {
   printf "  %-28s %s\n" "$label" "$value"
 }
 
+# Backs up pref.
 backup_pref() {
   local domain="$1"
   local key="$2"
@@ -104,6 +114,7 @@ backup_pref() {
   printf "%s\t%s\t%s\n" "$domain" "$key" "$value" >> "$BACKUP_FILE"
 }
 
+# Backs up selected.
 backup_selected() {
   ensure_backup_dir
   : > "$BACKUP_FILE"
@@ -144,10 +155,12 @@ backup_selected() {
   ok "Backup saved."
 }
 
+# Handles latest backup.
 latest_backup() {
   ls -t "$BACKUP_DIR"/backup-*.txt 2>/dev/null | head -n 1 || true
 }
 
+# Shows latest backup.
 show_latest_backup() {
   local latest
   latest="$(latest_backup)"
@@ -158,6 +171,7 @@ show_latest_backup() {
   printf "%s\n" "$latest"
 }
 
+# Reverts from file.
 revert_from_file() {
   local file="$1"
 
@@ -194,6 +208,7 @@ revert_from_file() {
   ok "Revert complete."
 }
 
+# Reverts latest.
 revert_latest() {
   local latest
   latest="$(latest_backup)"
@@ -204,6 +219,7 @@ revert_latest() {
   revert_from_file "$latest"
 }
 
+# Restarts affected apps.
 restart_affected_apps() {
   log "Restarting affected apps..."
   run_cmd "killall Dock >/dev/null 2>&1 || true"
@@ -212,6 +228,7 @@ restart_affected_apps() {
   ok "Done."
 }
 
+# Handles apply dev tweaks.
 apply_dev_tweaks() {
   log "${C_BOLD}Applying developer tweaks...${C_RESET}"
 
@@ -233,6 +250,7 @@ apply_dev_tweaks() {
   ok "Developer tweaks applied."
 }
 
+# Handles apply clean tweaks.
 apply_clean_tweaks() {
   log "${C_BOLD}Applying clean UI tweaks...${C_RESET}"
 
@@ -249,6 +267,7 @@ apply_clean_tweaks() {
   ok "Clean tweaks applied."
 }
 
+# Handles apply fast tweaks.
 apply_fast_tweaks() {
   log "${C_BOLD}Applying speed/productivity tweaks...${C_RESET}"
 
@@ -262,6 +281,7 @@ apply_fast_tweaks() {
   ok "Fast tweaks applied."
 }
 
+# Handles apply workstation tweaks.
 apply_workstation_tweaks() {
   log "${C_BOLD}Applying workstation profile...${C_RESET}"
 
@@ -282,6 +302,7 @@ apply_workstation_tweaks() {
   ok "Workstation tweaks applied."
 }
 
+# Shows status.
 show_status() {
   print_header
   row_bold "TWEAKS STATUS"
@@ -317,6 +338,7 @@ show_status() {
   print_footer
 }
 
+# Prints tweaks menu.
 print_tweaks_menu() {
   print_header
   row_bold "TWEAKS MENU"
@@ -332,6 +354,7 @@ print_tweaks_menu() {
   printf "${C_BLUE}Select option [0-9]: ${C_RESET}"
 }
 
+# Handles interactive menu.
 interactive_menu() {
   while true; do
     print_tweaks_menu
@@ -399,6 +422,7 @@ interactive_menu() {
   done
 }
 
+# Handles parse args.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -427,6 +451,7 @@ parse_args() {
   done
 }
 
+# Runs the main entry point.
 main() {
   ensure_backup_dir
   parse_args "$@"

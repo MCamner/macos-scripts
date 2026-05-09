@@ -5,6 +5,7 @@ BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_FILE="${HOME}/.mq-theme"
 
+# Handles theme list.
 theme_list() {
   cat <<'LIST'
 classic
@@ -15,6 +16,7 @@ synth
 LIST
 }
 
+# Handles theme description.
 theme_description() {
   case "$1" in
     classic) echo "Yellow/blue MQ default feel" ;;
@@ -26,6 +28,7 @@ theme_description() {
   esac
 }
 
+# Handles theme exports.
 theme_exports() {
   case "$1" in
     classic)
@@ -89,6 +92,7 @@ EOF_THEME
   esac
 }
 
+# Handles write theme file.
 write_theme_file() {
   local theme="$1"
   {
@@ -97,6 +101,7 @@ write_theme_file() {
   } > "$THEME_FILE"
 }
 
+# Shows current.
 show_current() {
   if [[ -f "$THEME_FILE" ]]; then
     # shellcheck disable=SC1090
@@ -108,6 +113,7 @@ show_current() {
   fi
 }
 
+# Handles preview theme.
 preview_theme() {
   local theme="$1"
 
@@ -147,6 +153,7 @@ preview_theme() {
   )
 }
 
+# Handles apply theme.
 apply_theme() {
   local theme="$1"
 
@@ -165,12 +172,14 @@ apply_theme() {
   echo "  ~/macos-scripts/ui/dashboards/mq-dashboard.sh"
 }
 
+# Handles reset theme.
 reset_theme() {
   rm -f "$THEME_FILE"
   echo "Removed theme file."
   echo "UI will now use default colors."
 }
 
+# Prints usage information.
 usage() {
   cat <<'USAGE'
 mq-theme-manager.sh - manage terminal UI themes
@@ -191,6 +200,7 @@ Themes:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-list}"
 

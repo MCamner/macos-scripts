@@ -28,6 +28,7 @@ DOCS_DIR="$BASE_DIR/docs"
 MACOS_TWEAKS_BACKUP="${HOME}/.macos-tweaks-backup"
 TERMINAL_TWEAKS_BACKUP="${HOME}/.terminal-tweaks-backup"
 
+# Handles status word.
 status_word() {
   local path="$1"
   if [[ -e "$path" ]]; then
@@ -37,6 +38,7 @@ status_word() {
   fi
 }
 
+# Handles status exec word.
 status_exec_word() {
   local path="$1"
   if [[ -x "$path" ]]; then
@@ -48,6 +50,7 @@ status_exec_word() {
   fi
 }
 
+# Handles tool word.
 tool_word() {
   local tool="$1"
   if command -v "$tool" >/dev/null 2>&1; then
@@ -57,11 +60,13 @@ tool_word() {
   fi
 }
 
+# Handles latest backup dir.
 latest_backup_dir() {
   local dir="$1"
   ls -td "$dir"/* 2>/dev/null | head -n 1 || true
 }
 
+# Handles shorten path.
 shorten_path() {
   local p="$1"
   local max="${2:-58}"
@@ -72,14 +77,17 @@ shorten_path() {
   fi
 }
 
+# Handles git branch.
 git_branch() {
   git -C "$BASE_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || printf "-"
 }
 
+# Handles git short status count.
 git_short_status_count() {
   git -C "$BASE_DIR" status --short 2>/dev/null | wc -l | tr -d ' '
 }
 
+# Handles git dirty word.
 git_dirty_word() {
   local count
   count="$(git_short_status_count)"
@@ -90,14 +98,17 @@ git_dirty_word() {
   fi
 }
 
+# Handles git last commit.
 git_last_commit() {
   git -C "$BASE_DIR" log -1 --pretty=format:'%h %s' 2>/dev/null || printf "-"
 }
 
+# Handles git remote url.
 git_remote_url() {
   git -C "$BASE_DIR" remote get-url origin 2>/dev/null || printf "-"
 }
 
+# Shows dashboard.
 show_dashboard() {
   local mq_status tweaks_status terminal_tweaks_status ui_status system_check_status guide_status docs_status
   local eza_status bat_status fd_status rg_status jq_status zoxide_status gh_status btop_status
@@ -168,6 +179,7 @@ show_dashboard() {
   print_footer
 }
 
+# Opens repo folder.
 open_repo_folder() {
   if [[ -d "$BASE_DIR" ]]; then
     open "$BASE_DIR"
@@ -177,6 +189,7 @@ open_repo_folder() {
   fi
 }
 
+# Opens ui folder.
 open_ui_folder() {
   if [[ -d "$BASE_DIR/ui" ]]; then
     open "$BASE_DIR/ui"
@@ -186,6 +199,7 @@ open_ui_folder() {
   fi
 }
 
+# Opens dashboards folder.
 open_dashboards_folder() {
   if [[ -d "$BASE_DIR/ui/dashboards" ]]; then
     open "$BASE_DIR/ui/dashboards"
@@ -195,10 +209,12 @@ open_dashboards_folder() {
   fi
 }
 
+# Opens docs site.
 open_docs_site() {
   open "$GUIDE_URL"
 }
 
+# Runs system check screen.
 run_system_check_screen() {
   if [[ -x "$SYSTEM_CHECK" ]]; then
     "$SYSTEM_CHECK"
@@ -210,6 +226,7 @@ run_system_check_screen() {
   fi
 }
 
+# Shows git changes screen.
 show_git_changes_screen() {
   print_header
   row_bold "GIT CHANGES"
@@ -226,6 +243,7 @@ show_git_changes_screen() {
   pause_enter
 }
 
+# Handles interactive menu.
 interactive_menu() {
   local choice
 
@@ -275,6 +293,7 @@ interactive_menu() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-dashboard.sh - project status dashboard
@@ -291,6 +310,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

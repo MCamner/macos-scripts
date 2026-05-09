@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Normalizes cli word.
 normalize_cli_word() {
   printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'
 }
@@ -10,6 +11,7 @@ AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
 # shellcheck disable=SC1090
 [[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
 
+# Prints command help.
 print_command_help() {
   local topic="${1:-}"
 
@@ -123,6 +125,7 @@ HELP
   esac
 }
 
+# Handles dispatch cli command.
 dispatch_cli_command() {
   local area sub
   area="$(normalize_cli_word "${1:-}")"

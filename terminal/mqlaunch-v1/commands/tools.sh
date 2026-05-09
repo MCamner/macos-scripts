@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+# Handles command tools open tools root.
 command_tools_open_tools_root() {
   open_path "$PROJECT_ROOT/tools"
 }
 
+# Handles command tools open scripts dir.
 command_tools_open_scripts_dir() {
   local dir="$PROJECT_ROOT/tools/scripts"
   if [[ -d "$dir" ]]; then
@@ -15,6 +17,7 @@ command_tools_open_scripts_dir() {
   fi
 }
 
+# Handles command tools open cli dir.
 command_tools_open_cli_dir() {
   local dir="$PROJECT_ROOT/tools/cli"
   if [[ -d "$dir" ]]; then
@@ -26,6 +29,7 @@ command_tools_open_cli_dir() {
   fi
 }
 
+# Handles command tools open guide dir.
 command_tools_open_guide_dir() {
   local dir="$PROJECT_ROOT/tools/mac-terminal-guide"
   if [[ -d "$dir" ]]; then
@@ -37,6 +41,7 @@ command_tools_open_guide_dir() {
   fi
 }
 
+# Handles command tools open guide file.
 command_tools_open_guide_file() {
   local html="$PROJECT_ROOT/tools/mac-terminal-guide/mac-terminal-guide.html"
   local readme="$PROJECT_ROOT/tools/mac-terminal-guide/README.md"
@@ -52,6 +57,7 @@ command_tools_open_guide_file() {
   fi
 }
 
+# Handles command tools list tree.
 command_tools_list_tree() {
   print_header
   print_section "Tools Tree"
@@ -65,6 +71,7 @@ command_tools_list_tree() {
   pause_enter
 }
 
+# Handles command tools repo summary.
 command_tools_repo_summary() {
   print_header
   print_section "Tools Summary"
@@ -93,6 +100,7 @@ command_tools_repo_summary() {
   pause_enter
 }
 
+# Handles command tools find readmes.
 command_tools_find_readmes() {
   print_header
   print_section "README Files Under tools/"

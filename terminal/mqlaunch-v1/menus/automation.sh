@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu automation.
 menu_automation() {
   local choice
 

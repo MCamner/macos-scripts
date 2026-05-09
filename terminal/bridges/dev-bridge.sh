@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Opens v1 dev menu.
 open_v1_dev_menu() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
 
@@ -13,6 +14,7 @@ open_v1_dev_menu() {
   fi
 }
 
+# Runs v1 dev command.
 run_v1_dev_command() {
   local v1_launcher="$BASE_DIR/terminal/mqlaunch-v1/mqlaunch.sh"
   local subcmd="${1:-dev}"

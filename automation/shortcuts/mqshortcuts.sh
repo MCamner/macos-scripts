@@ -4,6 +4,7 @@ set -euo pipefail
 
 SCRIPT_NAME="mqshortcuts"
 
+# Prints usage information.
 usage() {
   cat <<'EOF'
 mqshortcuts — fast macOS Shortcuts helper for terminal workflows
@@ -30,15 +31,18 @@ Examples:
 EOF
 }
 
+# Handles die.
 die() {
   echo "ERROR: $*" >&2
   exit 1
 }
 
+# Handles require shortcuts.
 require_shortcuts() {
   command -v shortcuts >/dev/null 2>&1 || die "The macOS 'shortcuts' CLI is not available"
 }
 
+# Runs shortcuts cli.
 run_shortcuts_cli() {
   local output=""
 
@@ -54,11 +58,13 @@ run_shortcuts_cli() {
   die "$output"
 }
 
+# Prints header.
 print_header() {
   echo
   echo "== $1 =="
 }
 
+# Handles list shortcuts.
 list_shortcuts() {
   local folder="${1:-}"
 
@@ -71,11 +77,13 @@ list_shortcuts() {
   fi
 }
 
+# Handles list folders.
 list_folders() {
   print_header "SHORTCUT FOLDERS"
   run_shortcuts_cli shortcuts list --folders
 }
 
+# Handles search shortcuts.
 search_shortcuts() {
   local query="${1:-}"
   local folder="${2:-}"
@@ -107,6 +115,7 @@ search_shortcuts() {
   fi
 }
 
+# Runs shortcut.
 run_shortcut() {
   local name="${1:-}"
   local input_path="${2:-}"
@@ -122,6 +131,7 @@ run_shortcut() {
   fi
 }
 
+# Handles view shortcut.
 view_shortcut() {
   local name="${1:-}"
 
@@ -131,6 +141,7 @@ view_shortcut() {
   run_shortcuts_cli shortcuts view "$name"
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-help}"
 

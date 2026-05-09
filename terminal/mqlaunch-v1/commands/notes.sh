@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command show changelog.
 command_show_changelog() {
   print_header
   print_section "Release Notes"

@@ -16,6 +16,7 @@ else
   exit 1
 fi
 
+# Shows demo.
 show_demo() {
   print_header
   row_bold "MQ UI DEMO"
@@ -44,6 +45,7 @@ show_demo() {
   print_footer
 }
 
+# Shows paths.
 show_paths() {
   print_header
   row_bold "PATHS"
@@ -57,6 +59,7 @@ show_paths() {
   pause_enter
 }
 
+# Runs the main entry point.
 main() {
   local choice
 

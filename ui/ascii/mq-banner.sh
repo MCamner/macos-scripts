@@ -9,6 +9,7 @@
 : "${C_YELLOW:=\033[33m}"
 : "${C_RED:=\033[31m}"
 
+# Handles mq banner.
 mq_banner() {
   local title="${1:-MQLaunch}"
   local subtitle="${2:-Old School Utility}"

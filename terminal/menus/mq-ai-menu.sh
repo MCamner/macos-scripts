@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Prints ai menu.
 print_ai_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -19,6 +20,7 @@ print_ai_menu() {
   printf '\n'
 }
 
+# Handles handle ai menu choice.
 handle_ai_menu_choice() {
   local choice="$1"
 
@@ -39,6 +41,7 @@ handle_ai_menu_choice() {
   return 0
 }
 
+# Handles ai menu loop.
 ai_menu_loop() {
   local choice
 
@@ -54,6 +57,7 @@ ai_menu_loop() {
   done
 }
 
+# Opens ai menu.
 open_ai_menu() {
   ai_menu_loop
 }

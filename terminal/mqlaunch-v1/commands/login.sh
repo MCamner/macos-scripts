@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command run login boot.
 command_run_login_boot() {
   local login_menu="$PROJECT_ROOT/terminal/menus/mq-login-menu.sh"
   local login_script="$PROJECT_ROOT/automation/login/mqlogin.sh"

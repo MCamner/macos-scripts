@@ -11,29 +11,38 @@ cd "$BASE_DIR" || {
   exit 1
 }
 
+# Handles rule.
 rule() {
   printf '%*s\n' "${1:-72}" '' | tr ' ' '─'
 }
 
+# Handles section.
 section() {
   echo
   echo "$1"
   rule 72
 }
 
+# Handles status ok.
 status_ok() {
   echo "  ✔ $1"
 }
 
+# Handles status warn.
 status_warn() {
   echo "  ⚠ $1"
 }
 
+# Prints section.
 print_section() { section "$1"; }
+# Handles pass.
 pass()          { status_ok "$1"; }
+# Handles warn.
 warn()          { status_warn "$1"; }
+# Handles fail.
 fail()          { echo "  ✘ $1"; }
 
+# Handles title.
 title() {
   echo "MQ RELEASE CHECK"
   rule 72
@@ -97,6 +106,7 @@ cat <<'CHECKLIST'
   [ ] tests or syntax checks passed
 CHECKLIST
 
+# Handles check changelog matches commits.
 check_changelog_matches_commits() {
   print_section "CHANGELOG / COMMITS"
 

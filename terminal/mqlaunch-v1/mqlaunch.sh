@@ -53,6 +53,7 @@ source "$SCRIPT_DIR/menus/ai.sh"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/menus/performance.sh"
 
+# Runs the main entry point.
 main() {
   route_command "$@"
 }

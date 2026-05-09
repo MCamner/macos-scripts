@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command show version.
 command_show_version() {
   print_header
   print_section "Version Info"

@@ -18,6 +18,7 @@ else
   exit 1
 fi
 
+# Handles require login script.
 require_login_script() {
   if [[ ! -x "$LOGIN_SCRIPT" ]]; then
     print_header
@@ -33,6 +34,7 @@ require_login_script() {
   fi
 }
 
+# Runs login mode.
 run_login_mode() {
   local title="$1"
   shift
@@ -48,6 +50,7 @@ run_login_mode() {
   "$LOGIN_SCRIPT" "$@"
 }
 
+# Runs login inline menu.
 run_login_inline_menu() {
   local mode="$1"
 
@@ -64,6 +67,7 @@ run_login_inline_menu() {
   pause_enter
 }
 
+# Runs quiet inline menu.
 run_quiet_inline_menu() {
   local mode="$1"
 
@@ -80,6 +84,7 @@ run_quiet_inline_menu() {
   pause_enter
 }
 
+# Shows login help.
 show_login_help() {
   require_login_script || return 1
 
@@ -96,6 +101,7 @@ show_login_help() {
   pause_enter
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -116,6 +122,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
 
@@ -140,6 +147,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-login-menu.sh - interactive login/session menu
@@ -157,6 +165,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

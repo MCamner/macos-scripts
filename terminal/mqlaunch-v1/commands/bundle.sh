@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command run debug bundle.
 command_run_debug_bundle() {
   print_header
   print_section "Debug Bundle"

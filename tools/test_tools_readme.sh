@@ -3,6 +3,7 @@ set -euo pipefail
 
 FILE="tools/README.md"
 
+# Handles fail.
 fail() {
   echo "FAIL: $1" >&2
   exit 1

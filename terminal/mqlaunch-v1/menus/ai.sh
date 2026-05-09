@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu ai.
 menu_ai() {
   local choice
 

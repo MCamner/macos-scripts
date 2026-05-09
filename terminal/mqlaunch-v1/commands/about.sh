@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command show about dashboard.
 command_show_about_dashboard() {
   print_header
   print_section "About / Status"

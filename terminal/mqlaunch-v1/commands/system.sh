@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles command health check.
 command_health_check() {
   print_header
   print_section "System Health Check"
@@ -25,10 +26,12 @@ command_health_check() {
   pause_enter
 }
 
+# Handles command lock screen.
 command_lock_screen() {
   /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
 }
 
+# Handles command show date time.
 command_show_date_time() {
   print_header
   print_section "Date & Time"

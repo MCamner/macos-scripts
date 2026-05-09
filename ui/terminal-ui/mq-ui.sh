@@ -63,6 +63,7 @@ surface_terminal_width() {
   printf "%s" "$width"
 }
 
+# Handles surface visible len.
 surface_visible_len() {
   local esc stripped
   esc="$(printf '\033')"
@@ -70,6 +71,7 @@ surface_visible_len() {
   printf '%d' "${#stripped}"
 }
 
+# Handles surface pad.
 surface_pad() {
   local text="$1"
   local width="$2"
@@ -80,6 +82,7 @@ surface_pad() {
   printf "%s%*s" "$text" "$pad" ""
 }
 
+# Handles surface top.
 surface_top() {
   local title="$1"
   local width="$2"
@@ -89,12 +92,14 @@ surface_top() {
   printf "%b┌─ %s %s┐%b\n" "$color" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
 }
 
+# Handles surface bottom.
 surface_bottom() {
   local width="$1"
   local color="$2"
   printf "%b└%s┘%b\n" "$color" "$(repeat_char $(( width - 2 )) "─")" "$C_RESET"
 }
 
+# Handles surface row.
 surface_row() {
   local text="$1"
   local width="$2"
@@ -103,6 +108,7 @@ surface_row() {
   printf "%b│ %s │%b\n" "$color" "$(surface_pad "$text" "$inner")" "$C_RESET"
 }
 
+# Handles surface split row.
 surface_split_row() {
   local left="$1"
   local right="$2"
@@ -119,6 +125,7 @@ surface_split_row() {
     "$C_RESET"
 }
 
+# Handles surface git state.
 surface_git_state() {
   local count
   count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
@@ -130,12 +137,14 @@ surface_git_state() {
   fi
 }
 
+# Handles surface panel color.
 surface_panel_color() {
   if [[ -t 1 ]]; then
     printf '\033[0;37m'
   fi
 }
 
+# Handles surface panel header.
 surface_panel_header() {
   local title="$1"
   local mode="${2:-$1}"
@@ -161,20 +170,24 @@ repeat_char() {
   printf '%*s' "$count" '' | tr ' ' "$char"
 }
 
+# Handles border.
 border() {
   printf '%s\n' "$(repeat_char "$BOX_INNER" "-")"
 }
 
+# Handles row.
 row() {
   local text="$1"
   printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
+# Handles row bold.
 row_bold() {
   local text="$1"
   printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
+# Handles row menu title.
 row_menu_title() {
   local text="$1"
   if [[ -t 1 ]]; then
@@ -184,12 +197,14 @@ row_menu_title() {
   fi
 }
 
+# Handles row2.
 row2() {
   local c1="$1"
   local c2="$2"
   row "$(printf '%-40s %-40s' "$c1" "$c2")"
 }
 
+# Handles row3.
 row3() {
   local c1="$1"
   local c2="$2"
@@ -197,22 +212,26 @@ row3() {
   row "$(printf '%-26s %-26s %-26s' "$c1" "$c2" "$c3")"
 }
 
+# Handles empty row.
 empty_row() {
   printf '\n'
 }
 
+# Handles header dual row.
 header_dual_row() {
   local left="$1"
   local right="$2"
   printf "%-54s %33s\n" "$left" "$right"
 }
 
+# Handles pause enter.
 pause_enter() {
   echo
   printf 'Press Enter to continue...'
   read -r _
 }
 
+# Handles read prompt.
 read_prompt() {
   local color_prompt="$1"
   local plain_prompt="${2:-$1}"
@@ -226,6 +245,7 @@ read_prompt() {
   fi
 }
 
+# Handles read menu choice.
 read_menu_choice() {
   local raw_prompt="$1"
   local label="${2:-mqlaunch}"
@@ -254,10 +274,12 @@ read_menu_choice() {
   fi
 }
 
+# Sets terminal title.
 set_terminal_title() {
   printf '\033]0;%s — %s\007' "$APP_TITLE" "$APP_SUBTITLE"
 }
 
+# Handles clear screen.
 clear_screen() {
   if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
     tput clear 2>/dev/null || printf '\033[H\033[2J'
@@ -267,10 +289,12 @@ clear_screen() {
   set_terminal_title
 }
 
+# Handles short host.
 short_host() {
   hostname -s 2>/dev/null || hostname
 }
 
+# Gets nickname.
 get_nickname() {
   if [[ -f "$HOME/.mqlaunch_nickname" ]]; then
     cat "$HOME/.mqlaunch_nickname"
@@ -279,6 +303,7 @@ get_nickname() {
   fi
 }
 
+# Prints header.
 print_header() {
   local dashboard nickname
 
@@ -303,6 +328,7 @@ print_header() {
   border
 }
 
+# Prints footer.
 print_footer() {
   local now host user_name
   now="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -314,6 +340,7 @@ print_footer() {
   row "Time: ${now}"
 }
 
+# Prints main footer.
 print_main_footer() {
   local now host user_name
   now="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -327,18 +354,22 @@ print_main_footer() {
   border
 }
 
+# Handles ui ok.
 ui_ok() {
   printf "%b%s%b\n" "$C_OK" "$1" "$C_RESET"
 }
 
+# Handles ui warn.
 ui_warn() {
   printf "%b%s%b\n" "$C_WARN" "$1" "$C_RESET"
 }
 
+# Handles ui err.
 ui_err() {
   printf "%b%s%b\n" "$C_ERR" "$1" "$C_RESET" >&2
 }
 
+# Handles ui info.
 ui_info() {
   printf "%b%s%b\n" "$C_INFO" "$1" "$C_RESET"
 }

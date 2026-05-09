@@ -20,12 +20,18 @@ LAUNCHER_REL="terminal/launchers/mqlaunch.sh"
 ONBOARDING_REL="tools/onboarding.sh"
 TARGET_LINK_NAME="mqlaunch"
 
+# Handles log.
 log()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
+# Handles ok.
 ok()   { printf "\033[1;32m[ OK ]\033[0m %s\n" "$*"; }
+# Handles warn.
 warn() { printf "\033[1;33m[WARN]\033[0m %s\n" "$*" >&2; }
+# Handles err.
 err()  { printf "\033[1;31m[ERR ]\033[0m %s\n" "$*" >&2; }
+# Handles die.
 die()  { err "$*"; exit 1; }
 
+# Prints usage information.
 usage() {
   cat <<EOF
 macos-scripts installer
@@ -49,10 +55,12 @@ Examples:
 EOF
 }
 
+# Handles require cmd.
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
 }
 
+# Handles realpath fallback.
 realpath_fallback() {
   python3 - <<'PY' "$1"
 import os, sys
@@ -60,6 +68,7 @@ print(os.path.realpath(sys.argv[1]))
 PY
 }
 
+# Handles abs path.
 abs_path() {
   local p="$1"
   if command -v realpath >/dev/null 2>&1; then
@@ -69,6 +78,7 @@ abs_path() {
   fi
 }
 
+# Runs cmd.
 run_cmd() {
   if (( DRY_RUN )); then
     printf '[dry-run] '
@@ -79,6 +89,7 @@ run_cmd() {
   fi
 }
 
+# Handles confirm.
 confirm() {
   local prompt="${1:-Continue? [y/N]}"
   if (( AUTO_YES )); then
@@ -88,6 +99,7 @@ confirm() {
   [[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
 }
 
+# Ensures repo layout is ready.
 ensure_repo_layout() {
   [[ -f "$INSTALL_DIR/$LAUNCHER_REL" ]] || \
     die "Missing $LAUNCHER_REL under $INSTALL_DIR. Run from a full repo checkout or use bootstrap.sh."
@@ -95,18 +107,22 @@ ensure_repo_layout() {
     warn "Missing $ONBOARDING_REL under $INSTALL_DIR. Onboarding step will be skipped."
 }
 
+# Ensures dirs is ready.
 ensure_dirs() {
   run_cmd mkdir -p "$STATE_DIR"
 }
 
+# Handles target launcher.
 target_launcher() {
   printf '%s\n' "$INSTALL_DIR/$LAUNCHER_REL"
 }
 
+# Handles target link.
 target_link() {
   printf '%s\n' "$BIN_DIR/$TARGET_LINK_NAME"
 }
 
+# Handles shell rc file.
 shell_rc_file() {
   if [[ -n "${ZDOTDIR:-}" ]]; then
     printf '%s\n' "$ZDOTDIR/.zshrc"
@@ -115,6 +131,7 @@ shell_rc_file() {
   fi
 }
 
+# Handles write state.
 write_state() {
   local launcher_path link_path
   launcher_path="$(target_launcher)"
@@ -133,6 +150,7 @@ TARGET_LAUNCHER='$launcher_path'
 EOF
 }
 
+# Handles read state if present.
 read_state_if_present() {
   if [[ -f "$STATE_FILE" ]]; then
     # shellcheck disable=SC1090
@@ -140,6 +158,7 @@ read_state_if_present() {
   fi
 }
 
+# Handles install symlink.
 install_symlink() {
   local launcher_path link_path
   launcher_path="$(target_launcher)"
@@ -166,6 +185,7 @@ install_symlink() {
   ok "Installed symlink: $link_path -> $launcher_path"
 }
 
+# Handles managed block content.
 managed_block_content() {
   local install_dir_escaped
   install_dir_escaped="$INSTALL_DIR"
@@ -181,6 +201,7 @@ $MANAGED_END
 EOF
 }
 
+# Handles remove managed block.
 remove_managed_block() {
   local rc_file tmp_file
   rc_file="$(shell_rc_file)"
@@ -202,6 +223,7 @@ remove_managed_block() {
   fi
 }
 
+# Handles append managed block.
 append_managed_block() {
   local rc_file
   rc_file="$(shell_rc_file)"
@@ -228,6 +250,7 @@ append_managed_block() {
   fi
 }
 
+# Runs onboarding if present.
 run_onboarding_if_present() {
   local onboarding="$INSTALL_DIR/$ONBOARDING_REL"
   if [[ -x "$onboarding" ]]; then
@@ -241,6 +264,7 @@ run_onboarding_if_present() {
   fi
 }
 
+# Handles do install.
 do_install() {
   ensure_repo_layout
   ensure_dirs
@@ -259,6 +283,7 @@ do_install() {
   printf '  mqlaunch\n'
 }
 
+# Handles remove symlink.
 remove_symlink() {
   local link_path
   link_path="${TARGET_LINK:-$(target_link)}"
@@ -271,6 +296,7 @@ remove_symlink() {
   fi
 }
 
+# Handles remove state.
 remove_state() {
   if [[ -f "$STATE_FILE" ]]; then
     run_cmd rm -f "$STATE_FILE"
@@ -278,6 +304,7 @@ remove_state() {
   fi
 }
 
+# Handles do uninstall.
 do_uninstall() {
   read_state_if_present
   remove_symlink
@@ -286,6 +313,7 @@ do_uninstall() {
   ok "Uninstall complete"
 }
 
+# Handles parse args.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -322,6 +350,7 @@ parse_args() {
   done
 }
 
+# Runs the main entry point.
 main() {
   require_cmd bash
   require_cmd mkdir

@@ -16,52 +16,64 @@ C_BLUE='\033[34m'
 C_MAGENTA='\033[35m'
 C_CYAN='\033[36m'
 
+# Handles msg.
 msg() {
   printf "%b\n" "$*"
 }
 
+# Handles info.
 info() {
   msg "${C_CYAN}$*${C_RESET}"
 }
 
+# Handles ok.
 ok() {
   msg "${C_GREEN}$*${C_RESET}"
 }
 
+# Handles warn.
 warn() {
   msg "${C_YELLOW}$*${C_RESET}"
 }
 
+# Handles err.
 err() {
   msg "${C_RED}$*${C_RESET}" >&2
 }
 
+# Handles die.
 die() {
   err "$*"
   exit 1
 }
 
+# Handles command exists.
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# Handles require command.
 require_command() {
   command_exists "$1" || die "Missing required command: $1"
 }
 
+# Handles pause enter.
 pause_enter() {
   printf "\nPress Enter to continue..."
   read -r _
 }
 
+# Handles clear screen.
 clear_screen() {
   clear
 }
 
+# Handles project path.
 project_path() {
   printf "%s/%s\n" "$PROJECT_ROOT" "$1"
 }
 
+# Opens path.
 open_path() {
   local target="$1"
 
@@ -73,6 +85,7 @@ open_path() {
   open "$target"
 }
 
+# Runs script if exists.
 run_script_if_exists() {
   local script="$1"
 

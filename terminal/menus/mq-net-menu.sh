@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Prints net menu.
 print_net_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -17,6 +18,7 @@ print_net_menu() {
   printf '\n'
 }
 
+# Handles handle net menu choice.
 handle_net_menu_choice() {
   local choice="$1"
 
@@ -33,6 +35,7 @@ handle_net_menu_choice() {
   return 0
 }
 
+# Handles net menu loop.
 net_menu_loop() {
   local choice
 
@@ -48,6 +51,7 @@ net_menu_loop() {
   done
 }
 
+# Opens net menu.
 open_net_menu() {
   net_menu_loop
 }

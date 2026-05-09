@@ -16,6 +16,7 @@ if [[ ! -t 1 ]]; then
   NC=''
 fi
 
+# Prints header.
 print_header() {
   clear 2>/dev/null || true
   printf '%b\n' "$PURPLE"
@@ -30,6 +31,7 @@ BANNER
   printf '             -- SYSTEM PROCESS INTERROGATOR v1.1 --%b\n\n' "$NC"
 }
 
+# Handles process name.
 process_name() {
   local pid="$1"
   local comm
@@ -37,11 +39,13 @@ process_name() {
   basename "${comm:-unknown}"
 }
 
+# Handles process exists.
 process_exists() {
   local pid="$1"
   ps -p "$pid" >/dev/null 2>&1
 }
 
+# Handles list processes.
 list_processes() {
   local rows count app_name
 
@@ -65,6 +69,7 @@ list_processes() {
   done <<< "$rows"
 }
 
+# Checks whether safe pid applies.
 is_safe_pid() {
   local pid="$1"
 
@@ -73,6 +78,7 @@ is_safe_pid() {
   (( pid != $$ )) || return 1
 }
 
+# Handles terminate process.
 terminate_process() {
   local pid="$1"
   local name="$2"
@@ -107,6 +113,7 @@ terminate_process() {
   printf '%b[+] PROCESS %s FORCE KILLED.%b\n' "$PURPLE" "$pid" "$NC"
 }
 
+# Runs the main entry point.
 main() {
   local target_pid name
 

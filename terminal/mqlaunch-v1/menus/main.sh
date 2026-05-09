@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu main.
 menu_main() {
   local choice
 

@@ -27,6 +27,7 @@ else
   exit 1
 fi
 
+# Handles require project boot.
 require_project_boot() {
   if [[ ! -x "$PROJECT_BOOT_SCRIPT" ]]; then
     print_header
@@ -42,6 +43,7 @@ require_project_boot() {
   fi
 }
 
+# Handles require project check.
 require_project_check() {
   if [[ ! -x "$PROJECT_CHECK_SCRIPT" ]]; then
     print_header
@@ -57,6 +59,7 @@ require_project_check() {
   fi
 }
 
+# Handles require workspace.
 require_workspace() {
   if [[ ! -x "$WORKSPACE_SCRIPT" ]]; then
     print_header
@@ -72,6 +75,7 @@ require_workspace() {
   fi
 }
 
+# Runs project boot default.
 run_project_boot_default() {
   require_project_boot || return 1
 
@@ -84,6 +88,7 @@ run_project_boot_default() {
   "$PROJECT_BOOT_SCRIPT"
 }
 
+# Runs project boot custom.
 run_project_boot_custom() {
   local project_name=""
   local project_dir=""
@@ -118,6 +123,7 @@ run_project_boot_custom() {
   "$PROJECT_BOOT_SCRIPT" "$project_name" "$project_dir" "$project_url"
 }
 
+# Runs project check default.
 run_project_check_default() {
   require_project_check || return 1
 
@@ -131,6 +137,7 @@ run_project_check_default() {
   pause_enter
 }
 
+# Runs project check custom.
 run_project_check_custom() {
   local project_name=""
   local project_dir=""
@@ -161,6 +168,7 @@ run_project_check_custom() {
   pause_enter
 }
 
+# Opens workflows folder.
 open_workflows_folder() {
   print_header
   row_bold "OPEN WORKFLOWS FOLDER"
@@ -171,6 +179,7 @@ open_workflows_folder() {
   open "$WORKFLOWS_DIR"
 }
 
+# Opens workflows readme.
 open_workflows_readme() {
   local target="$WORKFLOWS_README"
 
@@ -190,6 +199,7 @@ open_workflows_readme() {
   fi
 }
 
+# Shows workflows status.
 show_workflows_status() {
   print_header
   row_bold "WORKFLOWS STATUS"
@@ -210,23 +220,27 @@ show_workflows_status() {
   pause_enter
 }
 
+# Opens workspace menu.
 open_workspace_menu() {
   require_workspace || return 1
   "$WORKSPACE_SCRIPT" menu
 }
 
+# Handles save workspace snapshot.
 save_workspace_snapshot() {
   require_workspace || return 1
   "$WORKSPACE_SCRIPT" save
   pause_enter
 }
 
+# Handles restore workspace snapshot.
 restore_workspace_snapshot() {
   require_workspace || return 1
   "$WORKSPACE_SCRIPT" restore
   pause_enter
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -251,6 +265,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
 
@@ -277,6 +292,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-workflows-menu.sh - interactive workflows menu
@@ -299,6 +315,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

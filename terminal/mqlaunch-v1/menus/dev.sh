@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu dev.
 menu_dev() {
   local choice
 

@@ -18,6 +18,7 @@ else
   exit 1
 fi
 
+# Handles require shortcuts script.
 require_shortcuts_script() {
   if [[ ! -x "$SHORTCUTS_SCRIPT" ]]; then
     print_header
@@ -33,6 +34,7 @@ require_shortcuts_script() {
   fi
 }
 
+# Runs shortcuts screen.
 run_shortcuts_screen() {
   local title="$1"
   shift
@@ -52,6 +54,7 @@ run_shortcuts_screen() {
   pause_enter
 }
 
+# Handles list shortcuts menu.
 list_shortcuts_menu() {
   local folder=""
 
@@ -70,6 +73,7 @@ list_shortcuts_menu() {
   fi
 }
 
+# Handles search shortcuts menu.
 search_shortcuts_menu() {
   local query=""
   local folder=""
@@ -97,6 +101,7 @@ search_shortcuts_menu() {
   fi
 }
 
+# Runs shortcut menu.
 run_shortcut_menu() {
   local name=""
   local input_path=""
@@ -124,6 +129,7 @@ run_shortcut_menu() {
   fi
 }
 
+# Handles view shortcut menu.
 view_shortcut_menu() {
   local name=""
 
@@ -143,6 +149,7 @@ view_shortcut_menu() {
   run_shortcuts_screen "VIEW: $name" view "$name"
 }
 
+# Opens shortcuts app.
 open_shortcuts_app() {
   print_header
   row_bold "OPEN SHORTCUTS APP"
@@ -156,10 +163,12 @@ open_shortcuts_app() {
   }
 }
 
+# Shows shortcuts help.
 show_shortcuts_help() {
   run_shortcuts_screen "MQSHORTCUTS HELP" help
 }
 
+# Prints menu.
 print_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -180,6 +189,7 @@ print_menu() {
   printf '\n'
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice
 
@@ -203,6 +213,7 @@ menu_loop() {
   done
 }
 
+# Prints usage information.
 usage() {
   cat <<USAGE
 mq-shortcuts-menu.sh - interactive shortcuts menu
@@ -221,6 +232,7 @@ Commands:
 USAGE
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
 

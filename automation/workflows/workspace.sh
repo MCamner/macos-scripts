@@ -4,6 +4,7 @@ set -euo pipefail
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 SNAPSHOT_ROOT="$BASE_DIR/backups/workspaces"
 
+# Prints usage information.
 usage() {
   cat <<'USAGE'
 workspace.sh - save and restore lightweight workspace snapshots
@@ -22,14 +23,17 @@ Commands:
 USAGE
 }
 
+# Ensures snapshot root is ready.
 ensure_snapshot_root() {
   mkdir -p "$SNAPSHOT_ROOT"
 }
 
+# Handles current repo root.
 current_repo_root() {
   git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true
 }
 
+# Handles git value.
 git_value() {
   local repo="$1"
   shift
@@ -38,15 +42,18 @@ git_value() {
   git -C "$repo" "$@" 2>/dev/null || true
 }
 
+# Handles quote value.
 quote_value() {
   printf "%q" "$1"
 }
 
+# Handles latest id.
 latest_id() {
   [[ -f "$SNAPSHOT_ROOT/latest" ]] || return 1
   sed -n '1p' "$SNAPSHOT_ROOT/latest"
 }
 
+# Resolves snapshot id.
 resolve_snapshot_id() {
   local id="${1:-latest}"
 
@@ -57,11 +64,13 @@ resolve_snapshot_id() {
   fi
 }
 
+# Handles snapshot dir.
 snapshot_dir() {
   local id="$1"
   printf '%s/%s\n' "$SNAPSHOT_ROOT" "$id"
 }
 
+# Handles save snapshot.
 save_snapshot() {
   ensure_snapshot_root
 
@@ -117,6 +126,7 @@ save_snapshot() {
   printf 'Path: %s\n' "$dir"
 }
 
+# Handles list snapshots.
 list_snapshots() {
   ensure_snapshot_root
 
@@ -134,6 +144,7 @@ list_snapshots() {
       done
 }
 
+# Shows snapshot.
 show_snapshot() {
   ensure_snapshot_root
 
@@ -165,6 +176,7 @@ show_snapshot() {
   sed -n '1,20p' "$dir/changed-files.txt"
 }
 
+# Handles restore snapshot.
 restore_snapshot() {
   ensure_snapshot_root
 
@@ -209,6 +221,7 @@ restore_snapshot() {
   fi
 }
 
+# Runs the menu loop.
 menu_loop() {
   local choice id
 
@@ -244,6 +257,7 @@ menu_loop() {
   done
 }
 
+# Runs the main entry point.
 main() {
   local cmd="${1:-menu}"
   shift || true

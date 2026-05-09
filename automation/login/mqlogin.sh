@@ -25,6 +25,7 @@ INLINE=0
 
 mkdir -p "$LOG_DIR"
 
+# Prints usage information.
 usage() {
   cat <<'EOF'
 mqlogin — stylish login/session boot for macos-scripts + mqlaunch
@@ -44,18 +45,22 @@ Options:
 EOF
 }
 
+# Handles info.
 info() {
   printf '==> %s\n' "$*"
 }
 
+# Handles note.
 note() {
   printf ' • %s\n' "$*"
 }
 
+# Handles log line.
 log_line() {
   printf '%s\n' "$*" | tee -a "$LOG_FILE"
 }
 
+# Handles command for terminal.
 command_for_terminal() {
   local mq_base_cmd="$1"
   local mq_cmd="$2"
@@ -69,6 +74,7 @@ command_for_terminal() {
   fi
 }
 
+# Handles detect mqlaunch base.
 detect_mqlaunch_base() {
   if command -v mqlaunch >/dev/null 2>&1; then
     command -v mqlaunch
@@ -88,11 +94,13 @@ detect_mqlaunch_base() {
   return 1
 }
 
+# Handles fallback terminal command.
 fallback_terminal_command() {
   printf 'cd %q && clear && printf "\\n🚀 mqlogin booting %s\\n\\n" && pwd && printf "\\n"; git status || true; printf "\\nTip: install or expose mqlaunch to unlock the full launcher.\\n"' \
     "$PROJECT_ROOT" "$PROJECT_NAME"
 }
 
+# Prints banner.
 print_banner() {
   cat <<EOF
 
@@ -107,6 +115,7 @@ print_banner() {
 EOF
 }
 
+# Runs inline.
 run_inline() {
   local mq_base_cmd="$1"
   local mq_cmd="$2"
@@ -128,6 +137,7 @@ run_inline() {
   fi
 }
 
+# Opens terminal boot.
 open_terminal_boot() {
   local terminal_command="$1"
 
@@ -139,6 +149,7 @@ end tell
 OSA
 }
 
+# Handles parse args.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -195,6 +206,7 @@ parse_args() {
   done
 }
 
+# Runs the main entry point.
 main() {
   local mq_base_cmd=""
   local mq_cmd=""

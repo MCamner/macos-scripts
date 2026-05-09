@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles render apps panel.
 render_apps_panel() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -26,6 +27,7 @@ render_apps_panel() {
   printf '\n'
 }
 
+# Opens apps menu.
 open_apps_menu() {
   local choice
 

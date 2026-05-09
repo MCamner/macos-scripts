@@ -17,16 +17,19 @@ NEON_GREEN="${C_GREEN}"
 NEON_YELLOW="${C_YELLOW}"
 NEON_RED="${C_RED}"
 
+# Handles mq strip ansi.
 mq_strip_ansi() {
   printf '%s' "$1" | perl -pe 's/\e\[[0-9;]*m//g'
 }
 
+# Handles mq len.
 mq_len() {
   local s="$1"
   s="$(mq_strip_ansi "$s")"
   printf '%s' "${#s}"
 }
 
+# Handles mq repeat.
 mq_repeat() {
   local char="${1:--}"
   local count="${2:-10}"
@@ -38,6 +41,7 @@ mq_repeat() {
   printf '%s' "$out"
 }
 
+# Handles mq pad right.
 mq_pad_right() {
   local text="$1"
   local width="$2"
@@ -49,6 +53,7 @@ mq_pad_right() {
   printf "%*s" "$pad" ""
 }
 
+# Handles mq truncate.
 mq_truncate() {
   local text="$1"
   local width="${2:-20}"
@@ -62,16 +67,19 @@ mq_truncate() {
   fi
 }
 
+# Handles mq git repo.
 mq_git_repo() {
   git rev-parse --show-toplevel >/dev/null 2>&1 || return 0
   basename "$(git rev-parse --show-toplevel 2>/dev/null)"
 }
 
+# Handles mq git branch.
 mq_git_branch() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git branch --show-current 2>/dev/null
 }
 
+# Handles mq git dirty state.
 mq_git_dirty_state() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
@@ -81,6 +89,7 @@ mq_git_dirty_state() {
   fi
 }
 
+# Handles mq git counts.
 mq_git_counts() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
 
@@ -92,6 +101,7 @@ mq_git_counts() {
   printf '%s|%s|%s' "$staged" "$unstaged" "$untracked"
 }
 
+# Handles mq git ahead behind.
 mq_git_ahead_behind() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1 || {
@@ -111,30 +121,37 @@ mq_git_ahead_behind() {
   fi
 }
 
+# Handles mq user.
 mq_user() {
   printf '%s' "${USER:-unknown}"
 }
 
+# Handles mq host.
 mq_host() {
   hostname -s 2>/dev/null || hostname 2>/dev/null || printf '%s' "unknown"
 }
 
+# Handles mq time.
 mq_time() {
   date '+%Y-%m-%d %H:%M:%S'
 }
 
+# Handles mq shell name.
 mq_shell_name() {
   basename "${SHELL:-shell}"
 }
 
+# Handles mq os name.
 mq_os_name() {
   uname -s
 }
 
+# Handles mq cwd.
 mq_cwd() {
   pwd
 }
 
+# Handles mq memory widget.
 mq_memory_widget() {
   if command -v vm_stat >/dev/null 2>&1; then
     local page_size pages_free pages_active pages_inactive pages_speculative pages_wired total used pct
@@ -166,6 +183,7 @@ mq_memory_widget() {
   printf '%s' "MEM N/A"
 }
 
+# Handles mq battery widget.
 mq_battery_widget() {
   if command -v pmset >/dev/null 2>&1; then
     local batt
@@ -179,6 +197,7 @@ mq_battery_widget() {
   printf '%s' "BAT N/A"
 }
 
+# Handles mq mode color.
 mq_mode_color() {
   local mode="$1"
   if [[ "$mode" =~ ERROR|FAIL|OFFLINE ]]; then
@@ -192,6 +211,7 @@ mq_mode_color() {
   fi
 }
 
+# Handles mq state color.
 mq_state_color() {
   local state="$1"
   if [[ "$state" == "DIRTY" ]]; then
@@ -201,6 +221,7 @@ mq_state_color() {
   fi
 }
 
+# Handles mq box top.
 mq_box_top() {
   local title="$1"
   local width="$2"
@@ -210,11 +231,13 @@ mq_box_top() {
     "$(mq_repeat "─" $(( inner - ${#title} )))"
 }
 
+# Handles mq box bottom.
 mq_box_bottom() {
   local width="$1"
   printf "└%s┘\n" "$(mq_repeat "─" $(( width - 2 )))"
 }
 
+# Handles mq box row.
 mq_box_row() {
   local left="$1"
   local right="$2"
@@ -231,6 +254,7 @@ mq_box_row() {
     "$(mq_pad_right "$right" "$right_width")"
 }
 
+# Handles mqlaunch dashboard v4.
 mqlaunch_dashboard_v4() {
   local title="${1:-MQLAUNCH}"
   local subtitle="${2:-Cyberpunk CRT Command Center}"

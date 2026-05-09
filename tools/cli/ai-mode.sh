@@ -5,6 +5,7 @@ set -euo pipefail
 BASE_DIR="${HOME}/macos-scripts"
 PROMPT_DIR="${BASE_DIR}/ai-prompts"
 
+# Copies and open.
 copy_and_open() {
   local file="$1"
 
@@ -19,6 +20,7 @@ copy_and_open() {
   open "https://chatgpt.com/"
 }
 
+# Shows menu.
 show_menu() {
   cat <<EOF
 AI MODES

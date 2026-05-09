@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles menu performance.
 menu_performance() {
   local choice
 

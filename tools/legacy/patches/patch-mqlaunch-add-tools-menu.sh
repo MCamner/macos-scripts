@@ -19,6 +19,7 @@ original = text
 # 1) Add helper if missing
 # ------------------------------------------------------------
 tools_helper = r'''
+# Opens tools menu.
 open_tools_menu() {
   local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 

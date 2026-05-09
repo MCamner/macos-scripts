@@ -10,18 +10,22 @@ LOG_FILE="$LOG_DIR/${PROJECT_NAME}_check_${TIMESTAMP}.log"
 
 mkdir -p "$LOG_DIR"
 
+# Handles say.
 say() {
   printf '%s\n' "${1-}" | tee -a "$LOG_FILE"
 }
 
+# Handles ok.
 ok() {
   say "[OK]   $1"
 }
 
+# Handles warn.
 warn() {
   say "[WARN] $1"
 }
 
+# Handles fail.
 fail() {
   say "[FAIL] $1"
 }

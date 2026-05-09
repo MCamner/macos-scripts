@@ -8,6 +8,7 @@ SCAN="$BASE_DIR/tools/scripts/scan.sh"
 tput civis  # hide cursor
 clear
 
+# Draws header.
 draw_header() {
   tput cup 0 0
   echo "MQ LIVE DASHBOARD (refresh: ${INTERVAL}s)   [Ctrl+C=exit, r=refresh, +/-=speed]"

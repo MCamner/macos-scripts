@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Handles route command.
 route_command() {
   local cmd="${1:-menu}"
   shift || true
@@ -71,6 +72,7 @@ route_command() {
   esac
 }
 
+# Shows help.
 show_help() {
   cat <<HELP
 

@@ -36,15 +36,18 @@ repeat_char() {
   printf '%*s' "$count" '' | tr ' ' "$char"
 }
 
+# Handles border.
 border() {
   printf "+%s+\n" "$(repeat_char "$BOX_INNER" "-")"
 }
 
+# Handles row.
 row() {
   local text="$1"
   printf "| %-*.*s |\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
+# Handles row3.
 row3() {
   local c1="$1"
   local c2="$2"
@@ -52,25 +55,30 @@ row3() {
   row "$(printf '%-26s %-26s %-26s' "$c1" "$c2" "$c3")"
 }
 
+# Handles row2.
 row2() {
   local c1="$1"
   local c2="$2"
   row "$(printf '%-40s %-40s' "$c1" "$c2")"
 }
 
+# Handles empty row.
 empty_row() {
   row ""
 }
 
+# Handles pause enter.
 pause_enter() {
   echo
   read -r "?Press Enter to continue..."
 }
 
+# Sets terminal title.
 set_terminal_title() {
   print -Pn "\e]0;${APP_TITLE} — ${APP_SUBTITLE}\a"
 }
 
+# Handles clear screen.
 clear_screen() {
   if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
     tput clear
@@ -80,10 +88,12 @@ clear_screen() {
   set_terminal_title
 }
 
+# Handles short host.
 short_host() {
   hostname -s 2>/dev/null || hostname
 }
 
+# Prints header.
 print_header() {
   clear_screen
   border
@@ -92,6 +102,7 @@ print_header() {
   border
 }
 
+# Prints footer.
 print_footer() {
   local now host user_name
   now="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -104,6 +115,7 @@ print_footer() {
   border
 }
 
+# Opens app.
 open_app() {
   local app_name="$1"
   open -a "$app_name" >/dev/null 2>&1 || {
@@ -112,6 +124,7 @@ open_app() {
   }
 }
 
+# Opens path.
 open_path() {
   local path="$1"
   if [[ -e "$path" ]]; then
@@ -122,6 +135,7 @@ open_path() {
   fi
 }
 
+# Opens folder screen.
 open_folder_screen() {
   local title="$1"
   local target="$2"
@@ -144,6 +158,7 @@ open_folder_screen() {
   fi
 }
 
+# Resolves prompt dir.
 resolve_prompt_dir() {
   local candidate
   for candidate in "$HOME/macos-scripts/ai-prompts" "$PROMPT_DIR"; do
@@ -155,6 +170,7 @@ resolve_prompt_dir() {
   return 1
 }
 
+# Handles safe run ai.
 safe_run_ai() {
   local mode="$1"
 
@@ -189,6 +205,7 @@ show_network_info() {
   pause_enter
 }
 
+# Locks screen.
 lock_screen() {
   if [[ -x "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" ]]; then
     "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
@@ -197,14 +214,17 @@ lock_screen() {
   fi
 }
 
+# Sleeps display.
 sleep_display() {
   pmset displaysleepnow
 }
 
+# Restarts finder.
 restart_finder() {
   killall Finder >/dev/null 2>&1
 }
 
+# Shows date time.
 show_date_time() {
   print_header
   row "DATE AND TIME"
@@ -215,6 +235,7 @@ show_date_time() {
   pause_enter
 }
 
+# Opens repo browser.
 open_repo_browser() {
   print_header
   row "OPEN REPO IN BROWSER"
@@ -225,6 +246,7 @@ open_repo_browser() {
   open "$REPO_URL"
 }
 
+# Handles system check.
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
@@ -280,22 +302,27 @@ system_check() {
   pause_enter
 }
 
+# Opens downloads folder.
 open_downloads_folder() {
   open_folder_screen "OPEN DOWNLOADS FOLDER" "$HOME/Downloads" "Downloads folder missing:"
 }
 
+# Opens home folder.
 open_home_folder() {
   open_folder_screen "OPEN HOME FOLDER" "$HOME" "Home folder missing:"
 }
 
+# Opens utilities folder.
 open_utilities_folder() {
   open_folder_screen "OPEN UTILITIES FOLDER" "/Applications/Utilities" "Utilities folder missing:"
 }
 
+# Opens applications folder.
 open_applications_folder() {
   open_folder_screen "OPEN APPLICATIONS FOLDER" "/Applications" "Applications folder missing:"
 }
 
+# Opens ai prompts folder.
 open_ai_prompts_folder() {
   local target=""
   target="$(resolve_prompt_dir 2>/dev/null || true)"
@@ -319,6 +346,7 @@ open_ai_prompts_folder() {
   fi
 }
 
+# Shows prompt files.
 show_prompt_files() {
   local resolved_prompt_dir=""
   local -a files
@@ -361,10 +389,12 @@ show_prompt_files() {
   pause_enter
 }
 
+# Edits mqlaunch.
 edit_mqlaunch() {
   ${EDITOR:-nano} "$MQ_SCRIPT"
 }
 
+# Backs up prompts.
 backup_prompts() {
   local resolved_prompt_dir=""
   local stamp backup_file
@@ -438,6 +468,7 @@ print_main_menu() {
   printf "${C_TITLE}Select option [1-24]: ${C_RESET}"
 }
 
+# Prints ai menu.
 print_ai_menu() {
   print_header
   row "AI MODES"
@@ -453,6 +484,7 @@ print_ai_menu() {
   printf "${C_TITLE}Select AI mode [0-9]: ${C_RESET}"
 }
 
+# Handles ai menu loop.
 ai_menu_loop() {
   local choice
 
@@ -477,6 +509,7 @@ ai_menu_loop() {
   done
 }
 
+# Handles main loop.
 main_loop() {
   local choice
 
@@ -515,6 +548,7 @@ main_loop() {
   done
 }
 
+# Shows help.
 show_help() {
   cat <<EOH
 MQLaunch v2 — Old School Utility
@@ -542,6 +576,7 @@ Examples:
 EOH
 }
 
+# Runs arg command.
 run_arg_command() {
   local cmd="${1:l}"
 
