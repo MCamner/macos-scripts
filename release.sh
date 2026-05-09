@@ -11,8 +11,6 @@ VERSION_FILE="VERSION"
 README_FILE="README.md"
 CHANGELOG_FILE="CHANGELOG.md"
 
-ORIG_VERSION_CONTENT=""
-ORIG_README_CONTENT=""
 
 # Shows usage.
 show_usage() {
@@ -64,21 +62,8 @@ error() {
 
 # Handles rollback local changes.
 rollback_local_changes() {
-  local rolled_back=false
-
-  if [[ -n "${ORIG_VERSION_CONTENT}" && -f "${VERSION_FILE}" ]]; then
-    printf '%s' "${ORIG_VERSION_CONTENT}" > "${VERSION_FILE}"
-    rolled_back=true
-  fi
-
-  if [[ -n "${ORIG_README_CONTENT}" && -f "${README_FILE}" ]]; then
-    printf '%s' "${ORIG_README_CONTENT}" > "${README_FILE}"
-    rolled_back=true
-  fi
-
-  if [[ "${rolled_back}" == true ]]; then
-    log_step "Rolled back local file changes"
-  fi
+  git checkout -- "${VERSION_FILE}" "${README_FILE}" 2>/dev/null || true
+  log_step "Rolled back local file changes"
 }
 
 # Handles on error.
@@ -122,15 +107,12 @@ require_changelog_version() {
 update_version_file() {
   local version="$1"
   log_step "Updating VERSION -> ${version}"
-  ORIG_VERSION_CONTENT="$(cat "${VERSION_FILE}")"
   printf '%s\n' "${version}" > "${VERSION_FILE}"
 }
 
 # Handles update readme badge.
 update_readme_badge() {
   local version="$1"
-
-  ORIG_README_CONTENT="$(cat "${README_FILE}")"
 
   if grep -Eq 'badge/version-[0-9]+\.[0-9]+\.[0-9]+' "${README_FILE}"; then
     log_step "Updating README version badge -> ${version}"
