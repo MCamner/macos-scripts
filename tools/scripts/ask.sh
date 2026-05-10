@@ -8,6 +8,22 @@ source "$BASE_DIR/.env" 2>/dev/null || true
 
 VECTOR_STORE_ID="vs_69f93de12f508191bd6a36ea3b825beb"
 
+PROMPT_BUILDER="${REPO_SIGNAL_PROMPT_BUILDER:-$HOME/repo-signal/tools/build_prompt.py}"
+
+build_ai_prompt() {
+  local question="$1"
+  local prompt
+
+  if [[ -x "$PROMPT_BUILDER" ]]; then
+    if prompt="$(python3 "$PROMPT_BUILDER" --raw "$question" 2>/dev/null)" && [[ -n "$prompt" ]]; then
+      printf '%s\n' "$prompt"
+      return 0
+    fi
+  fi
+
+  printf '%s\n' "$question"
+}
+
 if [[ $# -eq 0 ]]; then
   cat <<'HELP'
 Usage:
@@ -31,8 +47,9 @@ if [[ "${1:-}" == "quick" ]]; then
   }')"
 else
   QUESTION="$*"
+  PROMPT="$(build_ai_prompt "$QUESTION")"
   PAYLOAD="$(jq -n \
-    --arg q "$QUESTION" \
+    --arg q "$PROMPT" \
     --arg vs "$VECTOR_STORE_ID" \
     '{
       model: "gpt-4.1-mini",
