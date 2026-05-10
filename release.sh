@@ -36,7 +36,8 @@ What it does:
   9. Creates a release commit
  10. Creates annotated tag v<version>
  11. Pushes main and the new tag to origin
- 12. Optionally creates a GitHub Release via gh CLI
+ 12. Regenerates and pushes wiki Command-Reference (warn-only)
+ 13. Optionally creates a GitHub Release via gh CLI
 
 Special mode:
   --init-changelog
@@ -187,6 +188,53 @@ push_release() {
   git push origin "${tag}"
 }
 
+# Regenerates Command-Reference.md and pushes to the GitHub Wiki.
+update_wiki_command_ref() {
+  local version="$1"
+  local generator="${BASH_SOURCE[0]%/*}/tools/scripts/generate-wiki-command-ref.sh"
+  local wiki_tmp
+  wiki_tmp="$(mktemp -d)"
+
+  if [[ ! -x "$generator" ]]; then
+    printf '[wiki] generator not found, skipping wiki update\n'
+    return 0
+  fi
+
+  log_step "Updating wiki Command-Reference"
+
+  if ! "$generator" >/dev/null 2>&1; then
+    printf '[wiki] generator failed, skipping wiki push\n'
+    rm -rf "$wiki_tmp"
+    return 0
+  fi
+
+  local generated="$HOME/macos-scripts.wiki/Command-Reference.md"
+  if [[ ! -f "$generated" ]]; then
+    printf '[wiki] Command-Reference.md not found after generation, skipping wiki push\n'
+    rm -rf "$wiki_tmp"
+    return 0
+  fi
+
+  if ! git clone --quiet git@github.com:MCamner/macos-scripts.wiki.git "$wiki_tmp" 2>/dev/null; then
+    printf '[wiki] could not clone wiki repo, skipping wiki push\n'
+    rm -rf "$wiki_tmp"
+    return 0
+  fi
+
+  cp "$generated" "$wiki_tmp/Command-Reference.md"
+  cd "$wiki_tmp"
+  git add Command-Reference.md
+  if git diff --cached --quiet; then
+    printf '[wiki] Command-Reference unchanged, no push needed\n'
+  else
+    git commit -m "Update Command-Reference for v${version}"
+    git push --quiet
+    printf '[wiki] Command-Reference pushed\n'
+  fi
+  cd - >/dev/null
+  rm -rf "$wiki_tmp"
+}
+
 # Handles create github release.
 create_github_release() {
   local version="$1"
@@ -294,6 +342,8 @@ create_release_commit_and_tag "${VERSION}"
 
 log_step "Pushing main and tag"
 push_release "${VERSION}"
+
+update_wiki_command_ref "${VERSION}"
 
 if [[ "${GITHUB_RELEASE}" == true ]]; then
   log_step "Creating GitHub release"
