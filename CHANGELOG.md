@@ -4,6 +4,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-05-10
+
+### Changed
+
+* update shell scripts
+* add: auto-update wiki Command-Reference on release
+* add: wiki Command-Reference generator
+* update shell scripts
+* update shell scripts
+* update shell scripts
+* fix: separator lines match panel width and use white color
+* fix: match prompt separator width to actual panel width
+* refactor: extract themes menu to separate script
+* fix: themes menu header matches tools menu — dashboard then panel
+* fix: use clear_screen instead of print_header in themes menu
+* fix: remove duplicate host row and add themes label in themes menu prompt
+* fix: consistent surface style for themes menu, rename option 7
+* fix: remove redundant push in auto_release (release.sh already pushes)
+* feat: add Auto comment option to Document Functions menu
+* update project files
+* update project files
+* update project files
+* update shell scripts
+* update project files
+* update project files
+* update shell scripts
+* update project files
+* update project files
+* update shell scripts
+* update project files
+* update project files
+* update project files
+* update project files
+
+---
+
 ## [0.2.0] - 2026-05-06
 
 ### Changed
