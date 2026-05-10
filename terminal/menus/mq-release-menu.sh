@@ -115,10 +115,18 @@ require_release_script() {
     print_header
     row_bold "RELEASE"
     empty_row
-    row "Missing or non-executable script:"
-    row " $RELEASE_SCRIPT"
-    row "Run:"
-    row " chmod +x $RELEASE_SCRIPT"
+    if [[ ! -f "$RELEASE_SCRIPT" ]]; then
+      row "release.sh not found in this repo."
+      empty_row
+      row "Run option 3 (Initialize files) to create it."
+    else
+      row "release.sh exists but is not executable."
+      row " $RELEASE_SCRIPT"
+      empty_row
+      row "Run option 3 (Initialize files) to fix it,"
+      row "or run manually:"
+      row " chmod +x $RELEASE_SCRIPT"
+    fi
     print_footer
     pause_enter
     return 1
@@ -669,6 +677,26 @@ auto_release() {
   pause_enter
 }
 
+# Returns a one-line status string for the menu footer.
+release_status_line() {
+  local missing=()
+  [[ ! -f "$RELEASE_SCRIPT" ]]  && missing+=("release.sh")
+  [[ ! -f "$VERSION_FILE" ]]    && missing+=("VERSION")
+  [[ ! -f "$CHANGELOG_FILE" ]]  && missing+=("CHANGELOG.md")
+
+  if (( ${#missing[@]} > 0 )); then
+    printf 'not initialized — missing: %s  →  run option 3' "$(IFS=', '; echo "${missing[*]}")"
+    return
+  fi
+
+  if [[ ! -x "$RELEASE_SCRIPT" ]]; then
+    printf 'release.sh not executable  →  run option 3'
+    return
+  fi
+
+  printf 'ready  (v%s)' "$(current_version)"
+}
+
 # Prints menu.
 print_menu() {
   local width panel_color
@@ -691,7 +719,7 @@ print_menu() {
   surface_split_row "7. View changelog" "8. Show latest tags" "$width" "$panel_color"
   surface_split_row "9. Open changelog" "10. Open release script" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "Status: ready" "$width" "$panel_color"
+  surface_row "Status: $(release_status_line)" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
