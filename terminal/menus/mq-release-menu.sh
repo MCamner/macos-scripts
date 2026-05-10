@@ -428,7 +428,7 @@ changelog_section_has_real_entries() {
   bullet_count="$(printf '%s\n' "$section" \
     | grep -E '^[*-] ' \
     | grep -Ev '^[*-][[:space:]]*$' \
-    | grep -Evi '^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|todo|tbd|placeholder)[[:space:]]*$' \
+    | grep -Evi "^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|release[[:space:]]+${version}|todo|tbd|placeholder)[[:space:]]*$" \
     | wc -l \
     | tr -d ' ')"
 
@@ -497,13 +497,15 @@ generate_changelog_section() {
   entry+=$'\n'
   entry+="### Changed"$'\n'
   entry+=$'\n'
-  if [[ -n "$commits" ]]; then
-    while IFS= read -r line; do
-      entry+="* ${line#* }"$'\n'
-    done <<< "$commits"
-  else
-    entry+="* Release $version"$'\n'
+  if [[ -z "$commits" ]]; then
+    ui_err "No commits found since ${last_tag:-the beginning}. Add a changelog entry manually or make changes before releasing."
+    pause_enter
+    return 1
   fi
+
+  while IFS= read -r line; do
+    entry+="* ${line#* }"$'\n'
+  done <<< "$commits"
   entry+=$'\n'"---"$'\n'
 
   # Replace a missing, empty, or placeholder section instead of duplicating it.

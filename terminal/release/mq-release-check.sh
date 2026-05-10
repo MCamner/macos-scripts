@@ -161,7 +161,7 @@ check_changelog_matches_commits() {
   bullet_count="$(printf '%s\n' "$changelog_block" \
     | grep -E '^[*-] ' \
     | grep -Ev '^[*-][[:space:]]*$' \
-    | grep -Evi '^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|todo|tbd|placeholder)[[:space:]]*$' \
+    | grep -Evi "^[*-][[:space:]]+(initial release setup|release[[:space:]]+setup|release[[:space:]]+${version}|todo|tbd|placeholder)[[:space:]]*$" \
     | wc -l \
     | tr -d ' ')"
 
