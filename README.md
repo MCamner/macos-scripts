@@ -111,6 +111,7 @@ mqlaunch dev                     # dev workflows
 mqlaunch git                     # git menu
 mqlaunch release                 # release menu
 mqlaunch ask "your question"     # AI repo assistant
+mqlaunch srm ask "your question" # Semantic Repository Memory assistant
 mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
 mqlaunch doctor                  # environment check
@@ -133,6 +134,14 @@ The repo assistant uses Semantic Repository Memory by default:
 
 ```bash
 MQ_REPO_VECTOR_STORE_ID=vs_69f93de12f508191bd6a36ea3b825beb
+```
+
+Query a specific Semantic Repository Memory store with the Responses API:
+
+```bash
+mqlaunch srm inspect
+mqlaunch srm ask "what repo is indexed here?"
+SRM_VECTOR_STORE_ID=vs_69ffa9a4ef5c81919d7d237c3ecdc260 mqlaunch srm search "vector store upload flow"
 ```
 
 Start an interactive session with Atlas — a senior systems engineer

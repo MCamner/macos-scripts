@@ -84,6 +84,7 @@ Quick commands:
   mqlaunch review
   mqlaunch ui
   mqlaunch ask "your question"
+  mqlaunch srm ask "your question"
   mqlaunch release-check
   mqlaunch selftest
   mqlaunch version
@@ -204,6 +205,12 @@ dispatch_cli_command() {
     ask|/ask)
       shift
       "$BASE_DIR/tools/scripts/ask.sh" "$@"
+      return 0
+      ;;
+
+    srm|memory|repo-memory)
+      shift
+      "$BASE_DIR/tools/scripts/srm.sh" "$@"
       return 0
       ;;
 

@@ -36,6 +36,7 @@ tools/scripts/
 ├── network-ghost.sh         # network diagnostics
 ├── vault-scan.sh            # scan for secrets / config issues
 ├── system-check.sh          # basic system validation
+├── srm.sh                   # Semantic Repository Memory assistant
 ├── create-debug-bundle.sh   # generate debug snapshot
 ├── document-functions.sh    # add comments above shell functions
 ├── blackout.sh              # experimental focus / screen effect tool
@@ -57,6 +58,7 @@ tools/scripts/
 | `network-ghost.sh` | Network | 🟢 Stable | Network diagnostics |
 | `vault-scan.sh` | Security | 🟢 Stable | Scan for secrets / config issues |
 | `system-check.sh` | Diagnostics | 🟢 Stable | Basic system validation |
+| `srm.sh` | AI / Repo memory | 🟡 Beta | Query a Semantic Repository Memory vector store with Responses API |
 | `create-debug-bundle.sh` | Support | 🟢 Stable | Generate debug snapshot |
 | `document-functions.sh` | Maintenance | 🟡 Beta | Add function comments |
 | `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
