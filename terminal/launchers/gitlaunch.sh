@@ -504,7 +504,7 @@ function prompt_choice() {
 
   input=""
   if [[ -t 0 ]]; then
-    read -r -k 1 input || true
+    read -rsk 1 input || true
   else
     IFS= read -r input || true
   fi
