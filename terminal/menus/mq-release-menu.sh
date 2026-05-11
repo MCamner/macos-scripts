@@ -109,28 +109,49 @@ choose_release_repo() {
   set_release_repo "$path"
 }
 
+# Outputs "ok", "not_executable", or "missing:file1,file2".
+_release_files_status() {
+  local missing=()
+  [[ ! -f "$RELEASE_SCRIPT" ]]  && missing+=("release.sh")
+  [[ ! -f "$VERSION_FILE" ]]    && missing+=("VERSION")
+  [[ ! -f "$CHANGELOG_FILE" ]]  && missing+=("CHANGELOG.md")
+
+  if (( ${#missing[@]} > 0 )); then
+    local IFS=','
+    printf 'missing:%s' "${missing[*]}"
+    return
+  fi
+
+  [[ ! -x "$RELEASE_SCRIPT" ]] && printf 'not_executable' || printf 'ok'
+}
+
 # Handles require release script.
 require_release_script() {
-  if [[ ! -x "$RELEASE_SCRIPT" ]]; then
-    print_header
-    row_bold "RELEASE"
-    empty_row
-    if [[ ! -f "$RELEASE_SCRIPT" ]]; then
+  local status
+  status="$(_release_files_status)"
+  [[ "$status" == "ok" ]] && return 0
+
+  print_header
+  row_bold "RELEASE"
+  empty_row
+  case "$status" in
+    missing:*)
       row "release.sh not found in this repo."
       empty_row
       row "Run option 3 (Initialize files) to create it."
-    else
+      ;;
+    not_executable)
       row "release.sh exists but is not executable."
       row " $RELEASE_SCRIPT"
       empty_row
       row "Run option 3 (Initialize files) to fix it,"
       row "or run manually:"
       row " chmod +x $RELEASE_SCRIPT"
-    fi
-    print_footer
-    pause_enter
-    return 1
-  fi
+      ;;
+  esac
+  print_footer
+  pause_enter
+  return 1
 }
 
 # Handles init release files.
@@ -679,22 +700,19 @@ auto_release() {
 
 # Returns a one-line status string for the menu footer.
 release_status_line() {
-  local missing=()
-  [[ ! -f "$RELEASE_SCRIPT" ]]  && missing+=("release.sh")
-  [[ ! -f "$VERSION_FILE" ]]    && missing+=("VERSION")
-  [[ ! -f "$CHANGELOG_FILE" ]]  && missing+=("CHANGELOG.md")
-
-  if (( ${#missing[@]} > 0 )); then
-    printf 'not initialized — missing: %s  →  run option 3' "$(IFS=', '; echo "${missing[*]}")"
-    return
-  fi
-
-  if [[ ! -x "$RELEASE_SCRIPT" ]]; then
-    printf 'release.sh not executable  →  run option 3'
-    return
-  fi
-
-  printf 'ready  (v%s)' "$(current_version)"
+  local status
+  status="$(_release_files_status)"
+  case "$status" in
+    missing:*)
+      printf 'not initialized — missing: %s  →  run option 3' "${status#missing:}"
+      ;;
+    not_executable)
+      printf 'release.sh not executable  →  run option 3'
+      ;;
+    *)
+      printf 'ready  (v%s)' "$(current_version)"
+      ;;
+  esac
 }
 
 # Prints menu.
