@@ -6,15 +6,25 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 source ~/.env 2>/dev/null || true
 source "$BASE_DIR/.env" 2>/dev/null || true
 
-VECTOR_STORE_ID="vs_69f93de12f508191bd6a36ea3b825beb"
+VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
 previous_id=""
 
 # Handles  chat sep.
 _chat_sep() { printf '%.0s─' $(seq 1 "${COLUMNS:-80}"); printf '\n'; }
 
+if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required for mqlaunch chat."
+  exit 1
+fi
+
 clear
 _chat_sep
-printf " mqlaunch chat  —  fråga om repot, skriv exit för att avsluta\n"
+printf " mqlaunch chat  —  Repo Memory Assistant, skriv exit för att avsluta\n"
 _chat_sep
 echo ""
 
@@ -30,7 +40,13 @@ while true; do
       --arg vs "$VECTOR_STORE_ID" \
       '{
         model: "gpt-4.1-mini",
-        input: ("Use file search when relevant. " + $q),
+        input: (
+          "You are Repo Memory Assistant for macos-scripts. " +
+          "Use file search from the Semantic Repository Memory vector store. " +
+          "Answer practically with source-aware references when useful. " +
+          "Prefer filenames, functions, why they matter, and confidence over generic advice.\n\n" +
+          $q
+        ),
         tools: [{ type: "file_search", vector_store_ids: [$vs] }]
       }')"
   else

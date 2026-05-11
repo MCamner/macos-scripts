@@ -129,6 +129,12 @@ mqlaunch ask "how does command routing work?"
 mqlaunch ask "what does doctor.sh check?"
 ```
 
+The repo assistant uses Semantic Repository Memory by default:
+
+```bash
+MQ_REPO_VECTOR_STORE_ID=vs_69f93de12f508191bd6a36ea3b825beb
+```
+
 Start an interactive session with Atlas — a senior systems engineer
 embedded in mqlaunch:
 

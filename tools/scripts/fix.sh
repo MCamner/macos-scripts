@@ -6,7 +6,7 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 source ~/.env 2>/dev/null || true
 source "$BASE_DIR/.env" 2>/dev/null || true
 
-VECTOR_STORE_ID="vs_69f93de12f508191bd6a36ea3b825beb"
+VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
 
 if [[ $# -eq 0 ]]; then
   cat <<'HELP'
@@ -21,6 +21,16 @@ HELP
   exit 0
 fi
 
+if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required for mqlaunch fix."
+  exit 1
+fi
+
 TASK="$*"
 
 REPO_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || echo "$BASE_DIR")"
@@ -30,6 +40,7 @@ SYSTEM_PROMPT="You are a senior shell/bash engineer working in the macos-scripts
 
 Repo: $REPO_ROOT
 Branch: $BRANCH
+Memory: Semantic Repository Memory vector store $VECTOR_STORE_ID
 
 Rules:
 - Always respond with copy-paste ready shell commands.

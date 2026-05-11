@@ -6,7 +6,7 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 source ~/.env 2>/dev/null || true
 source "$BASE_DIR/.env" 2>/dev/null || true
 
-VECTOR_STORE_ID="vs_69f93de12f508191bd6a36ea3b825beb"
+VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
 
 PROMPT_BUILDER="${REPO_SIGNAL_PROMPT_BUILDER:-$HOME/repo-signal/tools/build_prompt.py}"
 
@@ -25,7 +25,7 @@ build_ai_prompt() {
 }
 
 if [[ $# -eq 0 ]]; then
-  cat <<'HELP'
+  cat <<HELP
 Usage:
   mqlaunch ask "<question>"
   mqlaunch ask quick "<question>"
@@ -34,8 +34,21 @@ Examples:
   mqlaunch ask "Vad gör doctor.sh?"
   mqlaunch ask "Hur fungerar command routing i mqlaunch?"
   mqlaunch ask quick "Hur dödar jag en process på macOS?"
+
+Memory:
+  MQ_REPO_VECTOR_STORE_ID="$VECTOR_STORE_ID"
 HELP
   exit 0
+fi
+
+if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required for mqlaunch ask."
+  exit 1
 fi
 
 if [[ "${1:-}" == "quick" ]]; then
@@ -53,7 +66,13 @@ else
     --arg vs "$VECTOR_STORE_ID" \
     '{
       model: "gpt-4.1-mini",
-      input: ("Use file search. " + $q),
+      input: (
+        "You are Repo Memory Assistant for macos-scripts. " +
+        "Use file search from the Semantic Repository Memory vector store. " +
+        "Answer practically with source-aware references when useful. " +
+        "Prefer filenames, functions, why they matter, and confidence over generic advice.\n\n" +
+        $q
+      ),
       tools: [{ type: "file_search", vector_store_ids: [$vs] }]
     }')"
 fi
