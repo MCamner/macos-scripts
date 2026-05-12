@@ -209,6 +209,12 @@ Run the release check before every push:
 mqlaunch release-check
 ```
 
+The release check includes a `repo-signal` publish-readiness gate. Override the threshold with:
+
+```bash
+MQ_REPO_SIGNAL_FAIL_UNDER=14 mqlaunch release-check
+```
+
 ---
 
 ## 🏷️ Nickname
