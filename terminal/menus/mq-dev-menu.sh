@@ -18,6 +18,7 @@ print_dev_menu() {
   surface_split_row "9. Git Menu" "10. Net Launch" "$width" "$panel_color"
   surface_split_row "11. Themes" "12. Tools Menu" "$width" "$panel_color"
   surface_split_row "13. Create Repo" "" "$width" "$panel_color"
+  surface_split_row "14. Repo Signal Folder Check" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -54,6 +55,18 @@ handle_dev_menu_choice() {
       printf "\nPress Enter to continue..."
       read -r _
       ;;
+    14)
+      if [ -n "${BASE_DIR:-}" ]; then
+        "$BASE_DIR/terminal/dev/mq-repo-signal-folder-check.sh"
+      else
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+        "$REPO_ROOT/terminal/dev/mq-repo-signal-folder-check.sh"
+      fi
+      printf "\nPress Enter to continue..."
+      read -r _
+      ;;
+
 
     b|B) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;

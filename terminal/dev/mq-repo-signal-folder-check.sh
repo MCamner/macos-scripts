@@ -17,10 +17,10 @@ fi
 printf "Local repo path under %s/: " "$DEFAULT_ROOT"
 read -r INPUT_PATH
 
-[ -n "$INPUT_PATH" ] || {
+if [ -z "$INPUT_PATH" ]; then
   echo "✖ No path provided."
   exit 1
-}
+fi
 
 case "$INPUT_PATH" in
   "$DEFAULT_ROOT"/*)
@@ -36,17 +36,22 @@ esac
 
 REPO_PATH="${REPO_PATH%/}"
 
-[ -d "$REPO_PATH" ] || {
+if [ ! -d "$REPO_PATH" ]; then
   echo "✖ Folder does not exist: $REPO_PATH"
   exit 1
-}
+fi
 
 echo
 echo "Target: $REPO_PATH"
 echo
 
+echo "ANALYZE"
+echo "────────────────────────────────────────────────────────────"
 repo-signal analyze "$REPO_PATH"
+
 echo
+echo "PUBLISH CHECKLIST"
+echo "────────────────────────────────────────────────────────────"
 repo-signal publish-checklist "$REPO_PATH"
 
 echo
