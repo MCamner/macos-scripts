@@ -182,7 +182,7 @@ check_changelog_matches_commits() {
 check_changelog_matches_commits || exit 1
 
 if [ -x "$BASE_DIR/terminal/release/mq-repo-signal-check.sh" ]; then
-  "$BASE_DIR/terminal/release/mq-repo-signal-check.sh" 14 || exit 1
+  "$BASE_DIR/terminal/release/mq-repo-signal-check.sh" "${MQ_REPO_SIGNAL_FAIL_UNDER:-14}" || exit 1
 fi
 
 echo

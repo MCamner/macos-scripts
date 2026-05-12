@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-FAIL_UNDER="${1:-14}"
+FAIL_UNDER="${1:-${MQ_REPO_SIGNAL_FAIL_UNDER:-14}}"
 
 echo
 echo "REPO SIGNAL"

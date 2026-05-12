@@ -731,7 +731,7 @@ run_repo_signal_check() {
     return 1
   fi
 
-  (cd "$RELEASE_REPO" && "$check_script" 14)
+  (cd "$RELEASE_REPO" && "$check_script" "${MQ_REPO_SIGNAL_FAIL_UNDER:-14}")
   pause_enter
 }
 
