@@ -343,6 +343,15 @@ If you have ideas for workflows or improvements — open an issue.
 
 ---
 
+## 🔒 Security
+
+These scripts run locally on your machine. No data is sent anywhere.
+
+Do not commit secrets, API keys, or personal credentials into any script.
+Use environment variables or ignored local files for sensitive values.
+
+---
+
 ## 📄 License
 
 MIT
