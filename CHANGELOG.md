@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Added `mq-repo-signal-check.sh` — wrapper that runs `repo-signal publish-checklist . --fail-under 14` as a release gate.
+- Added repo-signal check to `mq-release-check.sh` — blocks release if publish checklist score is below threshold.
+- Added option 12 (Repo Signal Check) to `mqlaunch` release menu.
+- Added `ROADMAP.md`, `.github/ISSUE_TEMPLATE/bug_report.md`, and security note to README so `macos-scripts` scores 16/16.
+
 ## [0.2.2] - 2026-05-10
 
 ### Changed
