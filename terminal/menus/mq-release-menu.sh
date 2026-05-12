@@ -715,6 +715,26 @@ release_status_line() {
   esac
 }
 
+# Runs the repo-signal publish checklist against the selected release repo.
+run_repo_signal_check() {
+  local check_script="$BASE_DIR/terminal/release/mq-repo-signal-check.sh"
+
+  print_header
+  row_bold "REPO SIGNAL CHECK"
+  empty_row
+  row "Repo: $RELEASE_REPO"
+  print_footer
+
+  if [[ ! -x "$check_script" ]]; then
+    ui_err "mq-repo-signal-check.sh not found or not executable."
+    pause_enter
+    return 1
+  fi
+
+  (cd "$RELEASE_REPO" && "$check_script" 14)
+  pause_enter
+}
+
 # Prints menu.
 print_menu() {
   local width panel_color
@@ -728,6 +748,7 @@ print_menu() {
   surface_row "CHECKS" "$width" "$panel_color"
   surface_split_row "1. Release status" "2. Change repo" "$width" "$panel_color"
   surface_split_row "3. Initialize files" "4. Dry run release" "$width" "$panel_color"
+  surface_row "12. Repo Signal Check" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "SHIP" "$width" "$panel_color"
   surface_split_row "5. Run release" "6. Create GitHub release" "$width" "$panel_color"
@@ -753,7 +774,7 @@ menu_loop() {
     if command -v read_main_choice >/dev/null 2>&1; then
       read_main_choice "release" || return
     else
-      read_menu_choice "Select option [1-11,b] > " "release" || return
+      read_menu_choice "Select option [1-12,b] > " "release" || return
       choice="$REPLY"
     fi
     echo
@@ -770,6 +791,7 @@ menu_loop() {
       9) open_changelog_in_editor ;;
       10) open_release_script_in_editor ;;
       11) require_release_script && auto_release || true ;;
+      12) run_repo_signal_check || true ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
