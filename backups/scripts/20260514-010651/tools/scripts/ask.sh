@@ -10,7 +10,6 @@ VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de
 
 PROMPT_BUILDER="${REPO_SIGNAL_PROMPT_BUILDER:-$HOME/repo-signal/tools/build_prompt.py}"
 
-# Handles build ai prompt.
 build_ai_prompt() {
   local question="$1"
   local prompt

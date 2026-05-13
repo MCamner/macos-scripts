@@ -18,6 +18,8 @@ APP_SUBTITLE="Reusable Terminal Module"
 APP_AUTHOR="Author Mattias Camner"
 # shellcheck disable=SC2034
 BOX_INNER=88
+# shellcheck disable=SC2034
+MQ_USE_DASHBOARD_HEADER=1
 
 if [[ -f "$UI_LIB" ]]; then
   # shellcheck disable=SC1090

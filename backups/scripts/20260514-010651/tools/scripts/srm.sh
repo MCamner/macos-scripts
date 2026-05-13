@@ -9,7 +9,6 @@ source "$BASE_DIR/.env" 2>/dev/null || true
 VECTOR_STORE_ID="${SRM_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69ffa9a4ef5c81919d7d237c3ecdc260}}"
 MODEL="${SRM_MODEL:-gpt-4.1-mini}"
 
-# Prints usage information.
 usage() {
   cat <<HELP
 Usage:
@@ -28,7 +27,6 @@ Memory:
 HELP
 }
 
-# Handles require runtime.
 require_runtime() {
   if [[ -z "${OPENAI_API_KEY:-}" ]]; then
     echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
@@ -46,7 +44,6 @@ require_runtime() {
   fi
 }
 
-# Handles build question.
 build_question() {
   local mode="$1"
   local question="$2"
@@ -64,7 +61,6 @@ build_question() {
   esac
 }
 
-# Handles ask srm.
 ask_srm() {
   local mode="$1"
   local question="$2"
@@ -120,7 +116,6 @@ ask_srm() {
   echo "$text"
 }
 
-# Runs the main entry point.
 main() {
   local mode question
 

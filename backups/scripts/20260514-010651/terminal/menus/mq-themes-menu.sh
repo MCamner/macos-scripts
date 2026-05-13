@@ -22,7 +22,7 @@ else
   exit 1
 fi
 
-# Handles theme cmd.
+# Runs theme command.
 theme_cmd() {
   local cmd="${1:-current}"
   shift || true
@@ -85,7 +85,6 @@ themes_menu_loop() {
   done
 }
 
-# Runs the main entry point.
 main() {
   themes_menu_loop
 }

@@ -11,7 +11,6 @@ OUTPUT="$WIKI_DIR/Command-Reference.md"
 
 # ── helpers ────────────────────────────────────────────────────────────────
 
-# Handles extract meta.
 extract_meta() {
   local file="$1"
 
@@ -40,7 +39,6 @@ extract_meta() {
   printf ''
 }
 
-# Handles extract usage.
 extract_usage() {
   local file="$1"
   # Grab the first command line under a Usage: block
@@ -49,7 +47,6 @@ extract_usage() {
     | sed -E 's/^[[:space:]]*//' || true
 }
 
-# Handles category label.
 category_label() {
   local rel="$1"
   case "$rel" in
@@ -68,7 +65,6 @@ category_label() {
   esac
 }
 
-# Handles should skip.
 should_skip() {
   local rel="$1"
   case "$rel" in
