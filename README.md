@@ -298,7 +298,9 @@ macos-scripts/
 ├── system/            # macOS helpers
 ├── automation/        # workflows
 ├── ai-prompts/        # AI assistant prompts
-└── ui/                # terminal UI
+├── ui/                # terminal UI
+├── docs/              # screenshots and documentation
+└── backups/           # workspace snapshots
 ```
 
 ---
