@@ -3,6 +3,24 @@ set -euo pipefail
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 SNAPSHOT_ROOT="$BASE_DIR/backups/workspaces"
+UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
+
+# shellcheck disable=SC2034
+APP_TITLE="MQ Workspace"
+# shellcheck disable=SC2034
+APP_SUBTITLE="Workspace Snapshots"
+# shellcheck disable=SC2034
+APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
+BOX_INNER=88
+
+if [[ -f "$UI_LIB" ]]; then
+  # shellcheck disable=SC1090
+  source "$UI_LIB"
+else
+  echo "Missing UI library: $UI_LIB" >&2
+  exit 1
+fi
 
 # Prints usage information.
 usage() {
@@ -221,39 +239,50 @@ restore_snapshot() {
   fi
 }
 
+# Prints menu.
+print_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
+  print_header
+  surface_panel_header "Workspace" "Workspace" "$width" "$panel_color"
+  surface_row "SNAPSHOTS" "$width" "$panel_color"
+  surface_split_row "1. Save current workspace" "2. List snapshots" "$width" "$panel_color"
+  surface_split_row "3. Show latest snapshot" "4. Restore latest snapshot" "$width" "$panel_color"
+  surface_split_row "5. Restore by snapshot id" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
 # Runs the menu loop.
 menu_loop() {
   local choice id
 
   while true; do
-    clear 2>/dev/null || true
-    printf 'WORKSPACE SNAPSHOTS\n'
-    printf '===================\n\n'
-    printf '1. Save current workspace\n'
-    printf '2. List snapshots\n'
-    printf '3. Show latest snapshot\n'
-    printf '4. Restore latest snapshot\n'
-    printf '5. Restore by snapshot id\n'
-    printf 'b. Back\n\n'
-    printf 'workspace > '
-    read -r choice
+    print_menu
+    read_menu_choice "Select option [1-5,b] > " "workspace" || return
+    choice="$REPLY"
+    echo
 
     case "$choice" in
-      1) save_snapshot ;;
-      2) list_snapshots ;;
-      3) show_snapshot latest ;;
-      4) restore_snapshot latest ;;
+      1) save_snapshot; pause_enter ;;
+      2) list_snapshots; pause_enter ;;
+      3) show_snapshot latest; pause_enter ;;
+      4) restore_snapshot latest; pause_enter ;;
       5)
         printf 'Snapshot id > '
         read -r id
         restore_snapshot "$id"
+        pause_enter
         ;;
-      b|B) break ;;
-      *) printf 'Invalid option.\n' ;;
+      b|B) ui_ok "Exiting."; break ;;
+      *) ui_err "Invalid option."; pause_enter ;;
     esac
-
-    printf '\nPress Enter to continue...'
-    read -r _
   done
 }
 
