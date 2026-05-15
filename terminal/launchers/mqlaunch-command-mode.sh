@@ -238,8 +238,8 @@ dispatch_cli_command() {
       ;;
 
     doctor|/doctor)
-      "$BASE_DIR/tools/scripts/doctor.sh"
-      pause_enter
+      "$BASE_DIR/tools/scripts/doctor.sh" "${@:2}"
+      [[ "${2:-}" != "--json" ]] && pause_enter
       return 0
       ;;
 
@@ -267,7 +267,7 @@ dispatch_cli_command() {
           show_network_info
           ;;
         doctor)
-      "$BASE_DIR/tools/scripts/doctor.sh"
+      "$BASE_DIR/tools/scripts/doctor.sh" "${@:3}"
       ;;
     check|health)
           system_check

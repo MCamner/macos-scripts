@@ -1,0 +1,216 @@
+# mqlaunch — Command Reference
+
+Complete command listing for `mqlaunch`. Run `mqlaunch help` for a quick index.
+
+---
+
+## Start
+
+```bash
+mqlaunch                    # open interactive menu
+mqlaunch help               # command index (terminal)
+mqlaunch commands           # same as help
+mqlaunch demo               # guided interactive demo
+mqlaunch palette            # fuzzy command search (fzf)
+```
+
+---
+
+## Menus
+
+```bash
+mqlaunch system             # System menu
+mqlaunch perf               # Performance menu
+mqlaunch dev                # Dev menu
+mqlaunch git                # Git menu
+mqlaunch tools              # Tools menu
+mqlaunch workflows          # Workflows menu
+mqlaunch release            # Release menu
+mqlaunch login              # Login / session menu
+mqlaunch shortcuts          # macOS Shortcuts menu
+mqlaunch theme              # Themes menu
+```
+
+---
+
+## Workflows
+
+```bash
+mqlaunch workflows boot             # run project boot
+mqlaunch workflows check            # run project check
+mqlaunch workflows save             # save workspace snapshot
+mqlaunch workflows restore          # restore workspace snapshot
+```
+
+---
+
+## Session / login
+
+```bash
+mqlaunch login menu                 # session boot + full menu
+mqlaunch login about                # session boot + about screen
+mqlaunch login check                # session boot + self-check
+```
+
+---
+
+## Shortcuts
+
+```bash
+mqlaunch shortcuts list             # list all shortcuts
+mqlaunch shortcuts search <query>   # search shortcuts by name
+mqlaunch shortcuts run <name>       # run a shortcut
+mqlaunch shortcuts folders          # list shortcut folders
+```
+
+---
+
+## Git
+
+```bash
+mqlaunch git                        # open git menu
+```
+
+Supported actions inside the menu: status, diff risk, commit suggestion,
+safe push, pull with rebase, open on GitHub, change repo path.
+
+---
+
+## Release
+
+```bash
+mqlaunch release                    # open release menu
+mqlaunch release-check              # run release readiness check
+MQ_REPO_SIGNAL_FAIL_UNDER=16 mqlaunch release-check   # custom threshold
+```
+
+Auto Release flow (option 11 inside the menu):
+1. Working tree check (commit or stash)
+2. Changelog auto-generation from commits
+3. Dry run
+4. Live release (VERSION bump, tag, push)
+5. GitHub release
+
+---
+
+## Doctor / health
+
+```bash
+mqlaunch doctor                     # interactive environment check
+mqlaunch doctor --json              # machine-readable JSON report
+mqlaunch selftest                   # smoke tests + shell lint
+mqlaunch check                      # alias for selftest
+```
+
+JSON output shape:
+
+```json
+{
+  "project": "macos-scripts",
+  "version": "0.3.0",
+  "status": "ok",
+  "checks": [
+    { "name": "git", "status": "ok" }
+  ],
+  "summary": { "ok": 8, "warn": 0, "fail": 0 }
+}
+```
+
+Verify:
+
+```bash
+mqlaunch doctor --json | jq -e '.summary.fail == 0'
+```
+
+---
+
+## AI assistant
+
+```bash
+mqlaunch ask "your question"                    # repo-aware AI answer
+mqlaunch ask quick "your question"             # short answer, no context
+mqlaunch atlas                                  # interactive AI REPL session
+mqlaunch fix "error or task description"       # get copy-paste shell commands
+mqlaunch review                                 # copy code review prompt to clipboard
+mqlaunch ui                                     # copy UI prompt to clipboard
+```
+
+### Semantic Repository Memory (SRM)
+
+```bash
+mqlaunch srm inspect                                             # show indexed store info
+mqlaunch srm ask "what repo is indexed here?"                   # query the store
+SRM_VECTOR_STORE_ID=vs_xxx mqlaunch srm search "upload flow"   # query a specific store
+```
+
+---
+
+## Security & ops
+
+```bash
+mqlaunch ghost          # network cloaking (MAC/DNS spoof)
+mqlaunch pulse          # network latency + WiFi diagnostic
+mqlaunch scan           # system + port scan
+mqlaunch reap           # CPU/MEM process reaper
+mqlaunch guard          # USB/Power perimeter watchdog
+mqlaunch mc             # advanced system dashboard
+```
+
+---
+
+## System
+
+```bash
+mqlaunch system                     # open System menu
+mqlaunch system check               # system health check
+mqlaunch system time                # show date and time
+```
+
+---
+
+## Info
+
+```bash
+mqlaunch version                    # show version
+mqlaunch about                      # about / status dashboard
+mqlaunch notes                      # show CHANGELOG
+mqlaunch repo                       # open repo root in Finder
+mqlaunch guide                      # open terminal guide
+```
+
+---
+
+## Utility
+
+```bash
+mqlaunch nickname-set "name"        # set name shown in menu headers
+mqlaunch theme                      # open Themes menu
+mqlaunch theme-macos                # apply macOS theme
+mqlaunch theme-reset                # reset to default theme
+mqlaunch bundle                     # create debug/support bundle
+```
+
+---
+
+## Environment variables
+
+| Variable | Purpose |
+|---|---|
+| `MACOS_SCRIPTS_HOME` | Override repo root (default: `~/macos-scripts`) |
+| `MQ_RELEASE_REPO` | Default repo for release menu |
+| `MQ_GIT_REPO` | Default repo for git menu |
+| `MQ_REPO_SIGNAL_FAIL_UNDER` | Release gate threshold (default: 14) |
+| `MQ_USE_DASHBOARD_HEADER` | Set to `1` to use dashboard header |
+| `OPENAI_API_KEY` | Required for AI commands |
+| `MQ_REPO_VECTOR_STORE_ID` | Vector store for `mqlaunch ask` |
+| `SRM_VECTOR_STORE_ID` | Vector store for `mqlaunch srm` |
+
+---
+
+## Exit shortcuts
+
+In any submenu prompt, type:
+
+- `b` or `x` or `exit` — go back / exit the submenu
+- A number — select that menu option
+- A mqlaunch command — run it directly (e.g. `doctor`)

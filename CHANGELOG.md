@@ -4,6 +4,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-05-16
+
+### Fixed
+
+- Fixed `mqlaunch doctor --json` arg passthrough — `dispatch_cli_command` was calling `doctor.sh` without forwarding flags, silently dropping `--json` and returning ANSI output instead of JSON.
+- Fixed `doctor --json` summary counts — subshell `$(...)` calls lost counter updates; replaced with in-process string accumulation.
+- Fixed `read_menu_choice` prompt rendering — `vared` (ZSH ZLE) was clearing below-cursor content on init, erasing bottom separator and hint. Replaced with plain `read`.
+- Fixed `read-only variable: status` ZSH error in release menu — renamed conflicting locals to `files_status` / `exit_code`.
+- Fixed mq-help-menu.sh function name collisions — guarded standalone `print_header`/`print_footer`/`row` etc. so they only activate outside mqlaunch context.
+- Fixed `x` and `exit` not working as back/quit in all 13 submenus.
+
+### Added
+
+- Added `doctor --json` full output: `project`, `version`, `status`, `checks[]`, `summary{}` per spec.
+- Added `docs/COMMANDS.md` — complete command reference for all mqlaunch commands, menus, env vars, and exit shortcuts.
+- Added `x` / `exit` as back shortcut in all submenu prompts.
+- Added prompt hint text: `>> option, mqlaunch command, shell command, or x to exit`.
+- Added VERIFY section to Tools menu (doctor, doctor --json, selftest, smoke test).
+
 ## [0.2.4] - 2026-05-15
 
 ### Fixed
