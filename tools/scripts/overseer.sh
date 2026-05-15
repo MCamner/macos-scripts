@@ -40,7 +40,7 @@ process_name() {
   local pid="$1"
   local comm
   comm="$(ps -p "$pid" -o comm= 2>/dev/null || true)"
-  basename "${comm:-unknown}"
+  comm="${comm##*/}"; printf '%s\n' "${comm:-unknown}"
 }
 
 # Handles process exists.
@@ -72,7 +72,7 @@ list_processes() {
     [[ -n "${pid:-}" ]] || continue
     count=$(( count + 1 ))
     (( count <= 20 )) || break
-    app_name="$(basename "${comm:-unknown}")"
+    app_name="${comm##*/}"; app_name="${app_name:-unknown}"
     printf '%-7s %-20s %-10s %-10s %-10s\n' \
       "$pid" "${app_name:0:19}" "${cpu}%" "${mem}%" "$state"
   done <<< "$rows"
@@ -98,7 +98,7 @@ search_by_name() {
 
   while read -r pid cpu mem state comm; do
     [[ -n "${pid:-}" ]] || continue
-    app_name="$(basename "${comm:-unknown}")"
+    app_name="${comm##*/}"; app_name="${app_name:-unknown}"
     if echo "$app_name" | grep -qi "$query" 2>/dev/null; then
       printf '%-7s %-20s %-10s %-10s %-10s\n' \
         "$pid" "${app_name:0:19}" "${cpu}%" "${mem}%" "$state"
