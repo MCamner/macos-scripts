@@ -511,19 +511,23 @@ run_document_functions_update() {
 
 # Prints document functions menu.
 print_document_functions_menu() {
-  local width color
+  local width panel_color
   width="$(surface_terminal_width)"
-  color="$(surface_panel_color)"
+  panel_color="$(surface_panel_color)"
 
-  clear_screen
-  surface_top "Document Functions" "$width" "$color"
-  surface_row "Host: $(hostname -s 2>/dev/null)   User: ${USER:-unknown}   Git: $(surface_git_state)" "$width" "$color"
-  surface_row "" "$width" "$color"
-  surface_split_row " 1. Preview active areas" " 2. Preview selected" "$width" "$color"
-  surface_split_row " 3. Diff selected" " 4. Check selected" "$width" "$color"
-  surface_split_row " 5. Update selected" " 6. Auto comment" "$width" "$color"
-  surface_split_row " b. Back" "" "$width" "$color"
-  surface_bottom "$width" "$color"
+  print_header
+  surface_panel_header "Document Functions" "Docs" "$width" "$panel_color"
+  surface_row "PREVIEW" "$width" "$panel_color"
+  surface_split_row "1. Preview active areas" "2. Preview selected" "$width" "$panel_color"
+  surface_split_row "3. Diff selected" "4. Check selected" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "UPDATE" "$width" "$panel_color"
+  surface_split_row "5. Update selected" "6. Auto comment" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
 }
 
 # Documents functions menu loop.
