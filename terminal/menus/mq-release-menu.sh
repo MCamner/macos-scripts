@@ -126,14 +126,14 @@ _release_files_status() {
 
 # Handles require release script.
 require_release_script() {
-  local status
-  status="$(_release_files_status)"
-  [[ "$status" == "ok" ]] && return 0
+  local files_status
+  files_status="$(_release_files_status)"
+  [[ "$files_status" == "ok" ]] && return 0
 
   print_header
   row_bold "RELEASE"
   empty_row
-  case "$status" in
+  case "$files_status" in
     missing:*)
       row "release.sh not found in this repo."
       empty_row
@@ -338,7 +338,7 @@ prompt_version() {
 # Runs release command.
 run_release_command() {
   local title="$1"
-  local status=0
+  local exit_code=0
   shift
 
   require_release_script || return 1
@@ -350,16 +350,16 @@ run_release_command() {
   (
     cd "$RELEASE_REPO" || exit 1
     "$RELEASE_SCRIPT" "$@"
-  ) || status=$?
+  ) || exit_code=$?
 
-  if [[ "$status" -ne 0 ]]; then
+  if [[ "$exit_code" -ne 0 ]]; then
     empty_row
-    row "Release command failed with exit code: $status"
+    row "Release command failed with exit code: $exit_code"
   fi
 
   print_footer
   pause_enter
-  return "$status"
+  return "$exit_code"
 }
 
 # Runs release dry.
@@ -699,11 +699,11 @@ auto_release() {
 
 # Returns a one-line status string for the menu footer.
 release_status_line() {
-  local status
-  status="$(_release_files_status)"
-  case "$status" in
+  local files_status
+  files_status="$(_release_files_status)"
+  case "$files_status" in
     missing:*)
-      printf 'not initialized — missing: %s  →  run option 3' "${status#missing:}"
+      printf 'not initialized — missing: %s  →  run option 3' "${files_status#missing:}"
       ;;
     not_executable)
       printf 'release.sh not executable  →  run option 3'
@@ -766,7 +766,10 @@ print_release_menu() {
 release_menu_loop() {
   local choice
 
-  choose_release_repo || true
+  if [[ -z "$RELEASE_REPO" ]]; then
+    RELEASE_REPO="$(default_release_repo)"
+    refresh_release_paths
+  fi
 
   while true; do
     print_release_menu
