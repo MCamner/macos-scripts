@@ -589,6 +589,10 @@ print_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "ACTIONS" "$width" "$panel_color"
   surface_split_row "11. Focus Timer" "12. Document functions" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "VERIFY" "$width" "$panel_color"
+  surface_split_row "13. Doctor check" "14. Doctor --json" "$width" "$panel_color"
+  surface_split_row "15. Selftest" "16. Smoke test" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -623,6 +627,22 @@ tools_menu_loop() {
     10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
     11) "$BASE_DIR/tools/scripts/focus.sh"; pause_enter ;;
     12) document_functions_menu_loop ;;
+    13) "$BASE_DIR/tools/scripts/doctor.sh"; pause_enter ;;
+    14)
+      "$BASE_DIR/tools/scripts/doctor.sh" --json \
+        | (command -v jq >/dev/null 2>&1 && jq . || cat)
+      pause_enter
+      ;;
+    15)
+      if command -v run_self_check >/dev/null 2>&1; then
+        run_self_check
+      else
+        bash "$BASE_DIR/tools/scripts/test-all.sh" 2>/dev/null \
+          || ui_warn "test-all.sh not found or failed"
+        pause_enter
+      fi
+      ;;
+    16) "$BASE_DIR/tools/scripts/install-smoke.sh"; pause_enter ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
