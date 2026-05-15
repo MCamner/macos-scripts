@@ -96,8 +96,10 @@ show_command_index() {
 
   empty_row
   row_bold "CHECKS & SUPPORT"
+  row " mqlaunch doctor       Run environment and dependency check"
+  row " mqlaunch doctor --json  Machine-readable JSON report"
+  row " mqlaunch selftest     Run internal smoke tests"
   row " mqlaunch check        Run environment check"
-  row " mqlaunch self-check   Run internal smoke test"
   row " mqlaunch bundle       Create debug bundle"
   row " mqlaunch about        Open About / Status"
   row " mqlaunch version      Show version information"
@@ -116,6 +118,8 @@ show_command_index() {
   row_bold "AI"
   row " mqlaunch ask \"din fråga\"       Fråga om repot — svar direkt i terminalen"
   row " mqlaunch ask quick \"fråga\"     Kort svar utan repo-kontext"
+  row " mqlaunch atlas                 Interaktiv AI-session (senior systems engineer)"
+  row " mqlaunch fix \"error message\"   Få körbara shell-kommandon för fel/uppgifter"
   row " mqlaunch chat                  Konversationsläge med minne"
   row " mqlaunch review                Kopiera code review-prompt till clipboard"
   row " mqlaunch ui                    Kopiera UI-prompt till clipboard"
@@ -165,8 +169,10 @@ SECURITY & OPS
   mqlaunch mc             Open advanced system dashboard
 
 CHECKS & SUPPORT
+  mqlaunch doctor         Run environment and dependency check
+  mqlaunch doctor --json  Machine-readable JSON report
+  mqlaunch selftest       Run internal smoke tests
   mqlaunch check          Run environment check
-  mqlaunch self-check     Run internal smoke test
   mqlaunch bundle         Create debug bundle
   mqlaunch about          Open About / Status
   mqlaunch version        Show version information
@@ -183,6 +189,8 @@ UTILITY
 AI
   mqlaunch ask "din fråga"       Fråga om repot — svar direkt i terminalen
   mqlaunch ask quick "fråga"     Kort svar utan repo-kontext
+  mqlaunch atlas                 Interaktiv AI-session (senior systems engineer)
+  mqlaunch fix "error message"   Få körbara shell-kommandon för fel/uppgifter
   mqlaunch review                Kopiera code review-prompt till clipboard
   mqlaunch ui                    Kopiera UI-prompt till clipboard
 

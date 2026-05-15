@@ -1452,7 +1452,8 @@ run_arg_command() {
         echo "Ändra: mqlaunch nickname-set <smeknamn>"
       fi
       ;;
-    doctor) "$BASE_DIR/tools/scripts/doctor.sh" ;;
+    doctor) "$BASE_DIR/tools/scripts/doctor.sh" "$@" ;;
+    selftest|self-test|self-check) run_self_check ;;
     check|health) run_self_check ;;
     bundle|debug-bundle|support) run_debug_bundle ;;
     notes|changelog|release-notes) show_release_notes ;;
