@@ -20,6 +20,9 @@ render_system_panel() {
   surface_split_row "10. Lock screen" "11. Sleep display" "$width" "$panel_color"
   surface_split_row "12. Restart Finder" "13. Show date and time" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
+  surface_row "MAINTENANCE" "$width" "$panel_color"
+  surface_split_row "16. Brew Check" "17. Cleanup" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
   surface_row "NAVIGATION" "$width" "$panel_color"
   surface_split_row "14. Repo folder" "15. Repo in browser" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -61,6 +64,8 @@ open_system_menu() {
       13) show_date_time ;;
       14) open_base_dir ;;
       15) open_repo_browser ;;
+      16) "$BASE_DIR/tools/scripts/brew-check.sh"; pause_enter ;;
+      17) "$BASE_DIR/tools/scripts/cleanup.sh"; pause_enter ;;
       b|B) return ;;
       x|X)
         echo "Exiting ${APP_TITLE}..."

@@ -568,7 +568,7 @@ print_menu() {
   surface_split_row "9. Show git status" "10. Boot Maker" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "ACTIONS" "$width" "$panel_color"
-  surface_split_row "11. Blackout Mode" "12. Document functions" "$width" "$panel_color"
+  surface_split_row "11. Focus Timer" "12. Document functions" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -597,7 +597,7 @@ menu_loop() {
       8) show_paths ;;
       9) show_git_status ;;
     10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
-    11) "$BASE_DIR/tools/scripts/blackout.sh"; pause_enter ;;
+    11) "$BASE_DIR/tools/scripts/focus.sh"; pause_enter ;;
     12) document_functions_menu_loop ;;
       b|B) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;

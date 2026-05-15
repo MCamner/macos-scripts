@@ -17,8 +17,8 @@ print_dev_menu() {
   surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
   surface_split_row "9. Git Menu" "10. Net Launch" "$width" "$panel_color"
   surface_split_row "11. Themes" "12. Tools Menu" "$width" "$panel_color"
-  surface_split_row "13. Create Repo" "" "$width" "$panel_color"
-  surface_split_row "14. Repo Signal Folder Check" "" "$width" "$panel_color"
+  surface_split_row "13. Create Repo" "14. Repo Signal Folder Check" "$width" "$panel_color"
+  surface_split_row "15. Env Snapshot" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -68,6 +68,7 @@ handle_dev_menu_choice() {
       ;;
 
 
+    15) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
     b|B) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac
