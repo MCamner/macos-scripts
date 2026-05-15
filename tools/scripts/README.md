@@ -32,13 +32,18 @@ These scripts are designed to be:
 tools/scripts/
 ├── doctor.sh                # environment readiness check
 ├── mission-control.sh       # system overview (cockpit view)
-├── overseer.sh              # system/process monitoring
+├── overseer.sh              # system/process monitoring (interactive menu)
 ├── network-ghost.sh         # network diagnostics
+├── port-scan.sh             # local TCP port listener scan
 ├── vault-scan.sh            # scan for secrets / config issues
 ├── system-check.sh          # basic system validation
 ├── srm.sh                   # Semantic Repository Memory assistant
 ├── create-debug-bundle.sh   # generate debug snapshot
 ├── document-functions.sh    # add comments above shell functions
+├── brew-check.sh            # Homebrew health dashboard
+├── cleanup.sh               # macOS cleanup (trash, downloads, caches)
+├── focus.sh                 # Pomodoro focus timer with notifications
+├── env-snap.sh              # environment snapshots (PATH, env, git, disk)
 ├── blackout.sh              # experimental focus / screen effect tool
 ├── mqlaunch_desktop.sh      # desktop integration
 ├── test-*.sh                # test scripts
@@ -54,13 +59,18 @@ tools/scripts/
 | ------- | -------- | -------- | ------------ |
 | `doctor.sh` | Diagnostics | 🟢 Stable | Environment readiness check |
 | `mission-control.sh` | Observability | 🟢 Stable | System overview |
-| `overseer.sh` | Monitoring | 🟡 Beta | Process and system monitoring |
+| `overseer.sh` | Monitoring | 🟡 Beta | Interactive process monitor with search and kill |
 | `network-ghost.sh` | Network | 🟢 Stable | Network diagnostics |
+| `port-scan.sh` | Network | 🟢 Stable | Local TCP port listener scan |
 | `vault-scan.sh` | Security | 🟢 Stable | Scan for secrets / config issues |
 | `system-check.sh` | Diagnostics | 🟢 Stable | Basic system validation |
 | `srm.sh` | AI / Repo memory | 🟡 Beta | Query a Semantic Repository Memory vector store with Responses API |
 | `create-debug-bundle.sh` | Support | 🟢 Stable | Generate debug snapshot |
 | `document-functions.sh` | Maintenance | 🟡 Beta | Add function comments |
+| `brew-check.sh` | Maintenance | 🟢 Stable | Homebrew health dashboard |
+| `cleanup.sh` | Maintenance | 🟢 Stable | macOS cleanup — trash, downloads, caches |
+| `focus.sh` | Productivity | 🟢 Stable | Pomodoro focus timer with macOS notifications |
+| `env-snap.sh` | Observability | 🟡 Beta | Environment snapshots — PATH, env, git, disk |
 | `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
 | `blackout.sh` | UX / Experimental | 🔴 Experimental | Focus effect tool |
 | `mqlaunch_desktop.sh` | Integration | 🟡 Beta | Desktop helper |

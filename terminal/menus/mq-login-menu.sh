@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 LOGIN_SCRIPT="$BASE_DIR/automation/login/mqlogin.sh"
 
@@ -123,7 +122,7 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+login_menu_loop() {
   local choice
 
   while true; do
@@ -173,7 +172,7 @@ main() {
   local cmd="${1:-menu}"
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) login_menu_loop ;;
     start) run_login_mode "SESSION MENU" menu ;;
     about) run_login_mode "SESSION ABOUT" about ;;
     check) run_login_mode "SESSION CHECK" check ;;
@@ -188,4 +187,6 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-login-menu* ]]; then
+  main "${1:-menu}"
+fi

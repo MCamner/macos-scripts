@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
 APP_TITLE="MQ Git"
@@ -558,7 +557,7 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+git_menu_loop() {
   local choice=""
 
   while true; do
@@ -583,7 +582,7 @@ menu_loop() {
       10) open_repo_github ;;
       11) open_local_repo ;;
       12) choose_repo ;;
-      b|B|9) return ;;
+      b|B) return ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done
@@ -612,7 +611,7 @@ main() {
   local cmd="${1:-menu}"
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) git_menu_loop ;;
     status) show_status ;;
     log) show_log ;;
     github) open_repo_github ;;
@@ -627,4 +626,6 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-git-menu* ]]; then
+  main "${1:-menu}"
+fi

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 RELEASE_REPO="${MQ_RELEASE_REPO:-}"
 RELEASE_SCRIPT=""
@@ -764,7 +763,7 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+release_menu_loop() {
   local choice
 
   choose_release_repo || true
@@ -774,8 +773,7 @@ menu_loop() {
     if command -v read_main_choice >/dev/null 2>&1; then
       read_main_choice "release" || return
     else
-      read_menu_choice "Select option [1-12,b] > " "release" || return
-      choice="$REPLY"
+      printf "\nrelease > "; read -r choice
     fi
     echo
 
@@ -834,8 +832,8 @@ main() {
   fi
 
   case "$cmd" in
-    menu) menu_loop ;;
-    repo) choose_release_repo && menu_loop ;;
+    menu) release_menu_loop ;;
+    repo) choose_release_repo && release_menu_loop ;;
     init) init_release_files ;;
     status) show_release_status ;;
     dry-run) run_release_dry ;;
@@ -852,4 +850,6 @@ main() {
   esac
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-release-menu* ]]; then
+  main "$@"
+fi

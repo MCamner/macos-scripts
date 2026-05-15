@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 SHORTCUTS_SCRIPT="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
 
@@ -190,7 +189,7 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+shortcuts_menu_loop() {
   local choice
 
   while true; do
@@ -240,7 +239,7 @@ main() {
   local cmd="${1:-menu}"
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) shortcuts_menu_loop ;;
     list) run_shortcuts_screen "ALL SHORTCUTS" list ;;
     folders) run_shortcuts_screen "SHORTCUT FOLDERS" folders ;;
     search) search_shortcuts_menu ;;
@@ -256,4 +255,6 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-shortcuts-menu* ]]; then
+  main "${1:-menu}"
+fi

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_SCRIPT="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
 
@@ -93,4 +92,6 @@ main() {
   themes_menu_loop
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-themes-menu* ]]; then
+  main "$@"
+fi

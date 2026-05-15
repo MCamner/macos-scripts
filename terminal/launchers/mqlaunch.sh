@@ -130,6 +130,30 @@ if [[ -f "$BASE_DIR/automation/workflows/workspace.sh" ]]; then
   MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/automation/workflows/workspace.sh"
 fi
 
+# Themes menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-themes-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-themes-menu.sh"
+fi
+
+# Release menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-release-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-release-menu.sh"
+fi
+
+# Shortcuts menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-shortcuts-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-shortcuts-menu.sh"
+fi
+
+# Login menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-login-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-login-menu.sh"
+fi
+
 # Help/index module
 if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
   # shellcheck disable=SC1091
@@ -752,7 +776,9 @@ backup_mqlaunch() {
 open_themes_menu() {
   local themes_script="$BASE_DIR/terminal/menus/mq-themes-menu.sh"
 
-  if [[ -x "$themes_script" ]]; then
+  if command -v themes_menu_loop >/dev/null 2>&1; then
+    MQ_USE_DASHBOARD_HEADER=1 themes_menu_loop
+  elif [[ -x "$themes_script" ]]; then
     MQ_USE_DASHBOARD_HEADER=1 "$themes_script"
   elif [[ -f "$themes_script" ]]; then
     chmod +x "$themes_script" 2>/dev/null || true
@@ -843,7 +869,10 @@ open_git_menu() {
 # Opens release menu.
 open_release_menu() {
   local release_menu="$BASE_DIR/terminal/menus/mq-release-menu.sh"
-  if [[ -x "$release_menu" ]]; then
+
+  if command -v release_menu_loop >/dev/null 2>&1; then
+    MQ_USE_DASHBOARD_HEADER=1 release_menu_loop
+  elif [[ -x "$release_menu" ]]; then
     MQ_USE_DASHBOARD_HEADER=1 "$release_menu" menu
   elif [[ -f "$release_menu" ]]; then
     chmod +x "$release_menu" 2>/dev/null || true
@@ -1033,9 +1062,14 @@ run_mqlogin() {
   local login_script="$BASE_DIR/automation/login/mqlogin.sh"
   local login_menu="$BASE_DIR/terminal/menus/mq-login-menu.sh"
 
-  if [[ $# -eq 0 && -x "$login_menu" ]]; then
-    "$login_menu" menu
-    return $?
+  if [[ $# -eq 0 ]]; then
+    if command -v login_menu_loop >/dev/null 2>&1; then
+      login_menu_loop
+      return $?
+    elif [[ -x "$login_menu" ]]; then
+      "$login_menu" menu
+      return $?
+    fi
   fi
 
   if [[ ! -x "$login_script" ]]; then
@@ -1059,9 +1093,14 @@ run_mqshortcuts() {
   local shortcuts_script="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
   local shortcuts_menu="$BASE_DIR/terminal/menus/mq-shortcuts-menu.sh"
 
-  if [[ $# -eq 0 && -x "$shortcuts_menu" ]]; then
-    "$shortcuts_menu" menu
-    return $?
+  if [[ $# -eq 0 ]]; then
+    if command -v shortcuts_menu_loop >/dev/null 2>&1; then
+      shortcuts_menu_loop
+      return $?
+    elif [[ -x "$shortcuts_menu" ]]; then
+      "$shortcuts_menu" menu
+      return $?
+    fi
   fi
 
   if [[ ! -x "$shortcuts_script" ]]; then
