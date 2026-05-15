@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 WORKFLOWS_DIR="$BASE_DIR/automation/workflows"
 PROJECT_BOOT_SCRIPT="$WORKFLOWS_DIR/project-boot.sh"
@@ -223,7 +222,11 @@ show_workflows_status() {
 # Opens workspace menu.
 open_workspace_menu() {
   require_workspace || return 1
-  "$WORKSPACE_SCRIPT" menu
+  if command -v workspace_menu_loop >/dev/null 2>&1; then
+    workspace_menu_loop
+  else
+    "$WORKSPACE_SCRIPT" menu
+  fi
 }
 
 # Handles save workspace snapshot.
@@ -266,13 +269,16 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+workflows_menu_loop() {
   local choice
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-10,b] > " "workflows" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "workflows" || return
+    else
+      printf "\nworkflows > "; read -r choice
+    fi
     echo
 
     case "$choice" in
@@ -320,7 +326,7 @@ main() {
   local cmd="${1:-menu}"
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) workflows_menu_loop ;;
     status) show_workflows_status ;;
     boot) run_project_boot_default ;;
     boot-custom) run_project_boot_custom ;;
@@ -340,4 +346,6 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-workflows-menu* ]]; then
+  main "${1:-menu}"
+fi

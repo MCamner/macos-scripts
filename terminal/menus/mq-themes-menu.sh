@@ -67,8 +67,11 @@ themes_menu_loop() {
 
   while true; do
     print_themes_menu
-    read_menu_choice "Select theme option [1-7,b] > " "themes" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "themes" || return
+    else
+      printf "\nthemes > "; read -r choice
+    fi
     echo
 
     case "$choice" in

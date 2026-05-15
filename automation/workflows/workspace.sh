@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 SNAPSHOT_ROOT="$BASE_DIR/backups/workspaces"
@@ -260,13 +259,16 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+workspace_menu_loop() {
   local choice id
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-5,b] > " "workspace" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "workspace" || return
+    else
+      printf "\nworkspace > "; read -r choice
+    fi
     echo
 
     case "$choice" in
@@ -292,7 +294,7 @@ main() {
   shift || true
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) workspace_menu_loop ;;
     save) save_snapshot ;;
     list) list_snapshots ;;
     latest) show_snapshot latest ;;
@@ -307,4 +309,6 @@ main() {
   esac
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *workspace* ]]; then
+  main "$@"
+fi

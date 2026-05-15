@@ -532,8 +532,11 @@ document_functions_menu_loop() {
 
   while true; do
     print_document_functions_menu
-    read_menu_choice "Select option [1-6,b] > " "docs" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "docs" || return
+    else
+      printf "\ndocs > "; read -r choice
+    fi
     echo
 
     case "$choice" in
@@ -581,8 +584,12 @@ tools_menu_loop() {
 
   while true; do
     print_menu
-    read_menu_choice "Select option [1-12,b] > " "tools" || return
-    choice="$REPLY"
+    if command -v read_main_choice >/dev/null 2>&1; then
+      read_main_choice "tools" || return
+    else
+      printf "\ntools > "
+      read -r choice
+    fi
     echo
 
     case "$choice" in

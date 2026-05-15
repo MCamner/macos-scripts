@@ -118,6 +118,18 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-tools-menu.sh" ]]; then
   MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-tools-menu.sh"
 fi
 
+# Workflows menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-workflows-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
+fi
+
+# Workspace module
+if [[ -f "$BASE_DIR/automation/workflows/workspace.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/automation/workflows/workspace.sh"
+fi
+
 # Help/index module
 if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
   # shellcheck disable=SC1091
@@ -849,22 +861,29 @@ open_release_menu() {
 
 # Runs mqworkflows.
 run_mqworkflows() {
-  local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
+  local cmd="${1:-menu}"
 
-  if [[ -x "$workflows_menu" ]]; then
-    MQ_USE_DASHBOARD_HEADER=1 "$workflows_menu" "${@:-menu}"
-  elif [[ -f "$workflows_menu" ]]; then
-    chmod +x "$workflows_menu" 2>/dev/null || true
-    MQ_USE_DASHBOARD_HEADER=1 bash "$workflows_menu" "${@:-menu}"
+  if command -v workflows_menu_loop >/dev/null 2>&1; then
+    MQ_USE_DASHBOARD_HEADER=1
+    case "$cmd" in
+      menu)      workflows_menu_loop ;;
+      workspace) open_workspace_menu ;;
+      *)         workflows_menu_loop ;;
+    esac
   else
-    print_header
-    row_bold "WORKFLOWS"
-    empty_row
-    row "Workflows menu not found:"
-    row " $workflows_menu"
-    print_footer
-    pause_enter
-    return 1
+    local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"
+    if [[ -f "$workflows_menu" ]]; then
+      MQ_USE_DASHBOARD_HEADER=1 bash "$workflows_menu" "$cmd"
+    else
+      print_header
+      row_bold "WORKFLOWS"
+      empty_row
+      row "Workflows menu not found:"
+      row " $workflows_menu"
+      print_footer
+      pause_enter
+      return 1
+    fi
   fi
 }
 
