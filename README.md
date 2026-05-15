@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-0.2.4-blue)
+![Version](https://img.shields.io/badge/version-0.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -113,9 +113,13 @@ mqlaunch srm ask "your question" # Semantic Repository Memory assistant
 mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
 mqlaunch doctor                  # environment check
+mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch selftest                # smoke tests + shell lint
+mqlaunch release-check           # release readiness check
 mqlaunch demo                    # guided demo
 ```
+
+👉 **Full command reference:** [docs/COMMANDS.md](docs/COMMANDS.md)
 
 ---
 
