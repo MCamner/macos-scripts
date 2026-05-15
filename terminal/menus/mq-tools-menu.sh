@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 WORK_DIR="${MQ_WORK_DIR:-$PWD}"
 
 if repo_root="$(git -C "$WORK_DIR" rev-parse --show-toplevel 2>/dev/null)"; then
@@ -577,7 +576,7 @@ print_menu() {
 }
 
 # Runs the menu loop.
-menu_loop() {
+tools_menu_loop() {
   local choice
 
   while true; do
@@ -631,7 +630,7 @@ main() {
   local cmd="${1:-menu}"
 
   case "$cmd" in
-    menu) menu_loop ;;
+    menu) tools_menu_loop ;;
     check) run_system_check ;;
     dashboard) open_dashboard ;;
     guide) open_guide ;;
@@ -650,4 +649,6 @@ main() {
   esac
 }
 
-main "${1:-menu}"
+if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-tools-menu* ]]; then
+  main "${1:-menu}"
+fi

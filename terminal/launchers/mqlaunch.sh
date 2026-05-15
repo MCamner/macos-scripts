@@ -112,6 +112,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-net-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-net-menu.sh"
 fi
 
+# Tools menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-tools-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  MACOS_SCRIPTS_HOME="$BASE_DIR" source "$BASE_DIR/terminal/menus/mq-tools-menu.sh"
+fi
+
 # Help/index module
 if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
   # shellcheck disable=SC1091
@@ -864,20 +870,13 @@ run_mqworkflows() {
 
 # Opens tools menu.
 open_tools_menu() {
-  local tools_script="$BASE_DIR/terminal/menus/mq-tools-menu.sh"
-  local work_dir="$PWD"
-
-  if [[ -x "$tools_script" ]]; then
-    MQ_WORK_DIR="$work_dir" MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
-  elif [[ -f "$tools_script" ]]; then
-    chmod +x "$tools_script" 2>/dev/null || true
-    MQ_WORK_DIR="$work_dir" MQ_USE_DASHBOARD_HEADER=1 bash "$tools_script" menu
+  if command -v tools_menu_loop >/dev/null 2>&1; then
+    MQ_WORK_DIR="$PWD" MQ_USE_DASHBOARD_HEADER=1 tools_menu_loop
   else
     print_header
     row "TOOLS MENU"
     empty_row
-    row "Tools menu script missing:"
-    row " $tools_script"
+    row "tools_menu_loop not found — mq-tools-menu.sh may not be sourced."
     print_footer
     pause_enter
   fi
