@@ -559,7 +559,7 @@ git_menu_loop() {
       10) open_repo_github ;;
       11) open_local_repo ;;
       12) choose_repo ;;
-      b|B) return ;;
+      b|B|x|X|exit) return ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

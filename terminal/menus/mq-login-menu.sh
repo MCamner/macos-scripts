@@ -140,7 +140,7 @@ login_menu_loop() {
       6) run_quiet_inline_menu menu ;;
       7) run_quiet_inline_menu about ;;
       8) show_login_help ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

@@ -564,7 +564,7 @@ document_functions_menu_loop() {
       4) run_document_functions_check_selected ;;
       5) run_document_functions_update ;;
       6) auto_document_functions ;;
-      b|B) ui_ok "Back."; break ;;
+      b|B|x|X|exit) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done
@@ -639,7 +639,7 @@ tools_menu_loop() {
       fi
       ;;
     16) "$BASE_DIR/tools/scripts/install-smoke.sh"; pause_enter ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

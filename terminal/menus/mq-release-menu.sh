@@ -790,7 +790,7 @@ release_menu_loop() {
       10) open_release_script_in_editor ;;
       11) require_release_script && auto_release || true ;;
       12) run_repo_signal_check || true ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

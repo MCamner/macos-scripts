@@ -289,7 +289,7 @@ workflows_menu_loop() {
       8) open_workspace_menu ;;
       9) save_workspace_snapshot ;;
       10) restore_workspace_snapshot ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done

@@ -65,7 +65,7 @@ handle_dev_menu_choice() {
       read -r _
       ;;
     14) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
-    b|B) return 1 ;;
+    b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

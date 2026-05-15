@@ -30,7 +30,7 @@ handle_net_menu_choice() {
     4) open_network_settings ;;
     5) copy_network_info ;;
     6) "$BASE_DIR/tools/scripts/port-scan.sh"; pause_enter ;;
-    b|B) return 1 ;;
+    b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid net selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

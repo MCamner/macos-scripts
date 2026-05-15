@@ -57,7 +57,7 @@ open_apps_menu() {
       12) sleep_display ;;
       13) restart_finder ;;
       14) open_repo_browser ;;
-      b|B) return ;;
+      b|B|x|X|exit) return ;;
       x|X)
         echo "Exiting ${APP_TITLE}..."
         exit 0

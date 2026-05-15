@@ -34,7 +34,7 @@ handle_ai_menu_choice() {
     7) safe_run_ai solve ;;
     8) safe_run_ai pdebug ;;
     9) safe_run_ai menu ;;
-    b|B) return 1 ;;
+    b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid AI selection:${C_RESET} $choice"; pause_enter ;;
   esac
 

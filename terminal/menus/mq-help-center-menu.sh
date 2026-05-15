@@ -77,7 +77,7 @@ open_help_center_menu() {
       4) show_release_notes || true ;;
       5) open_repo_browser ;;
       6) open_base_dir ;;
-      b|B) return ;;
+      b|B|x|X|exit) return ;;
       x|X)
         echo "Exiting ${APP_TITLE}..."
         exit 0

@@ -206,7 +206,7 @@ shortcuts_menu_loop() {
       5) view_shortcut_menu ;;
       6) open_shortcuts_app ;;
       7) show_shortcuts_help ;;
-      b|B) ui_ok "Exiting."; break ;;
+      b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
   done
