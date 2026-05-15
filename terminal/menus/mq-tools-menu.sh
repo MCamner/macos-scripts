@@ -514,8 +514,9 @@ print_document_functions_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
+  MQ_SURFACE_WIDTH="$width"
 
-  print_header
+  clear_screen
   surface_panel_header "Document Functions" "Docs" "$width" "$panel_color"
   surface_row "PREVIEW" "$width" "$panel_color"
   surface_split_row "1. Preview active areas" "2. Preview selected" "$width" "$panel_color"
