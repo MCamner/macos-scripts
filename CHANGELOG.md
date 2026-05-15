@@ -4,6 +4,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2026-05-15
+
+### Fixed
+
+- Fixed Document Functions submenu prompt missing separator lines — pre-draws full separator block before input using cursor repositioning, matching all other menu prompts.
+- Fixed subprocess menus (git, release, themes, shortcuts, login) converted to in-process sourced modules — eliminates exiting mqlaunch on return.
+- Removed stale Git Menu option from dev menu and renumbered options 10–14.
+
+### Added
+
+- Added submenu prompt separator template to `.claude/templates/` for future reference.
+- Updated `tools/scripts/README.md` with status table entries for brew-check, port-scan, focus, env-snap, and cleanup scripts.
+
 ## [0.2.3] - 2026-05-12
 
 ### Added
