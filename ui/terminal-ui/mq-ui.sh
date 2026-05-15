@@ -266,13 +266,8 @@ read_menu_choice() {
   printf "%b%s > %b" "${C_TITLE:-}" "$label" "${C_RESET:-}"
 
   REPLY=""
-  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
-    vared -p "" -c REPLY
-    printf "\033[2B\r\n"
-  else
-    IFS= read -r REPLY
-    printf "\033[2B\r\n"
-  fi
+  IFS= read -r REPLY
+  printf "\033[2B\r\n"
 }
 
 # Sets terminal title.
