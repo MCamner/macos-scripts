@@ -20,9 +20,7 @@ Stop memorizing commands. Start running workflows.
 ### Option 1 — Install (recommended)
 
 ```bash
-curl -fsSL \
-  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
-  | bash
+curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
 ```
 
 ### Option 2 — Clone
@@ -133,7 +131,7 @@ mqlaunch ask "what does doctor.sh check?"
 The repo assistant uses Semantic Repository Memory by default:
 
 ```bash
-MQ_REPO_VECTOR_STORE_ID=vs_69f93de12f508191bd6a36ea3b825beb
+MQ_REPO_VECTOR_STORE_ID=vs_your_repo_store_id
 ```
 
 Query a specific Semantic Repository Memory store with the Responses API:
@@ -141,7 +139,7 @@ Query a specific Semantic Repository Memory store with the Responses API:
 ```bash
 mqlaunch srm inspect
 mqlaunch srm ask "what repo is indexed here?"
-SRM_VECTOR_STORE_ID=vs_69ffa9a4ef5c81919d7d237c3ecdc260 mqlaunch srm search "vector store upload flow"
+SRM_VECTOR_STORE_ID=vs_your_semantic_memory_store_id mqlaunch srm search "vector store upload flow"
 ```
 
 Start an interactive session with Atlas — a senior systems engineer
@@ -353,10 +351,15 @@ If you have ideas for workflows or improvements — open an issue.
 
 ## 🔒 Security
 
-These scripts run locally on your machine. No data is sent anywhere.
+Core scripts run locally on your machine.
 
-Do not commit secrets, API keys, or personal credentials into any script.
-Use environment variables or ignored local files for sensitive values.
+AI-assisted commands (`ask`, `fix`, `atlas`, `srm`) may send prompts, selected
+repository context, or error text to the configured AI provider. Do not use
+AI commands with secrets, private credentials, or sensitive files unless you
+understand what is being sent.
+
+Never commit API keys, tokens, or credentials. Use environment variables or
+ignored local files for sensitive values.
 
 ---
 
