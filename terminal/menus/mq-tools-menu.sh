@@ -528,20 +528,25 @@ print_document_functions_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
-  printf '\n'
+  printf '%b%s%b\n' "$panel_color" "$(repeat_char "$width" '─')" "${C_RESET:-}"
 }
 
 # Documents functions menu loop.
 document_functions_menu_loop() {
-  local choice
+  local choice sep_width sep_color
 
   while true; do
     print_document_functions_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "docs" || return
+    choice=""
+    sep_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
+    sep_color="$(surface_panel_color)"
+    if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
+      vared -p "docs > " -c choice
     else
-      printf "\ndocs > "; read -r choice
+      printf 'docs > '
+      read -r choice
     fi
+    printf '%b%s%b\n' "$sep_color" "$(repeat_char "$sep_width" '─')" "${C_RESET:-}"
     echo
 
     case "$choice" in
