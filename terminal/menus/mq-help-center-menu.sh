@@ -66,12 +66,8 @@ open_help_center_menu() {
     print_header
     render_help_center_panel
 
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "help" || return
-    else
-      printf "\nhelp > "
-      read -r choice
-    fi
+    read_menu_choice "" "help"
+    choice="$REPLY"
     echo
 
     case "$choice" in

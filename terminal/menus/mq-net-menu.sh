@@ -43,12 +43,8 @@ net_menu_loop() {
 
   while true; do
     print_net_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "network" || break
-    else
-      printf "\nnetwork > "
-      read -r choice
-    fi
+    read_menu_choice "" "network"
+    choice="$REPLY"
     echo
 
     if ! handle_net_menu_choice "$choice"; then

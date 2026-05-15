@@ -127,11 +127,8 @@ login_menu_loop() {
 
   while true; do
     print_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "login" || return
-    else
-      printf "\nlogin > "; read -r choice
-    fi
+    read_menu_choice "" "login"
+    choice="$REPLY"
     echo
 
     case "$choice" in

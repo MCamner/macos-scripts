@@ -194,11 +194,8 @@ shortcuts_menu_loop() {
 
   while true; do
     print_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "shortcuts" || return
-    else
-      printf "\nshortcuts > "; read -r choice
-    fi
+    read_menu_choice "" "shortcuts"
+    choice="$REPLY"
     echo
 
     case "$choice" in

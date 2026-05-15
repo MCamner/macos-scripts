@@ -47,11 +47,8 @@ ai_menu_loop() {
 
   while true; do
     print_ai_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "ai" || break
-    else
-      printf "\nai > "; read -r choice
-    fi
+    read_menu_choice "" "ai"
+    choice="$REPLY"
     echo
 
     if ! handle_ai_menu_choice "$choice"; then

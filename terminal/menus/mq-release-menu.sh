@@ -770,11 +770,8 @@ release_menu_loop() {
 
   while true; do
     print_menu
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "release" || return
-    else
-      printf "\nrelease > "; read -r choice
-    fi
+    read_menu_choice "" "release"
+    choice="$REPLY"
     echo
 
     case "$choice" in

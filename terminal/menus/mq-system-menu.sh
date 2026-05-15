@@ -40,12 +40,8 @@ open_system_menu() {
   while true; do
     print_header
     render_system_panel
-    if command -v read_main_choice >/dev/null 2>&1; then
-      read_main_choice "system" || return
-    else
-      printf "\nsystem > "
-      read -r choice
-    fi
+    read_menu_choice "" "system"
+    choice="$REPLY"
     echo
 
     case "$choice" in
