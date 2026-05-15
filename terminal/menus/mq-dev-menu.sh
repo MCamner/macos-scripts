@@ -15,10 +15,9 @@ print_dev_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "NAVIGATION" "$width" "$panel_color"
   surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
-  surface_split_row "9. Git Menu" "10. Net Launch" "$width" "$panel_color"
-  surface_split_row "11. Themes" "12. Tools Menu" "$width" "$panel_color"
-  surface_split_row "13. Create Repo" "14. Repo Signal Folder Check" "$width" "$panel_color"
-  surface_split_row "15. Env Snapshot" "" "$width" "$panel_color"
+  surface_split_row "9. Net Launch" "10. Themes" "$width" "$panel_color"
+  surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
+  surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -40,11 +39,10 @@ handle_dev_menu_choice() {
     6) open_base_dir ;;
     7) open_launcher_folder ;;
     8) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
-    9) open_git_menu ;;
-    10) net_menu_loop ;;
-    11) open_themes_menu ;;
-    12) open_tools_menu ;;
-    13)
+    9) net_menu_loop ;;
+    10) open_themes_menu ;;
+    11) open_tools_menu ;;
+    12)
       if [ -n "${BASE_DIR:-}" ]; then
         "$BASE_DIR/terminal/dev/mq-create-repo.sh"
       else
@@ -55,7 +53,7 @@ handle_dev_menu_choice() {
       printf "\nPress Enter to continue..."
       read -r _
       ;;
-    14)
+    13)
       if [ -n "${BASE_DIR:-}" ]; then
         "$BASE_DIR/terminal/dev/mq-repo-signal-folder-check.sh"
       else
@@ -66,9 +64,7 @@ handle_dev_menu_choice() {
       printf "\nPress Enter to continue..."
       read -r _
       ;;
-
-
-    15) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
+    14) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
     b|B) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac
