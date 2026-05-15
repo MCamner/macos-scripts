@@ -528,25 +528,33 @@ print_document_functions_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
-  printf '%b%s%b\n' "$panel_color" "$(repeat_char "$width" '─')" "${C_RESET:-}"
+  printf '\n'
 }
 
 # Documents functions menu loop.
 document_functions_menu_loop() {
-  local choice sep_width sep_color
+  local choice sep_width sep_color sep
 
   while true; do
     print_document_functions_menu
-    choice=""
     sep_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
     sep_color="$(surface_panel_color)"
+    sep="$(repeat_char "$sep_width" '─')"
+
+    printf '%b%s%b\n' "$sep_color" "$sep" "${C_RESET:-}"
+    printf '%bdocs > %b\n' "${C_TITLE:-}" "${C_RESET:-}"
+    printf '%b%s%b\n' "$sep_color" "$sep" "${C_RESET:-}"
+    printf '\033[2A\r'
+    printf '%bdocs > %b' "${C_TITLE:-}" "${C_RESET:-}"
+
+    choice=""
     if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
-      vared -p "docs > " -c choice
+      vared -p "" -c choice
+      printf '\033[1B\r\n'
     else
-      printf 'docs > '
       read -r choice
+      printf '\033[1B\r\n'
     fi
-    printf '%b%s%b\n' "$sep_color" "$(repeat_char "$sep_width" '─')" "${C_RESET:-}"
     echo
 
     case "$choice" in
