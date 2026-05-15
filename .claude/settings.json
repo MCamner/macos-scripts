@@ -6,7 +6,8 @@
       "Bash(curl -s *)",
       "Bash(gh repo view *)",
       "Bash(gh release list *)",
-      "Bash(gh release view *)"
+      "Bash(gh release view *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "hooks": {
