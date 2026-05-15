@@ -244,7 +244,7 @@ restore_workspace_snapshot() {
 }
 
 # Prints menu.
-print_menu() {
+print_workflows_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
@@ -273,7 +273,7 @@ workflows_menu_loop() {
   local choice
 
   while true; do
-    print_menu
+    print_workflows_menu
     read_menu_choice "" "workflows"
     choice="$REPLY"
     echo

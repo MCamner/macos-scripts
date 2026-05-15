@@ -532,7 +532,7 @@ open_local_repo() {
 }
 
 # Prints menu.
-print_menu() {
+print_git_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
@@ -561,7 +561,7 @@ git_menu_loop() {
   local choice=""
 
   while true; do
-    print_menu
+    print_git_menu
     read_menu_choice "" "git"
     choice="$REPLY"
     echo

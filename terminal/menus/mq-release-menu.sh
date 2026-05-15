@@ -735,7 +735,7 @@ run_repo_signal_check() {
 }
 
 # Prints menu.
-print_menu() {
+print_release_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
@@ -769,7 +769,7 @@ release_menu_loop() {
   choose_release_repo || true
 
   while true; do
-    print_menu
+    print_release_menu
     read_menu_choice "" "release"
     choice="$REPLY"
     echo

@@ -571,7 +571,7 @@ document_functions_menu_loop() {
 }
 
 # Prints menu.
-print_menu() {
+print_tools_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
@@ -605,7 +605,7 @@ tools_menu_loop() {
   local choice
 
   while true; do
-    print_menu
+    print_tools_menu
     read_menu_choice "" "tools"
     choice="$REPLY"
     echo

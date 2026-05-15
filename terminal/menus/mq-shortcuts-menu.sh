@@ -168,7 +168,7 @@ show_shortcuts_help() {
 }
 
 # Prints menu.
-print_menu() {
+print_shortcuts_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
@@ -193,7 +193,7 @@ shortcuts_menu_loop() {
   local choice
 
   while true; do
-    print_menu
+    print_shortcuts_menu
     read_menu_choice "" "shortcuts"
     choice="$REPLY"
     echo
