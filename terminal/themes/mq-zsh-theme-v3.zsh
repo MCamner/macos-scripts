@@ -137,6 +137,42 @@ mq_prompt_git() {
 typeset -g MQ_CMD_START=0
 typeset -g MQ_CMD_DURATION=""
 typeset -g MQ_LAST_STATUS=0
+typeset -g _MQ_HEADER_SHOWN=0
+
+# Handles mq print session header.
+mq_print_session_header() {
+  local C_RESET=$'\e[0m'
+  local C_GOLD=$'\e[1;38;5;178m'
+  local C_AMBER=$'\e[38;5;178m'
+  local C_WHITE=$'\e[1;97m'
+  local C_FIG1=$'\e[38;5;76m'
+  local C_FIG2=$'\e[38;5;221m'
+
+  local NOW_TIME NOW_DATE ZSH_VER ZSH_ARCH
+  NOW_TIME=$(date "+%H:%M:%S")
+  NOW_DATE=$(date "+%a %d %b %Y")
+  ZSH_VER=$(zsh --version 2>/dev/null | awk '{print $2}')
+  ZSH_ARCH=$(zsh --version 2>/dev/null | sed 's/.*(\(.*\))/\1/')
+
+  printf "\n"
+  printf "  %b%s%b  %b%s%b  %b%s%b\n" \
+    "$C_FIG1" "▄▄████▄▄" "$C_RESET" \
+    "$C_FIG2" " ▄▄██▄▄ " "$C_RESET" \
+    "$C_GOLD" "⚡  $NOW_DATE" "$C_RESET"
+  printf "  %b%s%b  %b%s%b  %b%s%b\n" \
+    "$C_FIG1" "████████" "$C_RESET" \
+    "$C_FIG2" "█▀████▀█" "$C_RESET" \
+    "$C_AMBER" "    $NOW_TIME" "$C_RESET"
+  printf "  %b%s%b  %b%s%b  %b%s%b\n" \
+    "$C_FIG1" "██▄██▄██" "$C_RESET" \
+    "$C_FIG2" "██▀██▀██" "$C_RESET" \
+    "$C_WHITE" "    zsh $ZSH_VER" "$C_RESET"
+  printf "  %b%s%b  %b%s%b  %b%s%b\n" \
+    "$C_FIG1" " ▄█▀▀█▄ " "$C_RESET" \
+    "$C_FIG2" " ▀▄██▄▀ " "$C_RESET" \
+    "$C_WHITE" "    $ZSH_ARCH" "$C_RESET"
+  printf "\n"
+}
 
 # Handles mq preexec.
 mq_preexec() {
@@ -167,6 +203,11 @@ mq_set_title() {
 mq_precmd() {
   local last_status="$?"
   local now="$EPOCHSECONDS"
+
+  if (( _MQ_HEADER_SHOWN == 0 )); then
+    _MQ_HEADER_SHOWN=1
+    mq_print_session_header
+  fi
 
   if (( MQ_CMD_START > 0 )); then
     local elapsed=$(( now - MQ_CMD_START ))
