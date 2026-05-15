@@ -5,53 +5,50 @@ PURPLE='\033[0;35m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Prints header.
-print_header() {
-  clear
-  echo -e "${PURPLE}"
-  echo "  __  __  ____  _             _    _   _   _____ _    _ "
-  echo " |  \/  |/ __ \| |           / \  | | | | / ____| |  | |"
-  echo " | \  / | |  | | |          / _ \ | | | || |    | |__| |"
-  echo " | |\/| | |  | | |         / ___ \| | | || |    |  __  |"
-  echo " | |  | | |__| | |____    / /   \ \ |_| || |____| |  | |"
-  echo " |_|  |_|\___\_\______|  /_/     \_\___/  \_____|_|  |_|"
-  echo -e "          -- S Y S T E M   H U B   v1.0 --${NC}\n"
-  echo -e "${CYAN}COMMAND INDEX${NC}"
-  echo -e "${BLUE}----------------------------------------------------------------------------------------${NC}"
-}
+# Standalone-only helpers — skipped when sourced into mqlaunch (mq-ui.sh already defines these).
+if ! command -v surface_panel_header >/dev/null 2>&1; then
+  print_header() {
+    clear
+    echo -e "${PURPLE}"
+    echo "  __  __  ____  _             _    _   _   _____ _    _ "
+    echo " |  \/  |/ __ \| |           / \  | | | | / ____| |  | |"
+    echo " | \  / | |  | | |          / _ \ | | | || |    | |__| |"
+    echo " | |\/| | |  | | |         / ___ \| | | || |    |  __  |"
+    echo " | |  | | |__| | |____    / /   \ \ |_| || |____| |  | |"
+    echo " |_|  |_|\___\_\______|  /_/     \_\___/  \_____|_|  |_|"
+    echo -e "          -- S Y S T E M   H U B   v1.0 --${NC}\n"
+    echo -e "${CYAN}COMMAND INDEX${NC}"
+    echo -e "${BLUE}----------------------------------------------------------------------------------------${NC}"
+  }
 
-# Prints footer.
-print_footer() {
-  local now host user_name
-  now="$(date '+%Y-%m-%d %H:%M:%S')"
-  host="$(hostname -s 2>/dev/null || hostname)"
-  user_name="${USER:-$(whoami)}"
+  print_footer() {
+    local now host user_name
+    now="$(date '+%Y-%m-%d %H:%M:%S')"
+    host="$(hostname -s 2>/dev/null || hostname)"
+    user_name="${USER:-$(whoami)}"
 
-  printf '\n'
-  printf "Host: %s   User: %s\n" "$host" "$user_name"
-  printf "Time: %s\n" "$now"
-}
+    printf '\n'
+    printf "Host: %s   User: %s\n" "$host" "$user_name"
+    printf "Time: %s\n" "$now"
+  }
 
-# Handles row.
-row() {
-  printf "%s\n" "$1"
-}
+  row() {
+    printf "%s\n" "$1"
+  }
 
-# Handles row bold.
-row_bold() {
-  echo -e "${PURPLE}$1${NC}"
-}
+  row_bold() {
+    echo -e "${PURPLE}$1${NC}"
+  }
 
-# Handles empty row.
-empty_row() {
-  printf "\n"
-}
+  empty_row() {
+    printf "\n"
+  }
 
-# Handles pause enter.
-pause_enter() {
-  printf "\nPress Enter to continue..."
-  read -r
-}
+  pause_enter() {
+    printf "\nPress Enter to continue..."
+    read -r
+  }
+fi
 
 # Shows command index.
 show_command_index() {
