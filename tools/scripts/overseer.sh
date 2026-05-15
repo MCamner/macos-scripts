@@ -70,7 +70,7 @@ list_processes() {
   count=0
   while read -r pid cpu mem state comm; do
     [[ -n "${pid:-}" ]] || continue
-    (( count++ ))
+    count=$(( count + 1 ))
     (( count <= 20 )) || break
     app_name="$(basename "${comm:-unknown}")"
     printf '%-7s %-20s %-10s %-10s %-10s\n' \

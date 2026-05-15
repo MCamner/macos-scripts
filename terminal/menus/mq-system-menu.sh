@@ -14,7 +14,7 @@ render_system_panel() {
   surface_row "HEALTH / SAFETY" "$width" "$panel_color"
   surface_split_row "4. Doctor" "5. Self-check" "$width" "$panel_color"
   surface_split_row "6. Debug bundle" "7. System check" "$width" "$panel_color"
-  surface_split_row "8. Vault Scan" "9. Reap" "$width" "$panel_color"
+  surface_split_row "8. Vault Scan" "9. Overseer" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "SESSION / CONTROL" "$width" "$panel_color"
   surface_split_row "10. Lock screen" "11. Sleep display" "$width" "$panel_color"
