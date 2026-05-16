@@ -33,6 +33,12 @@ if [[ -f "$BASE_DIR/terminal/bridges/tools-bridge.sh" ]]; then
   # shellcheck disable=SC1091
   source "$BASE_DIR/terminal/bridges/tools-bridge.sh"
 fi
+
+# HAL bridge (mq-hal local Ollama router)
+if [[ -f "$BASE_DIR/terminal/bridges/hal-bridge.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
+fi
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
 PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
@@ -1217,7 +1223,7 @@ notes	Show release notes
 check	Run self-check
 bundle	Create debug bundle
 repo	Open repo root in browser
-hal	Open HAL command menu
+hal	Local Ollama command router (mq-hal)
 guide	Open terminal guide
 commands	Show command index
 EOF
@@ -1396,7 +1402,7 @@ run_arg_command() {
     home) open_home_folder ;;
     utilities) open_utilities_folder ;;
     applications) open_applications_folder ;;
-    apps|hal|guide-ai|terminal-guide-ai)
+    apps|guide-ai|terminal-guide-ai)
       if [[ -n "${1:-}" ]]; then
         "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
       else
@@ -1483,6 +1489,7 @@ run_arg_command() {
     guide|terminal-guide) open_terminal_guide ;;
     netlaunch|net) open_net_menu ;;
     atlas) mq_ai_run_atlas "$@" ;;
+    hal) mq_hal_run "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
