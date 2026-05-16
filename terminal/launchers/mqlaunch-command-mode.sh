@@ -410,7 +410,7 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    apps|hal|guide-ai|terminal-guide-ai)
+    apps|guide-ai|terminal-guide-ai)
       if [[ -n "${2:-}" ]]; then
         shift
         "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
@@ -447,6 +447,17 @@ dispatch_cli_command() {
 
     index|commands)
       show_command_index || true
+      return 0
+      ;;
+
+    hal)
+      shift
+      if declare -f mq_hal_run >/dev/null; then
+        mq_hal_run "$@"
+      else
+        echo "ERROR: mq-hal bridge not loaded" >&2
+        return 1
+      fi
       return 0
       ;;
 
