@@ -458,6 +458,7 @@ dispatch_cli_command() {
         echo "ERROR: mq-hal bridge not loaded" >&2
         return 1
       fi
+      pause_enter
       return 0
       ;;
 
