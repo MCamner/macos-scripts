@@ -175,7 +175,6 @@ open_hal_menu() {
   while true; do
     print_header
     render_hal_panel
-    render_hal_command_surface
 
     read_hal_choice
     echo
