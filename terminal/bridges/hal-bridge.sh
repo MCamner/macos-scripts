@@ -18,10 +18,8 @@ mq_hal_run() {
 
   case "$sub" in
     "")
-      local _HAL_MENU
-      _HAL_MENU="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../menus/mq-hal-menu.sh"
       # shellcheck source=/dev/null
-      source "$_HAL_MENU"
+      source "${BASE_DIR}/terminal/menus/mq-hal-menu.sh"
       mq_hal_menu_main
       ;;
 
