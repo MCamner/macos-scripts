@@ -316,7 +316,22 @@ handle_main_prompt_command() {
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
-    hal|apps) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"; return 0 ;;
+    hal\ *|"hal "*)
+      local _hal_args="${normalized#hal }"
+      # shellcheck source=/dev/null
+      source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
+      mq_hal_run "$_hal_args"
+      pause_enter
+      return 0
+      ;;
+    hal)
+      # shellcheck source=/dev/null
+      source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
+      mq_hal_run
+      pause_enter
+      return 0
+      ;;
+    apps) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"; return 0 ;;
     applications) open_applications_folder; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
     restart|reload|relaunch|z) restart_mqlaunch; return 0 ;;
