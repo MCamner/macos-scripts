@@ -148,21 +148,6 @@ hal_menu_raw_intent() {
   pause_enter
 }
 
-read_hal_choice() {
-  local width prompt_line prompt_color
-  width="$(surface_terminal_width)"
-  prompt_line="$(repeat_char "$width" "─")"
-  if [[ -t 1 ]]; then
-    prompt_color=$'\033[0;37m'
-  else
-    prompt_color=""
-  fi
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  printf "%bhal > %b" "${C_TITLE:-}" "${C_RESET:-}"
-  read -r choice
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-}
-
 open_hal_menu() {
   local choice
 
@@ -176,7 +161,7 @@ open_hal_menu() {
     print_header
     render_hal_panel
 
-    read_hal_choice
+    read_main_choice "hal"
     echo
 
     case "$choice" in
