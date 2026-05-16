@@ -30,6 +30,9 @@ Usage:
   mqlaunch hal raw "kör release-check"
   mqlaunch hal doctor
   mqlaunch hal fix-doctor
+  mqlaunch hal session
+  mqlaunch hal last
+  mqlaunch hal remember "note"
 USAGE
       ;;
     repos|list|list-repos)
@@ -42,6 +45,22 @@ USAGE
         return 2
       fi
       "$MQ_HAL_BIN" --cd "$1"
+      ;;
+    session|memory)
+      shift || true
+      "$MQ_HAL_BIN" session "$@"
+      ;;
+    last)
+      shift || true
+      "$MQ_HAL_BIN" last "$@"
+      ;;
+    remember)
+      shift || true
+      "$MQ_HAL_BIN" remember "$@"
+      ;;
+    memory-path|session-path)
+      shift || true
+      "$MQ_HAL_BIN" memory-path "$@"
       ;;
     fix-doctor|doctor-fix|fix-planner|plan-fix)
       shift || true

@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-0.3.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.4-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -117,6 +117,9 @@ mqlaunch hal repos               # list HAL-known repos
 mqlaunch hal raw "your request"  # show parsed JSON intent
 mqlaunch hal doctor              # summarize mqlaunch doctor --json with local HAL
 mqlaunch hal fix-doctor          # create safe fix plan from HAL Doctor Summary
+mqlaunch hal session             # show local HAL session memory
+mqlaunch hal last                # show latest HAL memory item
+mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch selftest                # smoke tests + shell lint

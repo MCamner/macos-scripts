@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2026-05-16
+
+### Added
+
+- Added `mqlaunch hal session`, `mqlaunch hal last`, `mqlaunch hal remember`, and `mqlaunch hal memory-path` bridge commands.
+- Added HAL Session Memory section to README and command reference.
+
 ## [0.3.3] - 2026-05-16
 
 ### Added

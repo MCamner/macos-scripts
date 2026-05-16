@@ -261,3 +261,14 @@ mqlaunch hal fix-doctor --json
 ```
 
 Creates a safe, copy-paste fix plan from HAL Doctor Summary. Executes nothing — only prints recommended inspection and verification commands for manual review.
+
+### HAL Session Memory
+
+```bash
+mqlaunch hal session
+mqlaunch hal last
+mqlaunch hal remember "release looked good"
+mqlaunch hal memory-path
+```
+
+Shows and stores local HAL memory in `~/.mq-hal/session.jsonl`. Session Memory records doctor summaries, fix plans, and manual notes automatically. Stays local — nothing is sent externally.
