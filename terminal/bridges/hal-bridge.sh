@@ -29,6 +29,7 @@ Usage:
   mqlaunch hal cd <repo-name>
   mqlaunch hal raw "kör release-check"
   mqlaunch hal doctor
+  mqlaunch hal fix-doctor
 USAGE
       ;;
     repos|list|list-repos)
@@ -41,6 +42,10 @@ USAGE
         return 2
       fi
       "$MQ_HAL_BIN" --cd "$1"
+      ;;
+    fix-doctor|doctor-fix|fix-planner|plan-fix)
+      shift || true
+      "$MQ_HAL_BIN" fix-doctor "$@"
       ;;
     doctor|doctor-summary|summary)
       shift || true

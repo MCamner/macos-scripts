@@ -116,6 +116,7 @@ mqlaunch hal "your request"      # local Ollama-powered safe command router
 mqlaunch hal repos               # list HAL-known repos
 mqlaunch hal raw "your request"  # show parsed JSON intent
 mqlaunch hal doctor              # summarize mqlaunch doctor --json with local HAL
+mqlaunch hal fix-doctor          # create safe fix plan from HAL Doctor Summary
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch selftest                # smoke tests + shell lint

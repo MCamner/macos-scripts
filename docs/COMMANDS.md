@@ -251,3 +251,13 @@ mqlaunch hal doctor --json
 ```
 
 Runs `mqlaunch doctor --json`, parses the result through `mq-hal`, and prints a concise health summary with safe next commands. Falls back to deterministic local analysis when Ollama is unavailable.
+
+### HAL Fix Planner
+
+```bash
+mqlaunch hal fix-doctor
+mqlaunch hal fix-doctor --no-ai
+mqlaunch hal fix-doctor --json
+```
+
+Creates a safe, copy-paste fix plan from HAL Doctor Summary. Executes nothing — only prints recommended inspection and verification commands for manual review.

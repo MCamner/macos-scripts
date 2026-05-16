@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2026-05-16
+
+### Added
+
+- Added `mqlaunch hal fix-doctor` bridge command for HAL Fix Planner.
+- Documented HAL Fix Planner in README and command reference.
+
 ## [0.3.2] - 2026-05-16
 
 ### Added
