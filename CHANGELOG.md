@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2026-05-16
+
+### Added
+
+- Added `mqlaunch hal timeline` bridge command.
+- Documented HAL Timeline UI in README and command reference.
+
 ## [0.3.4] - 2026-05-16
 
 ### Added

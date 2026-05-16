@@ -272,3 +272,15 @@ mqlaunch hal memory-path
 ```
 
 Shows and stores local HAL memory in `~/.mq-hal/session.jsonl`. Session Memory records doctor summaries, fix plans, and manual notes automatically. Stays local — nothing is sent externally.
+
+### HAL Timeline UI
+
+```bash
+mqlaunch hal timeline
+mqlaunch hal timeline --details
+mqlaunch hal timeline --repo macos-scripts
+mqlaunch hal timeline --type doctor_summary
+mqlaunch hal timeline --json
+```
+
+Shows local HAL Session Memory as a compact terminal timeline table.

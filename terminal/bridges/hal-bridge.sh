@@ -33,6 +33,7 @@ Usage:
   mqlaunch hal session
   mqlaunch hal last
   mqlaunch hal remember "note"
+  mqlaunch hal timeline
 USAGE
       ;;
     repos|list|list-repos)
@@ -61,6 +62,10 @@ USAGE
     memory-path|session-path)
       shift || true
       "$MQ_HAL_BIN" memory-path "$@"
+      ;;
+    timeline)
+      shift || true
+      "$MQ_HAL_BIN" timeline "$@"
       ;;
     fix-doctor|doctor-fix|fix-planner|plan-fix)
       shift || true
