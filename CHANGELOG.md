@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-05-16
+
+### Added
+
+- Added `mqlaunch hal doctor` — delegates to `mq-hal doctor-summary` for local doctor JSON summaries and safe next-step recommendations.
+- Added HAL Doctor Summary docs to README and `docs/COMMANDS.md`.
+
 ## [0.3.1] - 2026-05-16
 
 ### Added

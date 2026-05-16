@@ -241,3 +241,13 @@ selected `mqlaunch` subcommands.
 
 Requirements: `~/mq-hal/bin/mq-hal`, Ollama running, `qwen3:4b-instruct` pulled.
 Override model: `OLLAMA_MODEL=qwen3:4b mqlaunch hal "..."`.
+
+### HAL Doctor Summary
+
+```bash
+mqlaunch hal doctor
+mqlaunch hal doctor --no-ai
+mqlaunch hal doctor --json
+```
+
+Runs `mqlaunch doctor --json`, parses the result through `mq-hal`, and prints a concise health summary with safe next commands. Falls back to deterministic local analysis when Ollama is unavailable.
