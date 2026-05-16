@@ -4,6 +4,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-05-16
+
+### Added
+
+- Added `mqlaunch hal` bridge — local Ollama-powered safe command router via [mq-hal](https://github.com/MCamner/mq-hal).
+- Added `hal)` route in `dispatch_cli_command` and `run_arg_command`.
+- Added `terminal/bridges/hal-bridge.sh` with `mq_hal_run()`.
+- Added HAL bridge docs to README and `docs/COMMANDS.md`.
+
+### Fixed
+
+- Fixed `mqlaunch hal` routing — `dispatch_cli_command` catch-all was intercepting `hal` before `run_arg_command` could handle it.
+- Removed stale `hal` alias from `apps|hal|guide-ai` case; old terminal guide still reachable via `guide-ai`.
+
 ## [0.3.0] - 2026-05-16
 
 ### Fixed

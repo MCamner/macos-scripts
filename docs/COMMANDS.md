@@ -214,3 +214,30 @@ In any submenu prompt, type:
 - `b` or `x` or `exit` — go back / exit the submenu
 - A number — select that menu option
 - A mqlaunch command — run it directly (e.g. `doctor`)
+
+---
+
+## HAL bridge
+
+```bash
+mqlaunch hal "your request"
+mqlaunch hal repos
+mqlaunch hal raw "your request"
+mqlaunch hal cd repo-signal
+```
+
+Local Ollama-powered safe command router via [mq-hal](https://github.com/MCamner/mq-hal).
+
+The model returns a JSON intent. The `mq-hal` router maps that intent to
+explicitly allowed actions: `git status`, `git log`, repo switching, and
+selected `mqlaunch` subcommands.
+
+| Subcommand | Description |
+|---|---|
+| `hal "prompt"` | Natural language → execute action |
+| `hal repos` | List configured repos |
+| `hal raw "prompt"` | Show raw JSON intent from model |
+| `hal cd <repo>` | Print repo path (use with `mqhcd`) |
+
+Requirements: `~/mq-hal/bin/mq-hal`, Ollama running, `qwen3:4b-instruct` pulled.
+Override model: `OLLAMA_MODEL=qwen3:4b mqlaunch hal "..."`.

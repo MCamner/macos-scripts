@@ -112,6 +112,9 @@ mqlaunch ask "your question"     # AI repo assistant
 mqlaunch srm ask "your question" # Semantic Repository Memory assistant
 mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
+mqlaunch hal "your request"      # local Ollama-powered safe command router
+mqlaunch hal repos               # list HAL-known repos
+mqlaunch hal raw "your request"  # show parsed JSON intent
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch selftest                # smoke tests + shell lint
