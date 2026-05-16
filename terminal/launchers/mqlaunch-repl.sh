@@ -105,6 +105,22 @@ normalize_aliases() {
   esac
 }
 
+# Runs mq-hal bridge.
+run_hal() {
+  local line="$1"
+  local args="${line#hal}"
+  args="${args# }"
+
+  # shellcheck source=/dev/null
+  source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
+
+  if [[ -z "$args" ]]; then
+    mq_hal_run
+  else
+    eval "mq_hal_run $args"
+  fi
+}
+
 # Runs shell fallback.
 run_shell_fallback() {
   local line="$1"
@@ -134,6 +150,7 @@ dispatch_command() {
     demo) run_demo ;;
     "system check") run_system check ;;
     system) run_system ;;
+    hal|hal\ *) run_hal "$line" ;;
     *) run_shell_fallback "$line" ;;
   esac
 }
