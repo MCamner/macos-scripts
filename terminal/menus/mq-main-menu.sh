@@ -320,7 +320,8 @@ handle_main_prompt_command() {
       local _hal_args="${normalized#hal }"
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
-      mq_hal_run "$_hal_args"
+      # shellcheck disable=SC2086
+      eval "mq_hal_run $_hal_args"
       pause_enter
       return 0
       ;;
