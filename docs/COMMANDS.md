@@ -219,6 +219,30 @@ In any submenu prompt, type:
 
 ## HAL bridge
 
+### HAL Menu
+
+```bash
+mqlaunch hal
+```
+
+Opens the interactive MQ HAL menu.
+
+The menu is a thin command surface over `mq-hal`. It does not contain HAL logic.
+
+Menu actions include:
+
+```bash
+mqlaunch hal doctor
+mqlaunch hal fix-doctor
+mqlaunch hal timeline
+mqlaunch hal session
+mqlaunch hal last
+mqlaunch hal remember "note"
+mqlaunch hal repos
+```
+
+### HAL direct commands
+
 ```bash
 mqlaunch hal "your request"
 mqlaunch hal repos

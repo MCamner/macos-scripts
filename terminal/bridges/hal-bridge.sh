@@ -17,11 +17,20 @@ mq_hal_run() {
   local sub="${1:-}"
 
   case "$sub" in
-    ""|-h|--help|help)
+    "")
+      local _HAL_MENU
+      _HAL_MENU="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../menus/mq-hal-menu.sh"
+      # shellcheck source=/dev/null
+      source "$_HAL_MENU"
+      mq_hal_menu_main
+      ;;
+
+    -h|--help|help)
       cat <<'USAGE'
 mqlaunch hal — local Ollama command router
 
 Usage:
+  mqlaunch hal                         # open HAL menu
   mqlaunch hal "visa git status i macos-scripts"
   mqlaunch hal "kör doctor"
   mqlaunch hal "visa senaste commits i repo-signal"

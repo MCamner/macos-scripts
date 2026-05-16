@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.6] - 2026-05-16
+
+### Added
+
+- Added interactive `mqlaunch hal` menu (`terminal/menus/mq-hal-menu.sh`).
+- Added HAL menu smoke test (`tests/hal-menu-smoke.sh`).
+- Documented HAL menu in README and `docs/COMMANDS.md`.
+
 ## [0.3.5] - 2026-05-16
 
 ### Added
