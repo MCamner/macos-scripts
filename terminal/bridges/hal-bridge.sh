@@ -20,7 +20,7 @@ mq_hal_run() {
     "")
       # shellcheck source=/dev/null
       source "${BASE_DIR}/terminal/menus/mq-hal-menu.sh"
-      mq_hal_menu_main
+      open_hal_menu
       ;;
 
     -h|--help|help)
