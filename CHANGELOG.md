@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2026-05-17
+
+### Changed
+
+- Rewrote HAL menu as self-contained (`mq-hal-menu.sh` no longer depends on `surface_*`, `print_header`, or `read_main_choice`).
+- Reordered OBSERVE: Audit is now item 2 (between Brief and Release Brief).
+- Expanded `tests/hal-menu-smoke.sh` from 6 to 8 checks — now verifies audit and release-brief routes and menu labels.
+
 ## [0.4.0] - 2026-05-17
 
 ### Added
