@@ -1,254 +1,164 @@
 #!/usr/bin/env bash
 
-# MQ HAL Menu
-# Thin terminal UI for mq-hal.
+# MQ HAL Menu — mqlaunch v3 surface style.
 #
-# Rule:
-#   This menu owns presentation only.
-#   mq-hal owns all HAL logic.
+# Rule: this menu owns presentation only.
+# mq-hal owns all HAL logic.
 
-if [[ -z "${BASE_DIR:-}" ]]; then
-  BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/../.." && pwd)"
+hal_menu_is_sourced() {
+  if [[ -n "${ZSH_VERSION:-}" ]]; then
+    [[ ":${ZSH_EVAL_CONTEXT:-}:" == *:file:* ]]
+    return
+  fi
+  [[ "${BASH_SOURCE[0]:-}" != "$0" ]]
+}
+
+if ! command -v surface_top >/dev/null 2>&1; then
+  : "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
+  [[ -f "$BASE_DIR/ui/terminal-ui/mq-ui.sh" ]] && source "$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 fi
 
-MQ_HAL_BIN="${MQ_HAL_BIN:-$HOME/mq-hal/bin/mq-hal}"
+: "${MQ_HAL_BIN:=$HOME/mq-hal/bin/mq-hal}"
 
-_hal_clear() {
-  printf '\033[2J\033[H'
-}
+render_hal_panel() {
+  local width panel_color host user git_state
+  width="$(surface_terminal_width)"
 
-_hal_line() {
-  printf '%s\n' "────────────────────────────────────────────────────────────"
-}
-
-_hal_pause() {
-  printf '\n'
-  read -r -p "Press Enter to continue..."
-}
-
-_hal_header() {
-  _hal_clear
-  printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
-  printf '%s\n' "║ MQ HAL                                                     ║"
-  printf '%s\n' "║ Local command intelligence · Ollama · mq-hal · memory      ║"
-  printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
-  printf '\n'
-}
-
-_hal_available() {
-  [[ -x "$MQ_HAL_BIN" ]]
-}
-
-_hal_missing() {
-  _hal_header
-  printf '%s\n' "HAL backend not found."
-  printf '\n'
-  printf '%s\n' "Expected:"
-  printf '  %s\n' "$MQ_HAL_BIN"
-  printf '\n'
-  printf '%s\n' "Check:"
-  printf '  %s\n' "ls -l ~/mq-hal/bin/mq-hal"
-  printf '  %s\n' "~/mq-hal/bin/mq-hal --list-repos"
-  _hal_pause
-}
-
-_hal_run() {
-  "$MQ_HAL_BIN" "$@"
-}
-
-_hal_prompt() {
-  local choice=""
-  printf '\n'
-  printf '%s\n' "╭─ HAL PROMPT ───────────────────────────────────────────────╮"
-  printf '%s\n' "│ number = run action · h = help · q = back                  │"
-  printf '│ hal> '
-  read -r choice
-  printf '%s\n' "╰────────────────────────────────────────────────────────────╯"
-  MQ_HAL_MENU_CHOICE="$choice"
-}
-
-_hal_text_prompt() {
-  local title="$1"
-  local hint="$2"
-  local prompt_name="$3"
-  local value=""
-  printf '\n'
-  printf '│ %-58s │\n' "$hint"
-  printf '│ %s> ' "$prompt_name"
-  read -r value
-  printf '%s\n' "╰────────────────────────────────────────────────────────────╯"
-  MQ_HAL_TEXT_VALUE="$value"
-}
-
-_hal_remember() {
-  _hal_header
-  printf '%s\n' "╭─ REMEMBER NOTE ────────────────────────────────────────────╮"
-  _hal_text_prompt "REMEMBER NOTE" "Save a local HAL note in ~/.mq-hal/session.jsonl." "note"
-  if [[ -z "${MQ_HAL_TEXT_VALUE// }" ]]; then
-    printf '\n%s\n' "No note saved."
-    _hal_pause
-    return 0
+  if [[ -t 1 ]]; then
+    panel_color=$'\033[0;37m'
+  else
+    panel_color=""
   fi
+
+  host="$(hostname -s 2>/dev/null || echo unknown)"
+  user="${USER:-unknown}"
+  git_state="$(surface_git_state 2>/dev/null || echo '-')"
+
+  surface_top "MQ HAL" "$width" "$panel_color"
+  surface_row "Host: $host   User: $user   Mode: HAL   Git: $git_state" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+
+  surface_row "OBSERVE" "$width" "$panel_color"
+  surface_split_row "1. Brief" "2. Repo Status" "$width" "$panel_color"
+  surface_split_row "3. CI Status" "4. Doctor Summary" "$width" "$panel_color"
+  surface_split_row "5. Timeline" "6. Timeline + details" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_row "PLAN" "$width" "$panel_color"
+  surface_split_row "7. Fix Doctor Plan" "" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_row "MEMORY" "$width" "$panel_color"
+  surface_split_row "8. Session Memory" "9. Last Memory Item" "$width" "$panel_color"
+  surface_split_row "10. Remember Note" "" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_row "DEBUG" "$width" "$panel_color"
+  surface_split_row "11. Repos" "12. Raw Intent" "$width" "$panel_color"
+  surface_split_row "13. Free Prompt" "14. Memory Path" "$width" "$panel_color"
+
+  surface_row "" "$width" "$panel_color"
+  surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
   printf '\n'
-  _hal_run remember "$MQ_HAL_TEXT_VALUE"
-  _hal_pause
 }
 
-_hal_raw_intent() {
-  _hal_header
-  printf '%s\n' "╭─ RAW INTENT DEBUG ─────────────────────────────────────────╮"
-  _hal_text_prompt "RAW INTENT DEBUG" "Print the parsed JSON intent. Nothing else is executed." "raw"
-  if [[ -z "${MQ_HAL_TEXT_VALUE// }" ]]; then
-    printf '\n%s\n' "No prompt provided."
-    _hal_pause
-    return 0
-  fi
-  printf '\n'
-  _hal_run --raw-intent "$MQ_HAL_TEXT_VALUE"
-  _hal_pause
+hal_menu_missing() {
+  local width
+  width="$(surface_terminal_width)"
+  surface_top "MQ HAL" "$width" ""
+  surface_row "HAL backend not found: $MQ_HAL_BIN" "$width" ""
+  surface_row "" "$width" ""
+  surface_row "Check:" "$width" ""
+  surface_row "  ls -l ~/mq-hal/bin/mq-hal" "$width" ""
+  surface_bottom "$width" ""
+  pause_enter
 }
 
-_hal_free_prompt() {
-  _hal_header
-  printf '%s\n' "╭─ HAL FREE PROMPT ──────────────────────────────────────────╮"
-  _hal_text_prompt "HAL FREE PROMPT" "Ask HAL to route a safe local command intent." "ask"
-  if [[ -z "${MQ_HAL_TEXT_VALUE// }" ]]; then
-    printf '\n%s\n' "No prompt provided."
-    _hal_pause
-    return 0
-  fi
+hal_menu_remember() {
+  local note=""
+  print_header
   printf '\n'
-  _hal_run "$MQ_HAL_TEXT_VALUE"
-  _hal_pause
+  printf "note> "
+  read -r note
+  [[ -z "${note// }" ]] && return 0
+  printf '\n'
+  "$MQ_HAL_BIN" remember "$note"
+  pause_enter
 }
 
-_hal_show_menu() {
-  _hal_header
-
-  printf '%s\n' "OBSERVE"
-  _hal_line
-  printf '%s\n' "  1) Brief"
-  printf '%s\n' "  2) Repo Status"
-  printf '%s\n' "  3) CI Status"
-  printf '%s\n' "  4) Doctor Summary"
-  printf '%s\n' "  5) Timeline"
-  printf '%s\n' "  6) Timeline with details"
+hal_menu_raw_intent() {
+  local prompt=""
+  print_header
   printf '\n'
-
-  printf '%s\n' "PLAN"
-  _hal_line
-  printf '%s\n' "  7) Fix Doctor Plan"
+  printf "raw> "
+  read -r prompt
+  [[ -z "${prompt// }" ]] && return 0
   printf '\n'
+  "$MQ_HAL_BIN" --raw-intent "$prompt"
+  pause_enter
+}
 
-  printf '%s\n' "MEMORY"
-  _hal_line
-  printf '%s\n' "  8) Session Memory"
-  printf '%s\n' "  9) Last Memory Item"
-  printf '%s\n' " 10) Remember Note"
+hal_menu_free_prompt() {
+  local prompt=""
+  print_header
   printf '\n'
-
-  printf '%s\n' "DEBUG"
-  _hal_line
-  printf '%s\n' " 11) Repos"
-  printf '%s\n' " 12) Raw Intent Debug"
-  printf '%s\n' " 13) Free HAL Prompt"
-  printf '%s\n' " 14) Memory Path"
-  printf '%s\n' "  h) Help"
-  printf '%s\n' "  q) Back"
-  _hal_line
+  printf "hal> "
+  read -r prompt
+  [[ -z "${prompt// }" ]] && return 0
+  printf '\n'
+  "$MQ_HAL_BIN" "$prompt"
+  pause_enter
 }
 
 mq_hal_menu_main() {
-  if ! _hal_available; then
-    _hal_missing
+  local choice
+
+  if [[ ! -x "$MQ_HAL_BIN" ]]; then
+    print_header
+    hal_menu_missing
     return 127
   fi
 
   while true; do
-    _hal_show_menu
-    _hal_prompt
+    print_header
+    render_hal_panel
 
-    case "${MQ_HAL_MENU_CHOICE}" in
-      1)
-        _hal_header
-        _hal_run brief
-        _hal_pause
-        ;;
-      2)
-        _hal_header
-        _hal_run repo-status
-        _hal_pause
-        ;;
-      3)
-        _hal_header
-        _hal_run ci
-        _hal_pause
-        ;;
-      4)
-        _hal_header
-        _hal_run doctor-summary
-        _hal_pause
-        ;;
-      5)
-        _hal_header
-        _hal_run timeline
-        _hal_pause
-        ;;
-      6)
-        _hal_header
-        _hal_run timeline --details
-        _hal_pause
-        ;;
-      7)
-        _hal_header
-        _hal_run fix-doctor
-        _hal_pause
-        ;;
-      8)
-        _hal_header
-        _hal_run session
-        _hal_pause
-        ;;
-      9)
-        _hal_header
-        _hal_run last
-        _hal_pause
-        ;;
-      10)
-        _hal_remember
-        ;;
-      11)
-        _hal_header
-        _hal_run --list-repos
-        _hal_pause
-        ;;
-      12)
-        _hal_raw_intent
-        ;;
-      13)
-        _hal_free_prompt
-        ;;
-      14)
-        _hal_header
-        _hal_run memory-path
-        _hal_pause
-        ;;
-      h|help)
-        _hal_header
-        _hal_run --help
-        _hal_pause
-        ;;
-      q|quit|back|0|b|B|x|X)
-        return 0
-        ;;
+    read_main_choice "hal"
+    echo
+
+    case "$choice" in
+      # OBSERVE
+      1) "$MQ_HAL_BIN" brief; pause_enter ;;
+      2) "$MQ_HAL_BIN" repo-status; pause_enter ;;
+      3) "$MQ_HAL_BIN" ci; pause_enter ;;
+      4) "$MQ_HAL_BIN" doctor-summary; pause_enter ;;
+      5) "$MQ_HAL_BIN" timeline; pause_enter ;;
+      6) "$MQ_HAL_BIN" timeline --details; pause_enter ;;
+      # PLAN
+      7) "$MQ_HAL_BIN" fix-doctor; pause_enter ;;
+      # MEMORY
+      8) "$MQ_HAL_BIN" session; pause_enter ;;
+      9) "$MQ_HAL_BIN" last; pause_enter ;;
+      10) hal_menu_remember ;;
+      # DEBUG
+      11) "$MQ_HAL_BIN" --list-repos; pause_enter ;;
+      12) hal_menu_raw_intent ;;
+      13) hal_menu_free_prompt ;;
+      14) "$MQ_HAL_BIN" memory-path; pause_enter ;;
+      b|B|back) break ;;
+      x|X) exit 0 ;;
       *)
-        printf '\nUnknown choice: %s\n' "${MQ_HAL_MENU_CHOICE}"
-        _hal_pause
+        if [[ -n "$choice" ]]; then
+          echo
+          /bin/zsh -lc "$choice" 2>/dev/null || true
+          pause_enter
+        fi
         ;;
     esac
   done
 }
 
-if [[ "${BASH_SOURCE[0]:-}" == "$0" ]]; then
+if ! hal_menu_is_sourced; then
   mq_hal_menu_main "$@"
 fi
