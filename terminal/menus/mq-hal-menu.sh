@@ -8,7 +8,7 @@
 #   mq-hal owns all HAL logic.
 
 if [[ -z "${BASE_DIR:-}" ]]; then
-  BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/../.." && pwd)"
 fi
 
 MQ_HAL_BIN="${MQ_HAL_BIN:-$HOME/mq-hal/bin/mq-hal}"
@@ -249,6 +249,6 @@ mq_hal_menu_main() {
   done
 }
 
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+if [[ "${BASH_SOURCE[0]:-}" == "$0" ]]; then
   mq_hal_menu_main "$@"
 fi
