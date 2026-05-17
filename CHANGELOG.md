@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3] - 2026-05-17
+
+### Fixed
+
+- HAL menu restored to the correct mqlaunch surface pattern: `surface_panel_header`, `surface_split_row`, `surface_bottom`, and `read_main_choice "hal"`.
+- Menu now renders identically to other mqlaunch submenus (panel box + pinned prompt).
+- `_hal_pause_enter` helper added for standalone-safe pause.
+
 ## [0.4.2] - 2026-05-17
 
 ### Fixed
