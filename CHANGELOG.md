@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2026-05-17
+
+### Fixed
+
+- HAL menu now uses `print_header` when called from within mqlaunch, matching the style of all other submenus. Falls back to a plain standalone header when run directly.
+
 ## [0.4.1] - 2026-05-17
 
 ### Changed

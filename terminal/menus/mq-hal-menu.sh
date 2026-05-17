@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-# MQ HAL Menu — self-contained, no surface_* dependency.
+# MQ HAL Menu.
 #
 # Rule: this menu owns presentation only.
 # mq-hal owns all HAL logic.
+#
+# When sourced by mqlaunch: uses print_header + pause_enter from the caller.
+# When run standalone:      uses its own clear + header + pause.
 
 hal_menu_is_sourced() {
   if [[ -n "${ZSH_VERSION:-}" ]]; then
@@ -15,26 +18,32 @@ hal_menu_is_sourced() {
 
 : "${MQ_HAL_BIN:=$HOME/mq-hal/bin/mq-hal}"
 
-_hal_clear() { printf '\033[2J\033[H'; }
-
-_hal_line() { printf '%s\n' "────────────────────────────────────────────────────────────"; }
-
-_hal_pause() {
-  printf '\n'
-  read -r -p "Press Enter to continue..."
+_hal_do_header() {
+  if command -v print_header >/dev/null 2>&1; then
+    print_header
+  else
+    printf '\033[2J\033[H'
+    printf '%s\n' "MQ HAL — Local command intelligence"
+    printf '%s\n' "────────────────────────────────────────────────────────────"
+    printf '\n'
+  fi
 }
 
-_hal_header() {
-  _hal_clear
-  printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
-  printf '%s\n' "║ MQ HAL                                                     ║"
-  printf '%s\n' "║ Local command intelligence · Ollama · mq-hal · memory      ║"
-  printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
-  printf '\n'
+_hal_do_pause() {
+  if command -v pause_enter >/dev/null 2>&1; then
+    pause_enter
+  else
+    printf '\n'
+    read -r -p "Press Enter to continue..."
+  fi
+}
+
+_hal_line() {
+  printf '%s\n' "────────────────────────────────────────────────────────────"
 }
 
 _hal_menu_show() {
-  _hal_header
+  _hal_do_header
 
   printf '%s\n' "OBSERVE"
   _hal_line
@@ -74,48 +83,48 @@ _hal_menu_show() {
 }
 
 _hal_remember() {
-  _hal_header
+  _hal_do_header
   printf 'note> '
   local note=""
   read -r note
   [[ -z "${note// }" ]] && return 0
   printf '\n'
   "$MQ_HAL_BIN" remember "$note"
-  _hal_pause
+  _hal_do_pause
 }
 
 _hal_raw_intent() {
-  _hal_header
+  _hal_do_header
   printf 'raw> '
   local prompt=""
   read -r prompt
   [[ -z "${prompt// }" ]] && return 0
   printf '\n'
   "$MQ_HAL_BIN" --raw-intent "$prompt"
-  _hal_pause
+  _hal_do_pause
 }
 
 _hal_free_prompt() {
-  _hal_header
+  _hal_do_header
   printf 'hal> '
   local prompt=""
   read -r prompt
   [[ -z "${prompt// }" ]] && return 0
   printf '\n'
   "$MQ_HAL_BIN" "$prompt"
-  _hal_pause
+  _hal_do_pause
 }
 
 mq_hal_menu_main() {
   local choice
 
   if [[ ! -x "$MQ_HAL_BIN" ]]; then
-    _hal_header
+    _hal_do_header
     printf '%s\n' "HAL backend not found: $MQ_HAL_BIN"
     printf '\n'
     printf '%s\n' "Check:"
     printf '  %s\n' "ls -l ~/mq-hal/bin/mq-hal"
-    _hal_pause
+    _hal_do_pause
     return 127
   fi
 
@@ -125,29 +134,29 @@ mq_hal_menu_main() {
     printf '\n'
 
     case "$choice" in
-      1)  _hal_header; "$MQ_HAL_BIN" brief;            _hal_pause ;;
-      2)  _hal_header; "$MQ_HAL_BIN" audit;            _hal_pause ;;
-      3)  _hal_header; "$MQ_HAL_BIN" release-brief;    _hal_pause ;;
-      4)  _hal_header; "$MQ_HAL_BIN" repo-status;      _hal_pause ;;
-      5)  _hal_header; "$MQ_HAL_BIN" ci;               _hal_pause ;;
-      6)  _hal_header; "$MQ_HAL_BIN" doctor-summary;   _hal_pause ;;
-      7)  _hal_header; "$MQ_HAL_BIN" timeline;         _hal_pause ;;
-      8)  _hal_header; "$MQ_HAL_BIN" timeline --details; _hal_pause ;;
-      9)  _hal_header; "$MQ_HAL_BIN" fix-doctor;       _hal_pause ;;
-      10) _hal_header; "$MQ_HAL_BIN" session;          _hal_pause ;;
-      11) _hal_header; "$MQ_HAL_BIN" last;             _hal_pause ;;
+      1)  _hal_do_header; "$MQ_HAL_BIN" brief;              _hal_do_pause ;;
+      2)  _hal_do_header; "$MQ_HAL_BIN" audit;              _hal_do_pause ;;
+      3)  _hal_do_header; "$MQ_HAL_BIN" release-brief;      _hal_do_pause ;;
+      4)  _hal_do_header; "$MQ_HAL_BIN" repo-status;        _hal_do_pause ;;
+      5)  _hal_do_header; "$MQ_HAL_BIN" ci;                 _hal_do_pause ;;
+      6)  _hal_do_header; "$MQ_HAL_BIN" doctor-summary;     _hal_do_pause ;;
+      7)  _hal_do_header; "$MQ_HAL_BIN" timeline;           _hal_do_pause ;;
+      8)  _hal_do_header; "$MQ_HAL_BIN" timeline --details; _hal_do_pause ;;
+      9)  _hal_do_header; "$MQ_HAL_BIN" fix-doctor;         _hal_do_pause ;;
+      10) _hal_do_header; "$MQ_HAL_BIN" session;            _hal_do_pause ;;
+      11) _hal_do_header; "$MQ_HAL_BIN" last;               _hal_do_pause ;;
       12) _hal_remember ;;
-      13) _hal_header; "$MQ_HAL_BIN" --list-repos;     _hal_pause ;;
+      13) _hal_do_header; "$MQ_HAL_BIN" --list-repos;       _hal_do_pause ;;
       14) _hal_raw_intent ;;
       15) _hal_free_prompt ;;
-      16) _hal_header; "$MQ_HAL_BIN" memory-path;      _hal_pause ;;
+      16) _hal_do_header; "$MQ_HAL_BIN" memory-path;        _hal_do_pause ;;
       h|help)
-          _hal_header; "$MQ_HAL_BIN" --help;           _hal_pause ;;
+          _hal_do_header; "$MQ_HAL_BIN" --help;             _hal_do_pause ;;
       q|quit|back|0|b|B|x|X) return 0 ;;
-      "")  ;;
+      "") ;;
       *)
           printf 'Unknown choice: %s\n' "$choice"
-          _hal_pause
+          _hal_do_pause
           ;;
     esac
   done
