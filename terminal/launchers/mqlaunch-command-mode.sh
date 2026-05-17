@@ -462,6 +462,15 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    mqlaunch)
+      # Strip "mqlaunch" prefix typed from inside the menu and re-dispatch.
+      shift
+      if [[ $# -gt 0 ]]; then
+        dispatch_cli_command "$@"
+      fi
+      return 0
+      ;;
+
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"

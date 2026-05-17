@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.5] - 2026-05-17
+
+### Fixed
+
+- Fixed `mqlaunch hal release-brief` (and any `mqlaunch <cmd>` typed from inside the menu prompt) routing to AI — `dispatch_cli_command` now handles `area="mqlaunch"` by stripping the prefix and re-dispatching, so typing the full `mqlaunch hal <sub>` form inside the menu works the same as typing `hal <sub>`.
+
 ## [0.4.4] - 2026-05-17
 
 ### Fixed
