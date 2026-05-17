@@ -43,6 +43,10 @@ Usage:
   mqlaunch hal timeline
 USAGE
       ;;
+    brief)
+      shift || true
+      "$MQ_HAL_BIN" brief "$@"
+      ;;
     repos|list|list-repos)
       "$MQ_HAL_BIN" --list-repos
       ;;

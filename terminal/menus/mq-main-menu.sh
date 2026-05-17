@@ -96,12 +96,13 @@ render_main_menu_panel() {
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
   surface_split_row "7. Document functions" "8. Workspace" "$width" "$panel_color"
+  surface_split_row "9. MQ HAL" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
-  surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
-  surface_split_row "r. REPL" "z. Restart mqlaunch" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "r. REPL" "$width" "$panel_color"
+  surface_split_row "z. Restart mqlaunch" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -264,6 +265,11 @@ handle_main_menu_choice() {
     6) open_help_center_menu ;;
     7) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
     8) run_mqworkflows workspace ;;
+    9)
+      # shellcheck source=/dev/null
+      source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
+      mq_hal_run
+      ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
