@@ -122,6 +122,10 @@ mqlaunch hal session             # show local HAL session memory
 mqlaunch hal last                # show latest HAL memory item
 mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
+mqlaunch hal brief               # compact repo status brief
+mqlaunch hal release-brief       # release readiness brief
+mqlaunch hal repo-status         # read-only git repo status
+mqlaunch hal ci                  # GitHub Actions status
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch selftest                # smoke tests + shell lint

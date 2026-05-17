@@ -24,6 +24,7 @@ MQ HAL — local Ollama command router
 Usage:
   mqlaunch hal                         # open HAL menu
   mqlaunch hal brief                   # compact repo status brief
+  mqlaunch hal release-brief           # release readiness brief
   mqlaunch hal doctor                  # doctor summary
   mqlaunch hal fix-doctor              # safe fix plan
   mqlaunch hal timeline                # session timeline
