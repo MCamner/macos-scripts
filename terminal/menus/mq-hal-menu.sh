@@ -4,6 +4,23 @@
 #
 # Rule: this menu owns presentation only.
 # mq-hal owns all HAL logic.
+#
+# STANDARD PATTERN FOR MQLAUNCH SUBMENUS
+# ───────────────────────────────────────
+# This file is the reference implementation for how new mqlaunch submenus
+# should be built. Follow this pattern exactly:
+#
+#   1. Auto-source mq-ui.sh if surface_* not available (standalone support).
+#   2. render_*_panel() calls:
+#        print_header           — mqlaunch top bar (if available)
+#        surface_panel_header   — submenu box with host/mode/git row
+#        surface_row            — section labels inside the box
+#        surface_split_row      — two-column item rows inside the box
+#        surface_bottom         — closes the box
+#   3. Main loop calls read_main_choice "label" for the pinned prompt.
+#      Fallback: plain printf + read -r choice for standalone use.
+#   4. pause_enter after each action (wrapped in _*_pause_enter for safety).
+#   5. hal_menu_is_sourced guard at the bottom for standalone execution.
 
 hal_menu_is_sourced() {
   if [[ -n "${ZSH_VERSION:-}" ]]; then
