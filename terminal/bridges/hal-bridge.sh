@@ -75,6 +75,16 @@ mq_hal_main() {
       "$MQ_HAL_BIN" brief "$@"
       ;;
 
+    repo-status|repo)
+      shift || true
+      "$MQ_HAL_BIN" repo-status "$@"
+      ;;
+
+    ci|ci-status)
+      shift || true
+      "$MQ_HAL_BIN" ci "$@"
+      ;;
+
     doctor|doctor-summary|summary)
       shift || true
       "$MQ_HAL_BIN" doctor-summary "$@"

@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.8] - 2026-05-17
+
+### Added
+
+- Added `mqlaunch hal repo-status` bridge command.
+- Added `mqlaunch hal ci` bridge command.
+- Updated HAL menu OBSERVE section: added Repo Status (2) and CI Status (3); items renumbered to 14.
+- Documented HAL Repo Status and CI Status in `docs/COMMANDS.md`.
+
 ## [0.3.7] - 2026-05-17
 
 ### Added

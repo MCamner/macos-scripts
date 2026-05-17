@@ -128,29 +128,31 @@ _hal_show_menu() {
   printf '%s\n' "OBSERVE"
   _hal_line
   printf '%s\n' "  1) Brief"
-  printf '%s\n' "  2) Doctor Summary"
-  printf '%s\n' "  3) Timeline"
-  printf '%s\n' "  4) Timeline with details"
+  printf '%s\n' "  2) Repo Status"
+  printf '%s\n' "  3) CI Status"
+  printf '%s\n' "  4) Doctor Summary"
+  printf '%s\n' "  5) Timeline"
+  printf '%s\n' "  6) Timeline with details"
   printf '\n'
 
   printf '%s\n' "PLAN"
   _hal_line
-  printf '%s\n' "  5) Fix Doctor Plan"
+  printf '%s\n' "  7) Fix Doctor Plan"
   printf '\n'
 
   printf '%s\n' "MEMORY"
   _hal_line
-  printf '%s\n' "  6) Session Memory"
-  printf '%s\n' "  7) Last Memory Item"
-  printf '%s\n' "  8) Remember Note"
+  printf '%s\n' "  8) Session Memory"
+  printf '%s\n' "  9) Last Memory Item"
+  printf '%s\n' " 10) Remember Note"
   printf '\n'
 
   printf '%s\n' "DEBUG"
   _hal_line
-  printf '%s\n' "  9) Repos"
-  printf '%s\n' " 10) Raw Intent Debug"
-  printf '%s\n' " 11) Free HAL Prompt"
-  printf '%s\n' " 12) Memory Path"
+  printf '%s\n' " 11) Repos"
+  printf '%s\n' " 12) Raw Intent Debug"
+  printf '%s\n' " 13) Free HAL Prompt"
+  printf '%s\n' " 14) Memory Path"
   printf '%s\n' "  h) Help"
   printf '%s\n' "  q) Back"
   _hal_line
@@ -174,49 +176,59 @@ mq_hal_menu_main() {
         ;;
       2)
         _hal_header
-        _hal_run doctor-summary
+        _hal_run repo-status
         _hal_pause
         ;;
       3)
         _hal_header
-        _hal_run timeline
+        _hal_run ci
         _hal_pause
         ;;
       4)
         _hal_header
-        _hal_run timeline --details
+        _hal_run doctor-summary
         _hal_pause
         ;;
       5)
         _hal_header
-        _hal_run fix-doctor
+        _hal_run timeline
         _hal_pause
         ;;
       6)
         _hal_header
-        _hal_run session
+        _hal_run timeline --details
         _hal_pause
         ;;
       7)
         _hal_header
-        _hal_run last
+        _hal_run fix-doctor
         _hal_pause
         ;;
       8)
-        _hal_remember
+        _hal_header
+        _hal_run session
+        _hal_pause
         ;;
       9)
+        _hal_header
+        _hal_run last
+        _hal_pause
+        ;;
+      10)
+        _hal_remember
+        ;;
+      11)
         _hal_header
         _hal_run --list-repos
         _hal_pause
         ;;
-      10)
+      12)
         _hal_raw_intent
         ;;
-      11)
+      13)
         _hal_free_prompt
         ;;
-      12)
+      14)
         _hal_header
         _hal_run memory-path
         _hal_pause

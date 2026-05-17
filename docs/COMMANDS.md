@@ -241,6 +241,27 @@ mqlaunch hal remember "note"
 mqlaunch hal repos
 ```
 
+### HAL Repo Status
+
+```bash
+mqlaunch hal repo-status
+mqlaunch hal repo-status --json
+mqlaunch hal repo-status --repo macos-scripts
+```
+
+Shows read-only git repository status: branch, dirty/clean state, changed file preview, recent commits, and latest tags. Delegates to `mq-hal repo-status`.
+
+### HAL CI Status
+
+```bash
+mqlaunch hal ci
+mqlaunch hal ci --json
+mqlaunch hal ci --repo macos-scripts
+mqlaunch hal ci --limit 10
+```
+
+Shows read-only GitHub Actions CI status via `gh run list`. Reports overall green/red/running state and recent run details. Delegates to `mq-hal ci`.
+
 ### HAL Brief
 
 ```bash
