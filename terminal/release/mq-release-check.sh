@@ -82,16 +82,19 @@ section "RECENT COMMITS"
 git log --oneline -5
 
 section "AI CHECK PROMPTS"
-if declare -f mq_ai_prompt_review >/dev/null; then
-  mq_ai_prompt_review
+if [[ -t 1 ]]; then
+  if declare -f mq_ai_prompt_review >/dev/null; then
+    mq_ai_prompt_review
+  else
+    status_warn "Missing mq_ai_prompt_review"
+  fi
+  if declare -f mq_ai_prompt_ui >/dev/null; then
+    mq_ai_prompt_ui
+  else
+    status_warn "Missing mq_ai_prompt_ui"
+  fi
 else
-  status_warn "Missing mq_ai_prompt_review"
-fi
-
-if declare -f mq_ai_prompt_ui >/dev/null; then
-  mq_ai_prompt_ui
-else
-  status_warn "Missing mq_ai_prompt_ui"
+  status_warn "AI prompts skipped (non-interactive run)"
 fi
 
 section "RELEASE CHECKLIST"

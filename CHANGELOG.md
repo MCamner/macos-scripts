@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.6] - 2026-05-17
+
+### Fixed
+
+- Fixed `mq-release-check.sh` opening ChatGPT browser when called non-interactively (e.g. from `mq-hal release-brief`). AI prompt calls (`mq_ai_prompt_review`, `mq_ai_prompt_ui`) are now guarded with `[[ -t 1 ]]` — skipped when stdout is not a TTY.
+
 ## [0.4.5] - 2026-05-17
 
 ### Fixed
