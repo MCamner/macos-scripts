@@ -75,6 +75,11 @@ mq_hal_main() {
       "$MQ_HAL_BIN" brief "$@"
       ;;
 
+    release-brief|release)
+      shift || true
+      "$MQ_HAL_BIN" release-brief "$@"
+      ;;
+
     repo-status|repo)
       shift || true
       "$MQ_HAL_BIN" repo-status "$@"

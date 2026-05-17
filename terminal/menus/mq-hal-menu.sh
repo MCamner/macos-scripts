@@ -39,23 +39,24 @@ render_hal_panel() {
   surface_row "" "$width" "$panel_color"
 
   surface_row "OBSERVE" "$width" "$panel_color"
-  surface_split_row "1. Brief" "2. Repo Status" "$width" "$panel_color"
-  surface_split_row "3. CI Status" "4. Doctor Summary" "$width" "$panel_color"
-  surface_split_row "5. Timeline" "6. Timeline + details" "$width" "$panel_color"
+  surface_split_row "1. Brief" "2. Release Brief" "$width" "$panel_color"
+  surface_split_row "3. Repo Status" "4. CI Status" "$width" "$panel_color"
+  surface_split_row "5. Doctor Summary" "6. Timeline" "$width" "$panel_color"
+  surface_split_row "7. Timeline + details" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "PLAN" "$width" "$panel_color"
-  surface_split_row "7. Fix Doctor Plan" "" "$width" "$panel_color"
+  surface_split_row "8. Fix Doctor Plan" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "MEMORY" "$width" "$panel_color"
-  surface_split_row "8. Session Memory" "9. Last Memory Item" "$width" "$panel_color"
-  surface_split_row "10. Remember Note" "" "$width" "$panel_color"
+  surface_split_row "9. Session Memory" "10. Last Memory Item" "$width" "$panel_color"
+  surface_split_row "11. Remember Note" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "DEBUG" "$width" "$panel_color"
-  surface_split_row "11. Repos" "12. Raw Intent" "$width" "$panel_color"
-  surface_split_row "13. Free Prompt" "14. Memory Path" "$width" "$panel_color"
+  surface_split_row "12. Repos" "13. Raw Intent" "$width" "$panel_color"
+  surface_split_row "14. Free Prompt" "15. Memory Path" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
@@ -130,22 +131,23 @@ mq_hal_menu_main() {
     case "$choice" in
       # OBSERVE
       1) "$MQ_HAL_BIN" brief; pause_enter ;;
-      2) "$MQ_HAL_BIN" repo-status; pause_enter ;;
-      3) "$MQ_HAL_BIN" ci; pause_enter ;;
-      4) "$MQ_HAL_BIN" doctor-summary; pause_enter ;;
-      5) "$MQ_HAL_BIN" timeline; pause_enter ;;
-      6) "$MQ_HAL_BIN" timeline --details; pause_enter ;;
+      2) "$MQ_HAL_BIN" release-brief; pause_enter ;;
+      3) "$MQ_HAL_BIN" repo-status; pause_enter ;;
+      4) "$MQ_HAL_BIN" ci; pause_enter ;;
+      5) "$MQ_HAL_BIN" doctor-summary; pause_enter ;;
+      6) "$MQ_HAL_BIN" timeline; pause_enter ;;
+      7) "$MQ_HAL_BIN" timeline --details; pause_enter ;;
       # PLAN
-      7) "$MQ_HAL_BIN" fix-doctor; pause_enter ;;
+      8) "$MQ_HAL_BIN" fix-doctor; pause_enter ;;
       # MEMORY
-      8) "$MQ_HAL_BIN" session; pause_enter ;;
-      9) "$MQ_HAL_BIN" last; pause_enter ;;
-      10) hal_menu_remember ;;
+      9) "$MQ_HAL_BIN" session; pause_enter ;;
+      10) "$MQ_HAL_BIN" last; pause_enter ;;
+      11) hal_menu_remember ;;
       # DEBUG
-      11) "$MQ_HAL_BIN" --list-repos; pause_enter ;;
-      12) hal_menu_raw_intent ;;
-      13) hal_menu_free_prompt ;;
-      14) "$MQ_HAL_BIN" memory-path; pause_enter ;;
+      12) "$MQ_HAL_BIN" --list-repos; pause_enter ;;
+      13) hal_menu_raw_intent ;;
+      14) hal_menu_free_prompt ;;
+      15) "$MQ_HAL_BIN" memory-path; pause_enter ;;
       b|B|back) break ;;
       x|X) exit 0 ;;
       *)

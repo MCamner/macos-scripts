@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.9] - 2026-05-17
+
+### Added
+
+- Added `mqlaunch hal release-brief` bridge command.
+- Updated HAL menu OBSERVE section: Release Brief is now item 2; total 15 items.
+- Documented HAL Release Brief in `docs/COMMANDS.md`.
+
 ## [0.3.8] - 2026-05-17
 
 ### Added

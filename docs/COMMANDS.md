@@ -241,6 +241,19 @@ mqlaunch hal remember "note"
 mqlaunch hal repos
 ```
 
+### HAL Release Brief
+
+```bash
+mqlaunch hal release-brief
+mqlaunch hal release-brief --json
+mqlaunch hal release-brief --repo macos-scripts
+mqlaunch hal release-brief --skip-gh
+mqlaunch hal release-brief --skip-doctor
+mqlaunch hal release-brief --skip-release-check
+```
+
+Read-only release readiness brief powered by `mq-hal`. Checks VERSION, CHANGELOG, README version reference, git state, CI status, latest GitHub release, doctor summary, and release-check.
+
 ### HAL Repo Status
 
 ```bash
