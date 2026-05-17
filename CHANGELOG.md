@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-05-17
+
+### Added
+
+- Added `mqlaunch hal audit` bridge command (publish quality + README score via `repo-signal`).
+- Added Audit as item 8 in HAL menu OBSERVE section (total 16 items).
+- Documented HAL Audit in `docs/COMMANDS.md` and README quick-reference.
+
 ## [0.3.9] - 2026-05-17
 
 ### Added

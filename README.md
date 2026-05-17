@@ -124,6 +124,7 @@ mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
 mqlaunch hal brief               # compact repo status brief
 mqlaunch hal release-brief       # release readiness brief
+mqlaunch hal audit               # publish quality + README score via repo-signal
 mqlaunch hal repo-status         # read-only git repo status
 mqlaunch hal ci                  # GitHub Actions status
 mqlaunch doctor                  # environment check

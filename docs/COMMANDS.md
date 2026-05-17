@@ -241,6 +241,16 @@ mqlaunch hal remember "note"
 mqlaunch hal repos
 ```
 
+### HAL Audit
+
+```bash
+mqlaunch hal audit
+mqlaunch hal audit --json
+mqlaunch hal audit --repo macos-scripts
+```
+
+Publish quality and README quality audit powered by `mq-hal` and `repo-signal`. Runs `repo-signal publish-checklist` and `repo-signal readme-score`, derives overall status (`ready` / `needs_review` / `not_ready`), and prints actionable recommendations. Requires `repo-signal` installed; falls back gracefully if unavailable.
+
 ### HAL Release Brief
 
 ```bash
