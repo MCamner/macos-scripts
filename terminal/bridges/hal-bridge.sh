@@ -160,6 +160,9 @@ mq_hal_main() {
   esac
 }
 
+# mqlaunch calls mq_hal_run — alias for compatibility
+mq_hal_run() { mq_hal_main "$@"; }
+
 if [[ "${BASH_SOURCE[0]:-}" == "$0" ]]; then
   mq_hal_main "$@"
 fi

@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.4] - 2026-05-17
+
+### Fixed
+
+- Restored `mq_hal_run()` alias in bridge — mqlaunch calls `mq_hal_run` but the function was renamed to `mq_hal_main` in a prior refactor, causing all `mqlaunch hal <command>` calls to route to AI instead of the bridge.
+
 ## [0.4.3] - 2026-05-17
 
 ### Fixed
