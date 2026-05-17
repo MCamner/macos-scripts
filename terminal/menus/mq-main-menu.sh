@@ -268,7 +268,7 @@ handle_main_menu_choice() {
     9)
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
-      mq_hal_run
+      mq_hal_main
       ;;
 
     # QUICK ACCESS
@@ -327,14 +327,14 @@ handle_main_prompt_command() {
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
       # shellcheck disable=SC2086
-      eval "mq_hal_run $_hal_args"
+      eval "mq_hal_main $_hal_args"
       pause_enter
       return 0
       ;;
     hal)
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
-      mq_hal_run
+      mq_hal_main
       pause_enter
       return 0
       ;;

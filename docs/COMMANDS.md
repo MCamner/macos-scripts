@@ -241,6 +241,17 @@ mqlaunch hal remember "note"
 mqlaunch hal repos
 ```
 
+### HAL Brief
+
+```bash
+mqlaunch hal brief
+mqlaunch hal brief --json
+mqlaunch hal brief --no-gh
+mqlaunch hal brief --repo macos-scripts
+```
+
+Shows a compact repo status brief. Collects git state, GitHub Actions CI runs, latest release tag, and the last HAL Session Memory note. Fully deterministic — no Ollama required.
+
 ### HAL direct commands
 
 ```bash

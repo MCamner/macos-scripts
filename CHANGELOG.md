@@ -4,6 +4,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.7] - 2026-05-17
+
+### Added
+
+- Added `mqlaunch hal brief` bridge command.
+- Rewrote HAL bridge (`hal-bridge.sh`) with `mq_hal_main` entry point, robust help text, and cleaner subcommand routing.
+- Rewrote HAL menu (`mq-hal-menu.sh`) as a standalone grouped menu (Observe, Plan, Memory, Debug) with box-drawn prompts; no `surface_*` dependency.
+- Updated smoke test (`tests/hal-menu-smoke.sh`) to 5 checks including brief coverage.
+- Added HAL Brief section to `docs/COMMANDS.md`.
+
 ## [0.3.6] - 2026-05-16
 
 ### Added
