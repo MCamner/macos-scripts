@@ -30,6 +30,7 @@ fi
 
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
+OLLAMA_DOCUMENT_REVIEW="$BASE_DIR/tools/scripts/ollama-document-review.py"
 DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
 DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*.bak' --exclude '*/.git/*' --exclude '*/backups/*')
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
@@ -509,6 +510,57 @@ run_document_functions_update() {
   fi
 }
 
+# Runs Ollama document review (read-only, never writes files).
+run_ollama_document_review() {
+  local model entered_model
+
+  print_header
+  row_bold "OLLAMA DOCUMENT REVIEW"
+  empty_row
+  row "Review-only: no files will be modified."
+  row "Requires local Ollama (ollama serve)."
+  row "Default model: ${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b}"
+  empty_row
+
+  if ! command -v ollama >/dev/null 2>&1; then
+    ui_err "Ollama not found. Install or start Ollama first."
+    pause_enter
+    return 1
+  fi
+
+  if [[ ! -f "$OLLAMA_DOCUMENT_REVIEW" ]]; then
+    ui_err "Review script missing: $OLLAMA_DOCUMENT_REVIEW"
+    pause_enter
+    return 1
+  fi
+
+  if ! select_document_function_targets "review with Ollama"; then
+    return 0
+  fi
+
+  empty_row
+  row "Targets:"
+  print_document_function_targets
+  empty_row
+
+  model="${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b}"
+  printf '%bModel [%s]: %b' "${C_TITLE:-}" "$model" "${C_RESET:-}"
+  read -r entered_model
+  model="${entered_model:-$model}"
+
+  empty_row
+  row "Running Ollama review — model: $model"
+  print_footer
+
+  if [[ -x "$OLLAMA_DOCUMENT_REVIEW" ]]; then
+    "$OLLAMA_DOCUMENT_REVIEW" --model "$model" "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
+  else
+    python3 "$OLLAMA_DOCUMENT_REVIEW" --model "$model" "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
+  fi
+
+  pause_enter
+}
+
 # Prints document functions menu.
 print_document_functions_menu() {
   local width panel_color
@@ -524,7 +576,7 @@ print_document_functions_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "UPDATE" "$width" "$panel_color"
   surface_split_row "5. Update selected" "6. Auto comment" "$width" "$panel_color"
-  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_split_row "7. Ollama review" "b. Back" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -564,6 +616,7 @@ document_functions_menu_loop() {
       4) run_document_functions_check_selected ;;
       5) run_document_functions_update ;;
       6) auto_document_functions ;;
+      7) run_ollama_document_review ;;
       b|B|x|X|exit) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
