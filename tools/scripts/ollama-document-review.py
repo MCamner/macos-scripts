@@ -73,6 +73,26 @@ def is_allowed_file(path: Path) -> bool:
     return True
 
 
+def find_similar_files(raw: str, limit: int = 8) -> list[Path]:
+    """Find likely matching files when the user provides a missing path."""
+    wanted = Path(raw).name
+    if not wanted:
+        return []
+
+    matches: list[Path] = []
+
+    for path in sorted(Path.cwd().rglob(wanted)):
+        if any(part in SKIP_DIRS for part in path.parts):
+            continue
+        if is_allowed_file(path):
+            matches.append(path)
+
+        if len(matches) >= limit:
+            break
+
+    return matches
+
+
 def iter_target_files(targets: list[str], max_files: int) -> list[Path]:
     found: list[Path] = []
 
@@ -81,6 +101,17 @@ def iter_target_files(targets: list[str], max_files: int) -> list[Path]:
 
         if not target.exists():
             print(f"WARN: target does not exist: {raw}", file=sys.stderr)
+
+            suggestions = find_similar_files(raw)
+            if suggestions:
+                print("      Did you mean one of these?", file=sys.stderr)
+                for suggestion in suggestions:
+                    try:
+                        display = suggestion.relative_to(Path.cwd())
+                    except ValueError:
+                        display = suggestion
+                    print(f"      - {display}", file=sys.stderr)
+
             continue
 
         if target.is_file():
