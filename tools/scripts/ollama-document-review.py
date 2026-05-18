@@ -14,7 +14,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-DEFAULT_MODEL = os.getenv("MQ_OLLAMA_REVIEW_MODEL", "qwen3:4b")
+DEFAULT_MODEL = os.getenv("MQ_OLLAMA_REVIEW_MODEL", "qwen3:4b-instruct")
 DEFAULT_MAX_FILES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_FILES", "8"))
 DEFAULT_MAX_BYTES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_BYTES", "45000"))
 

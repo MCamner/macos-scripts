@@ -519,7 +519,7 @@ run_ollama_document_review() {
   empty_row
   row "Review-only: no files will be modified."
   row "Requires local Ollama (ollama serve)."
-  row "Default model: ${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b}"
+  row "Default model: ${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b-instruct}"
   empty_row
 
   if ! command -v ollama >/dev/null 2>&1; then
@@ -543,7 +543,7 @@ run_ollama_document_review() {
   print_document_function_targets
   empty_row
 
-  model="${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b}"
+  model="${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b-instruct}"
   printf '%bModel (Enter to keep %s): %b' "${C_TITLE:-}" "$model" "${C_RESET:-}"
   read -r entered_model
   # Ignore single-character input — likely accidental (e.g. "y" as confirmation).
