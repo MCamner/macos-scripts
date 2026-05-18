@@ -151,6 +151,16 @@ def call_ollama(model: str, endpoint: str, prompt: str) -> str:
     try:
         with urllib.request.urlopen(request, timeout=240) as response:
             raw = response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            raise RuntimeError(
+                f"Model not found in Ollama: {model!r}\n"
+                f"Pull it first: ollama pull {model}"
+            ) from exc
+        raise RuntimeError(
+            f"Ollama returned HTTP {exc.code}: {exc.reason}\n"
+            f"Endpoint: {endpoint}"
+        ) from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(
             f"Could not reach Ollama at {endpoint}\n"

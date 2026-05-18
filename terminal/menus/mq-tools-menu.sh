@@ -544,9 +544,12 @@ run_ollama_document_review() {
   empty_row
 
   model="${MQ_OLLAMA_REVIEW_MODEL:-qwen3:4b}"
-  printf '%bModel [%s]: %b' "${C_TITLE:-}" "$model" "${C_RESET:-}"
+  printf '%bModel (Enter to keep %s): %b' "${C_TITLE:-}" "$model" "${C_RESET:-}"
   read -r entered_model
-  model="${entered_model:-$model}"
+  # Ignore single-character input — likely accidental (e.g. "y" as confirmation).
+  if [[ "${#entered_model}" -gt 1 ]]; then
+    model="$entered_model"
+  fi
 
   empty_row
   row "Running Ollama review — model: $model"
