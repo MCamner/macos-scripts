@@ -4,7 +4,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.6] - 2026-05-17
+## [0.4.6] - 2026-05-18
+
+### Added
+
+- Added Ollama review as option 7 in the Document Functions menu.
+- Added local review-only helper for comments, docstrings, and function descriptions.
+- Added documentation for Ollama Document Review.
+
+### Changed
+
+- Aligned Ollama review default model with installed `qwen3:4b-instruct` tag.
+
+### Safety
+
+- Ollama review is review-only and does not modify files automatically.
 
 ### Fixed
 

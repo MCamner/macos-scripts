@@ -101,8 +101,8 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
-  surface_split_row "h. Health Check" "r. REPL" "$width" "$panel_color"
-  surface_split_row "z. Restart mqlaunch" "" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
+  surface_split_row "r. REPL" "z. Restart mqlaunch" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
