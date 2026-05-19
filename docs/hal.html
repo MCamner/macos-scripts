@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MQLaunch HAL | macos-scripts</title>
+  <meta name="description" content="MQLaunch HAL command surface for brief, audit, release readiness, repo status, CI status, doctor summary, memory, and timeline." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://mcamner.github.io/macos-scripts/hal.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="macos-scripts" />
+  <meta property="og:title" content="MQLaunch HAL | macos-scripts" />
+  <meta property="og:description" content="A local HAL command surface inside mqlaunch for repo status, release readiness, CI, doctor summaries, memory, and safe planning." />
+  <meta property="og:url" content="https://mcamner.github.io/macos-scripts/hal.html" />
+  <meta property="og:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
+  <meta property="og:image:alt" content="MQLaunch terminal menu preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MQLaunch HAL | macos-scripts" />
+  <meta name="twitter:description" content="Local HAL controls inside MQLaunch for status, release readiness, quality audit, CI, memory, and safe planning." />
+  <meta name="twitter:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
+  <style>
+    :root {
+      --bg: #070a0c;
+      --panel: #10151a;
+      --panel-2: #0c1115;
+      --text: #eef6f0;
+      --muted: #a8b8ae;
+      --line: #25313a;
+      --accent: #55e08a;
+      --accent-2: #7dd3fc;
+      --warn: #f2b35e;
+      --mono: Menlo, Monaco, Consolas, "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, #0b1114 0%, var(--bg) 58%, #050708 100%);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      background: rgba(7, 10, 12, .82);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .brand {
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--muted);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+      gap: 28px;
+      align-items: center;
+      padding: 64px 0 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(85, 224, 138, .28);
+      border-radius: 8px;
+      color: var(--accent);
+      background: rgba(85, 224, 138, .08);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .04em;
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(40px, 7vw, 76px);
+      line-height: .97;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .lead {
+      max-width: 680px;
+      font-size: clamp(17px, 2vw, 21px);
+      color: #d8e7dd;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 15px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: #121a1f;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .btn.primary {
+      border-color: transparent;
+      background: var(--accent);
+      color: #041007;
+    }
+
+    .terminal {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: var(--panel-2);
+      box-shadow: 0 20px 60px rgba(0,0,0,.38);
+      overflow: hidden;
+    }
+
+    .term-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: #101820;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .dot.r { background: #fb7185; }
+    .dot.y { background: #fbbf24; }
+    .dot.g { background: #34d399; }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow: auto;
+      color: #d1fae5;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.62;
+      white-space: pre;
+    }
+
+    section {
+      padding: 34px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      min-height: 164px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      padding: 18px;
+      background: rgba(16, 21, 26, .84);
+    }
+
+    .tag {
+      display: inline-flex;
+      margin-bottom: 10px;
+      padding: 3px 7px;
+      border: 1px solid rgba(125, 211, 252, .22);
+      border-radius: 8px;
+      color: var(--accent-2);
+      background: rgba(125, 211, 252, .07);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    .list span {
+      display: block;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 8px;
+      background: #0b1014;
+      color: #d8e7dd;
+    }
+
+    footer {
+      margin-top: 36px;
+      padding: 34px 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .split,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="./index.html">macos-scripts</a>
+      <nav class="nav-links" aria-label="HAL navigation">
+        <a href="./case.html">Case study</a>
+        <a href="./hal-gallery.md">Gallery docs</a>
+        <a href="https://github.com/MCamner/macos-scripts">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <div>
+        <div class="eyebrow">macos-scripts v0.4.9 · HAL command surface</div>
+        <h1>Local HAL controls inside MQLaunch.</h1>
+        <p class="lead">
+          <code>mqlaunch hal</code> brings local status, release readiness, repo quality,
+          CI checks, doctor summaries, fix planning, and session memory into one terminal menu.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/MCamner/macos-scripts#quick-start">Install macos-scripts</a>
+          <a class="btn" href="./hal-gallery.md">Read gallery docs</a>
+        </div>
+      </div>
+
+      <div class="terminal" aria-label="MQLaunch HAL menu preview">
+        <div class="term-top">
+          <span class="dot r"></span>
+          <span class="dot y"></span>
+          <span class="dot g"></span>
+        </div>
+<pre>MQ HAL
+
+OBSERVE
+────────────────────────────────────────────────────────────
+  1) Brief                  2) Audit
+  3) Release Brief          4) Repo Status
+  5) CI Status              6) Doctor Summary
+  7) Timeline               8) Timeline + details
+
+PLAN
+────────────────────────────────────────────────────────────
+  9) Fix Doctor Plan
+
+MEMORY
+────────────────────────────────────────────────────────────
+ 10) Session Memory        11) Last Memory Item
+ 12) Remember Note
+
+DEBUG
+────────────────────────────────────────────────────────────
+ 13) Repos                 14) Raw Intent
+ 15) Free Prompt           16) Memory Path
+
+hal&gt;</pre>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>Command Groups</h2>
+          <p>The HAL surface is grouped by intent: observe, plan, memory, and debug.</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <span class="tag">Observe</span>
+          <h3>Status without risk</h3>
+          <p>Brief, Audit, Release Brief, Repo Status, CI Status, Doctor Summary, and Timeline.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Plan</span>
+          <h3>Safe next steps</h3>
+          <p>Fix Doctor Plan creates manual copy-paste recommendations. It does not execute repairs.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Memory</span>
+          <h3>Local session memory</h3>
+          <p>Session, Last, Remember Note, and Memory Path use local HAL memory.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Debug</span>
+          <h3>Routing visibility</h3>
+          <p>Repos, Raw Intent, Free Prompt, and CD helper expose the HAL routing layer.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Bridge</span>
+          <h3>Thin by design</h3>
+          <p><code>mqlaunch</code> owns UX. <code>mq-hal</code> owns the logic. The bridge delegates only.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Guardrails</span>
+          <h3>Layout protected</h3>
+          <p>Smoke tests guard <code>surface_*</code> layout, command coverage, docs, and file formatting.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="split">
+        <div>
+          <h2>Common Commands</h2>
+          <p>These commands stay local and favor observation before planning.</p>
+          <div class="list" aria-label="Common HAL commands">
+            <span>mqlaunch hal brief</span>
+            <span>mqlaunch hal audit</span>
+            <span>mqlaunch hal release-brief</span>
+            <span>mqlaunch hal repo-status</span>
+            <span>mqlaunch hal ci</span>
+            <span>mqlaunch hal doctor</span>
+            <span>mqlaunch hal fix-doctor</span>
+          </div>
+        </div>
+
+        <div class="terminal" aria-label="HAL command examples">
+          <div class="term-top">
+            <span class="dot r"></span>
+            <span class="dot y"></span>
+            <span class="dot g"></span>
+          </div>
+<pre>$ mqlaunch hal audit
+HAL Audit
+=========
+Publish readiness, README quality, docs signals,
+and a safe recommendation.
+
+$ mqlaunch hal release-brief
+Release readiness without changing the repo.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      MQLaunch HAL · <a href="./hal-command-surface.md">Command surface</a> · <a href="./hal-gallery.md">Gallery docs</a> · <a href="https://github.com/MCamner/macos-scripts">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -242,6 +242,18 @@ Includes the grouped HAL menu layout, command groups, and layout contract.
 
 ---
 
+## HAL Pages
+
+Visual HAL overview page:
+
+```text
+docs/hal.html
+```
+
+Shows the grouped HAL command surface for GitHub Pages.
+
+---
+
 ## HAL bridge
 
 ### HAL Menu

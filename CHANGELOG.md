@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.9] - 2026-05-19
+
+### Added
+
+- Added `docs/hal.html` as a GitHub Pages overview for the MQLaunch HAL command surface.
+- Linked the HAL overview from existing Pages docs.
+- Added HAL Pages smoke test.
+- Linked HAL overview from README and command reference.
+
 ## [0.4.8] - 2026-05-19
 
 ### Added
