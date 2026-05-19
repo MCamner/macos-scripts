@@ -229,6 +229,19 @@ Includes command groups, backend mapping, safety model, and release checklist.
 
 ---
 
+## HAL Gallery
+
+Visual HAL menu reference:
+
+```text
+docs/hal-gallery.md
+docs/hal-menu-preview.txt
+```
+
+Includes the grouped HAL menu layout, command groups, and layout contract.
+
+---
+
 ## HAL bridge
 
 ### HAL Menu

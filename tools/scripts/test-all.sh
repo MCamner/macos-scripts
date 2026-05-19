@@ -13,6 +13,7 @@ echo "== Running HAL menu checks =="
 "$PROJECT_ROOT/tests/hal-menu-layout-smoke.sh"
 "$PROJECT_ROOT/tests/hal-command-surface-smoke.sh"
 "$PROJECT_ROOT/tests/hal-format-smoke.sh"
+"$PROJECT_ROOT/tests/hal-gallery-smoke.sh"
 
 echo
 echo "== Running mqlaunch v1 checks =="

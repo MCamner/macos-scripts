@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.8] - 2026-05-19
+
+### Added
+
+- Added `docs/hal-gallery.md` as a visual reference for the MQLaunch HAL menu.
+- Added `docs/hal-menu-preview.txt` with a plain text menu preview.
+- Added HAL gallery smoke test.
+- Linked HAL gallery docs from README and command reference.
+
 ## [0.4.7] - 2026-05-19
 
 ### Added

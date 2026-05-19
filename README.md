@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-0.4.7-blue)
+![Version](https://img.shields.io/badge/version-0.4.8-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -137,6 +137,8 @@ mqlaunch demo                    # guided demo
 👉 **Full command reference:** [docs/COMMANDS.md](docs/COMMANDS.md)
 
 HAL command surface: [docs/hal-command-surface.md](docs/hal-command-surface.md)
+
+HAL gallery: [docs/hal-gallery.md](docs/hal-gallery.md)
 
 ---
 

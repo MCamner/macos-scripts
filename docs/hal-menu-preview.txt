@@ -1,0 +1,32 @@
+╔════════════════════════════════════════════════════════════╗
+║ MQ HAL                                                     ║
+║ Local command intelligence · Ollama · mq-hal · memory      ║
+╚════════════════════════════════════════════════════════════╝
+
+OBSERVE
+────────────────────────────────────────────────────────────
+  1) Brief                  2) Audit
+  3) Release Brief          4) Repo Status
+  5) CI Status              6) Doctor Summary
+  7) Timeline               8) Timeline + details
+
+PLAN
+────────────────────────────────────────────────────────────
+  9) Fix Doctor Plan
+
+MEMORY
+────────────────────────────────────────────────────────────
+ 10) Session Memory        11) Last Memory Item
+ 12) Remember Note
+
+DEBUG
+────────────────────────────────────────────────────────────
+ 13) Repos                 14) Raw Intent
+ 15) Free Prompt           16) Memory Path
+
+  b) Back                  x) Exit launcher
+
+╭─ HAL PROMPT ───────────────────────────────────────────────╮
+│ number = run action · h = help · q = back                  │
+│ hal>                                                       │
+╰────────────────────────────────────────────────────────────╯
