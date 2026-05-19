@@ -156,6 +156,7 @@ zsh -n terminal/launchers/mqlaunch.sh
 ./tests/hal-menu-smoke.sh
 ./tests/hal-menu-layout-smoke.sh
 ./tests/hal-command-surface-smoke.sh
+./tests/hal-format-smoke.sh
 
 mqlaunch hal help
 mqlaunch hal audit --sample
@@ -179,6 +180,7 @@ A HAL bridge/menu change is complete when:
 bridge route exists
 menu item exists if interactive
 layout smoke test passes
+format smoke test passes
 command surface docs updated
 README references command surface
 COMMANDS.md references command surface
