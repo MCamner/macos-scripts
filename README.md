@@ -136,6 +136,8 @@ mqlaunch demo                    # guided demo
 
 👉 **Full command reference:** [docs/COMMANDS.md](docs/COMMANDS.md)
 
+HAL command surface: [docs/hal-command-surface.md](docs/hal-command-surface.md)
+
 ---
 
 ## 🤖 AI assistant

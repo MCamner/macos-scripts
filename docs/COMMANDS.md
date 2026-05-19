@@ -217,6 +217,18 @@ In any submenu prompt, type:
 
 ---
 
+## HAL Command Surface
+
+Full HAL bridge/menu reference:
+
+```text
+docs/hal-command-surface.md
+```
+
+Includes command groups, backend mapping, safety model, and release checklist.
+
+---
+
 ## HAL bridge
 
 ### HAL Menu

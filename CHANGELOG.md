@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Added `docs/hal-command-surface.md` for the full MQLaunch HAL command surface.
+- Added smoke test for HAL command surface documentation.
+- Linked HAL command surface docs from README and command reference.
+
 ## [0.4.6] - 2026-05-18
 
 ### Added

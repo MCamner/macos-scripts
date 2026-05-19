@@ -160,7 +160,7 @@ mq_hal_menu_main() {
 
     case "$choice" in
       1)  "$MQ_HAL_BIN" brief;              _hal_pause_enter ;;
-      2)  "$MQ_HAL_BIN" audit;              _hal_pause_enter ;;
+      2|a|audit) "$MQ_HAL_BIN" audit;       _hal_pause_enter ;;
       3)  "$MQ_HAL_BIN" release-brief;      _hal_pause_enter ;;
       4)  "$MQ_HAL_BIN" repo-status;        _hal_pause_enter ;;
       5)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;

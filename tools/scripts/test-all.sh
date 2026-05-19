@@ -8,6 +8,12 @@ echo "== Running mqlaunch legacy/bridge checks =="
 "$ROOT/test-mqlaunch.sh"
 
 echo
+echo "== Running HAL menu checks =="
+"$PROJECT_ROOT/tests/hal-menu-smoke.sh"
+"$PROJECT_ROOT/tests/hal-menu-layout-smoke.sh"
+"$PROJECT_ROOT/tests/hal-command-surface-smoke.sh"
+
+echo
 echo "== Running mqlaunch v1 checks =="
 bash "$ROOT/test-mqlaunch-v1.sh"
 
