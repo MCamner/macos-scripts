@@ -299,17 +299,17 @@ mqlaunch demo
 
 ## 🖼️ Screenshots
 
+### Release Menu
+
+![Release menu screenshot](docs/screenshots/readme-release-menu.svg)
+
+### Performance Hub
+
+![Performance hub screenshot](docs/screenshots/readme-performance-hub.svg)
+
 ### Main Menu
 
-![Main menu screenshot](docs/screenshots/main-menu.png)
-
-### Performance Menu
-
-![Performance menu screenshot](docs/screenshots/performance-menu.png)
-
-### Release Flow
-
-![Release flow screenshot](docs/screenshots/release-flow.png)
+![Main menu screenshot](docs/screenshots/readme-main-menu.svg)
 
 ---
 

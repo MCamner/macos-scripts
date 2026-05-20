@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1782" height="1096" viewBox="0 0 1782 1096">
+  <rect width="1782" height="1096" fill="#2f6bbe"/>
+  <g font-family="Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="38" fill="#f4f6ff">
+    <rect x="18" y="31" width="1747" height="100" fill="none" stroke="#5cf2ff" stroke-width="4"/>
+    <rect x="26" y="39" width="1731" height="84" fill="none" stroke="#5cf2ff" stroke-width="4"/>
+    <text x="55" y="92" fill="#70ff62" font-weight="700">READY</text>
+    <text x="188" y="92" fill="#9fb3d8">// polished branded command surface stable</text>
+
+    <rect x="21" y="219" width="1739" height="646" fill="none" stroke="#f4f6ff" stroke-width="4"/>
+    <rect x="56" y="192" width="370" height="54" fill="#2f6bbe"/>
+    <text x="76" y="230">Performance Hub</text>
+    <text x="53" y="276">Health Score: </text>
+    <text x="361" y="276" fill="#63e6ea">80/100</text>
+    <text x="521" y="276"> (Good)</text>
+
+    <text x="53" y="368">MONITORING</text>
+    <text x="53" y="414">1. Overview</text>
+    <text x="913" y="414">2. Detailed Health</text>
+    <text x="53" y="460">3. Top CPU</text>
+    <text x="913" y="460">4. Top Memory</text>
+    <text x="53" y="506">5. Disk Usage</text>
+    <text x="913" y="506">6. Network Overview</text>
+    <text x="53" y="552">7. Battery Status</text>
+
+    <text x="53" y="644">TOOLS</text>
+    <text x="53" y="690">8. Create Snapshot</text>
+    <text x="913" y="690">9. Quick Watch</text>
+    <text x="53" y="736">10. MQ Scan</text>
+    <text x="913" y="736">b. Back</text>
+
+    <text x="53" y="828">Signals: Load 2,522,632,58 | Disk 35% | Batt 4%</text>
+
+    <line x1="7" y1="911" x2="1775" y2="911" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="10" y="966">mqlaunch &gt;</text>
+    <line x1="7" y1="1001" x2="1775" y2="1001" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="10" y="1057" fill="#63e6ea">&gt;&gt; option, mqlaunch command, shell command, or x to exit</text>
+  </g>
+</svg>

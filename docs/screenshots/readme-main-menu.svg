@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1778" height="2048" viewBox="0 0 1778 2048">
+  <rect width="1778" height="2048" fill="#2f6bbe"/>
+  <g font-family="Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="38" fill="#f4f6ff">
+    <rect x="18" y="34" width="1740" height="966" fill="none" stroke="#f4f6ff" stroke-width="4"/>
+    <rect x="56" y="7" width="234" height="54" fill="#2f6bbe"/>
+    <text x="74" y="44">Main Menu</text>
+    <text x="53" y="90">Host: Zephyr   User: mansys   Mode: Main   Git: Clean</text>
+
+    <text x="53" y="182">CORE</text>
+    <text x="53" y="228">1. Workflows</text>
+    <text x="912" y="228">2. System</text>
+    <text x="53" y="274">3. Git</text>
+    <text x="912" y="274">4. Release</text>
+    <text x="53" y="320">5. Dev</text>
+    <text x="912" y="320">6. Help</text>
+    <text x="53" y="366">7. Document functions</text>
+    <text x="912" y="366">8. Workspace</text>
+    <text x="53" y="412">9. MQ HAL</text>
+
+    <text x="53" y="504">QUICK ACCESS</text>
+    <text x="53" y="550">p. Performance</text>
+    <text x="912" y="550">n. Network</text>
+    <text x="53" y="596">h. Health Check</text>
+    <text x="912" y="596">a. HAL</text>
+    <text x="53" y="642">r. REPL</text>
+    <text x="912" y="642">z. Restart mqlaunch</text>
+
+    <text x="53" y="734">COMMANDS</text>
+    <text x="53" y="780">/review</text>
+    <text x="912" y="780">/ui</text>
+    <text x="53" y="826">/ask "your question"</text>
+    <text x="912" y="826">/chat</text>
+    <text x="53" y="872">/doctor</text>
+    <text x="912" y="872">/scan  /atlas</text>
+
+    <text x="53" y="964">Status: ready</text>
+
+    <rect x="18" y="1092" width="1740" height="507" fill="none" stroke="#f4f6ff" stroke-width="4"/>
+    <rect x="74" y="1066" width="390" height="54" fill="#2f6bbe"/>
+    <text x="74" y="1102">Command Surface v3</text>
+    <text x="53" y="1148">Welcome back mansys!</text>
+    <text x="912" y="1148">Tips: Run help to see index</text>
+    <text x="53" y="1194">Mode: Interactive</text>
+    <text x="912" y="1194">Git: Clean</text>
+
+    <text x="272" y="1312" fill="#63d8e8" font-size="76">▟▀▜</text>
+    <text x="492" y="1312" fill="#f05cff" font-size="76">▟▀▜</text>
+    <text x="272" y="1376" fill="#63d8e8" font-size="76">▙▄▟</text>
+    <text x="492" y="1376" fill="#f05cff" font-size="76">▙▄▟</text>
+    <text x="272" y="1440" fill="#63d8e8" font-size="76">▟▄▙</text>
+    <text x="492" y="1440" fill="#f05cff" font-size="76">▟▄▙</text>
+
+    <text x="912" y="1332">System: Stable</text>
+    <text x="912" y="1378">Repo: macos-scripts</text>
+    <text x="912" y="1424">Activity: Monitoring</text>
+    <text x="53" y="1516">Host: Zephyr</text>
+    <text x="53" y="1562">Time: 2026-05-20 02:43:00</text>
+    <text x="912" y="1516">User: mansys</text>
+    <text x="912" y="1562">X. Exit launcher</text>
+
+    <line x1="5" y1="1645" x2="1772" y2="1645" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="8" y="1700">mqlaunch &gt;</text>
+    <rect x="250" y="1663" width="22" height="45" fill="#eaf3ff"/>
+    <line x1="5" y1="1736" x2="1772" y2="1736" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="8" y="1791" fill="#63e6ea">&gt;&gt; option, mqlaunch command, shell command, or x to exit</text>
+  </g>
+</svg>

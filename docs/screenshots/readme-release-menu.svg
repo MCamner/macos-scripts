@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1779" height="1257" viewBox="0 0 1779 1257">
+  <rect width="1779" height="1257" fill="#2f6bbe"/>
+  <g font-family="Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="38" fill="#f4f6ff">
+    <rect x="23" y="50" width="1739" height="874" fill="none" stroke="#f4f6ff" stroke-width="4"/>
+    <rect x="40" y="23" width="210" height="54" fill="#2f6bbe"/>
+    <text x="78" y="60" font-size="38">Release</text>
+
+    <text x="56" y="106">Host: Zephyr   User: mansys   Mode: Release   Git: Clean</text>
+    <text x="56" y="198">Repo: /Users/mansys/macos-scripts</text>
+
+    <text x="56" y="290">CHECKS</text>
+    <text x="56" y="336">1. Release status</text>
+    <text x="914" y="336">2. Change repo</text>
+    <text x="56" y="382">3. Initialize files</text>
+    <text x="914" y="382">4. Dry run release</text>
+    <text x="56" y="428">12. Repo Signal Check</text>
+
+    <text x="56" y="520">SHIP</text>
+    <text x="56" y="566">5. Run release</text>
+    <text x="914" y="566">6. Create GitHub release</text>
+    <text x="56" y="612">11. Auto release</text>
+    <text x="914" y="612">b. Back</text>
+
+    <text x="56" y="704">REFERENCE</text>
+    <text x="56" y="750">7. View changelog</text>
+    <text x="914" y="750">8. Show latest tags</text>
+    <text x="56" y="796">9. Open changelog</text>
+    <text x="914" y="796">10. Open release script</text>
+
+    <text x="56" y="888">Status: ready  (v0.4.11)</text>
+
+    <line x1="9" y1="1062" x2="1774" y2="1062" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="14" y="1119" fill="#ff75ff" font-weight="700">release &gt;</text>
+    <line x1="9" y1="1154" x2="1774" y2="1154" stroke="#f4f6ff" stroke-width="4"/>
+    <text x="14" y="1210">&gt;&gt; option, mqlaunch command, shell command, or x to exit</text>
+  </g>
+</svg>
