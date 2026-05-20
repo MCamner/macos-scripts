@@ -1,30 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>macos-scripts | macOS CLI workflows and mqlaunch toolkit</title>
-  <meta name="description" content="macos-scripts is a modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, and repeatable system checks." />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>macos-scripts | Structured macOS CLI workflows</title>
+  <meta name="description" content="macos-scripts is a modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, HAL status, and repeatable system checks." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://mcamner.github.io/macos-scripts/" />
-  <link rel="preload" as="image" href="mqlaunch.png" />
+  <link rel="preload" as="image" href="screenshots/hal-menu.png" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="macos-scripts" />
-  <meta property="og:title" content="macos-scripts | macOS CLI workflows and mqlaunch toolkit" />
-  <meta property="og:description" content="Turn scattered shell commands into structured macOS workflows with mqlaunch, diagnostics, automation scripts, and terminal tooling." />
+  <meta property="og:title" content="macos-scripts | Structured macOS CLI workflows" />
+  <meta property="og:description" content="Turn scattered shell commands into structured macOS workflows with mqlaunch, diagnostics, automation scripts, HAL, and terminal tooling." />
   <meta property="og:url" content="https://mcamner.github.io/macos-scripts/" />
-  <meta property="og:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
-  <meta property="og:image:alt" content="macos-scripts mqlaunch terminal interface preview" />
+  <meta property="og:image" content="https://mcamner.github.io/macos-scripts/screenshots/hal-menu.png" />
+  <meta property="og:image:alt" content="MQLaunch HAL terminal command surface preview" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="macos-scripts | macOS CLI workflows and mqlaunch toolkit" />
-  <meta name="twitter:description" content="A modular macOS CLI toolkit for structured terminal workflows, diagnostics, automation, and system checks." />
-  <meta name="twitter:image" content="https://mcamner.github.io/macos-scripts/mqlaunch.png" />
+  <meta name="twitter:title" content="macos-scripts | Structured macOS CLI workflows" />
+  <meta name="twitter:description" content="A modular macOS CLI toolkit for structured terminal workflows, diagnostics, HAL, automation, and system checks." />
+  <meta name="twitter:image" content="https://mcamner.github.io/macos-scripts/screenshots/hal-menu.png" />
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareSourceCode",
       "name": "macos-scripts",
-      "description": "A modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, and repeatable system checks.",
+      "description": "A modular macOS CLI toolkit built around mqlaunch for structured terminal workflows, diagnostics, automation, HAL status, and repeatable system checks.",
       "codeRepository": "https://github.com/MCamner/macos-scripts",
       "programmingLanguage": ["Shell", "Zsh", "Bash"],
       "operatingSystem": "macOS",
@@ -34,269 +34,455 @@
   </script>
   <style>
     :root {
-      --bg: #0b0f10;
-      --panel: #11161a;
-      --text: #d7fbe8;
-      --muted: #8fbfa7;
-      --accent: #39ff88;
-      --border: #1f2a30;
+      --bg: #070a0c;
+      --panel: #10151a;
+      --panel-2: #0c1115;
+      --text: #eef6f0;
+      --muted: #a8b8ae;
+      --line: #25313a;
+      --accent: #55e08a;
+      --accent-2: #7dd3fc;
+      --warn: #f2b35e;
+      --mono: Menlo, Monaco, Consolas, "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #132026 0%, var(--bg) 55%);
       color: var(--text);
-      font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
-
-    .window {
-      width: 100%;
-      max-width: 900px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-    }
-
-    .titlebar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border);
-      background: #0f1418;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #2b3a42;
-    }
-
-    .titlebar span {
-      margin-left: 8px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .content {
-      padding: 32px;
-    }
-
-    .prompt {
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 40px;
-      line-height: 1.1;
-    }
-
-    p {
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.7;
-      margin: 0 0 20px;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 28px;
-    }
-
-    a.button {
-      display: inline-block;
-      padding: 12px 18px;
-      border: 1px solid var(--accent);
-      border-radius: 10px;
-      color: var(--bg);
-      background: var(--accent);
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    a.button.secondary {
-      background: transparent;
-      color: var(--accent);
-    }
-
-    .code {
-      margin-top: 28px;
-      padding: 18px;
-      background: #0a0e11;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      white-space: pre-wrap;
-    }
-
-    .preview {
-      display: block;
-      width: 100%;
-      margin-top: 28px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 28px;
-    }
-
-    .feature {
-      padding: 16px;
-      background: #0a0e11;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .feature h2 {
-      margin: 0 0 8px;
-      color: var(--text);
-      font-size: 16px;
-      line-height: 1.3;
-    }
-
-    .feature p {
-      margin: 0;
-      font-size: 14px;
+      background:
+        linear-gradient(180deg, #0b1114 0%, var(--bg) 58%, #050708 100%);
+      font-family: var(--sans);
       line-height: 1.6;
     }
 
-    .feature.hal-feature {
-      grid-column: span 2;
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
     }
 
-    .feature-image {
-      display: block;
-      width: 100%;
-      margin-top: 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      background: rgba(7, 10, 12, .82);
+      backdrop-filter: blur(12px);
     }
 
-    .links {
+    .nav {
       display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-
-    .links a {
-      color: var(--accent);
-    }
-
-    footer {
-      margin-top: 26px;
-      color: var(--muted);
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      font-family: var(--mono);
       font-size: 13px;
     }
 
-    @media (max-width: 640px) {
-      h1 {
-        font-size: 30px;
-      }
+    .brand {
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
 
-      .content {
-        padding: 22px;
-      }
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--muted);
+    }
 
-      .features {
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+      gap: 28px;
+      align-items: center;
+      padding: 64px 0 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(85, 224, 138, .28);
+      border-radius: 8px;
+      color: var(--accent);
+      background: rgba(85, 224, 138, .08);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .04em;
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(42px, 7vw, 78px);
+      line-height: .97;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: var(--mono);
+      color: #d1fae5;
+    }
+
+    .lead {
+      max-width: 680px;
+      font-size: clamp(17px, 2vw, 21px);
+      color: #d8e7dd;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 15px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: #121a1f;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .btn.primary {
+      border-color: transparent;
+      background: var(--accent);
+      color: #041007;
+    }
+
+    .screenshot {
+      width: 100%;
+      display: block;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.34);
+      background: #050708;
+    }
+
+    section {
+      padding: 34px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      padding: 18px;
+      background: rgba(16, 21, 26, .84);
+    }
+
+    .card p {
+      font-size: 15px;
+    }
+
+    .tag {
+      display: inline-flex;
+      margin-bottom: 10px;
+      padding: 3px 7px;
+      border: 1px solid rgba(125, 211, 252, .22);
+      border-radius: 8px;
+      color: var(--accent-2);
+      background: rgba(125, 211, 252, .07);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .flow {
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      min-height: 180px;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      color: #041007;
+      background: var(--accent);
+      font-family: var(--mono);
+      font-weight: 800;
+    }
+
+    .code {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 8px;
+      background: #0b1014;
+      color: #d1fae5;
+      font-family: var(--mono);
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .screens {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .screen-card img {
+      width: 100%;
+      display: block;
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      background: #050708;
+    }
+
+    .docs-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    footer {
+      margin-top: 36px;
+      padding: 34px 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .grid,
+      .screens,
+      .docs-grid {
         grid-template-columns: 1fr;
       }
 
-      .feature.hal-feature {
-        grid-column: auto;
+      .section-head {
+        display: block;
       }
     }
   </style>
 </head>
+
 <body>
-  <main class="window">
-    <div class="titlebar">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <span>macos-scripts / live preview</span>
-    </div>
-
-    <section class="content">
-      <div class="prompt">$ mqlaunch</div>
-      <h1>macos-scripts</h1>
-      <p>
-        A modular macOS CLI toolkit for turning scattered shell commands into structured workflows.
-        The project centers on <strong>mqlaunch</strong>, a single terminal entrypoint for diagnostics,
-        automation, system checks, developer utilities, and repeatable local operations.
-      </p>
-
-      <div class="buttons">
-        <a class="button" href="case.html">View Case Study</a>
-        <a class="button secondary" href="hal.html">Open HAL Overview</a>
-        <a class="button secondary" href="mac-terminal-guide.html">Open Terminal Guide</a>
-        <a class="button secondary" href="https://github.com/MCamner/macos-scripts">View Repository</a>
-      </div>
-
-      <img class="preview" src="mqlaunch.png" alt="mqlaunch terminal menu from the macos-scripts CLI toolkit" width="1832" height="596" />
-
-      <div class="features" aria-label="macos-scripts features">
-        <article class="feature">
-          <h2>Structured workflows</h2>
-          <p>Run system, dev, performance, tools, and release workflows from one discoverable command surface.</p>
-        </article>
-        <article class="feature">
-          <h2>macOS diagnostics</h2>
-          <p>Use doctor, mission-control, network checks, and debug bundles to inspect local environment health.</p>
-        </article>
-        <article class="feature">
-          <h2>Terminal reference</h2>
-          <p>Browse a searchable macOS terminal guide for commands, keyboard shortcuts, and shell patterns.</p>
-        </article>
-        <article class="feature">
-          <h2>HAL command surface</h2>
-          <p>Explore the local HAL menu for audit, release readiness, CI, repo status, memory, and safe planning.</p>
-        </article>
-        <article class="feature hal-feature">
-          <h2>HAL menu preview</h2>
-          <p>See the grouped HAL command surface before running it locally.</p>
-          <a href="hal.html">
-            <img class="feature-image" src="screenshots/hal-menu.png" alt="HAL menu screenshot showing MQLaunch local command controls" width="1280" height="760" />
-          </a>
-        </article>
-      </div>
-
-      <div class="code">> launcher: mqlaunch
-> site: github pages
-> status: online</div>
-
-      <nav class="links" aria-label="Project links">
-        <a href="case.html">CLI case study</a>
-        <a href="hal.html">HAL overview</a>
-        <a href="mac-terminal-guide.html">macOS terminal command guide</a>
-        <a href="https://github.com/MCamner/macos-scripts#quick-start">Install instructions</a>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="./index.html">macos-scripts</a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#start">Start</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="./hal.html">HAL</a>
+        <a href="./case.html">Case</a>
+        <a href="./mac-terminal-guide.html">Guide</a>
+        <a href="https://github.com/MCamner/macos-scripts">GitHub</a>
       </nav>
+    </div>
+  </header>
 
-      <footer>
-        Built for macOS terminal workflows, CLI discoverability, diagnostics, and repeatable shell automation.
-      </footer>
+  <main>
+    <section class="hero wrap" id="top">
+      <div>
+        <div class="eyebrow">macos-scripts v0.4.11 · mqlaunch toolkit</div>
+        <h1>Structured macOS workflows from one terminal entrypoint.</h1>
+        <p class="lead">
+          Turn scattered shell commands into discoverable workflows for diagnostics,
+          performance checks, release readiness, local HAL status, and repeatable operations.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/MCamner/macos-scripts#quick-start">Install</a>
+          <a class="btn" href="./hal.html">Open HAL overview</a>
+          <a class="btn" href="./case.html">Read case study</a>
+        </div>
+      </div>
+
+      <a href="./hal.html" aria-label="Open HAL overview">
+        <img class="screenshot" src="screenshots/hal-menu.png" alt="HAL menu screenshot showing the MQLaunch command surface" width="1280" height="760" />
+      </a>
+    </section>
+
+    <section class="wrap" id="start">
+      <div class="section-head">
+        <div>
+          <h2>Install, run, explore</h2>
+          <p>A short path from first install to the full command surface.</p>
+        </div>
+      </div>
+
+      <div class="grid flow">
+        <article class="card step">
+          <span class="tag">Install</span>
+          <h3>Clone or curl install</h3>
+          <p>Start from the repository and run the installer locally on macOS.</p>
+          <div class="code">git clone https://github.com/MCamner/macos-scripts.git
+cd macos-scripts
+./install.sh</div>
+        </article>
+        <article class="card step">
+          <span class="tag">Run</span>
+          <h3>Check the environment</h3>
+          <p>Doctor checks dependencies and local setup before you explore workflows.</p>
+          <div class="code">mqlaunch doctor
+mqlaunch selftest</div>
+        </article>
+        <article class="card step">
+          <span class="tag">Explore</span>
+          <h3>Open the menu or HAL</h3>
+          <p>Use the interactive launcher or jump directly to the local HAL command surface.</p>
+          <div class="code">mqlaunch
+mqlaunch hal
+mqlaunch release-check</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>What it gives you</h2>
+          <p>mqlaunch organizes repeated terminal work by intent instead of by memory.</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <span class="tag">Workflows</span>
+          <h3>Structured command surface</h3>
+          <p>System, dev, performance, tools, git, release, and help flows live behind one entrypoint.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Diagnostics</span>
+          <h3>Local readiness checks</h3>
+          <p>Doctor, release-check, network tools, debug bundles, and system checks make state visible.</p>
+        </article>
+        <article class="card">
+          <span class="tag">HAL</span>
+          <h3>Observe before acting</h3>
+          <p>HAL surfaces brief, audit, release readiness, CI, repo status, memory, and safe planning.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" id="screenshots">
+      <div class="section-head">
+        <div>
+          <h2>Screenshots</h2>
+          <p>Visual entry points for the main menu, HAL, performance, and release workflows.</p>
+        </div>
+      </div>
+
+      <div class="grid screens">
+        <article class="card screen-card">
+          <span class="tag">HAL</span>
+          <h3>Local command intelligence</h3>
+          <p>Grouped observe, plan, memory, and debug commands.</p>
+          <a href="./hal.html"><img src="screenshots/hal-menu.png" alt="HAL menu screenshot" width="1280" height="760" /></a>
+        </article>
+        <article class="card screen-card">
+          <span class="tag">Main</span>
+          <h3>mqlaunch menu</h3>
+          <p>The primary command surface for everyday workflows.</p>
+          <img src="screenshots/main-menu.png" alt="mqlaunch main menu screenshot" width="1200" height="675" />
+        </article>
+        <article class="card screen-card">
+          <span class="tag">Performance</span>
+          <h3>System visibility</h3>
+          <p>Quick access to resource and performance checks.</p>
+          <img src="screenshots/performance-menu.png" alt="mqlaunch performance menu screenshot" width="1200" height="675" />
+        </article>
+        <article class="card screen-card">
+          <span class="tag">Release</span>
+          <h3>Release readiness</h3>
+          <p>Checks, changelog, tags, and publication flow.</p>
+          <img src="screenshots/release-flow.png" alt="mqlaunch release flow screenshot" width="1200" height="675" />
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>Docs map</h2>
+          <p>The most useful reading paths from the project front door.</p>
+        </div>
+      </div>
+
+      <div class="grid docs-grid">
+        <article class="card">
+          <span class="tag">Case</span>
+          <h3><a href="./case.html">Case study</a></h3>
+          <p>Product and architecture story for the toolkit.</p>
+        </article>
+        <article class="card">
+          <span class="tag">HAL</span>
+          <h3><a href="./hal.html">HAL overview</a></h3>
+          <p>Visual page for the HAL command surface.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Commands</span>
+          <h3><a href="./COMMANDS.md">Command reference</a></h3>
+          <p>Full mqlaunch and HAL command inventory.</p>
+        </article>
+        <article class="card">
+          <span class="tag">Guide</span>
+          <h3><a href="./mac-terminal-guide.html">Terminal guide</a></h3>
+          <p>Searchable macOS terminal reference.</p>
+        </article>
+      </div>
     </section>
   </main>
+
+  <footer>
+    <div class="wrap">
+      macos-scripts · mqlaunch · HAL · <a href="https://github.com/MCamner/macos-scripts">GitHub</a>
+    </div>
+  </footer>
 </body>
 </html>
-
-<!-- GitHub Pages redeploy 2026-04-01 -->

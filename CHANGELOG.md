@@ -4,6 +4,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.11] - 2026-05-20
+
+### Changed
+
+- Reworked `docs/index.html` into a clearer GitHub Pages project front door.
+- Added a visible Install, Run, Explore flow for first-time users.
+- Added a screenshots section covering HAL, main menu, performance, and release workflows.
+- Added a docs map linking the case study, HAL page, command reference, and terminal guide.
+- Updated the GitHub Pages sitemap for the refreshed front door and HAL page.
+
+### Added
+
+- Added Pages index smoke test coverage.
+
 ## [0.4.10] - 2026-05-20
 
 ### Added
