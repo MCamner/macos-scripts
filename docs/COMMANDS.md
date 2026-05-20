@@ -248,9 +248,10 @@ Visual HAL overview page:
 
 ```text
 docs/hal.html
+docs/screenshots/hal-menu.png
 ```
 
-Shows the grouped HAL command surface for GitHub Pages.
+Shows the grouped HAL command surface for GitHub Pages, including a rendered HAL menu screenshot.
 
 ---
 

@@ -179,6 +179,18 @@
       line-height: 1.6;
     }
 
+    .feature.hal-feature {
+      grid-column: span 2;
+    }
+
+    .feature-image {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
     .links {
       display: flex;
       gap: 14px;
@@ -207,6 +219,10 @@
 
       .features {
         grid-template-columns: 1fr;
+      }
+
+      .feature.hal-feature {
+        grid-column: auto;
       }
     }
   </style>
@@ -254,6 +270,13 @@
         <article class="feature">
           <h2>HAL command surface</h2>
           <p>Explore the local HAL menu for audit, release readiness, CI, repo status, memory, and safe planning.</p>
+        </article>
+        <article class="feature hal-feature">
+          <h2>HAL menu preview</h2>
+          <p>See the grouped HAL command surface before running it locally.</p>
+          <a href="hal.html">
+            <img class="feature-image" src="screenshots/hal-menu.png" alt="HAL menu screenshot showing MQLaunch local command controls" width="1280" height="760" />
+          </a>
         </article>
       </div>
 

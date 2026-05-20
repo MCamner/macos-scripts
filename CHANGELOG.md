@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.10] - 2026-05-20
+
+### Added
+
+- Added `docs/screenshots/hal-menu.png` as a rendered HAL menu screenshot.
+- Added the HAL screenshot to `docs/hal.html`.
+- Added a stronger HAL preview card on the GitHub Pages index.
+- Added HAL screenshot smoke test coverage.
+
 ## [0.4.9] - 2026-05-19
 
 ### Added

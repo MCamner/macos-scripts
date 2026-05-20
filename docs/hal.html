@@ -207,6 +207,15 @@
       padding: 34px 0;
     }
 
+    .screenshot {
+      width: 100%;
+      display: block;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.34);
+      background: #050708;
+    }
+
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -303,7 +312,7 @@
   <main>
     <section class="hero wrap">
       <div>
-        <div class="eyebrow">macos-scripts v0.4.9 · HAL command surface</div>
+        <div class="eyebrow">macos-scripts v0.4.10 · HAL command surface</div>
         <h1>Local HAL controls inside MQLaunch.</h1>
         <p class="lead">
           <code>mqlaunch hal</code> brings local status, release readiness, repo quality,
@@ -346,6 +355,16 @@ DEBUG
 
 hal&gt;</pre>
       </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>HAL Menu Screenshot</h2>
+          <p>A rendered preview of the HAL command surface as it appears on the project page.</p>
+        </div>
+      </div>
+      <img class="screenshot" src="screenshots/hal-menu.png" alt="HAL menu screenshot showing the MQLaunch HAL command surface" width="1280" height="760" />
     </section>
 
     <section class="wrap">
