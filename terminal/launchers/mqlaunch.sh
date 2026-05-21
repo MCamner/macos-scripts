@@ -430,6 +430,91 @@ show_date_time() {
 }
 
 # Opens repo browser.
+run_github_repo_picker() {
+  local fzf_bin gh_bin selected action clone_dir
+
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  gh_bin="$(command -v gh 2>/dev/null || true)"
+
+  print_header
+
+  if [[ -z "$gh_bin" ]]; then
+    row_bold "GITHUB REPO PICKER"
+    empty_row
+    row "gh (GitHub CLI) is not installed."
+    row "Install: brew install gh"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  if [[ -z "$fzf_bin" ]]; then
+    row_bold "GITHUB REPO PICKER"
+    empty_row
+    row "fzf is not installed."
+    row "Install: brew install fzf"
+    print_footer
+    pause_enter
+    return 1
+  fi
+
+  row_bold "GITHUB REPO PICKER"
+  empty_row
+  row "Hämtar dina repos från GitHub..."
+  print_footer
+
+  selected="$(
+    "$gh_bin" repo list --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner' 2>/dev/null \
+      | "$fzf_bin" \
+          --reverse \
+          --border \
+          --header='Välj ett GitHub-repo (ESC = avbryt)' \
+          --prompt='repo > ' \
+          --height=70%
+  )"
+
+  [[ -z "$selected" ]] && return 0
+
+  action="$(printf '%s\n' \
+    "Öppna i webbläsaren" \
+    "Klona till ~/repos" \
+    "Klona till ~/repos och öppna i VS Code" \
+    "Klona till ~/repos och öppna i Finder" \
+    | "$fzf_bin" \
+        --reverse \
+        --border \
+        --header="$selected" \
+        --prompt='åtgärd > ' \
+        --height=40%
+  )"
+
+  [[ -z "$action" ]] && return 0
+
+  clone_dir="$HOME/repos"
+  mkdir -p "$clone_dir"
+
+  case "$action" in
+    "Öppna i webbläsaren")
+      "$gh_bin" repo view "$selected" --web
+      ;;
+    "Klona till ~/repos")
+      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
+      row "Klonat till $clone_dir/$(basename "$selected")"
+      ;;
+    "Klona till ~/repos och öppna i VS Code")
+      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
+      code "$clone_dir/$(basename "$selected")" 2>/dev/null || open -a "Visual Studio Code" "$clone_dir/$(basename "$selected")" 2>/dev/null
+      ;;
+    "Klona till ~/repos och öppna i Finder")
+      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
+      open "$clone_dir/$(basename "$selected")"
+      ;;
+  esac
+
+  print_footer
+  pause_enter
+}
+
 open_repo_browser() {
   print_header
   row "OPEN REPO IN BROWSER"
@@ -1416,6 +1501,7 @@ run_arg_command() {
     restart-finder|finder-restart) restart_finder ;;
     date|time) show_date_time ;;
     repo) open_repo_browser ;;
+    hub|github|ghub|gh-search|gh-pick|10) run_github_repo_picker ;;
     ai) open_ai_menu ;;
     dev) open_dev_menu ;;
     tweaks|tweak|tw) open_tweaks_menu ;;

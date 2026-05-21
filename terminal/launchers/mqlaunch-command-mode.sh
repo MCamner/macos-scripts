@@ -472,7 +472,11 @@ dispatch_cli_command() {
       ;;
 
     10|github|hub|ghub|gh-search|gh-pick)
-      "$BASE_DIR/bin/mqlaunch" hub
+      if declare -f run_github_repo_picker >/dev/null; then
+        run_github_repo_picker
+      else
+        "$BASE_DIR/bin/mqlaunch" hub
+      fi
       return 0
       ;;
 
