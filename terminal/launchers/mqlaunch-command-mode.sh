@@ -471,6 +471,11 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    10|github|hub|ghub|gh-search|gh-pick)
+      "$BASE_DIR/bin/mqlaunch" hub
+      return 0
+      ;;
+
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"
