@@ -96,7 +96,7 @@ render_main_menu_panel() {
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
   surface_split_row "7. Document functions" "8. Workspace" "$width" "$panel_color"
-  surface_split_row "9. MQ HAL" "" "$width" "$panel_color"
+  surface_split_row "9. MQ HAL" "10. GitHub" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
@@ -270,6 +270,7 @@ handle_main_menu_choice() {
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
       mq_hal_main
       ;;
+    10) "$BASE_DIR/bin/mqlaunch" hub ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
