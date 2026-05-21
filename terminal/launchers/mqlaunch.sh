@@ -477,6 +477,7 @@ run_github_repo_picker() {
 
   action="$(printf '%s\n' \
     "Öppna i webbläsaren" \
+    "Klona och hoppa in i terminalen" \
     "Klona till ~/repos" \
     "Klona till ~/repos och öppna i VS Code" \
     "Klona till ~/repos och öppna i Finder" \
@@ -492,27 +493,41 @@ run_github_repo_picker() {
 
   clone_dir="$HOME/repos"
   mkdir -p "$clone_dir"
+  local repo_dir="$clone_dir/$(basename "$selected")"
 
   case "$action" in
     "Öppna i webbläsaren")
       "$gh_bin" repo view "$selected" --web
+      print_footer
+      pause_enter
+      ;;
+    "Klona och hoppa in i terminalen")
+      if [[ ! -d "$repo_dir" ]]; then
+        "$gh_bin" repo clone "$selected" "$repo_dir" 2>&1 | tail -3
+      fi
+      cd "$repo_dir" || return 1
+      clear
+      printf "📁 %s\n" "$repo_dir"
       ;;
     "Klona till ~/repos")
-      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
-      row "Klonat till $clone_dir/$(basename "$selected")"
+      "$gh_bin" repo clone "$selected" "$repo_dir" 2>&1 | tail -3
+      row "Klonat till $repo_dir"
+      print_footer
+      pause_enter
       ;;
     "Klona till ~/repos och öppna i VS Code")
-      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
-      code "$clone_dir/$(basename "$selected")" 2>/dev/null || open -a "Visual Studio Code" "$clone_dir/$(basename "$selected")" 2>/dev/null
+      "$gh_bin" repo clone "$selected" "$repo_dir" 2>&1 | tail -3
+      code "$repo_dir" 2>/dev/null || open -a "Visual Studio Code" "$repo_dir" 2>/dev/null
+      print_footer
+      pause_enter
       ;;
     "Klona till ~/repos och öppna i Finder")
-      "$gh_bin" repo clone "$selected" "$clone_dir/$(basename "$selected")" 2>&1 | tail -3
-      open "$clone_dir/$(basename "$selected")"
+      "$gh_bin" repo clone "$selected" "$repo_dir" 2>&1 | tail -3
+      open "$repo_dir"
+      print_footer
+      pause_enter
       ;;
   esac
-
-  print_footer
-  pause_enter
 }
 
 open_repo_browser() {
