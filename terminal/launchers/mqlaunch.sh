@@ -477,6 +477,7 @@ run_github_repo_picker() {
 
   action="$(printf '%s\n' \
     "Öppna i webbläsaren" \
+    "Gå till repo i terminalen" \
     "Klona och hoppa in i terminalen" \
     "Klona till ~/repos" \
     "Klona till ~/repos och öppna i VS Code" \
@@ -500,6 +501,16 @@ run_github_repo_picker() {
       "$gh_bin" repo view "$selected" --web
       print_footer
       pause_enter
+      ;;
+    "Gå till repo i terminalen")
+      if [[ ! -d "$repo_dir" ]]; then
+        printf "Repo saknas lokalt: %s\nKlona först med 'Klona och hoppa in i terminalen'.\n" "$repo_dir"
+        pause_enter
+        return 0
+      fi
+      cd "$repo_dir" || return 1
+      clear
+      printf "📁 %s\n" "$repo_dir"
       ;;
     "Klona och hoppa in i terminalen")
       if [[ ! -d "$repo_dir" ]]; then
