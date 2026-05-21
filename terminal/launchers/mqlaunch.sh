@@ -541,6 +541,127 @@ run_github_repo_picker() {
   esac
 }
 
+# fzf: bläddra git log med diff-preview
+fzf_git_log() {
+  local fzf_bin commit
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Inte i ett git-repo."
+    pause_enter
+    return 1
+  fi
+  commit="$(
+    git log --oneline --color=always | \
+    "$fzf_bin" --ansi --reverse --border \
+      --header='Git commits — Enter för att visa, Ctrl+C för att avbryta' \
+      --prompt='commit > ' \
+      --preview='git show --color=always {1}' \
+      --preview-window=right:60%
+  )"
+  [[ -z "$commit" ]] && return 0
+  git show "$(echo "$commit" | awk '{print $1}')"
+  pause_enter
+}
+
+# fzf: byt git-branch
+fzf_git_branch() {
+  local fzf_bin branch
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Inte i ett git-repo."
+    pause_enter
+    return 1
+  fi
+  branch="$(
+    git branch --all | grep -v HEAD | sed 's/remotes\/origin\///' | sort -u | \
+    "$fzf_bin" --reverse --border \
+      --header='Välj branch att checka ut' \
+      --prompt='branch > '
+  )"
+  [[ -z "$branch" ]] && return 0
+  branch="$(echo "$branch" | xargs)"
+  git checkout "$branch"
+  pause_enter
+}
+
+# fzf: döda processer
+fzf_kill_process() {
+  local fzf_bin selected pid
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  selected="$(
+    ps aux | tail -n +2 | \
+    "$fzf_bin" --multi --reverse --border \
+      --header='Välj process(er) att döda — TAB för flerval' \
+      --prompt='process > '
+  )"
+  [[ -z "$selected" ]] && return 0
+  pid="$(echo "$selected" | awk '{print $2}')"
+  echo "$pid" | xargs kill -9 2>/dev/null
+  echo "Dödade PID: $(echo "$pid" | tr '\n' ' ')"
+  pause_enter
+}
+
+# fzf: döda process på port
+fzf_kill_port() {
+  local fzf_bin selected pid port
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  selected="$(
+    lsof -iTCP -sTCP:LISTEN -n -P 2>/dev/null | tail -n +2 | \
+    "$fzf_bin" --multi --reverse --border \
+      --header='Välj port(ar) att frigöra — TAB för flerval' \
+      --prompt='port > '
+  )"
+  [[ -z "$selected" ]] && return 0
+  pid="$(echo "$selected" | awk '{print $2}')"
+  port="$(echo "$selected" | awk '{print $9}' | cut -d: -f2 | tr '\n' ' ')"
+  echo "$pid" | xargs kill -9 2>/dev/null
+  echo "Frigjorde port(ar): $port"
+  pause_enter
+}
+
+# fzf: kör script från macos-scripts
+fzf_run_snippet() {
+  local fzf_bin selected
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  selected="$(
+    find "$BASE_DIR" -name "*.sh" -not -path "*/.git/*" -not -path "*/backups/*" 2>/dev/null | \
+    sed "s|$BASE_DIR/||" | sort | \
+    "$fzf_bin" --reverse --border \
+      --header='Välj script att köra' \
+      --prompt='script > ' \
+      --preview="bat --color=always '$BASE_DIR/{}' 2>/dev/null || cat '$BASE_DIR/{}'"
+  )"
+  [[ -z "$selected" ]] && return 0
+  print_header
+  row "Kör: $selected"
+  print_footer
+  bash "$BASE_DIR/$selected"
+  pause_enter
+}
+
+# fzf: visa och öppna nyligen ändrade filer
+fzf_recent_files() {
+  local fzf_bin selected search_dir
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+  [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
+  search_dir="${1:-$HOME/repos}"
+  selected="$(
+    find "$search_dir" -type f -not -path "*/.git/*" -newer "$search_dir" -mtime -14 2>/dev/null | \
+    sort | \
+    "$fzf_bin" --reverse --border \
+      --header='Senast ändrade filer (14 dagar) — Enter öppnar' \
+      --prompt='fil > ' \
+      --preview='bat --color=always {} 2>/dev/null || cat {}'
+  )"
+  [[ -z "$selected" ]] && return 0
+  "${EDITOR:-code}" "$selected" 2>/dev/null || open "$selected"
+}
+
 open_repo_browser() {
   print_header
   row "OPEN REPO IN BROWSER"
@@ -1334,6 +1455,13 @@ notes	Show release notes
 check	Run self-check
 bundle	Create debug bundle
 repo	Open repo root in browser
+hub	Repos — sök, klona eller öppna dina GitHub-repos
+git-log	Git commit browser med diff-preview
+git-branch	Byt git-branch med fzf
+kill-process	Döda processer med fzf
+kill-port	Frigör port med fzf
+snippets	Kör ett script från macos-scripts
+recent	Senast ändrade filer — öppna direkt
 hal	Local Ollama command router (mq-hal)
 guide	Open terminal guide
 commands	Show command index
@@ -1528,6 +1656,12 @@ run_arg_command() {
     date|time) show_date_time ;;
     repo) open_repo_browser ;;
     hub|github|ghub|gh-search|gh-pick|10) run_github_repo_picker ;;
+    git-log|gitlog|glog) fzf_git_log ;;
+    git-branch|branch-switch|gbranch) fzf_git_branch ;;
+    kill-process|killp|pkill-fzf) fzf_kill_process ;;
+    kill-port|killport|port-kill) fzf_kill_port ;;
+    snippets|snippet|scripts) fzf_run_snippet ;;
+    recent|recent-files|rf) fzf_recent_files ;;
     ai) open_ai_menu ;;
     dev) open_dev_menu ;;
     tweaks|tweak|tw) open_tweaks_menu ;;
