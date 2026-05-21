@@ -480,6 +480,36 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    git-log|gitlog|glog)
+      declare -f fzf_git_log >/dev/null && fzf_git_log || "$BASE_DIR/bin/mqlaunch" git-log
+      return 0
+      ;;
+
+    git-branch|branch-switch|gbranch)
+      declare -f fzf_git_branch >/dev/null && fzf_git_branch || "$BASE_DIR/bin/mqlaunch" git-branch
+      return 0
+      ;;
+
+    kill-process|killp|pkill-fzf)
+      declare -f fzf_kill_process >/dev/null && fzf_kill_process || "$BASE_DIR/bin/mqlaunch" kill-process
+      return 0
+      ;;
+
+    kill-port|killport|port-kill)
+      declare -f fzf_kill_port >/dev/null && fzf_kill_port || "$BASE_DIR/bin/mqlaunch" kill-port
+      return 0
+      ;;
+
+    snippets|snippet|scripts)
+      declare -f fzf_run_snippet >/dev/null && fzf_run_snippet || "$BASE_DIR/bin/mqlaunch" snippets
+      return 0
+      ;;
+
+    recent|recent-files|rf)
+      declare -f fzf_recent_files >/dev/null && fzf_recent_files || "$BASE_DIR/bin/mqlaunch" recent
+      return 0
+      ;;
+
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"
