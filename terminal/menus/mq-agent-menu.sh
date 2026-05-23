@@ -19,6 +19,9 @@ print_agent_menu() {
   surface_split_row "5. Audit repository" "6. Signal + AI plan" "$width" "$panel_color"
   surface_split_row "7. Release check" "8. Diagnose CI" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
+  surface_row "MCP LOCAL TOOLS  (requires mq-mcp on :8765)" "$width" "$panel_color"
+  surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
   surface_row "ENVIRONMENT" "$width" "$panel_color"
   surface_split_row "9. Doctor" "10. TUI dashboard" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -48,6 +51,8 @@ handle_agent_menu_choice() {
     8) _run_agent fix-ci;     pause_enter ;;
     9) _run_agent doctor;     pause_enter ;;
     10) _run_agent tui ;;
+    11) _run_agent mcp status;  pause_enter ;;
+    12) _run_agent mcp tools;   pause_enter ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac

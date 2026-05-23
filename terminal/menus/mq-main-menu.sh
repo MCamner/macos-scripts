@@ -350,6 +350,9 @@ handle_main_prompt_command() {
     agent\ signal|signal) (cd "$HOME/mq-agent" && uv run mq-agent signal .); pause_enter; return 0 ;;
     agent\ audit|audit) (cd "$HOME/mq-agent" && uv run mq-agent audit .); pause_enter; return 0 ;;
     agent\ doctor|doctor) (cd "$HOME/mq-agent" && uv run mq-agent doctor); pause_enter; return 0 ;;
+    agent\ release-check|release-check) (cd "$HOME/mq-agent" && uv run mq-agent release-check); pause_enter; return 0 ;;
+    agent\ mcp-status|mcp-status) (cd "$HOME/mq-agent" && uv run mq-agent mcp status); pause_enter; return 0 ;;
+    agent\ mcp-tools|mcp-tools) (cd "$HOME/mq-agent" && uv run mq-agent mcp tools); pause_enter; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;
