@@ -103,6 +103,7 @@ render_main_menu_panel() {
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
   surface_split_row "r. REPL" "z. Restart mqlaunch" "$width" "$panel_color"
+  surface_split_row "g. Agent" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -291,6 +292,7 @@ handle_main_menu_choice() {
       ;;
     r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
     z|Z) restart_mqlaunch ;;
+    g|G) open_agent_menu ;;
 
     # EXIT
     x|X)
@@ -343,6 +345,11 @@ handle_main_prompt_command() {
     applications) open_applications_folder; return 0 ;;
     repl|r) "$BASE_DIR/bin/mqlaunch" repl; return 0 ;;
     restart|reload|relaunch|z) restart_mqlaunch; return 0 ;;
+    agent|mq-agent|g) open_agent_menu; return 0 ;;
+    agent\ score|score) (cd "$HOME/mq-agent" && uv run mq-agent score .); pause_enter; return 0 ;;
+    agent\ signal|signal) (cd "$HOME/mq-agent" && uv run mq-agent signal .); pause_enter; return 0 ;;
+    agent\ audit|audit) (cd "$HOME/mq-agent" && uv run mq-agent audit .); pause_enter; return 0 ;;
+    agent\ doctor|doctor) (cd "$HOME/mq-agent" && uv run mq-agent doctor); pause_enter; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;

@@ -166,6 +166,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-help-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-help-menu.sh"
 fi
 
+# mq-agent menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-agent-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-agent-menu.sh"
+fi
+
 # Prints header.
 print_header() {
   clear
