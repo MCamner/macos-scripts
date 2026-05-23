@@ -1,0 +1,65 @@
+name: Quality
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shell-lint:
+    name: Shell syntax check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        run: sudo apt-get install -y zsh
+
+      - name: bash -n on install.sh
+        run: bash -n install.sh
+
+      - name: bash -n on release.sh
+        run: bash -n release.sh
+
+      - name: bash -n on scripts/
+        run: |
+          if [ -d scripts ]; then
+            find scripts -name "*.sh" -print0 | xargs -0 -n1 bash -n
+          fi
+
+      - name: Syntax check all .sh files by shebang (exclude backups/)
+        run: |
+          find . \
+            -name "*.sh" \
+            -not -path "./.git/*" \
+            -not -path "./backups/*" \
+            -print0 \
+          | while IFS= read -r -d '' f; do
+              shebang="$(head -1 "$f")"
+              if [[ "$shebang" == *zsh* ]]; then
+                zsh -n "$f" || { echo "FAIL (zsh -n): $f"; exit 1; }
+              else
+                bash -n "$f" || { echo "FAIL (bash -n): $f"; exit 1; }
+              fi
+            done
+          echo "All .sh files (excl. backups/) pass syntax check"
+
+      - name: shellcheck on bash scripts (warn-only)
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            find . \
+              -name "*.sh" \
+              -not -path "./.git/*" \
+              -not -path "./backups/*" \
+              -print0 \
+            | while IFS= read -r -d '' f; do
+                shebang="$(head -1 "$f")"
+                if [[ "$shebang" != *zsh* ]]; then
+                  shellcheck --severity=error "$f" || true
+                fi
+              done
+          else
+            echo "shellcheck not available, skipping"
+          fi

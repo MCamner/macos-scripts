@@ -4,6 +4,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.12] - 2026-05-23
+
+### Added
+
+- `.github/workflows/quality.yml` — CI shell syntax check: `bash -n` on `install.sh`, `release.sh`, and all `.sh` files; `shellcheck` (warn-only).
+- `scripts/install-smoke.sh` — local install smoke test covering `install.sh --dry-run`, `release.sh` syntax, all `.sh` bash -n, `mqlaunch doctor --json`, and `mqlaunch selftest`.
+- `terminal/menus/mq-agent-menu.sh` — mq-agent submenu with ten commands across repo analysis, AI, and environment groups.
+- `Proof` section in README listing what is verified: dry-run, release validation, JSON health report, selftest, publish gate, HAL read-only commands, and CI syntax coverage.
+
+### Changed
+
+- README version badge bumped to `0.4.12`.
+- Main menu panel: added `g. Agent` quick access slot.
+- `mqlaunch.sh`: sources `mq-agent-menu.sh` when present.
+- `mq-main-menu.sh`: routes `g`/`G` and text aliases (`agent`, `score`, `signal`, `audit`, `doctor`) to mq-agent menu.
+
 ## [0.4.11] - 2026-05-20
 
 ### Changed

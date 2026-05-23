@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-0.4.11-blue)
+![Version](https://img.shields.io/badge/version-0.4.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -12,6 +12,19 @@ Turn scattered shell commands into structured workflows.
 [mcamner.github.io/macos-scripts/case.html](https://mcamner.github.io/macos-scripts/case.html)
 
 Stop memorizing commands. Start running workflows.
+
+---
+
+## Proof
+
+- `install.sh` supports `--dry-run`, `--uninstall`, and `--yes` (non-interactive)
+- `release.sh` validates VERSION, README badge, and CHANGELOG before every release
+- `mqlaunch doctor` supports `--json` output — machine-readable health report
+- `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
+- `mqlaunch release-check` gates every release on a `repo-signal` publish-readiness score
+- HAL bridge supports read-only audit, release brief, repo status, and CI status
+- All `.sh` files pass `bash -n` syntax check — verified by CI and `scripts/install-smoke.sh`
+- GitHub Pages has smoke-test coverage via CI
 
 ---
 
