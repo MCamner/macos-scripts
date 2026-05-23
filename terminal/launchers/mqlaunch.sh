@@ -1688,6 +1688,7 @@ run_arg_command() {
     theme-ice) theme_cmd apply ice ;;
     theme-macos) theme_cmd apply macos ;;
     release|rel) open_release_menu ;;
+    agent|mq-agent|g) run_agent_command "$@" ;;
     workflows|workflow|wf) run_mqworkflows "$@" ;;
     git|git-menu|gitmenu|menu-git) open_git_menu "${1:-}" ;;
     gitlaunch)

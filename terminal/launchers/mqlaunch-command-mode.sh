@@ -85,6 +85,13 @@ Quick commands:
   mqlaunch ui
   mqlaunch ask "your question"
   mqlaunch srm ask "your question"
+  mqlaunch agent
+  mqlaunch agent doctor
+  mqlaunch agent score .
+  mqlaunch agent audit .
+  mqlaunch agent release-check --dry-run
+  mqlaunch agent mcp-status
+  mqlaunch agent mcp-tools
   mqlaunch release-check
   mqlaunch selftest
   mqlaunch version
@@ -460,6 +467,17 @@ dispatch_cli_command() {
       fi
       pause_enter
       return 0
+      ;;
+
+    agent|mq-agent)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command "$@"
+        return $?
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
       ;;
 
     mqlaunch)

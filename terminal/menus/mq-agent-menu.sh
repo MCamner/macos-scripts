@@ -37,6 +37,43 @@ _run_agent() {
   (cd "$MQ_AGENT_BIN" && uv run mq-agent "$@")
 }
 
+# Handles direct mqlaunch agent commands.
+run_agent_command() {
+  local subcmd="${1:-menu}"
+  case "$subcmd" in
+    menu|"")
+      open_agent_menu
+      ;;
+    doctor)
+      shift || true
+      _run_agent doctor "$@"
+      ;;
+    score)
+      shift || true
+      _run_agent score "$@"
+      ;;
+    audit)
+      shift || true
+      _run_agent audit "$@"
+      ;;
+    release-check)
+      shift || true
+      _run_agent release-check "$@"
+      ;;
+    mcp-status)
+      shift || true
+      _run_agent mcp status "$@"
+      ;;
+    mcp-tools)
+      shift || true
+      _run_agent mcp tools "$@"
+      ;;
+    *)
+      _run_agent "$@"
+      ;;
+  esac
+}
+
 # Handles agent menu choice.
 handle_agent_menu_choice() {
   local choice="$1"
