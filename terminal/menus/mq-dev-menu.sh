@@ -18,6 +18,7 @@ print_dev_menu() {
   surface_split_row "9. Net Launch" "10. Themes" "$width" "$panel_color"
   surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
   surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
+  surface_split_row "15. Comment scripts" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -65,6 +66,7 @@ handle_dev_menu_choice() {
       read -r _
       ;;
     14) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
+    15) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
     b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac
