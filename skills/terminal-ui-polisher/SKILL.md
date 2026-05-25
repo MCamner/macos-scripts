@@ -1,6 +1,6 @@
 ---
 name: terminal-ui-polisher
-description: Improve terminal, CLI, TUI, ASCII, ANSI, and command-surface interfaces with focus on clarity, hierarchy, keyboard flow, spacing, status feedback, and product-level polish.
+description: Improve terminal GUI menus, CLI, TUI, ASCII, ANSI, and command-surface interfaces with focus on clarity, hierarchy, keyboard flow, spacing, status feedback, and product-level polish.
 ---
 
 # Terminal UI Polisher
@@ -15,6 +15,7 @@ Use this skill when the user asks to improve:
 
 - CLI menus
 - Terminal dashboards
+- mqlaunch terminal GUI panels built with `surface_*` helpers
 - ASCII/ANSI interfaces
 - Command surfaces
 - Shell launchers
@@ -150,6 +151,53 @@ Avoid:
 - hidden destructive actions
 - output that scrolls too much
 - fragile hardcoded widths unless fallback exists
+
+## mqlaunch menu GUI standard
+
+For macos-scripts, "GUI" usually means a terminal GUI built from the mqlaunch
+surface helpers. Do not design these screens from scratch. Match the current
+menu family.
+
+Reference files:
+
+- `terminal/menus/mq-hal-menu.sh` is the clearest submenu pattern.
+- `terminal/menus/mq-performance-menu.sh` shows status-driven panels.
+- `terminal/menus/mq-main-menu.sh` shows the main command surface.
+- `ui/terminal-ui/mq-ui.sh` owns shared primitives.
+- `tests/hal-menu-layout-smoke.sh` captures the layout contract.
+
+Use this construction pattern:
+
+1. Top of file: sourced guard such as `*_menu_is_sourced`.
+2. Fallback UI loading: source `ui/terminal-ui/mq-ui.sh` only if `surface_top` is unavailable.
+3. Render function: `render_*_panel`.
+4. Header: optional `print_header`, then `surface_panel_header "Title" "Mode" "$width" "$panel_color"`.
+5. Body: `surface_row` for section labels and blank rows, `surface_split_row` for actions.
+6. Navigation row: `b. Back` and `x. Exit launcher`.
+7. Prompt: `read_main_choice "short-label"` when available, with a plain fallback prompt.
+8. Actions: route through existing commands/scripts and call `pause_enter` after visible output.
+9. Footer: standalone execution guard at the bottom.
+
+Layout rules:
+
+- Section names are short uppercase nouns.
+- Menu options stay stable and obvious; aliases should be intentional.
+- Prefer two-column option rows; use one-column rows only for long status or warnings.
+- Keep dynamic status to one or two rows near the top or bottom.
+- Use `surface_terminal_width`; do not hardcode panel widths.
+- Use `surface_panel_color`; do not add local color schemes.
+- Text must fit at 60 columns because `surface_terminal_width` clamps there.
+- If a dependency is missing, render a panel explaining the missing binary and the exact check command.
+- Menus should work sourced from mqlaunch and directly as scripts.
+
+When reviewing a proposed menu, reject it if it:
+
+- uses ad hoc `echo` boxes instead of `surface_*`
+- omits `b. Back` or `x. Exit launcher`
+- bypasses `read_main_choice`
+- duplicates command logic that already lives in a bridge, command, or tool script
+- introduces new visual language that does not match the other menus
+- cannot pass `bash -n`
 
 ## Recommended command-surface structure
 
