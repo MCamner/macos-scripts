@@ -34,7 +34,7 @@ print_agent_menu() {
 
 # Runs an mq-agent command inside the mq-agent project dir.
 _run_agent() {
-  (cd "$MQ_AGENT_BIN" && uv run mq-agent "$@")
+  (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
 # Handles direct mqlaunch agent commands.
