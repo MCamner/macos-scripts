@@ -107,9 +107,9 @@ render_main_menu_panel() {
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
-  surface_split_row "/review" "/ui" "$width" "$panel_color"
   surface_split_row "/ask \"your question\"" "/chat" "$width" "$panel_color"
-  surface_split_row "/doctor" "/scan   /atlas" "$width" "$panel_color"
+  surface_split_row "/doctor" "/scan" "$width" "$panel_color"
+  surface_split_row "mcp-start" "mcp-stop" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -353,6 +353,8 @@ handle_main_prompt_command() {
     agent\ release-check|release-check) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent release-check); pause_enter; return 0 ;;
     agent\ mcp-status|mcp-status) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent mcp status); pause_enter; return 0 ;;
     agent\ mcp-tools|mcp-tools) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent mcp tools); pause_enter; return 0 ;;
+    mcp-start) _mcp_start; pause_enter; return 0 ;;
+    mcp-stop)  _mcp_stop;  pause_enter; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;
