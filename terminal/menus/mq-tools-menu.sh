@@ -31,6 +31,8 @@ fi
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
 OLLAMA_DOCUMENT_REVIEW="$BASE_DIR/tools/scripts/ollama-document-review.py"
+MQ_MCP_REVIEW="$BASE_DIR/tools/scripts/mq-mcp-review.py"
+MQ_MCP_HOME="${MQ_MCP_HOME:-$HOME/mq-mcp}"
 DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
 DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*.bak' --exclude '*/.git/*' --exclude '*/backups/*')
 MQLAUNCH="$BASE_DIR/terminal/launchers/mqlaunch.sh"
@@ -564,6 +566,60 @@ run_ollama_document_review() {
   pause_enter
 }
 
+# Runs mq-mcp review (structured contract-driven review via OpenAI).
+run_mq_mcp_review() {
+  local mode entered_mode deep_flag deep_ans
+
+  print_header
+  row_bold "MQ-MCP REVIEW"
+  empty_row
+  row "Review-only: no files will be modified."
+  row "Requires OPENAI_API_KEY (read from mq-mcp/.env if not set)."
+  row "Default mode: ${MQ_MCP_REVIEW_MODE:-comment}"
+  empty_row
+
+  if [[ ! -f "$MQ_MCP_REVIEW" ]]; then
+    ui_err "Review script missing: $MQ_MCP_REVIEW"
+    pause_enter
+    return 1
+  fi
+
+  if ! select_document_function_targets "review with mq-mcp"; then
+    return 0
+  fi
+
+  empty_row
+  row "Targets:"
+  print_document_function_targets
+  empty_row
+
+  mode="${MQ_MCP_REVIEW_MODE:-comment}"
+  printf '%bMode (comment/security/architecture) [%s]: %b' "${C_TITLE:-}" "$mode" "${C_RESET:-}"
+  read -r entered_mode
+  if [[ "${#entered_mode}" -gt 1 ]]; then
+    mode="$entered_mode"
+  fi
+
+  deep_flag=""
+  printf '%bDeep mode — 3 passes, ~3x API calls [y/N]: %b' "${C_TITLE:-}" "${C_RESET:-}"
+  read -r deep_ans
+  if [[ "$deep_ans" =~ ^[Yy]$ ]]; then
+    deep_flag="--deep"
+  fi
+
+  empty_row
+  row "Running mq-mcp review — mode: $mode${deep_flag:+  deep}"
+  print_footer
+
+  if [[ -x "$MQ_MCP_REVIEW" ]]; then
+    MQ_MCP_HOME="$MQ_MCP_HOME" "$MQ_MCP_REVIEW" --mode "$mode" $deep_flag "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
+  else
+    MQ_MCP_HOME="$MQ_MCP_HOME" python3 "$MQ_MCP_REVIEW" --mode "$mode" $deep_flag "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
+  fi
+
+  pause_enter
+}
+
 # Prints document functions menu.
 print_document_functions_menu() {
   local width panel_color
@@ -579,7 +635,8 @@ print_document_functions_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "UPDATE" "$width" "$panel_color"
   surface_split_row "5. Update selected" "6. Auto comment" "$width" "$panel_color"
-  surface_split_row "7. Ollama review" "b. Back" "$width" "$panel_color"
+  surface_split_row "7. Ollama review" "8. mq-mcp review" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -620,6 +677,7 @@ document_functions_menu_loop() {
       5) run_document_functions_update ;;
       6) auto_document_functions ;;
       7) run_ollama_document_review ;;
+      8) run_mq_mcp_review ;;
       b|B|x|X|exit) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
