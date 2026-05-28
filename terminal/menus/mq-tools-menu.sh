@@ -568,32 +568,23 @@ run_ollama_document_review() {
   pause_enter
 }
 
-# Runs mq-mcp review (structured contract-driven review via OpenAI).
+# Runs mq-mcp review through mq-agent orchestration.
 run_mq_mcp_review() {
-  local mode entered_mode deep_flag deep_ans
+  local mode entered_mode scope
 
   print_header
-  row_bold "MQ-MCP REVIEW"
+  row_bold "MQ-MCP REVIEW VIA MQ-AGENT"
   empty_row
   row "Review-only: no files will be modified."
-  row "Requires OPENAI_API_KEY (read from mq-mcp/.env if not set)."
+  row "mqlaunch delegates to mq-agent; mq-agent calls mq-mcp."
   row "Default mode: ${MQ_MCP_REVIEW_MODE:-comment}"
   empty_row
 
-  if [[ ! -f "$MQ_MCP_REVIEW" ]]; then
-    ui_err "Review script missing: $MQ_MCP_REVIEW"
+  if ! declare -f run_agent_command >/dev/null; then
+    ui_err "mq-agent bridge not loaded."
     pause_enter
     return 1
   fi
-
-  if ! select_document_function_targets "review with mq-mcp"; then
-    return 0
-  fi
-
-  empty_row
-  row "Targets:"
-  print_document_function_targets
-  empty_row
 
   mode="${MQ_MCP_REVIEW_MODE:-comment}"
   printf '%bMode (comment/security/architecture) [%s]: %b' "${C_TITLE:-}" "$mode" "${C_RESET:-}"
@@ -602,22 +593,13 @@ run_mq_mcp_review() {
     mode="$entered_mode"
   fi
 
-  deep_flag=""
-  printf '%bDeep mode — 3 passes, ~3x API calls [y/N]: %b' "${C_TITLE:-}" "${C_RESET:-}"
-  read -r deep_ans
-  if [[ "$deep_ans" =~ ^[Yy]$ ]]; then
-    deep_flag="--deep"
-  fi
+  scope="diff"
 
   empty_row
-  row "Running mq-mcp review — mode: $mode${deep_flag:+  deep}"
+  row "Running mq-agent review $scope $mode"
   print_footer
 
-  if [[ -x "$MQ_MCP_REVIEW" ]]; then
-    MQ_MCP_HOME="$MQ_MCP_HOME" "$MQ_MCP_REVIEW" --mode "$mode" $deep_flag "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
-  else
-    MQ_MCP_HOME="$MQ_MCP_HOME" python3 "$MQ_MCP_REVIEW" --mode "$mode" $deep_flag "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"
-  fi
+  run_agent_command review "$mode"
 
   pause_enter
 }
@@ -701,7 +683,7 @@ print_document_functions_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "UPDATE" "$width" "$panel_color"
   surface_split_row "5. Update selected" "6. Auto comment" "$width" "$panel_color"
-  surface_split_row "7. Ollama review" "8. mq-mcp review" "$width" "$panel_color"
+  surface_split_row "7. Ollama review" "8. mq-agent review" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"

@@ -40,6 +40,79 @@ _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
+# Runs an mq-mcp review through mq-agent's MCP safety gate.
+_run_agent_review() {
+  local scope="diff"
+  local mode="${MQ_MCP_REVIEW_MODE:-comment}"
+  local file=""
+  local passthrough=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      diff|--diff)
+        scope="diff"
+        shift
+        ;;
+      repo|--repo)
+        scope="repo"
+        shift
+        ;;
+      file|--file)
+        scope="file"
+        file="${2:-}"
+        if [[ $# -gt 1 ]]; then
+          shift 2
+        else
+          shift
+        fi
+        ;;
+      --mode)
+        mode="${2:-$mode}"
+        if [[ $# -gt 1 ]]; then
+          shift 2
+        else
+          shift
+        fi
+        ;;
+      comment|security|architecture)
+        mode="$1"
+        shift
+        ;;
+      *)
+        passthrough+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  case "$scope" in
+    repo)
+      _run_agent run-tool review_repo --arg "mode=$mode" "${passthrough[@]}"
+      ;;
+    file)
+      if [[ -z "$file" ]]; then
+        printf "Usage: mqlaunch review file <relative-path> [mode]\n" >&2
+        return 1
+      fi
+      _run_agent run-tool review_file --arg "relative_path=$file" --arg "mode=$mode" "${passthrough[@]}"
+      ;;
+    diff)
+      _run_agent run-tool review_diff --arg "mode=$mode" "${passthrough[@]}"
+      ;;
+  esac
+}
+
+# Lists mq-mcp architecture memory through mq-agent.
+_run_agent_architecture() {
+  _run_agent run-tool list_architecture_decisions "$@"
+}
+
+# Runs repo health checks through mq-agent and mq-mcp.
+_run_agent_repo_health() {
+  _run_agent run-tool repo_signal_analyze --arg repo_path=. "$@" || return $?
+  _run_agent run-tool validate_orchestration_contract "$@"
+}
+
 # Starts mq-mcp server in the background if not already running on MQ_MCP_PORT.
 _mcp_start() {
   if lsof -ti:"$MQ_MCP_PORT" >/dev/null 2>&1; then
@@ -50,8 +123,21 @@ _mcp_start() {
     printf "server.py not found at %s\n" "$MQ_MCP_DIR" >&2
     return 1
   fi
-  (cd "$MQ_MCP_DIR" && env -u VIRTUAL_ENV nohup uv run python server.py > /tmp/mq-mcp.log 2>&1 &)
-  local pid=$!
+  local pid="?"
+  if command -v tmux >/dev/null 2>&1; then
+    tmux kill-session -t mq-mcp 2>/dev/null || true
+    tmux new-session -d -s mq-mcp "cd '$MQ_MCP_DIR' && env -u VIRTUAL_ENV MQ_MCP_TRANSPORT=sse uv run python server.py > /tmp/mq-mcp.log 2>&1"
+    pid="tmux:mq-mcp"
+  else
+    local pid_file="/tmp/mq-mcp.pid"
+    (
+      cd "$MQ_MCP_DIR" || exit 1
+      env -u VIRTUAL_ENV MQ_MCP_TRANSPORT=sse nohup uv run python server.py > /tmp/mq-mcp.log 2>&1 &
+      printf '%s\n' "$!" > "$pid_file"
+      disown "$!" 2>/dev/null || true
+    )
+    pid="$(cat "$pid_file" 2>/dev/null || printf '?')"
+  fi
   sleep 1
   if lsof -ti:"$MQ_MCP_PORT" >/dev/null 2>&1; then
     printf "mq-mcp started on :%s (pid %s)\n" "$MQ_MCP_PORT" "$pid"
@@ -70,6 +156,9 @@ _mcp_stop() {
     return 0
   fi
   echo "$pids" | xargs kill 2>/dev/null || true
+  if command -v tmux >/dev/null 2>&1; then
+    tmux kill-session -t mq-mcp 2>/dev/null || true
+  fi
   sleep 1
   if lsof -ti:"$MQ_MCP_PORT" >/dev/null 2>&1; then
     printf "mq-mcp still running on :%s — try kill -9\n" "$MQ_MCP_PORT" >&2
@@ -100,6 +189,22 @@ run_agent_command() {
     release-check)
       shift || true
       _run_agent release-check "$@"
+      ;;
+    review)
+      shift || true
+      _run_agent_review "$@"
+      ;;
+    architecture)
+      shift || true
+      _run_agent_architecture "$@"
+      ;;
+    risk-review)
+      shift || true
+      _run_agent run-tool review_diff --arg mode=security "$@"
+      ;;
+    repo-health)
+      shift || true
+      _run_agent_repo_health "$@"
       ;;
     mcp-status)
       shift || true

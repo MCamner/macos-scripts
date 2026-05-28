@@ -82,6 +82,10 @@ Quick commands:
   mqlaunch theme
   mqlaunch theme-macos
   mqlaunch review
+  mqlaunch architecture
+  mqlaunch risk-review
+  mqlaunch repo-health
+  mqlaunch mcp-status
   mqlaunch ui
   mqlaunch ask "your question"
   mqlaunch srm ask "your question"
@@ -194,13 +198,57 @@ dispatch_cli_command() {
       ;;
 
     review|/review)
-      if declare -f mq_ai_prompt_review >/dev/null; then
-        mq_ai_prompt_review
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command review "$@"
       else
-        echo "Missing helper: mq_ai_prompt_review"
-        echo "Expected: $AI_PROMPTS"
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
       fi
-      pause_enter
+      return 0
+      ;;
+
+    architecture|/architecture)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command architecture "$@"
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    risk-review|/risk-review)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command risk-review "$@"
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    repo-health|/repo-health)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command repo-health "$@"
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    mcp-status|/mcp-status)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command mcp-status "$@"
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
       return 0
       ;;
 
