@@ -129,8 +129,10 @@ mqlaunch doctor --json | jq -e '.summary.fail == 0'
 ```bash
 mqlaunch skills audit                 # list local skills, indexes and roadmap gaps
 mqlaunch skills validate              # validate SKILL.md frontmatter and indexes
+mqlaunch skills validate --ecosystem  # validate cross-repo skill uniqueness and roadmap hints
 mqlaunch skills new my-skill --repo mq-mcp --description "Use when ..."
 mqlaunch repos list                   # list known local MQ repos
+mqlaunch repos status                 # show branch/upstream/origin/dirty state per repo
 mqlaunch repos roadmaps               # list roadmap files per repo
 mqlaunch repos skills                 # summarize skill counts per repo
 mqlaunch repos diff-summary           # show git change summary per repo

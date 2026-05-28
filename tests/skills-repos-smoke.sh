@@ -42,14 +42,19 @@ grep -q "Repos diff" "$TOOLS_MENU"
 
 echo "[9/10] docs mention commands"
 grep -q "mqlaunch skills audit" "$DOC"
+grep -q "mqlaunch skills validate --ecosystem" "$DOC"
+grep -q "mqlaunch repos status" "$DOC"
 grep -q "mqlaunch repos diff-summary" "$DOC"
 
 echo "[10/10] scripts run read-only summaries"
 "$SKILLS" validate >/tmp/mq-skills-validate.out
+"$SKILLS" validate --ecosystem >/tmp/mq-skills-validate-ecosystem.out
 "$REPOS" list >/tmp/mq-repos-list.out
+"$REPOS" status --repo mq-agent >/tmp/mq-repos-status.out
 "$SKILLS" validate --repo mq-agent >/tmp/mq-skills-validate-one.out
 "$REPOS" diff-summary --repo mq-agent --modified >/tmp/mq-repos-modified.out
 "$REPOS" diff-summary --repo mq-agent --untracked >/tmp/mq-repos-untracked.out
 grep -q "mq-mcp" /tmp/mq-repos-list.out
+grep -q "mq-agent:" /tmp/mq-repos-status.out
 
 echo "OK: skills and repos command surface smoke test passed"

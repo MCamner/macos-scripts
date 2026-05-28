@@ -387,8 +387,18 @@ handle_main_prompt_command() {
       pause_enter
       return 0
       ;;
+    skills\ ecosystem|skill\ ecosystem|skills\ validate\ ecosystem)
+      "$BASE_DIR/tools/scripts/mq-skills.py" validate --ecosystem
+      pause_enter
+      return 0
+      ;;
     repos\ list|repo\ list)
       "$BASE_DIR/tools/scripts/mq-repos.py" list
+      pause_enter
+      return 0
+      ;;
+    repos\ status|repo\ status)
+      "$BASE_DIR/tools/scripts/mq-repos.py" status
       pause_enter
       return 0
       ;;

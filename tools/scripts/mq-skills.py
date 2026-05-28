@@ -49,6 +49,14 @@ ROADMAP_HINTS = {
         "boundary prompt": "prompt-pack-maintainer",
     },
 }
+SHARED_SKILL_NAMES = {
+    "docs-maintainer",
+    "integration-stack-maintainer",
+    "release-readiness",
+    "repo-aware",
+    "semantic-memory-maintainer",
+    "terminal-ui-polisher",
+}
 
 
 @dataclass(frozen=True)
@@ -69,6 +77,18 @@ def repo_paths(selected: list[str] | None = None) -> list[Path]:
         if path.exists():
             paths.append(path)
     return paths
+
+
+def missing_repo_names(selected: list[str] | None = None) -> list[str]:
+    names = selected or DEFAULT_REPOS
+    missing: list[str] = []
+    for name in names:
+        path = Path(name).expanduser()
+        if not path.is_absolute():
+            path = HOME / name
+        if not path.exists():
+            missing.append(name)
+    return missing
 
 
 def parse_frontmatter(path: Path) -> tuple[str | None, str | None]:
@@ -151,8 +171,20 @@ def audit(args: argparse.Namespace) -> int:
 def validate(args: argparse.Namespace) -> int:
     errors: list[str] = []
     warnings: list[str] = []
-    for repo in repo_paths(args.repo):
-        for skill in find_skills(repo):
+    repos = repo_paths(args.repo)
+    all_skills: list[Skill] = []
+    for missing in missing_repo_names(args.repo):
+        warnings.append(f"{missing}: repo not found")
+
+    if args.ecosystem:
+        print(f"Ecosystem validation: {len(repos)} repo(s)")
+
+    for repo in repos:
+        skills = find_skills(repo)
+        all_skills.extend(skills)
+        if args.ecosystem and not (repo / "SKILLS.md").exists() and not (repo / "skills" / "platform-skills.md").exists():
+            warnings.append(f"{repo.name}: repo has no local skill index")
+        for skill in skills:
             folder = skill.path.parent.name
             if not skill.name:
                 errors.append(f"{repo.name}/{folder}: missing frontmatter name")
@@ -167,6 +199,21 @@ def validate(args: argparse.Namespace) -> int:
                 warnings.append(f"{repo.name}/{folder}: not referenced by local skill index")
             elif idx == "no-index-file":
                 warnings.append(f"{repo.name}/{folder}: repo has no local skill index")
+
+    if args.ecosystem:
+        by_name: dict[str, list[str]] = {}
+        for skill in all_skills:
+            name = skill.name or skill.path.parent.name
+            by_name.setdefault(name, []).append(f"{skill.repo.name}/{skill.path.parent.name}")
+        for name, owners in sorted(by_name.items()):
+            if len(owners) > 1 and name not in SHARED_SKILL_NAMES:
+                warnings.append(f"duplicate skill name {name!r}: {', '.join(owners)}")
+
+        for repo in repos:
+            text = roadmap_text(repo)
+            for phrase, expected in ROADMAP_HINTS.get(repo.name, {}).items():
+                if phrase in text and not (repo / "skills" / expected / "SKILL.md").exists():
+                    warnings.append(f"{repo.name}: roadmap mentions {phrase!r}; missing skill {expected}")
 
     for item in warnings:
         print(f"WARN {item}")
@@ -194,6 +241,12 @@ def fix_suggestion(message: str) -> str:
         return "add the skill to SKILLS.md or skills/platform-skills.md"
     if "repo has no local skill index" in message:
         return "create SKILLS.md and list the repo skills"
+    if "repo not found" in message:
+        return "clone the repo locally or pass --repo with the correct path"
+    if "duplicate skill name" in message:
+        return "rename one skill so ecosystem skill names stay unique"
+    if "roadmap mentions" in message and "missing skill" in message:
+        return "create the expected skill or remove the stale roadmap hint"
     return "inspect the skill folder and update SKILL.md"
 
 
@@ -231,6 +284,7 @@ def main(argv: list[str]) -> int:
     audit_p.set_defaults(func=audit)
     validate_p = sub.add_parser("validate", help="Validate skill frontmatter and indexes")
     validate_p.add_argument("--repo", action="append", help="Repo name/path to inspect; may be repeated")
+    validate_p.add_argument("--ecosystem", action="store_true", help="Run cross-repo ecosystem checks")
     validate_p.set_defaults(func=validate)
     new_p = sub.add_parser("new", help="Create a local skill scaffold")
     new_p.add_argument("name")

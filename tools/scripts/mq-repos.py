@@ -51,6 +51,72 @@ def git_status(repo: Path, only_modified: bool = False, only_untracked: bool = F
     return lines or []
 
 
+def git_output(repo: Path, args: list[str]) -> tuple[int, str]:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    return proc.returncode, (proc.stdout or proc.stderr).strip()
+
+
+def branch_summary(repo: Path) -> tuple[str, str]:
+    code, output = git_output(repo, ["status", "--short", "--branch"])
+    if code != 0:
+        return "unknown", output or "git status failed"
+    first = output.splitlines()[0] if output else "## unknown"
+    first = first.removeprefix("## ").strip()
+    if "..." not in first:
+        return first or "unknown", "no-upstream"
+    branch, tracking = first.split("...", 1)
+    return branch.strip() or "unknown", tracking.strip() or "no-upstream"
+
+
+def last_commit(repo: Path) -> str:
+    code, output = git_output(repo, ["log", "-1", "--pretty=%h %cs %s"])
+    if code != 0:
+        return "no commits"
+    return output
+
+
+def origin_url(repo: Path) -> str:
+    code, output = git_output(repo, ["remote", "get-url", "origin"])
+    if code != 0:
+        return "no-origin"
+    return output
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    dirty = 0
+    for repo in repo_paths(args.repo):
+        if not (repo / ".git").exists():
+            print(f"{repo.name}: not a git repo")
+            dirty += 1
+            continue
+        branch, tracking = branch_summary(repo)
+        changes = git_status(repo)
+        modified = len([line for line in changes if not line.startswith("??")])
+        untracked = len([line for line in changes if line.startswith("??")])
+        state = "clean" if not changes else f"dirty ({modified} modified, {untracked} untracked)"
+        if changes:
+            dirty += 1
+
+        print(f"{repo.name}: {state}")
+        print(f"  branch: {branch}")
+        print(f"  upstream: {tracking}")
+        print(f"  origin: {origin_url(repo)}")
+        print(f"  last: {last_commit(repo)}")
+        if changes and args.limit > 0:
+            print("  changes:")
+            for line in changes[: args.limit]:
+                print(f"    {line}")
+            if len(changes) > args.limit:
+                print(f"    ... {len(changes) - args.limit} more")
+    return 1 if dirty and args.fail_on_dirty else 0
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     for repo in repo_paths(args.repo):
         marker = "git" if (repo / ".git").exists() else "dir"
@@ -119,6 +185,11 @@ def main(argv: list[str]) -> int:
     p.add_argument("--modified", action="store_true", help="Show only modified/staged files")
     p.add_argument("--untracked", action="store_true", help="Show only untracked files")
     p.set_defaults(func=cmd_diff_summary)
+    p = sub.add_parser("status", help="Show branch, upstream, origin, last commit and dirty state")
+    p.add_argument("--repo", action="append", help="Repo name/path; may be repeated")
+    p.add_argument("--limit", type=int, default=6, help="Changed-file preview limit per repo")
+    p.add_argument("--fail-on-dirty", action="store_true")
+    p.set_defaults(func=cmd_status)
     args = parser.parse_args(argv)
     if getattr(args, "modified", False) and getattr(args, "untracked", False):
         parser.error("--modified and --untracked are mutually exclusive")

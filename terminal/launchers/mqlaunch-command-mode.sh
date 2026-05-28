@@ -94,7 +94,9 @@ Quick commands:
   mqlaunch agent mcp-tools
   mqlaunch skills audit
   mqlaunch skills validate
+  mqlaunch skills validate --ecosystem
   mqlaunch repos list
+  mqlaunch repos status
   mqlaunch repos diff-summary
   mqlaunch release-check
   mqlaunch selftest
@@ -238,7 +240,7 @@ dispatch_cli_command() {
         ""|menu|hub)
           "$BASE_DIR/bin/mqlaunch" hub
           ;;
-        list|roadmaps|skills|diff-summary)
+        list|roadmaps|skills|status|diff-summary)
           "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
           pause_enter
           ;;

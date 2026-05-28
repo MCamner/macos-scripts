@@ -642,6 +642,16 @@ run_mq_skills_validate() {
   pause_enter
 }
 
+# Runs MQ ecosystem skills validation.
+run_mq_skills_ecosystem_validate() {
+  if [[ -x "$MQ_SKILLS" ]]; then
+    "$MQ_SKILLS" validate --ecosystem
+  else
+    python3 "$MQ_SKILLS" validate --ecosystem
+  fi
+  pause_enter
+}
+
 # Runs MQ repos summary.
 run_mq_repos_summary() {
   if [[ -x "$MQ_REPOS" ]]; then
@@ -662,6 +672,16 @@ run_mq_repos_diff_summary() {
     "$MQ_REPOS" diff-summary
   else
     python3 "$MQ_REPOS" diff-summary
+  fi
+  pause_enter
+}
+
+# Runs MQ repos status.
+run_mq_repos_status() {
+  if [[ -x "$MQ_REPOS" ]]; then
+    "$MQ_REPOS" status
+  else
+    python3 "$MQ_REPOS" status
   fi
   pause_enter
 }
@@ -757,6 +777,7 @@ print_tools_menu() {
   surface_row "ECOSYSTEM" "$width" "$panel_color"
   surface_split_row "17. Skills audit" "18. Skills validate" "$width" "$panel_color"
   surface_split_row "19. Repos summary" "20. Repos diff" "$width" "$panel_color"
+  surface_split_row "21. Skills ecosystem" "22. Repos status" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -807,6 +828,8 @@ tools_menu_loop() {
     18) run_mq_skills_validate ;;
     19) run_mq_repos_summary ;;
     20) run_mq_repos_diff_summary ;;
+    21) run_mq_skills_ecosystem_validate ;;
+    22) run_mq_repos_status ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -832,7 +855,11 @@ Commands:
   docpreview  Preview missing shell function comments
   docwrite    Add/update shell function comments with backups
   skills      Audit local MQ ecosystem skills
+  skills-ecosystem
+              Validate skills across all known MQ repos
   repos       Summarize local MQ ecosystem repos
+  repos-status
+              Show branch, upstream and dirty state for known MQ repos
 USAGE
 }
 
@@ -852,8 +879,10 @@ main() {
     docwrite|document-functions-write) run_document_functions_update ;;
     skills|skills-audit) run_mq_skills_audit ;;
     skills-validate) run_mq_skills_validate ;;
+    skills-ecosystem|skills-validate-ecosystem) run_mq_skills_ecosystem_validate ;;
     repos|repos-summary) run_mq_repos_summary ;;
     repos-diff|diff-summary) run_mq_repos_diff_summary ;;
+    repos-status|status) run_mq_repos_status ;;
     help|-h|--help) usage ;;
     *)
       ui_err "Unknown command: $cmd"
