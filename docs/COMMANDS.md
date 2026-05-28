@@ -124,6 +124,25 @@ mqlaunch doctor --json | jq -e '.summary.fail == 0'
 
 ---
 
+## MQ ecosystem skills and repos
+
+```bash
+mqlaunch skills audit                 # list local skills, indexes and roadmap gaps
+mqlaunch skills validate              # validate SKILL.md frontmatter and indexes
+mqlaunch skills new my-skill --repo mq-mcp --description "Use when ..."
+mqlaunch repos list                   # list known local MQ repos
+mqlaunch repos roadmaps               # list roadmap files per repo
+mqlaunch repos skills                 # summarize skill counts per repo
+mqlaunch repos diff-summary           # show git change summary per repo
+mqlaunch repos diff-summary --modified    # show only modified/staged files
+mqlaunch repos diff-summary --untracked   # show only untracked files
+```
+
+These commands are read-only except `skills new`, which creates a local
+`skills/<name>/SKILL.md` scaffold in the requested repo.
+
+---
+
 ## AI assistant
 
 ```bash

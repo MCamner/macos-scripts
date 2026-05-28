@@ -32,6 +32,8 @@ SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
 OLLAMA_DOCUMENT_REVIEW="$BASE_DIR/tools/scripts/ollama-document-review.py"
 MQ_MCP_REVIEW="$BASE_DIR/tools/scripts/mq-mcp-review.py"
+MQ_SKILLS="$BASE_DIR/tools/scripts/mq-skills.py"
+MQ_REPOS="$BASE_DIR/tools/scripts/mq-repos.py"
 MQ_MCP_HOME="${MQ_MCP_HOME:-$HOME/mq-mcp}"
 DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
 DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*.bak' --exclude '*/.git/*' --exclude '*/backups/*')
@@ -620,6 +622,50 @@ run_mq_mcp_review() {
   pause_enter
 }
 
+# Runs MQ skills audit.
+run_mq_skills_audit() {
+  if [[ -x "$MQ_SKILLS" ]]; then
+    "$MQ_SKILLS" audit
+  else
+    python3 "$MQ_SKILLS" audit
+  fi
+  pause_enter
+}
+
+# Runs MQ skills validation.
+run_mq_skills_validate() {
+  if [[ -x "$MQ_SKILLS" ]]; then
+    "$MQ_SKILLS" validate
+  else
+    python3 "$MQ_SKILLS" validate
+  fi
+  pause_enter
+}
+
+# Runs MQ repos summary.
+run_mq_repos_summary() {
+  if [[ -x "$MQ_REPOS" ]]; then
+    "$MQ_REPOS" skills
+    printf '\n'
+    "$MQ_REPOS" roadmaps
+  else
+    python3 "$MQ_REPOS" skills
+    printf '\n'
+    python3 "$MQ_REPOS" roadmaps
+  fi
+  pause_enter
+}
+
+# Runs MQ repos diff summary.
+run_mq_repos_diff_summary() {
+  if [[ -x "$MQ_REPOS" ]]; then
+    "$MQ_REPOS" diff-summary
+  else
+    python3 "$MQ_REPOS" diff-summary
+  fi
+  pause_enter
+}
+
 # Prints document functions menu.
 print_document_functions_menu() {
   local width panel_color
@@ -707,6 +753,10 @@ print_tools_menu() {
   surface_row "VERIFY" "$width" "$panel_color"
   surface_split_row "13. Doctor check" "14. Doctor --json" "$width" "$panel_color"
   surface_split_row "15. Selftest" "16. Smoke test" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "ECOSYSTEM" "$width" "$panel_color"
+  surface_split_row "17. Skills audit" "18. Skills validate" "$width" "$panel_color"
+  surface_split_row "19. Repos summary" "20. Repos diff" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -753,6 +803,10 @@ tools_menu_loop() {
       fi
       ;;
     16) "$BASE_DIR/tools/scripts/install-smoke.sh"; pause_enter ;;
+    17) run_mq_skills_audit ;;
+    18) run_mq_skills_validate ;;
+    19) run_mq_repos_summary ;;
+    20) run_mq_repos_diff_summary ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -777,6 +831,8 @@ Commands:
   docfunc     Open function documentation menu
   docpreview  Preview missing shell function comments
   docwrite    Add/update shell function comments with backups
+  skills      Audit local MQ ecosystem skills
+  repos       Summarize local MQ ecosystem repos
 USAGE
 }
 
@@ -794,6 +850,10 @@ main() {
     docfunc|document-functions|docs) document_functions_menu_loop ;;
     docpreview|document-functions-preview) run_document_functions_preview ;;
     docwrite|document-functions-write) run_document_functions_update ;;
+    skills|skills-audit) run_mq_skills_audit ;;
+    skills-validate) run_mq_skills_validate ;;
+    repos|repos-summary) run_mq_repos_summary ;;
+    repos-diff|diff-summary) run_mq_repos_diff_summary ;;
     help|-h|--help) usage ;;
     *)
       ui_err "Unknown command: $cmd"

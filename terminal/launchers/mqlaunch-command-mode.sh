@@ -92,6 +92,10 @@ Quick commands:
   mqlaunch agent release-check --dry-run
   mqlaunch agent mcp-status
   mqlaunch agent mcp-tools
+  mqlaunch skills audit
+  mqlaunch skills validate
+  mqlaunch repos list
+  mqlaunch repos diff-summary
   mqlaunch release-check
   mqlaunch selftest
   mqlaunch version
@@ -218,6 +222,31 @@ dispatch_cli_command() {
     srm|memory|repo-memory)
       shift
       "$BASE_DIR/tools/scripts/srm.sh" "$@"
+      return 0
+      ;;
+
+    skills|skill)
+      shift
+      "$BASE_DIR/tools/scripts/mq-skills.py" "$@"
+      [[ "${1:-}" != "--json" ]] && pause_enter
+      return 0
+      ;;
+
+    repos)
+      shift
+      case "${1:-}" in
+        ""|menu|hub)
+          "$BASE_DIR/bin/mqlaunch" hub
+          ;;
+        list|roadmaps|skills|diff-summary)
+          "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
+          pause_enter
+          ;;
+        *)
+          "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
+          pause_enter
+          ;;
+      esac
       return 0
       ;;
 

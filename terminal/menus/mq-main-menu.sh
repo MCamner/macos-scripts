@@ -377,6 +377,26 @@ handle_main_prompt_command() {
       "$BASE_DIR/tools/scripts/chat.sh"
       return 0
       ;;
+    skills|skill|skills\ audit)
+      "$BASE_DIR/tools/scripts/mq-skills.py" audit
+      pause_enter
+      return 0
+      ;;
+    skills\ validate|skill\ validate)
+      "$BASE_DIR/tools/scripts/mq-skills.py" validate
+      pause_enter
+      return 0
+      ;;
+    repos\ list|repo\ list)
+      "$BASE_DIR/tools/scripts/mq-repos.py" list
+      pause_enter
+      return 0
+      ;;
+    repos\ diff|repos\ diff-summary|repo\ diff-summary)
+      "$BASE_DIR/tools/scripts/mq-repos.py" diff-summary
+      pause_enter
+      return 0
+      ;;
   esac
 
   if command -v dispatch_cli_command >/dev/null 2>&1; then
