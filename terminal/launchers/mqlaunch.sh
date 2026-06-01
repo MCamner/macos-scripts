@@ -668,6 +668,7 @@ fzf_recent_files() {
   "${EDITOR:-code}" "$selected" 2>/dev/null || open "$selected"
 }
 
+# Opens repo browser.
 open_repo_browser() {
   print_header
   row "OPEN REPO IN BROWSER"

@@ -125,6 +125,9 @@ tools/scripts/document-functions.sh tools/scripts
 tools/scripts/document-functions.sh --write tools/scripts
 ```
 
+`document-functions.sh` preserves existing comments. It only adds a generated
+comment when a shell function has no comment directly above it.
+
 ---
 
 ## 🚦 Start here

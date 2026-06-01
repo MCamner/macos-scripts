@@ -7,6 +7,7 @@ NC='\033[0m'
 
 # Standalone-only helpers — skipped when sourced into mqlaunch (mq-ui.sh already defines these).
 if ! command -v surface_panel_header >/dev/null 2>&1; then
+# Prints header.
   print_header() {
     clear
     echo -e "${PURPLE}"
@@ -21,6 +22,7 @@ if ! command -v surface_panel_header >/dev/null 2>&1; then
     echo -e "${BLUE}----------------------------------------------------------------------------------------${NC}"
   }
 
+# Prints footer.
   print_footer() {
     local now host user_name
     now="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -32,18 +34,22 @@ if ! command -v surface_panel_header >/dev/null 2>&1; then
     printf "Time: %s\n" "$now"
   }
 
+# Prints a plain menu row.
   row() {
     printf "%s\n" "$1"
   }
 
+# Prints a bold menu row.
   row_bold() {
     echo -e "${PURPLE}$1${NC}"
   }
 
+# Prints a blank menu row.
   empty_row() {
     printf "\n"
   }
 
+# Pauses until Enter is pressed.
   pause_enter() {
     printf "\nPress Enter to continue..."
     read -r

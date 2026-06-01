@@ -488,7 +488,7 @@ run_document_functions_update() {
   fi
 
   empty_row
-  row "This will add or refresh generated function comments in:"
+  row "This will add missing generated function comments in:"
   print_document_function_targets
   empty_row
   row "Backups will be saved under backups/scripts before files are changed."

@@ -4,8 +4,11 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Marks a passing check.
 pass() { printf "\033[1;32m[ OK ]\033[0m %s\n" "$*"; }
+# Marks a failing check.
 fail() { printf "\033[1;31m[FAIL]\033[0m %s\n" "$*" >&2; exit 1; }
+# Prints a smoke-test step.
 step() { printf "\033[1;34m[STEP]\033[0m %s\n" "$*"; }
 
 cd "$REPO_ROOT"

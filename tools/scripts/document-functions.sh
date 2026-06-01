@@ -45,6 +45,8 @@ Examples:
   tools/scripts/document-functions.sh --exclude '*/legacy/*' tools
 
 Default mode is dry-run. Use --write to update files.
+Existing comments are preserved; the tool only adds comments where a function
+does not already have one.
 EOF
 }
 
@@ -195,6 +197,7 @@ document_file() {
 
     function words(name, result) {
       result = name
+      gsub(/^_+/, "", result)
       gsub(/_+/, " ", result)
       return result
     }
@@ -212,11 +215,71 @@ document_file() {
       if (name == "usage") {
         return "# Prints usage information."
       }
+      if (name == "pass") {
+        return "# Marks a passing check."
+      }
+      if (name == "fail") {
+        return "# Marks a failing check."
+      }
+      if (name == "step") {
+        return "# Prints a smoke-test step."
+      }
+      if (name == "row") {
+        return "# Prints a plain menu row."
+      }
+      if (name == "row_bold") {
+        return "# Prints a bold menu row."
+      }
+      if (name == "empty_row") {
+        return "# Prints a blank menu row."
+      }
+      if (name == "pause_enter") {
+        return "# Pauses until Enter is pressed."
+      }
+      if (name == "mq_hal_available") {
+        return "# Checks whether mq-hal is available."
+      }
+      if (name == "mq_hal_usage") {
+        return "# Prints mq-hal bridge usage."
+      }
+      if (name == "mq_hal_missing") {
+        return "# Shows the missing mq-hal executable error."
+      }
+      if (name == "mq_hal_main") {
+        return "# Runs the mq-hal bridge command."
+      }
       if (name == "menu_loop") {
         return "# Runs the menu loop."
       }
+      if (name ~ /_menu_loop$/) {
+        return "# Runs the " words(substr(name, 1, length(name) - 10)) " menu loop."
+      }
+      if (name == "_hal_pause_enter") {
+        return "# Pauses safely after HAL menu actions."
+      }
+      if (name == "render_hal_panel") {
+        return "# Renders the HAL menu panel."
+      }
+      if (name == "hal_menu_missing") {
+        return "# Shows the missing mq-hal message."
+      }
+      if (name == "hal_menu_remember") {
+        return "# Prompts HAL to remember a note."
+      }
+      if (name == "hal_menu_raw_intent") {
+        return "# Shows HAL raw intent output."
+      }
+      if (name == "hal_menu_free_prompt") {
+        return "# Runs a free-form HAL prompt."
+      }
+      if (name == "mq_hal_menu_main") {
+        return "# Runs the HAL menu loop."
+      }
       if (name ~ /^is_/) {
         return "# Checks whether " strip_prefix(name, "is") " applies."
+      }
+      if (name ~ /_is_/) {
+        return "# Checks whether " words(substr(name, 1, index(name, "_is_") - 1)) " is " words(substr(name, index(name, "_is_") + 4)) "."
       }
       if (name ~ /^has_/) {
         return "# Checks whether " strip_prefix(name, "has") " is available."
@@ -342,12 +405,8 @@ document_file() {
       if (name != "") {
         prev = trim(pending)
         expected = generated_comment(name)
-        if (prev ~ /^# Function:/ || prev ~ /^# Handles [A-Za-z0-9_ ]+\.$/ || prev ~ /^# (Opens|Runs|Shows|Prints|Gets|Sets|Collects|Documents|Draws|Copies|Normalizes|Chooses|Analyzes|Suggests|Stages|Commits|Pulls|Edits|Backs up|Reverts|Resolves|Locks|Sleeps|Restarts|Pings) [A-Za-z0-9_ ]+\.$/ || prev ~ /^# Checks whether [A-Za-z0-9_ ]+ (applies|is available)\.$/ || prev ~ /^# Ensures [A-Za-z0-9_ ]+ is ready\.$/) {
-          pending = expected
+        if (prev ~ /^#/) {
           emit_pending()
-          if (prev != expected) {
-            added++
-          }
         } else if (!has_pending) {
           print expected
           added++

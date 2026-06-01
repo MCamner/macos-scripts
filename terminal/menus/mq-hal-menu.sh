@@ -22,6 +22,7 @@
 #   4. pause_enter after each action (wrapped in _*_pause_enter for safety).
 #   5. hal_menu_is_sourced guard at the bottom for standalone execution.
 
+# Checks whether hal menu is sourced.
 hal_menu_is_sourced() {
   if [[ -n "${ZSH_VERSION:-}" ]]; then
     [[ ":${ZSH_EVAL_CONTEXT:-}:" == *:file:* ]]
@@ -37,6 +38,7 @@ fi
 
 : "${MQ_HAL_BIN:=$HOME/mq-hal/bin/mq-hal}"
 
+# Pauses safely after HAL menu actions.
 _hal_pause_enter() {
   if command -v pause_enter >/dev/null 2>&1; then
     pause_enter
@@ -46,6 +48,7 @@ _hal_pause_enter() {
   fi
 }
 
+# Renders the HAL menu panel.
 render_hal_panel() {
   local width panel_color
   width="$(surface_terminal_width)"
@@ -83,6 +86,7 @@ render_hal_panel() {
   printf '\n'
 }
 
+# Shows the missing mq-hal message.
 hal_menu_missing() {
   local width
   width="$(surface_terminal_width)"
@@ -97,6 +101,7 @@ hal_menu_missing() {
   _hal_pause_enter
 }
 
+# Prompts HAL to remember a note.
 hal_menu_remember() {
   if command -v print_header >/dev/null 2>&1; then
     print_header
@@ -111,6 +116,7 @@ hal_menu_remember() {
   _hal_pause_enter
 }
 
+# Shows HAL raw intent output.
 hal_menu_raw_intent() {
   if command -v print_header >/dev/null 2>&1; then
     print_header
@@ -125,6 +131,7 @@ hal_menu_raw_intent() {
   _hal_pause_enter
 }
 
+# Runs a free-form HAL prompt.
 hal_menu_free_prompt() {
   if command -v print_header >/dev/null 2>&1; then
     print_header
@@ -139,6 +146,7 @@ hal_menu_free_prompt() {
   _hal_pause_enter
 }
 
+# Runs the HAL menu loop.
 mq_hal_menu_main() {
   local choice
 

@@ -13,10 +13,12 @@ fi
 
 MQ_HAL_BIN="${MQ_HAL_BIN:-$HOME/mq-hal/bin/mq-hal}"
 
+# Checks whether mq-hal is available.
 mq_hal_available() {
   [[ -x "$MQ_HAL_BIN" ]]
 }
 
+# Prints mq-hal bridge usage.
 mq_hal_usage() {
   cat <<'USAGE'
 MQ HAL — local Ollama command router
@@ -44,6 +46,7 @@ Requirements:
 USAGE
 }
 
+# Shows the missing mq-hal executable error.
 mq_hal_missing() {
   echo "ERROR: mq-hal not found or not executable: $MQ_HAL_BIN" >&2
   echo >&2
@@ -53,6 +56,7 @@ mq_hal_missing() {
   return 127
 }
 
+# Runs the mq-hal bridge command.
 mq_hal_main() {
   if ! mq_hal_available; then
     mq_hal_missing

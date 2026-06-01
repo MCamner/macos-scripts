@@ -18,6 +18,8 @@ backups/debug-bundles/*.txt
 
 # Local backup files
 backups/launchers/*.bak
+backups/scripts/*
+!backups/scripts/.gitkeep
 terminal/launchers/*.bak.*
 terminal/menus/*.bak.*
 tools/*.bak.*

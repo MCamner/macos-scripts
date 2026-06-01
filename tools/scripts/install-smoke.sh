@@ -7,7 +7,9 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 PASS=0
 FAIL=0
 
+# Marks a passing check.
 pass() { printf "[PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+# Marks a failing check.
 fail() { printf "[FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 printf "install smoke test — %s\n\n" "$BASE_DIR"
