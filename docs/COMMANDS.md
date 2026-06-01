@@ -152,9 +152,19 @@ mqlaunch ask "your question"                    # repo-aware AI answer
 mqlaunch ask quick "your question"             # short answer, no context
 mqlaunch atlas                                  # interactive AI REPL session
 mqlaunch fix "error or task description"       # get copy-paste shell commands
-mqlaunch review                                 # copy code review prompt to clipboard
+mqlaunch review                                 # review current diff via mq-agent -> mq-mcp
+mqlaunch review file <path> security           # review one file in security mode
+mqlaunch review repo architecture              # review repo in architecture mode
+mqlaunch risk-review                            # risk review current diff via mq-agent
+mqlaunch architecture                           # show mq-mcp architecture decisions
+mqlaunch repo-health                            # repo-signal + orchestration contract health
+mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
+
+`mqlaunch` only delegates these review and architecture commands. Review
+logic, severity labels, semantic memory, and risk routing stay in `mq-mcp`;
+`mq-agent` is the orchestration layer between mqlaunch and mq-mcp.
 
 ### Semantic Repository Memory (SRM)
 

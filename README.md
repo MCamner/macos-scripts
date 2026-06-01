@@ -125,6 +125,11 @@ mqlaunch ask "your question"     # AI repo assistant
 mqlaunch srm ask "your question" # Semantic Repository Memory assistant
 mqlaunch fix "error or task"     # AI generates copy-paste shell commands
 mqlaunch atlas                   # AI REPL session
+mqlaunch review                  # review current diff via mq-agent -> mq-mcp
+mqlaunch risk-review             # risk review via mq-agent -> mq-mcp
+mqlaunch architecture            # show mq-mcp architecture memory
+mqlaunch repo-health             # repo-signal + mq-mcp contract health
+mqlaunch mcp-status              # mq-mcp status and tool count
 mqlaunch hal                     # open HAL menu
 mqlaunch hal "your request"      # local Ollama-powered safe command router
 mqlaunch hal repos               # list HAL-known repos

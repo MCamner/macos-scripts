@@ -40,7 +40,7 @@ _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
-# Runs an mq-mcp review through mq-agent's MCP safety gate.
+# Runs an mq-mcp review through mq-agent's review command surface.
 _run_agent_review() {
   local scope="diff"
   local mode="${MQ_MCP_REVIEW_MODE:-comment}"
@@ -74,7 +74,7 @@ _run_agent_review() {
           shift
         fi
         ;;
-      comment|security|architecture)
+      comment|security|architecture|risk)
         mode="$1"
         shift
         ;;
@@ -85,19 +85,38 @@ _run_agent_review() {
     esac
   done
 
+  local mode_args=()
+  case "$mode" in
+    comment|"")
+      ;;
+    security)
+      mode_args+=(--security)
+      ;;
+    architecture)
+      mode_args+=(--architecture)
+      ;;
+    risk)
+      mode_args+=(--risk)
+      ;;
+    *)
+      printf "Unsupported review mode: %s\n" "$mode" >&2
+      return 1
+      ;;
+  esac
+
   case "$scope" in
     repo)
-      _run_agent run-tool review_repo --arg "mode=$mode" "${passthrough[@]}"
+      _run_agent review repo "${mode_args[@]}" "${passthrough[@]}"
       ;;
     file)
       if [[ -z "$file" ]]; then
         printf "Usage: mqlaunch review file <relative-path> [mode]\n" >&2
         return 1
       fi
-      _run_agent run-tool review_file --arg "relative_path=$file" --arg "mode=$mode" "${passthrough[@]}"
+      _run_agent review file "$file" "${mode_args[@]}" "${passthrough[@]}"
       ;;
     diff)
-      _run_agent run-tool review_diff --arg "mode=$mode" "${passthrough[@]}"
+      _run_agent review diff "${mode_args[@]}" "${passthrough[@]}"
       ;;
   esac
 }
@@ -109,7 +128,8 @@ _run_agent_architecture() {
 
 # Runs repo health checks through mq-agent and mq-mcp.
 _run_agent_repo_health() {
-  _run_agent run-tool repo_signal_analyze --arg repo_path=. "$@" || return $?
+  local repo_path="${MQ_REPO_HEALTH_PATH:-$BASE_DIR}"
+  _run_agent run-tool repo_signal_analyze --arg "repo_path=$repo_path" "$@" || return $?
   _run_agent run-tool validate_orchestration_contract "$@"
 }
 
@@ -200,7 +220,7 @@ run_agent_command() {
       ;;
     risk-review)
       shift || true
-      _run_agent run-tool review_diff --arg mode=security "$@"
+      _run_agent review diff --risk "$@"
       ;;
     repo-health)
       shift || true

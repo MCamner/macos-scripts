@@ -118,7 +118,9 @@ show_command_index() {
   row " mqlaunch atlas                 Interaktiv AI-session (senior systems engineer)"
   row " mqlaunch fix \"error message\"   Få körbara shell-kommandon för fel/uppgifter"
   row " mqlaunch chat                  Konversationsläge med minne"
-  row " mqlaunch review                Kopiera code review-prompt till clipboard"
+  row " mqlaunch review                Review via mq-agent → mq-mcp"
+  row " mqlaunch risk-review           Risk review via mq-agent → mq-mcp"
+  row " mqlaunch mcp-status            Visa mq-mcp status och contract health"
   row " mqlaunch ui                    Kopiera UI-prompt till clipboard"
 
   print_footer
@@ -188,7 +190,9 @@ AI
   mqlaunch ask quick "fråga"     Kort svar utan repo-kontext
   mqlaunch atlas                 Interaktiv AI-session (senior systems engineer)
   mqlaunch fix "error message"   Få körbara shell-kommandon för fel/uppgifter
-  mqlaunch review                Kopiera code review-prompt till clipboard
+  mqlaunch review                Review via mq-agent → mq-mcp
+  mqlaunch risk-review           Risk review via mq-agent → mq-mcp
+  mqlaunch mcp-status            Visa mq-mcp status och contract health
   mqlaunch ui                    Kopiera UI-prompt till clipboard
 
 POPULAR FLOWS

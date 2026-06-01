@@ -24,18 +24,18 @@ mqlaunch must not:
 Goal: make mq-mcp review and architecture workflows reachable from
 mqlaunch without embedding any cognition in the shell layer.
 
-- [ ] `mqlaunch review` — delegates to `mq-agent review` (calls
+- [x] `mqlaunch review` — delegates to `mq-agent review` (calls
   `review_file` / `review_diff` via MCPBridge)
-- [ ] `mqlaunch architecture` — calls `mq-agent` → `list_architecture_decisions`
+- [x] `mqlaunch architecture` — calls `mq-agent` → `list_architecture_decisions`
   or `detect_architecture_drift`
-- [ ] `mqlaunch risk-review` — delegates to `mq-agent review --risk` when
+- [x] `mqlaunch risk-review` — delegates to `mq-agent review --risk` when
   mq-mcp ≥ v1.5.0 (risk layer)
-- [ ] `mqlaunch repo-health` — delegates to `mq-agent` → `repo_signal_analyze`
+- [x] `mqlaunch repo-health` — delegates to `mq-agent` → `repo_signal_analyze`
   + `validate_orchestration_contract`
-- [ ] `mqlaunch mcp-status` — shows mq-mcp version, tool count, contract
+- [x] `mqlaunch mcp-status` — shows mq-mcp version, tool count, contract
   freshness via `mq-agent mcp status`
-- [ ] Update docs: all new commands documented in `docs/COMMANDS.md`
-- [ ] Boundary test: verify none of the new commands embed review or
+- [x] Update docs: all new commands documented in `docs/COMMANDS.md`
+- [x] Boundary test: verify none of the new commands embed review or
   semantic logic — they must only forward to mq-agent
 
 ---
