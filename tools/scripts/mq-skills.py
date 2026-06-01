@@ -17,6 +17,7 @@ DEFAULT_REPOS = [
     "macos-scripts",
     "mq-image-analyze",
     "mq-hal",
+    "mq-ums",
     "atlas-one",
 ]
 ROADMAP_HINTS = {
@@ -56,6 +57,7 @@ SHARED_SKILL_NAMES = {
     "repo-aware",
     "semantic-memory-maintainer",
     "terminal-ui-polisher",
+    "web-ui-maintainer",
 }
 
 
