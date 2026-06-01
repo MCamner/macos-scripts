@@ -51,10 +51,14 @@ echo "[10/10] scripts run read-only summaries"
 "$SKILLS" validate --ecosystem >/tmp/mq-skills-validate-ecosystem.out
 "$REPOS" list >/tmp/mq-repos-list.out
 "$REPOS" status --repo mq-agent >/tmp/mq-repos-status.out
+"$REPOS" status --repo mq-ums >/tmp/mq-repos-status-mq-ums.out
 "$SKILLS" validate --repo mq-agent >/tmp/mq-skills-validate-one.out
+"$SKILLS" validate --repo mq-ums >/tmp/mq-skills-validate-mq-ums.out
 "$REPOS" diff-summary --repo mq-agent --modified >/tmp/mq-repos-modified.out
 "$REPOS" diff-summary --repo mq-agent --untracked >/tmp/mq-repos-untracked.out
 grep -q "mq-mcp" /tmp/mq-repos-list.out
+grep -q "mq-ums" /tmp/mq-repos-list.out
 grep -q "mq-agent:" /tmp/mq-repos-status.out
+grep -q "mq-ums:" /tmp/mq-repos-status-mq-ums.out
 
 echo "OK: skills and repos command surface smoke test passed"

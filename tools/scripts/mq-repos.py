@@ -15,6 +15,7 @@ DEFAULT_REPOS = [
     "macos-scripts",
     "mq-image-analyze",
     "mq-hal",
+    "mq-ums",
     "atlas-one",
 ]
 
