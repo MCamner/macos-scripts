@@ -629,22 +629,124 @@ function analyze_diff() {
 # ------------------------
 # SAFE PUSH
 # ------------------------
+function protected_branch_names() {
+  echo "${MQLAUNCH_PROTECTED_BRANCHES:-main master}"
+}
+
+function is_protected_branch() {
+  local branch="$1"
+  local protected
+
+  protected=" $(protected_branch_names) "
+  [[ "$protected" == *" $branch "* ]]
+}
+
+function branch_slug() {
+  local text="$1"
+  local slug
+
+  slug=$(echo "$text" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')
+  if [[ -z "$slug" ]]; then
+    slug="update-project-files"
+  fi
+
+  echo "${slug:0:48}"
+}
+
+function create_pr_branch_for_push() {
+  local base_branch="$1"
+  local commit_message="$2"
+  local slug pr_branch confirm output status
+
+  slug="$(branch_slug "$commit_message")"
+  pr_branch="mq/${slug}-$(date +%Y%m%d-%H%M%S)"
+
+  echo ""
+  printf "%b🔒 Branch '%s' is protected.%b\n" "$C_WARN" "$base_branch" "$C_RESET"
+  echo "GitHub requires these changes to go through a pull request."
+  echo "Suggested PR branch: $pr_branch"
+  printf "%bCreate and push this PR branch? [Y/n]: %b" "$C_LABEL" "$C_RESET"
+  read confirm
+
+  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+    echo "Push cancelled. Commit remains local on $base_branch."
+    return 1
+  fi
+
+  git switch -c "$pr_branch" 2>/dev/null || git checkout -b "$pr_branch"
+  output=$(git push -u origin "$pr_branch" 2>&1)
+  status=$?
+  echo "$output"
+
+  if [[ "$status" -ne 0 ]]; then
+    return "$status"
+  fi
+
+  if command -v gh >/dev/null 2>&1; then
+    echo ""
+    echo "Next: gh pr create --base $base_branch --head $pr_branch --fill"
+  fi
+}
+
+function pr_aware_push() {
+  local commit_message="${1:-update project files}"
+  local branch output status
+  local -a push_args
+
+  push_args=("${@:2}")
+
+  branch="$(git branch --show-current)"
+  if [[ -z "$branch" ]]; then
+    echo "⚠️ Detached HEAD. Push blocked."
+    return 1
+  fi
+
+  if is_protected_branch "$branch"; then
+    create_pr_branch_for_push "$branch" "$commit_message"
+    return $?
+  fi
+
+  if [[ "${#push_args[@]}" -gt 0 ]]; then
+    output=$(git push "${push_args[@]}" 2>&1)
+  else
+    output=$(git push 2>&1)
+  fi
+  status=$?
+  echo "$output"
+
+  if [[ "$status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
+    create_pr_branch_for_push "$branch" "$commit_message"
+    return $?
+  fi
+
+  return "$status"
+}
+
 function safe_push() {
   git fetch
-  LOCAL=$(git rev-parse @)
-  REMOTE=$(git rev-parse @{u} 2>/dev/null)
+  BRANCH=$(git branch --show-current)
+  UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
 
-  if [ -z "$REMOTE" ]; then
+  if [ -z "$UPSTREAM" ]; then
     echo "⚠️ No upstream branch set."
+    pr_aware_push "update project files" -u origin "$BRANCH"
     return
   fi
 
-  if [ "$LOCAL" != "$REMOTE" ]; then
+  AHEAD=$(git rev-list --count "$UPSTREAM"..HEAD 2>/dev/null || echo 0)
+  BEHIND=$(git rev-list --count HEAD.."$UPSTREAM" 2>/dev/null || echo 0)
+
+  if [ "$BEHIND" -gt 0 ]; then
     echo "⚠️ Repo not up to date. Run pull first."
     return
   fi
 
-  git push
+  if [ "$AHEAD" -eq 0 ]; then
+    echo "✅ Nothing to push."
+    return
+  fi
+
+  pr_aware_push "update project files"
 }
 
 # ------------------------
@@ -733,8 +835,9 @@ while true; do
       fi
 
       git add .
-      git commit -m "$SUGGESTED"
-      git push
+      if git commit -m "$SUGGESTED"; then
+        pr_aware_push "$SUGGESTED"
+      fi
       read
       ;;
     4)
@@ -767,8 +870,9 @@ while true; do
     8)
       git add .
       SUGGESTED=$(suggest_commit)
-      git commit -m "$SUGGESTED"
-      git push
+      if git commit -m "$SUGGESTED"; then
+        pr_aware_push "$SUGGESTED"
+      fi
       read
       ;;
     9|b|B)

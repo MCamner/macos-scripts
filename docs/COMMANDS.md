@@ -74,6 +74,10 @@ mqlaunch git                        # open git menu
 Supported actions inside the menu: status, diff risk, commit suggestion,
 safe push, pull with rebase, open on GitHub, change repo path.
 
+AI commit and safe push avoid direct pushes to protected branches such as
+`main` and `master`. When branch protection requires a pull request, mqlaunch
+offers to create a `mq/...` PR branch and push that branch instead.
+
 ---
 
 ## Release

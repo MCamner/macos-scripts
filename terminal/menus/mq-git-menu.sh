@@ -81,6 +81,90 @@ get_ahead_behind() {
   printf '%s %s\n' "$left" "$right"
 }
 
+# Lists branches that should be pushed through PR branches instead of directly.
+protected_branch_names() {
+  echo "${MQLAUNCH_PROTECTED_BRANCHES:-main master}"
+}
+
+# Checks if a branch is protected by local policy.
+is_protected_branch() {
+  local branch="$1"
+  local protected
+
+  protected=" $(protected_branch_names) "
+  [[ "$protected" == *" $branch "* ]]
+}
+
+# Creates a safe branch slug from a commit or action label.
+branch_slug() {
+  local text="$1"
+  local slug
+
+  slug="$(echo "$text" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
+  if [[ -z "$slug" ]]; then
+    slug="update-project-files"
+  fi
+
+  echo "${slug:0:48}"
+}
+
+# Pushes current commit through a PR branch when the base branch is protected.
+create_pr_branch_for_push() {
+  local base_branch="$1"
+  local action_label="${2:-update project files}"
+  local slug pr_branch confirm output status
+
+  slug="$(branch_slug "$action_label")"
+  pr_branch="mq/${slug}-$(date +%Y%m%d-%H%M%S)"
+
+  echo
+  ui_warn "Branch '$base_branch' is protected. GitHub requires a pull request."
+  echo "Suggested PR branch: $pr_branch"
+  printf "%bCreate and push this PR branch? [Y/n]: %b" "$C_TITLE" "$C_RESET"
+  read -r confirm
+
+  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+    ui_warn "Push cancelled. Commit remains local on $base_branch."
+    return 1
+  fi
+
+  git -C "$CURRENT_REPO" switch -c "$pr_branch" 2>/dev/null || git -C "$CURRENT_REPO" checkout -b "$pr_branch"
+  output="$(git -C "$CURRENT_REPO" push -u origin "$pr_branch" 2>&1)"
+  status=$?
+  echo "$output"
+
+  if [[ "$status" -eq 0 ]] && command -v gh >/dev/null 2>&1; then
+    echo
+    echo "Next: gh pr create --base $base_branch --head $pr_branch --fill"
+  fi
+
+  return "$status"
+}
+
+# Pushes directly unless branch protection requires a PR branch.
+pr_aware_push() {
+  local branch="$1"
+  local action_label="${2:-update project files}"
+  local push_args=("${@:3}")
+  local output status
+
+  if is_protected_branch "$branch"; then
+    create_pr_branch_for_push "$branch" "$action_label"
+    return $?
+  fi
+
+  output="$(git -C "$CURRENT_REPO" push "${push_args[@]}" 2>&1)"
+  status=$?
+  echo "$output"
+
+  if [[ "$status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
+    create_pr_branch_for_push "$branch" "$action_label"
+    return $?
+  fi
+
+  return "$status"
+}
+
 # Chooses repo.
 choose_repo() {
   local path=""
@@ -401,7 +485,7 @@ safe_push() {
     printf "${C_TITLE}Push with -u origin $branch? [y/N]: ${C_RESET}"
     read -r confirm
     [[ "$confirm" =~ ^[Yy]$ ]] || return 0
-    git -C "$CURRENT_REPO" push -u origin "$branch"
+    pr_aware_push "$branch" "update project files" -u origin "$branch"
     pause_enter
     return 0
   fi
@@ -433,7 +517,7 @@ safe_push() {
   read -r confirm
   [[ "$confirm" =~ ^[Yy]$ ]] || return 0
 
-  git -C "$CURRENT_REPO" push origin "$branch"
+  pr_aware_push "$branch" "update project files" origin "$branch"
   echo
   pause_enter
 }
