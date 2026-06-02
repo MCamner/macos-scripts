@@ -515,6 +515,14 @@ function prompt_choice() {
   choice="$input"
 }
 
+# Pauses inside gitlaunch without changing menu level.
+function pause_git_menu() {
+  local pause_reply
+
+  printf "%bPress Enter to return to Git menu...%b" "$C_DIM" "$C_RESET"
+  read pause_reply
+}
+
 # ------------------------
 # NEXT ACTION ENGINE
 # ------------------------
@@ -633,6 +641,7 @@ function protected_branch_names() {
   echo "${MQLAUNCH_PROTECTED_BRANCHES:-main master}"
 }
 
+# Checks whether protected branch applies.
 function is_protected_branch() {
   local branch="$1"
   local protected
@@ -641,6 +650,7 @@ function is_protected_branch() {
   [[ "$protected" == *" $branch "* ]]
 }
 
+# Handles branch slug.
 function branch_slug() {
   local text="$1"
   local slug
@@ -653,6 +663,7 @@ function branch_slug() {
   echo "${slug:0:48}"
 }
 
+# Handles create pr branch for push.
 function create_pr_branch_for_push() {
   local base_branch="$1"
   local commit_message="$2"
@@ -688,6 +699,7 @@ function create_pr_branch_for_push() {
   fi
 }
 
+# Handles pr aware push.
 function pr_aware_push() {
   local commit_message="${1:-update project files}"
   local branch output status
@@ -722,6 +734,7 @@ function pr_aware_push() {
   return "$status"
 }
 
+# Handles safe push.
 function safe_push() {
   git fetch
   BRANCH=$(git branch --show-current)
@@ -764,6 +777,36 @@ function suggest_commit() {
   else
     echo "update project files"
   fi
+}
+
+# Handles AI-assisted commit flow and always returns to the Git menu loop.
+function run_ai_commit() {
+  local SUGGESTED proceed
+
+  SUGGESTED=$(suggest_commit)
+
+  echo ""
+  printf "%b💡 Suggested commit message:%b\n" "$C_TITLE" "$C_RESET"
+  echo "$SUGGESTED"
+
+  analyze_diff
+
+  printf "%bProceed with commit? (y/n): %b" "$C_LABEL" "$C_RESET"
+  read proceed
+
+  if [[ "$proceed" != "y" ]]; then
+    echo "❌ Commit cancelled"
+    pause_git_menu
+    return 0
+  fi
+
+  git add .
+  if git commit -m "$SUGGESTED"; then
+    pr_aware_push "$SUGGESTED"
+  fi
+
+  pause_git_menu
+  return 0
 }
 
 # ------------------------
@@ -810,39 +853,19 @@ while true; do
   case $choice in
     1)
       git status
-      read
+      pause_git_menu
       ;;
     2)
       git pull
-      read
+      pause_git_menu
       ;;
     3)
-      SUGGESTED=$(suggest_commit)
-
-      echo ""
-      printf "%b💡 Suggested commit message:%b\n" "$C_TITLE" "$C_RESET"
-      echo "$SUGGESTED"
-
-      analyze_diff
-
-      printf "%bProceed with commit? (y/n): %b" "$C_LABEL" "$C_RESET"
-      read proceed
-
-      if [[ "$proceed" != "y" ]]; then
-        echo "❌ Commit cancelled"
-        read
-        continue
-      fi
-
-      git add .
-      if git commit -m "$SUGGESTED"; then
-        pr_aware_push "$SUGGESTED"
-      fi
-      read
+      run_ai_commit
+      continue
       ;;
     4)
       safe_push
-      read
+      pause_git_menu
       ;;
     5)
       open .
@@ -873,7 +896,7 @@ while true; do
       if git commit -m "$SUGGESTED"; then
         pr_aware_push "$SUGGESTED"
       fi
-      read
+      pause_git_menu
       ;;
     9|b|B)
       break
