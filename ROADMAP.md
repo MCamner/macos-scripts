@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 0.4.12
+Current version: 0.5.0
 
 ## Design boundary
 

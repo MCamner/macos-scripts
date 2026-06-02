@@ -4,6 +4,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-06-02
+
+### Added
+
+- Added mq-agent review, risk-review, architecture, repo-health and mcp-status routing from mqlaunch.
+- Added MQ ecosystem repo status, roadmap, skills and diff-summary commands.
+- Added command-template-library skill.
+
+### Changed
+
+- Improved README onboarding with requirements, usage examples, docs map, roadmap context and contribution guidance.
+- Updated Git menu AI COMMIT flow so it returns to the Git menu instead of the start menu.
+- Preserved mq-agent bridge loading when running mq-mcp review from the Tools menu.
+
+### Fixed
+
+- Fixed protected-branch push handling by routing main/master pushes through PR branches.
+- Fixed auto comment flow so existing comments are preserved.
+- Fixed mq-agent bridge loading in `run_mq_mcp_review`.
+
 ## [0.4.12] - 2026-05-23
 
 ### Added
