@@ -100,7 +100,7 @@ render_main_menu_panel() {
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
-  surface_split_row "h. Health Check" "r. REPL" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
@@ -273,8 +273,9 @@ handle_main_menu_choice() {
     p|P) open_performance_menu ;;
     n|N) show_network_info ;;
     h|H) system_check ;;
-    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
+    z|Z) restart_mqlaunch ;;
     # kept for muscle memory — not shown in menu
+    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
     a|A)
       "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
       if [[ -f "$HOME/.hal_nav" ]]; then
@@ -289,7 +290,6 @@ handle_main_menu_choice() {
       fi
       ;;
     g|G) open_agent_menu ;;
-    z|Z) restart_mqlaunch ;;
 
     # EXIT
     x|X)
