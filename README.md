@@ -98,6 +98,7 @@ mqlaunch                         # browse menus
 mqlaunch palette                 # fuzzy command search
 mqlaunch system check            # system health report
 mqlaunch workflows boot          # project boot workflow
+mqlaunch workflows validate      # workflow command-surface health check
 mqlaunch workflows save          # save workspace snapshot
 mqlaunch release-check           # release readiness gate
 mqlaunch repos status            # MQ ecosystem repo status
@@ -190,6 +191,7 @@ mqlaunch hal repo-status         # read-only git repo status
 mqlaunch hal ci                  # GitHub Actions status
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
+mqlaunch workflows validate      # workflow files, docs and routing check
 mqlaunch selftest                # smoke tests + shell lint
 mqlaunch release-check           # release readiness check
 mqlaunch demo                    # guided demo
@@ -340,6 +342,7 @@ practical recommendations for what to close or restart.
 
 ```bash
 mqlaunch doctor
+mqlaunch workflows validate
 ```
 
 * checks required tools (git, brew, node, python, jq)
@@ -441,7 +444,6 @@ mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 
 Near-term priorities:
 
-* workflow validation / health checks
 * release gate integration
 * plugin-style extensions
 * remote execution support

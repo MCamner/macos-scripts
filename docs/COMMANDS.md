@@ -38,6 +38,7 @@ mqlaunch theme              # Themes menu
 ```bash
 mqlaunch workflows boot             # run project boot
 mqlaunch workflows check            # run project check
+mqlaunch workflows validate         # validate workflow files, docs and routing
 mqlaunch workflows save             # save workspace snapshot
 mqlaunch workflows restore          # restore workspace snapshot
 ```
@@ -102,6 +103,7 @@ Auto Release flow (option 11 inside the menu):
 ```bash
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
+mqlaunch workflows validate         # workflow command-surface health check
 mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
 ```

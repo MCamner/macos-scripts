@@ -42,7 +42,6 @@ mqlaunch without embedding any cognition in the shell layer.
 
 ## Near-term (unscheduled)
 
-- workflow validation / health checks
 - release gate integration (repo-signal publish checklist)
 - plugin-style extensions
 - remote execution support
@@ -53,4 +52,5 @@ mqlaunch without embedding any cognition in the shell layer.
 - mqlaunch command surface
 - terminal release check workflow
 - doctor / system check
+- workflow validation / health checks
 - secrets scan via gitleaks

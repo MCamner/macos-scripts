@@ -1140,9 +1140,18 @@ run_mqworkflows() {
   if command -v workflows_menu_loop >/dev/null 2>&1; then
     MQ_USE_DASHBOARD_HEADER=1
     case "$cmd" in
-      menu)      workflows_menu_loop ;;
+      menu) workflows_menu_loop ;;
+      status) show_workflows_status ;;
+      boot) run_project_boot_default ;;
+      boot-custom) run_project_boot_custom ;;
+      check) run_project_check_default ;;
+      check-custom) run_project_check_custom ;;
       workspace) open_workspace_menu ;;
-      *)         workflows_menu_loop ;;
+      save) save_workspace_snapshot ;;
+      restore) restore_workspace_snapshot ;;
+      validate|health) run_workflows_validation ;;
+      readme) open_workflows_readme ;;
+      *) workflows_menu_loop ;;
     esac
   else
     local workflows_menu="$BASE_DIR/terminal/menus/mq-workflows-menu.sh"

@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Added `mqlaunch workflows validate` for workflow command-surface health checks.
+
 ## [0.5.0] - 2026-06-02
 
 ### Added

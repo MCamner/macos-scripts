@@ -6,6 +6,7 @@ WORKFLOWS_DIR="$BASE_DIR/automation/workflows"
 PROJECT_BOOT_SCRIPT="$WORKFLOWS_DIR/project-boot.sh"
 PROJECT_CHECK_SCRIPT="$WORKFLOWS_DIR/project-check.sh"
 WORKSPACE_SCRIPT="$WORKFLOWS_DIR/workspace.sh"
+WORKFLOW_VALIDATE_SCRIPT="$WORKFLOWS_DIR/validate.sh"
 WORKFLOWS_README="$WORKFLOWS_DIR/README.md"
 AUTOMATION_README="$BASE_DIR/automation/README.md"
 
@@ -68,6 +69,22 @@ require_workspace() {
     row " $WORKSPACE_SCRIPT"
     row "Run:"
     row " chmod +x $WORKSPACE_SCRIPT"
+    print_footer
+    pause_enter
+    return 1
+  fi
+}
+
+# Handles require workflow validator.
+require_workflow_validator() {
+  if [[ ! -x "$WORKFLOW_VALIDATE_SCRIPT" ]]; then
+    print_header
+    row_bold "WORKFLOWS"
+    empty_row
+    row "Missing or non-executable script:"
+    row " $WORKFLOW_VALIDATE_SCRIPT"
+    row "Run:"
+    row " chmod +x $WORKFLOW_VALIDATE_SCRIPT"
     print_footer
     pause_enter
     return 1
@@ -208,6 +225,7 @@ show_workflows_status() {
   row "Project boot:   $PROJECT_BOOT_SCRIPT"
   row "Project check:  $PROJECT_CHECK_SCRIPT"
   row "Workspace:      $WORKSPACE_SCRIPT"
+  row "Validator:      $WORKFLOW_VALIDATE_SCRIPT"
 
   if [[ -f "$WORKFLOWS_README" ]]; then
     row "README:         $WORKFLOWS_README"
@@ -216,6 +234,13 @@ show_workflows_status() {
   fi
 
   print_footer
+  pause_enter
+}
+
+# Runs workflow validation.
+run_workflows_validation() {
+  require_workflow_validator || return 1
+  "$WORKFLOW_VALIDATE_SCRIPT"
   pause_enter
 }
 
@@ -261,6 +286,9 @@ print_workflows_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "WORKSPACE" "$width" "$panel_color"
   surface_split_row "9. Save workspace" "10. Restore workspace" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "HEALTH" "$width" "$panel_color"
+  surface_split_row "11. Validate workflows" "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -289,6 +317,7 @@ workflows_menu_loop() {
       8) open_workspace_menu ;;
       9) save_workspace_snapshot ;;
       10) restore_workspace_snapshot ;;
+      11) run_workflows_validation ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -313,6 +342,7 @@ Commands:
   workspace     Open workspace snapshots menu
   save          Save current workspace snapshot
   restore       Restore latest workspace snapshot
+  validate      Validate workflow files, docs and routing
   readme        Open workflows README
   help          Show this help
 USAGE
@@ -332,6 +362,7 @@ main() {
     workspace) open_workspace_menu ;;
     save) save_workspace_snapshot ;;
     restore) restore_workspace_snapshot ;;
+    validate|health) run_workflows_validation ;;
     readme) open_workflows_readme ;;
     help|-h|--help) usage ;;
     *)
