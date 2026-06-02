@@ -33,7 +33,7 @@ print_main_menu() {
   print_header
   render_main_menu_panel
   render_command_surface
-  MQ_MAIN_MENU_RENDERED_LINES=66
+  MQ_MAIN_MENU_RENDERED_LINES=65
 }
 
 # Handles surface action word.
@@ -94,21 +94,20 @@ render_main_menu_panel() {
   surface_row "CORE" "$width" "$panel_color"
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
-  surface_split_row "5. Dev" "6. Help" "$width" "$panel_color"
-  surface_split_row "7. MQ HAL" "8. Repos" "$width" "$panel_color"
+  surface_split_row "5. Dev" "6. Repos" "$width" "$panel_color"
+  surface_split_row "7. MQ HAL" "8. Agent" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
-  surface_split_row "h. Health Check" "a. HAL" "$width" "$panel_color"
-  surface_split_row "r. REPL" "z. Restart mqlaunch" "$width" "$panel_color"
-  surface_split_row "g. Agent" "" "$width" "$panel_color"
+  surface_split_row "h. Health Check" "r. REPL" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "COMMANDS" "$width" "$panel_color"
   surface_split_row "/ask \"your question\"" "/chat" "$width" "$panel_color"
   surface_split_row "/doctor" "/scan" "$width" "$panel_color"
   surface_split_row "mcp-start" "mcp-stop" "$width" "$panel_color"
+  surface_split_row "/help" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -262,18 +261,20 @@ handle_main_menu_choice() {
     3) open_git_menu ;;
     4) open_release_menu ;;
     5) open_dev_menu ;;
-    6) open_help_center_menu ;;
+    6) "$BASE_DIR/bin/mqlaunch" hub ;;
     7)
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
       mq_hal_main
       ;;
-    8) "$BASE_DIR/bin/mqlaunch" hub ;;
+    8) open_agent_menu ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
     n|N) show_network_info ;;
     h|H) system_check ;;
+    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
+    # kept for muscle memory — not shown in menu
     a|A)
       "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
       if [[ -f "$HOME/.hal_nav" ]]; then
@@ -287,9 +288,8 @@ handle_main_menu_choice() {
         fi
       fi
       ;;
-    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
-    z|Z) restart_mqlaunch ;;
     g|G) open_agent_menu ;;
+    z|Z) restart_mqlaunch ;;
 
     # EXIT
     x|X)
