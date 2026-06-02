@@ -633,6 +633,7 @@ function protected_branch_names() {
   echo "${MQLAUNCH_PROTECTED_BRANCHES:-main master}"
 }
 
+# Checks whether protected branch applies.
 function is_protected_branch() {
   local branch="$1"
   local protected
@@ -641,6 +642,7 @@ function is_protected_branch() {
   [[ "$protected" == *" $branch "* ]]
 }
 
+# Handles branch slug.
 function branch_slug() {
   local text="$1"
   local slug
@@ -653,6 +655,7 @@ function branch_slug() {
   echo "${slug:0:48}"
 }
 
+# Handles create pr branch for push.
 function create_pr_branch_for_push() {
   local base_branch="$1"
   local commit_message="$2"
@@ -688,6 +691,7 @@ function create_pr_branch_for_push() {
   fi
 }
 
+# Handles pr aware push.
 function pr_aware_push() {
   local commit_message="${1:-update project files}"
   local branch output status
@@ -722,6 +726,7 @@ function pr_aware_push() {
   return "$status"
 }
 
+# Handles safe push.
 function safe_push() {
   git fetch
   BRANCH=$(git branch --show-current)
