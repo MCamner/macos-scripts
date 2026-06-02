@@ -28,12 +28,24 @@ Stop memorizing commands. Start running workflows.
 
 ---
 
-## 🚀 Quick start
+## Quick start
+
+### Requirements
+
+This project is built for macOS with `zsh`/`bash`. The doctor command checks
+the local tools used by the workflows, including `git`, `brew`, `node`,
+`python`, and `jq`.
 
 ### Option 1 — Install (recommended)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
+```
+
+Preview install changes without modifying your system:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash -- --dry-run
 ```
 
 ### Option 2 — Clone
@@ -42,6 +54,12 @@ curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.
 git clone https://github.com/MCamner/macos-scripts.git
 cd macos-scripts
 ./install.sh
+```
+
+Uninstall later with:
+
+```bash
+./install.sh --uninstall
 ```
 
 ---
@@ -70,6 +88,21 @@ mqlaunch
 * browse workflows via the interactive menu
 * or run commands directly (`perf`, `system`, `dev`, `tools`)
 
+## Usage
+
+Use `mqlaunch` when you want a menu, and direct commands when you already know
+the workflow:
+
+```bash
+mqlaunch                         # browse menus
+mqlaunch palette                 # fuzzy command search
+mqlaunch system check            # system health report
+mqlaunch workflows boot          # project boot workflow
+mqlaunch workflows save          # save workspace snapshot
+mqlaunch release-check           # release readiness gate
+mqlaunch repos status            # MQ ecosystem repo status
+```
+
 ---
 
 ## ⚡ One command instead of many
@@ -87,6 +120,16 @@ Run:
 
 ```bash
 mqlaunch perf
+```
+
+## Examples
+
+```bash
+mqlaunch hal brief               # compact repo status brief
+mqlaunch hal audit               # publish quality + README score
+mqlaunch review                  # delegate diff review to mq-agent/mq-mcp
+mqlaunch fix "explain this shell error"
+mqlaunch srm ask "what is indexed in this repo memory?"
 ```
 
 ---
@@ -161,6 +204,16 @@ HAL gallery: [docs/hal-gallery.md](docs/hal-gallery.md)
 HAL overview page: [docs/hal.html](docs/hal.html)
 
 HAL menu screenshot: [docs/screenshots/hal-menu.png](docs/screenshots/hal-menu.png)
+
+## 📚 Documentation map
+
+- [Command reference](docs/COMMANDS.md) — full `mqlaunch` command surface
+- [Terminal guide](terminal/README.md) — launchers, menus, themes, and bridges
+- [Tools guide](tools/README.md) — helper scripts and utility workflows
+- [Automation guide](automation/README.md) — login, shortcuts, and workflows
+- [System guide](system/README.md) — macOS tweaks, monitoring, and performance
+- [Skills](SKILLS.md) — local maintenance skills for this repo
+- [Roadmap](ROADMAP.md) — current design boundary and next priorities
 
 ---
 
@@ -315,7 +368,7 @@ mqlaunch demo
 
 ---
 
-## 🖼️ Screenshots
+## Screenshots
 
 ### Release Menu
 
@@ -378,19 +431,41 @@ mqlaunch system check
 
 ---
 
-## 🔭 Roadmap
+## Roadmap
+
+Current focus is documented in [ROADMAP.md](ROADMAP.md). The main boundary is:
+
+```text
+mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
+```
+
+Near-term priorities:
 
 * workflow validation / health checks
+* release gate integration
 * plugin-style extensions
 * remote execution support
 * improved onboarding
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-PRs welcome.
-If you have ideas for workflows or improvements — open an issue.
+PRs and issues are welcome.
+
+Good first contributions:
+
+* add or improve a workflow under `automation/`, `tools/`, or `system/`
+* improve command docs in [docs/COMMANDS.md](docs/COMMANDS.md)
+* add smoke coverage under `tests/`
+* polish terminal menu labels, spacing, or discoverability
+
+Before opening a PR, run:
+
+```bash
+mqlaunch selftest
+mqlaunch release-check
+```
 
 ---
 
