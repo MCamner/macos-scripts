@@ -581,6 +581,13 @@ run_mq_mcp_review() {
   empty_row
 
   if ! declare -f run_agent_command >/dev/null; then
+    local _agent_menu="$BASE_DIR/terminal/menus/mq-agent-menu.sh"
+    if [[ -f "$_agent_menu" ]]; then
+      # shellcheck disable=SC1090
+      source "$_agent_menu"
+    fi
+  fi
+  if ! declare -f run_agent_command >/dev/null; then
     ui_err "mq-agent bridge not loaded."
     pause_enter
     return 1
