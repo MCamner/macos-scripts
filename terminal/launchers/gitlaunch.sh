@@ -63,24 +63,16 @@ UNTRACKED_COUNT=0
 # ASCII ART
 # ------------------------
 function render_ascii() {
-  local pulse line
-  local -a pulses dark_lines amber_lines
+  local line
+  local -a pulses figure
 
-  dark_lines=(
-    "   ▄████  ██▓▄▄▄█████▓"
-    "  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒"
-    " ▒██░▄▄▄░▒██▒▒ ▓██░ ▒░"
-    " ░▓█  ██▓░██░░ ▓██▓ ░ "
-    " ░▒▓███▀▒░██░  ▒██▒ ░ "
-    "  ░▒   ▒ ░▓    ▒ ░░   "
-  )
-  amber_lines=(
-    " ██▓    ▄▄▄       █    ██  ███▄    █  ▄████▄   ██░ ██ "
-    "▓██▒   ▒████▄     ██  ▓██▒ ██ ▀█   █ ▒██▀ ▀█  ▓██░ ██▒"
-    "▒██░   ▒██  ▀█▄  ▓██  ▒██░▓██  ▀█ ██▒▒▓█    ▄ ▒██▀▀██░"
-    "▒██░   ░██▄▄▄▄██ ▓▓█  ░██░▓██▒  ▐▌██▒▒▓▓▄ ▄██▒░▓█ ░██ "
-    "░██████▒▓█   ▓██▒▒▒█████▓ ▒██░   ▓██░▒ ▓███▀ ░░▓█▒░██▓"
-    "░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒"
+  figure=(
+    "    ████████    "
+    "    ██    ██    "
+    "    ████████    "
+    "  ████████████  "
+    "  ██        ██  "
+    "  ████    ████  "
   )
 
   if [[ "$_BANNER_SHOWN" -eq 0 ]]; then
@@ -95,21 +87,16 @@ function render_ascii() {
       sleep 0.05
     done
     printf "\033[2K"
-    printf "%b" "$C_TITLE"
-    for line in "${dark_lines[@]}"; do
-      printf '%s\n' "$line"
-      sleep 0.03
-    done
     printf "%b" "$C_AMBER"
-    for line in "${amber_lines[@]}"; do
-      printf '%s\n' "$line"
-      sleep 0.03
+    for line in "${figure[@]}"; do
+      printf '  %s\n' "$line"
+      sleep 0.06
     done
   else
-    printf "%b" "$C_TITLE"
-    for line in "${dark_lines[@]}"; do printf '%s\n' "$line"; done
     printf "%b" "$C_AMBER"
-    for line in "${amber_lines[@]}"; do printf '%s\n' "$line"; done
+    for line in "${figure[@]}"; do
+      printf '  %s\n' "$line"
+    done
   fi
 
   printf "%b" "$C_RESET"
