@@ -205,6 +205,28 @@ pause_if_interactive() {
   fi
 }
 
+# Runs a bundled tools script with a clear missing-file fallback.
+run_tool_script() {
+  local label="$1"
+  local script="$2"
+  shift 2
+
+  if [[ -x "$script" ]]; then
+    "$script" "$@"
+  elif [[ -f "$script" ]]; then
+    bash "$script" "$@"
+  else
+    print_header
+    row_bold "$label"
+    empty_row
+    row "Script missing:"
+    row " $script"
+    print_footer
+  fi
+
+  pause_enter
+}
+
 # Coordinates select document function targets behavior.
 select_document_function_targets() {
   local action="${1:-update}"
@@ -776,7 +798,7 @@ print_tools_menu() {
 
   print_header
   surface_panel_header "Tools Menu" "Tools" "$width" "$panel_color"
-  surface_row "SYSTEM" "$width" "$panel_color"
+  surface_row "PLACES" "$width" "$panel_color"
   surface_split_row "1. Run system check" "2. Open repo folder" "$width" "$panel_color"
   surface_split_row "3. Open launchers folder" "4. Open themes folder" "$width" "$panel_color"
   surface_split_row "5. Open menus folder" "6. Open dashboard" "$width" "$panel_color"
@@ -785,7 +807,7 @@ print_tools_menu() {
   surface_split_row "7. Open terminal guide" "8. Show key paths" "$width" "$panel_color"
   surface_split_row "9. Show git status" "10. Boot Maker" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "ACTIONS" "$width" "$panel_color"
+  surface_row "WORKBENCH" "$width" "$panel_color"
   surface_split_row "11. Focus Timer" "12. Document functions" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "VERIFY" "$width" "$panel_color"
@@ -823,14 +845,18 @@ tools_menu_loop() {
       7) open_guide ;;
       8) show_paths ;;
       9) show_git_status ;;
-    10) "$BASE_DIR/tools/cli/boot-maker.sh"; pause_enter ;;
-    11) "$BASE_DIR/tools/scripts/focus.sh"; pause_enter ;;
+    10) run_tool_script "BOOT MAKER" "$BASE_DIR/tools/cli/boot-maker.sh" ;;
+    11) run_tool_script "FOCUS TIMER" "$BASE_DIR/tools/scripts/focus.sh" ;;
     12) document_functions_menu_loop ;;
-    13) "$BASE_DIR/tools/scripts/doctor.sh"; pause_enter ;;
+    13) run_tool_script "DOCTOR CHECK" "$BASE_DIR/tools/scripts/doctor.sh" ;;
     14)
-      "$BASE_DIR/tools/scripts/doctor.sh" --json \
-        | (command -v jq >/dev/null 2>&1 && jq . || cat)
-      pause_enter
+      if [[ -x "$BASE_DIR/tools/scripts/doctor.sh" || -f "$BASE_DIR/tools/scripts/doctor.sh" ]]; then
+        bash "$BASE_DIR/tools/scripts/doctor.sh" --json \
+          | (command -v jq >/dev/null 2>&1 && jq . || cat)
+        pause_enter
+      else
+        run_tool_script "DOCTOR JSON" "$BASE_DIR/tools/scripts/doctor.sh" --json
+      fi
       ;;
     15)
       if command -v run_self_check >/dev/null 2>&1; then
@@ -841,7 +867,7 @@ tools_menu_loop() {
         pause_enter
       fi
       ;;
-    16) "$BASE_DIR/tools/scripts/install-smoke.sh"; pause_enter ;;
+    16) run_tool_script "SMOKE TEST" "$BASE_DIR/tools/scripts/install-smoke.sh" ;;
     17) run_mq_skills_audit ;;
     18) run_mq_skills_validate ;;
     19) run_mq_repos_summary ;;
