@@ -540,14 +540,14 @@ function prompt_choice() {
   prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
 
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
-  printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
-  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
-  printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
+  printf "%bgitlaunch%b %b[1-9,b]%b > " "$C_TITLE" "$C_RESET" "$C_DIM" "$C_RESET"
   input=""
   IFS= read -r input || input="b"
   input="${input[1,1]}"
 
-  printf "%s\n" "$input"
+  if [[ ! -t 0 ]]; then
+    printf "%s\n" "$input"
+  fi
 
   choice="$input"
 }
