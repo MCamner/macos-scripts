@@ -160,6 +160,7 @@ menu family.
 
 Reference files:
 
+- `skills/terminal-ui-polisher/assets/box-templates.md` contains reusable box templates; use it before writing manual box math.
 - `terminal/menus/mq-hal-menu.sh` is the clearest submenu pattern.
 - `terminal/menus/mq-performance-menu.sh` shows status-driven panels.
 - `terminal/menus/mq-main-menu.sh` shows the main command surface.
@@ -189,6 +190,7 @@ Layout rules:
 - Text must fit at 60 columns because `surface_terminal_width` clamps there.
 - If a dependency is missing, render a panel explaining the missing binary and the exact check command.
 - Menus should work sourced from mqlaunch and directly as scripts.
+- For legacy launchers with local frame helpers, copy the width math from `assets/box-templates.md`; do not draw nested two-column boxes.
 
 When reviewing a proposed menu, reject it if it:
 
