@@ -13,6 +13,7 @@ mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 ```
 
 mqlaunch must not:
+
 - implement its own review logic
 - duplicate mq-mcp tool calls directly
 - embed semantic memory logic in shell scripts
@@ -31,7 +32,7 @@ mqlaunch without embedding any cognition in the shell layer.
 - [x] `mqlaunch risk-review` — delegates to `mq-agent review --risk` when
   mq-mcp ≥ v1.5.0 (risk layer)
 - [x] `mqlaunch repo-health` — delegates to `mq-agent` → `repo_signal_analyze`
-  + `validate_orchestration_contract`
+  and `validate_orchestration_contract`
 - [x] `mqlaunch mcp-status` — shows mq-mcp version, tool count, contract
   freshness via `mq-agent mcp status`
 - [x] Update docs: all new commands documented in `docs/COMMANDS.md`
