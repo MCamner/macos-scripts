@@ -1,5 +1,42 @@
 #!/usr/bin/env bash
 
+# Runs a bundled dev script with a clear missing-file fallback.
+run_dev_script() {
+  local label="$1"
+  local script="$2"
+  shift 2
+
+  if [[ -x "$script" ]]; then
+    "$script" "$@"
+  elif [[ -f "$script" ]]; then
+    bash "$script" "$@"
+  else
+    print_header
+    row_bold "$label"
+    empty_row
+    row "Script missing:"
+    row " $script"
+    print_footer
+  fi
+
+  pause_enter
+}
+
+# Resolves a repo-local path from BASE_DIR when available, otherwise from this file.
+dev_repo_path() {
+  local relative_path="$1"
+  local script_dir repo_root
+
+  if [[ -n "${BASE_DIR:-}" ]]; then
+    printf '%s/%s\n' "$BASE_DIR" "$relative_path"
+    return
+  fi
+
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/../.." && pwd)"
+  printf '%s/%s\n' "$repo_root" "$relative_path"
+}
+
 # Prints dev menu.
 print_dev_menu() {
   local width panel_color
@@ -8,15 +45,19 @@ print_dev_menu() {
 
   print_header
   surface_panel_header "Prompt Tools" "Dev" "$width" "$panel_color"
-  surface_row "PROMPTS" "$width" "$panel_color"
+  surface_row "PROMPT LIBRARY" "$width" "$panel_color"
   surface_split_row "1. Open AI Prompts folder" "2. Show prompt files" "$width" "$panel_color"
   surface_split_row "3. Edit mqlaunch" "4. Backup prompts" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "PROJECT" "$width" "$panel_color"
   surface_split_row "5. Backup mqlaunch" "6. Open macos-scripts folder" "$width" "$panel_color"
+  surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "NAVIGATION" "$width" "$panel_color"
-  surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
   surface_split_row "9. Network Tools" "10. Themes" "$width" "$panel_color"
   surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "MAINTENANCE" "$width" "$panel_color"
   surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
   surface_split_row "15. Comment scripts" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -39,34 +80,14 @@ handle_dev_menu_choice() {
     5) backup_mqlaunch ;;
     6) open_base_dir ;;
     7) open_launcher_folder ;;
-    8) "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ;;
+    8) run_dev_script "HAL TERMINAL GUIDE" "$(dev_repo_path "tools/scripts/hal-terminal-guide.sh")" ;;
     9) net_menu_loop ;;
     10) open_themes_menu ;;
     11) open_tools_menu ;;
-    12)
-      if [ -n "${BASE_DIR:-}" ]; then
-        "$BASE_DIR/terminal/dev/mq-create-repo.sh"
-      else
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-        "$REPO_ROOT/terminal/dev/mq-create-repo.sh"
-      fi
-      printf "\nPress Enter to continue..."
-      read -r _
-      ;;
-    13)
-      if [ -n "${BASE_DIR:-}" ]; then
-        "$BASE_DIR/terminal/dev/mq-repo-signal-folder-check.sh"
-      else
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-        "$REPO_ROOT/terminal/dev/mq-repo-signal-folder-check.sh"
-      fi
-      printf "\nPress Enter to continue..."
-      read -r _
-      ;;
-    14) "$BASE_DIR/tools/scripts/env-snap.sh"; pause_enter ;;
-    15) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
+    12) run_dev_script "CREATE REPO" "$(dev_repo_path "terminal/dev/mq-create-repo.sh")" ;;
+    13) run_dev_script "REPO SIGNAL FOLDER CHECK" "$(dev_repo_path "terminal/dev/mq-repo-signal-folder-check.sh")" ;;
+    14) run_dev_script "ENV SNAPSHOT" "$(dev_repo_path "tools/scripts/env-snap.sh")" ;;
+    15) run_dev_script "COMMENT SCRIPTS" "$(dev_repo_path "terminal/menus/mq-tools-menu.sh")" docfunc ;;
     b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac

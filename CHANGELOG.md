@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-No unreleased changes.
+### Changed
+
+- Polished the Dev menu with clearer groups and safer script fallbacks.
 
 ## [0.5.1] - 2026-06-03
 
