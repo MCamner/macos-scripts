@@ -63,8 +63,8 @@ UNTRACKED_COUNT=0
 # ASCII ART
 # ------------------------
 function render_ascii() {
-  local line
-  local -a pulses figure
+  local i
+  local -a pulses figure labels
 
   figure=(
     "    ████████    "
@@ -73,6 +73,14 @@ function render_ascii() {
     "  ████████████  "
     "  ██        ██  "
     "  ████    ████  "
+  )
+  labels=(
+    ""
+    "  Gitlaunch"
+    ""
+    ""
+    ""
+    ""
   )
 
   if [[ "$_BANNER_SHOWN" -eq 0 ]]; then
@@ -87,15 +95,13 @@ function render_ascii() {
       sleep 0.05
     done
     printf "\033[2K"
-    printf "%b" "$C_AMBER"
-    for line in "${figure[@]}"; do
-      printf '  %s\n' "$line"
+    for (( i=1; i<=${#figure[@]}; i++ )); do
+      printf "%b  %s%b%s%b\n" "$C_AMBER" "${figure[$i]}" "$C_TITLE" "${labels[$i]}" "$C_RESET"
       sleep 0.06
     done
   else
-    printf "%b" "$C_AMBER"
-    for line in "${figure[@]}"; do
-      printf '  %s\n' "$line"
+    for (( i=1; i<=${#figure[@]}; i++ )); do
+      printf "%b  %s%b%s%b\n" "$C_AMBER" "${figure[$i]}" "$C_TITLE" "${labels[$i]}" "$C_RESET"
     done
   fi
 
