@@ -5,6 +5,15 @@ normalize_cli_word() {
   printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'
 }
 
+# Returns true when any cli arg requests machine-readable JSON output.
+has_json_flag() {
+  local arg
+  for arg in "$@"; do
+    [[ "$arg" == "--json" ]] && return 0
+  done
+  return 1
+}
+
 # AI prompt helpers
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
@@ -544,7 +553,7 @@ dispatch_cli_command() {
         echo "ERROR: mq-hal bridge not loaded" >&2
         return 1
       fi
-      pause_enter
+      has_json_flag "$@" || pause_enter
       return 0
       ;;
 
