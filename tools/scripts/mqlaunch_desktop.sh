@@ -147,7 +147,7 @@ resolve_ai_status() {
   fi
 }
 
-# Handles safe run ai.
+# Runs ai through guardrails before acting.
 safe_run_ai() {
   local mode="$1"
 
@@ -353,7 +353,7 @@ open_terminal_guide() {
   refocus_terminal
 }
 
-# Handles system check.
+# Coordinates system check behavior.
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
@@ -676,7 +676,7 @@ backup_mqlaunch() {
   pause_enter
 }
 
-# Handles theme cmd.
+# Reads or applies the theme cmd setting.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
   local cmd="${1:-current}"
@@ -714,7 +714,7 @@ print_themes_menu() {
   printf "${C_TITLE}Select theme option [0-6]: ${C_RESET}"
 }
 
-# Handles themes menu loop.
+# Keeps the themes menu interactive until the user backs out.
 themes_menu_loop() {
   local choice
 
@@ -862,7 +862,7 @@ print_net_menu() {
   printf "${C_TITLE}Select net option [0-5]: ${C_RESET}"
 }
 
-# Handles ai menu loop.
+# Keeps the ai menu interactive until the user backs out.
 ai_menu_loop() {
   local choice
 
@@ -887,7 +887,7 @@ ai_menu_loop() {
   done
 }
 
-# Handles git menu loop.
+# Keeps the git menu interactive until the user backs out.
 git_menu_loop() {
   local choice
 
@@ -908,7 +908,7 @@ git_menu_loop() {
   done
 }
 
-# Handles net menu loop.
+# Keeps the net menu interactive until the user backs out.
 net_menu_loop() {
   local choice
 
@@ -929,7 +929,7 @@ net_menu_loop() {
   done
 }
 
-# Handles dev menu loop.
+# Keeps the dev menu interactive until the user backs out.
 dev_menu_loop() {
   local choice
 
@@ -957,7 +957,7 @@ dev_menu_loop() {
   done
 }
 
-# Handles main loop.
+# Coordinates main loop behavior.
 main_loop() {
   local choice
 

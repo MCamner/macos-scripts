@@ -17,7 +17,7 @@ else
   exit 1
 fi
 
-# Handles require login script.
+# Verifies the required login script helper is available before continuing.
 require_login_script() {
   if [[ ! -x "$LOGIN_SCRIPT" ]]; then
     print_header

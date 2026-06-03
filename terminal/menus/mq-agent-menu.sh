@@ -270,7 +270,7 @@ handle_agent_menu_choice() {
   return 0
 }
 
-# Handles agent menu loop.
+# Keeps the agent menu interactive until the user backs out.
 agent_menu_loop() {
   local choice
   while true; do

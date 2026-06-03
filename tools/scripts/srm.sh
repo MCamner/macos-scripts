@@ -28,7 +28,7 @@ Memory:
 HELP
 }
 
-# Handles require runtime.
+# Verifies the required runtime helper is available before continuing.
 require_runtime() {
   if [[ -z "${OPENAI_API_KEY:-}" ]]; then
     echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
@@ -46,7 +46,7 @@ require_runtime() {
   fi
 }
 
-# Handles build question.
+# Builds question for later command execution.
 build_question() {
   local mode="$1"
   local question="$2"
@@ -64,7 +64,7 @@ build_question() {
   esac
 }
 
-# Handles ask srm.
+# Coordinates ask srm behavior.
 ask_srm() {
   local mode="$1"
   local question="$2"

@@ -130,7 +130,7 @@ run_shell_fallback() {
   "$MQ_SHELL" -lc "$line"
 }
 
-# Handles dispatch command.
+# Routes command to the matching command handler.
 dispatch_command() {
   local line="$1"
 
@@ -155,7 +155,7 @@ dispatch_command() {
   esac
 }
 
-# Handles read prompt input.
+# Reads prompt input from user input or stdin.
 read_prompt_input() {
   local line context_line
   context_line="$(get_context_line)"

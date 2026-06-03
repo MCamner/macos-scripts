@@ -16,14 +16,14 @@ suggest_fallback() {
   echo "- Restart session"
 }
 
-# Handles insight v2.
+# Coordinates insight v2 behavior.
 insight_v2() {
   echo
   echo "Analysis:"
   ps -Ao pcpu,comm | sort -nr | awk 'NR>1 && NR<=4 {print "- " $2}'
 }
 
-# Handles memory insight.
+# Coordinates memory insight behavior.
 memory_insight() {
   echo
   section "MEMORY (Top consumers)"
@@ -37,7 +37,7 @@ memory_insight() {
 	    '
 }
 
-# Handles memory pressure v4.
+# Coordinates memory pressure v4 behavior.
 memory_pressure_v4() {
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
   $(vm_stat | awk '
@@ -86,7 +86,7 @@ memory_pressure_v4() {
   fi
 }
 
-# Handles combined insight v2.
+# Coordinates combined insight v2 behavior.
 combined_insight_v2() {
   echo
   section "COMBINED INSIGHT"
@@ -103,7 +103,7 @@ combined_insight_v2() {
   echo "Top Memory: $MEM_NAME ($(awk "BEGIN {print $MEM_RSS/1024}") MB)"
 }
 
-# Handles severity score.
+# Coordinates severity score behavior.
 severity_score() {
   echo
   section "HEALTH SCORE"
@@ -141,7 +141,7 @@ severity_score() {
   echo "Status: $STATUS"
 }
 
-# Handles no action mode.
+# Coordinates no action mode behavior.
 no_action_mode() {
   [ -n "$HEALTH_SCORE" ] || return 1
   [ -n "$MEM_STATUS" ] || return 1
@@ -189,7 +189,7 @@ suggest_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Handles smart kill.
+# Coordinates smart kill behavior.
 smart_kill() {
   read PID CPU NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
@@ -214,7 +214,7 @@ smart_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Handles track offender.
+# Coordinates track offender behavior.
 track_offender() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -260,7 +260,7 @@ track_offender() {
   fi
 }
 
-# Handles score offenders.
+# Coordinates score offenders behavior.
 score_offenders() {
   echo
   section "OFFENDER RANKING"
@@ -293,7 +293,7 @@ score_offenders() {
   echo
 }
 
-# Handles top weighted action.
+# Coordinates top weighted action behavior.
 top_weighted_action() {
   read PID CPU MEM NAME <<< \
   $(ps -Ao pid,pcpu,pmem,comm \
@@ -323,7 +323,7 @@ top_weighted_action() {
 # DECAY MODEL v1
 # ----------------------------
 
-# Handles track offender decay.
+# Coordinates track offender decay behavior.
 track_offender_decay() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -339,7 +339,7 @@ track_offender_decay() {
   tail -n 100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
 }
 
-# Handles recent count.
+# Coordinates recent count behavior.
 recent_count() {
   LOG="$HOME/.mq/offenders.log"
   NOW=$(date +%s)
@@ -367,7 +367,7 @@ recent_count() {
 # MEMORY-WEIGHTED SCORING v3
 # ----------------------------
 
-# Handles score offenders v3.
+# Coordinates score offenders v3 behavior.
 score_offenders_v3() {
   echo
   section "OFFENDER RANKING (v3)"
@@ -403,7 +403,7 @@ score_offenders_v3() {
   echo
 }
 
-# Handles top weighted action v3.
+# Coordinates top weighted action v3 behavior.
 top_weighted_action_v3() {
   # Select the highest score from the same calculation.
   TOP_LINE=$(ps -Ao pid,pcpu,pmem,rss,comm \
@@ -458,7 +458,7 @@ top_weighted_action_v3() {
 # AUDIO FILTERING v2
 # ----------------------------
 
-# Handles audio insight.
+# Coordinates audio insight behavior.
 audio_insight() {
   # Trigger only when coreaudiod appears high in the process list.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi coreaudiod; then
@@ -511,7 +511,7 @@ audio_insight() {
 # GUI-AWARE INSIGHT v1
 # ----------------------------
 
-# Handles gui insight.
+# Coordinates gui insight behavior.
 gui_insight() {
   # Trigger only when WindowServer is a top CPU process.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi WindowServer; then
@@ -554,7 +554,7 @@ gui_insight() {
 # ROOT CAUSE ENGINE v1
 # ----------------------------
 
-# Handles root cause engine.
+# Coordinates root cause engine behavior.
 root_cause_engine() {
   echo
   section "ROOT CAUSE"
@@ -665,7 +665,7 @@ root_cause_engine() {
   echo "- Close or restart $NAME"
 }
 
-# Handles trend engine v1.
+# Coordinates trend engine v1 behavior.
 trend_engine_v1() {
   [ -n "$ROOT_CAUSE_NAME" ] || return
   [ -n "$ROOT_MEM_TOP3" ] || return

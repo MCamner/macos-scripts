@@ -3,7 +3,7 @@
 # Performance Menu for MQLaunch v3
 # Uses the Command Surface (v3) styling and sources data from v1 commands.
 
-# Handles performance menu is sourced.
+# Checks whether performance menu is sourced.
 performance_menu_is_sourced() {
   if [[ -n "${ZSH_EVAL_CONTEXT:-}" ]]; then
     [[ ":$ZSH_EVAL_CONTEXT:" == *:file:* ]]
@@ -26,7 +26,7 @@ if ! command -v perf_health_score >/dev/null 2>&1; then
   [[ -f "$BASE_DIR/terminal/mqlaunch-v1/commands/performance.sh" ]] && source "$BASE_DIR/terminal/mqlaunch-v1/commands/performance.sh"
 fi
 
-# Handles render performance panel.
+# Renders the performance panel view for terminal output.
 render_performance_panel() {
   local width panel_color score perf_status color output warnings
   width="$(surface_terminal_width)"

@@ -27,7 +27,7 @@ print_dev_menu() {
   printf '\n'
 }
 
-# Handles handle dev menu choice.
+# Routes a dev menu selection to its script, submenu, or fallback path.
 handle_dev_menu_choice() {
   local choice="$1"
 
@@ -74,7 +74,7 @@ handle_dev_menu_choice() {
   return 0
 }
 
-# Handles dev menu loop.
+# Keeps the dev menu interactive until the user backs out.
 dev_menu_loop() {
   local choice
 

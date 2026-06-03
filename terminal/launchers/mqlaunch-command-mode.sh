@@ -157,7 +157,7 @@ HELP
   esac
 }
 
-# Handles dispatch cli command.
+# Routes cli command to the matching command handler.
 dispatch_cli_command() {
   local area sub
   area="$(normalize_cli_word "${1:-}")"

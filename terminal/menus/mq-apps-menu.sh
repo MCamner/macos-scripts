@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Handles render apps panel.
+# Renders the apps panel view for terminal output.
 render_apps_panel() {
   local width panel_color
   width="$(surface_terminal_width)"

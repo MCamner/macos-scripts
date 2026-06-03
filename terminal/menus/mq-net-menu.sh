@@ -19,7 +19,7 @@ print_net_menu() {
   printf '\n'
 }
 
-# Handles handle net menu choice.
+# Routes the net menu selection to the matching action.
 handle_net_menu_choice() {
   local choice="$1"
 
@@ -37,7 +37,7 @@ handle_net_menu_choice() {
   return 0
 }
 
-# Handles net menu loop.
+# Keeps the net menu interactive until the user backs out.
 net_menu_loop() {
   local choice
 

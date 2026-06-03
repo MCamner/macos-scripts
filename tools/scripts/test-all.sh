@@ -18,6 +18,7 @@ echo "== Running HAL menu checks =="
 "$PROJECT_ROOT/tests/hal-screenshot-smoke.sh"
 "$PROJECT_ROOT/tests/pages-index-smoke.sh"
 "$PROJECT_ROOT/tests/workflows-validation-smoke.sh"
+"$PROJECT_ROOT/tests/document-functions-quality-smoke.sh"
 
 echo
 echo "== Running mqlaunch v1 checks =="

@@ -8,6 +8,8 @@ CHECK=0
 SHOW_DIFF=0
 SUMMARY=0
 BACKUP=0
+QUALITY=0
+REWRITE_WEAK=0
 STYLE="simple"
 BACKUP_ROOT="$ROOT_DIR/backups/scripts"
 BACKUP_TIMESTAMP=""
@@ -16,6 +18,8 @@ EXCLUDES=()
 SCANNED_FILES=0
 CHANGED_FILES=0
 CHANGED_COMMENTS=0
+QUALITY_FILES=0
+QUALITY_WARNINGS=0
 
 # Prints usage information.
 usage() {
@@ -29,6 +33,8 @@ Options:
   --write                  Update files in place
   --check                  Exit 1 if any file would change
   --diff                   Show a unified diff for planned changes
+  --quality                Flag generic function comments that need review
+  --rewrite-weak           Replace generic generated comments with better ones
   --summary                Print scan totals at the end
   --backup                 Save backups under backups/scripts before --write updates
   --exclude PATTERN        Skip paths matching a shell glob pattern
@@ -62,6 +68,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --diff)
       SHOW_DIFF=1
+      shift
+      ;;
+    --quality)
+      QUALITY=1
+      shift
+      ;;
+    --rewrite-weak)
+      REWRITE_WEAK=1
       shift
       ;;
     --summary)
@@ -182,13 +196,94 @@ backup_file() {
   printf 'Backup saved %s\n' "$backup_path"
 }
 
+# Checks whether comments explain function behavior beyond the function name.
+quality_check_file() {
+  local file="$1"
+  local tmp findings
+  tmp="$(mktemp "${TMPDIR:-/tmp}/mq-doc-quality.XXXXXX")"
+
+  awk '
+    function trim(s) {
+      sub(/^[[:space:]]+/, "", s)
+      sub(/[[:space:]]+$/, "", s)
+      return s
+    }
+
+    function words(name, result) {
+      result = name
+      gsub(/^_+/, "", result)
+      gsub(/_+/, " ", result)
+      return result
+    }
+
+    function function_name(line, candidate) {
+      candidate = line
+      if (candidate ~ /^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(\)[[:space:]]*\{/) {
+        sub(/^[[:space:]]*/, "", candidate)
+        sub(/[[:space:]]*\(\)[[:space:]]*\{.*/, "", candidate)
+        return candidate
+      }
+      if (candidate ~ /^[[:space:]]*function[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*(\(\))?[[:space:]]*\{/) {
+        sub(/^[[:space:]]*function[[:space:]]+/, "", candidate)
+        sub(/[[:space:]]*(\(\))?[[:space:]]*\{.*/, "", candidate)
+        return candidate
+      }
+      return ""
+    }
+
+    function weak_comment(comment, name, normalized, lower_comment) {
+      normalized = words(name)
+      lower_comment = tolower(comment)
+
+      if (lower_comment ~ /^# handles handle /) return 1
+      if (lower_comment ~ /^# runs run /) return 1
+      if (lower_comment ~ /^# prints print /) return 1
+      if (lower_comment ~ /^# shows show /) return 1
+      if (lower_comment ~ /^# opens open /) return 1
+      if (lower_comment ~ /^# checks whether is /) return 1
+      if (lower_comment ~ /^# handles [a-z0-9 ]+\.$/ && lower_comment ~ normalized) return 1
+
+      return 0
+    }
+
+    {
+      name = function_name($0)
+      if (name != "") {
+        prev = trim(last)
+        if (prev ~ /^#/ && weak_comment(prev, name)) {
+          printf "%s:%d: weak comment above %s: %s\n", FILENAME, NR - 1, name, prev
+          warnings++
+        }
+      }
+      last = $0
+    }
+
+    END {
+      if (warnings > 0) {
+        printf "%d\n", warnings > "/dev/stderr"
+      }
+    }
+  ' "$file" > "$tmp" 2>"$tmp.count"
+
+  findings="$(cat "$tmp.count" 2>/dev/null || true)"
+  rm -f "$tmp.count"
+
+  if [[ -n "$findings" ]]; then
+    QUALITY_FILES=$((QUALITY_FILES + 1))
+    QUALITY_WARNINGS=$((QUALITY_WARNINGS + findings))
+    cat "$tmp"
+  fi
+
+  rm -f "$tmp"
+}
+
 # Documents file.
 document_file() {
   local file="$1"
   local tmp changed
   tmp="$(mktemp "${TMPDIR:-/tmp}/mq-doc-functions.XXXXXX")"
 
-  awk -v style="$STYLE" '
+  awk -v style="$STYLE" -v rewrite_weak="$REWRITE_WEAK" '
     function trim(s) {
       sub(/^[[:space:]]+/, "", s)
       sub(/[[:space:]]+$/, "", s)
@@ -206,6 +301,21 @@ document_file() {
       result = name
       sub("^" prefix "_", "", result)
       return words(result)
+    }
+
+    function weak_comment(comment, name, normalized, lower_comment) {
+      normalized = words(name)
+      lower_comment = tolower(comment)
+
+      if (lower_comment ~ /^# handles handle /) return 1
+      if (lower_comment ~ /^# runs run /) return 1
+      if (lower_comment ~ /^# prints print /) return 1
+      if (lower_comment ~ /^# shows show /) return 1
+      if (lower_comment ~ /^# opens open /) return 1
+      if (lower_comment ~ /^# checks whether is /) return 1
+      if (lower_comment ~ /^# handles [a-z0-9 ]+\.$/ && lower_comment ~ normalized) return 1
+
+      return 0
     }
 
     function simple_comment(name) {
@@ -249,10 +359,10 @@ document_file() {
         return "# Runs the mq-hal bridge command."
       }
       if (name == "menu_loop") {
-        return "# Runs the menu loop."
+        return "# Keeps the current menu interactive until the user backs out."
       }
       if (name ~ /_menu_loop$/) {
-        return "# Runs the " words(substr(name, 1, length(name) - 10)) " menu loop."
+        return "# Keeps the " words(substr(name, 1, length(name) - 10)) " menu interactive until the user backs out."
       }
       if (name == "_hal_pause_enter") {
         return "# Pauses safely after HAL menu actions."
@@ -284,8 +394,17 @@ document_file() {
       if (name ~ /^has_/) {
         return "# Checks whether " strip_prefix(name, "has") " is available."
       }
+      if (name ~ /^handle_.*_menu_choice$/) {
+        return "# Routes the " words(substr(name, 8, length(name) - 19)) " menu selection to the matching action."
+      }
+      if (name ~ /^handle_/) {
+        return "# Routes " strip_prefix(name, "handle") " input to the matching action."
+      }
       if (name ~ /^ensure_/) {
         return "# Ensures " strip_prefix(name, "ensure") " is ready."
+      }
+      if (name ~ /^require_/) {
+        return "# Verifies the required " strip_prefix(name, "require") " helper is available before continuing."
       }
       if (name ~ /^collect_/) {
         return "# Collects " strip_prefix(name, "collect") "."
@@ -293,8 +412,16 @@ document_file() {
       if (name ~ /^document_/) {
         return "# Documents " strip_prefix(name, "document") "."
       }
+      if (name ~ /^render_/) {
+        return "# Renders the " strip_prefix(name, "render") " view for terminal output."
+      }
       if (name ~ /^open_/) {
         return "# Opens " strip_prefix(name, "open") "."
+      }
+      if (name ~ /^safe_/) {
+        target = strip_prefix(name, "safe")
+        sub(/^run /, "", target)
+        return "# Runs " target " through guardrails before acting."
       }
       if (name ~ /^run_/) {
         return "# Runs " strip_prefix(name, "run") "."
@@ -308,8 +435,65 @@ document_file() {
       if (name ~ /^get_/) {
         return "# Gets " strip_prefix(name, "get") "."
       }
+      if (name ~ /^read_/) {
+        return "# Reads " strip_prefix(name, "read") " from user input or stdin."
+      }
       if (name ~ /^set_/) {
         return "# Sets " strip_prefix(name, "set") "."
+      }
+      if (name ~ /^load_/) {
+        return "# Loads " strip_prefix(name, "load") " into the current script state."
+      }
+      if (name ~ /^save_/) {
+        return "# Saves " strip_prefix(name, "save") " so it can be restored later."
+      }
+      if (name ~ /^restore_/) {
+        return "# Restores " strip_prefix(name, "restore") " from saved script state."
+      }
+      if (name ~ /^dispatch_/) {
+        return "# Routes " strip_prefix(name, "dispatch") " to the matching command handler."
+      }
+      if (name ~ /^refresh_/) {
+        return "# Refreshes " strip_prefix(name, "refresh") " before later checks use it."
+      }
+      if (name ~ /^default_/) {
+        return "# Returns the default " strip_prefix(name, "default") " when no explicit value is set."
+      }
+      if (name ~ /^current_/) {
+        return "# Reads the current " strip_prefix(name, "current") " from repo or tool state."
+      }
+      if (name ~ /^latest_/) {
+        return "# Reads the latest " strip_prefix(name, "latest") " from git or release state."
+      }
+      if (name ~ /^create_/) {
+        return "# Creates " strip_prefix(name, "create") " through the configured workflow."
+      }
+      if (name ~ /^generate_/) {
+        return "# Generates " strip_prefix(name, "generate") " for docs or release automation."
+      }
+      if (name ~ /^prompt_/) {
+        return "# Prompts for " strip_prefix(name, "prompt") " with script-level validation."
+      }
+      if (name ~ /^extract_/) {
+        return "# Extracts " strip_prefix(name, "extract") " from command or file content."
+      }
+      if (name ~ /^execute_/) {
+        return "# Executes " strip_prefix(name, "execute") " after validation."
+      }
+      if (name ~ /^build_/) {
+        return "# Builds " strip_prefix(name, "build") " for later command execution."
+      }
+      if (name ~ /^theme_/) {
+        return "# Reads or applies the theme " strip_prefix(name, "theme") " setting."
+      }
+      if (name ~ /^surface_/) {
+        return "# Formats " strip_prefix(name, "surface") " for the compact terminal surface."
+      }
+      if (name ~ /^frame_/) {
+        return "# Formats the " strip_prefix(name, "frame") " border element for terminal output."
+      }
+      if (name ~ /^fallback_/) {
+        return "# Renders fallback " strip_prefix(name, "fallback") " output when richer UI helpers are unavailable."
       }
       if (name ~ /^draw_/) {
         return "# Draws " strip_prefix(name, "draw") "."
@@ -363,7 +547,7 @@ document_file() {
         return "# Pings " strip_prefix(name, "ping") "."
       }
 
-      return "# Handles " words(name) "."
+      return "# Coordinates " words(name) " behavior."
     }
 
     function generated_comment(name) {
@@ -391,7 +575,7 @@ document_file() {
       return ""
     }
 
-# Handles emit pending.
+    # Flushes the buffered line before emitting generated function comments.
     function emit_pending() {
       if (has_pending) {
         print pending
@@ -406,7 +590,13 @@ document_file() {
         prev = trim(pending)
         expected = generated_comment(name)
         if (prev ~ /^#/) {
-          emit_pending()
+          if (rewrite_weak == 1 && weak_comment(prev, name)) {
+            pending = expected
+            emit_pending()
+            added++
+          } else {
+            emit_pending()
+          }
         } else if (!has_pending) {
           print expected
           added++
@@ -477,6 +667,9 @@ for target in "${TARGETS[@]}"; do
     [[ "$file" -ef "$SELF" ]] && continue
     SCANNED_FILES=$((SCANNED_FILES + 1))
     document_file "$file"
+    if [[ "$QUALITY" -eq 1 ]]; then
+      quality_check_file "$file"
+    fi
   done < <(collect_files "$target")
 done
 
@@ -484,8 +677,14 @@ if [[ "$SUMMARY" -eq 1 ]]; then
   printf 'Scanned %s files\n' "$SCANNED_FILES"
   printf '%s files need updates\n' "$CHANGED_FILES"
   printf '%s function comments missing or outdated\n' "$CHANGED_COMMENTS"
+  if [[ "$QUALITY" -eq 1 ]]; then
+    printf '%s files have weak comments\n' "$QUALITY_FILES"
+    printf '%s weak function comments need review\n' "$QUALITY_WARNINGS"
+  fi
 fi
 
-if [[ "$CHECK" -eq 1 && "$CHANGED_FILES" -gt 0 ]]; then
-  exit 1
+if [[ "$CHECK" -eq 1 ]]; then
+  if [[ "$CHANGED_FILES" -gt 0 || "$QUALITY_WARNINGS" -gt 0 ]]; then
+    exit 1
+  fi
 fi

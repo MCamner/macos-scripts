@@ -35,7 +35,7 @@ BANNER
   printf '             -- SYSTEM PROCESS INTERROGATOR v2.0 --%b\n\n' "$NC"
 }
 
-# Handles process name.
+# Coordinates process name behavior.
 process_name() {
   local pid="$1"
   local comm
@@ -43,7 +43,7 @@ process_name() {
   comm="${comm##*/}"; printf '%s\n' "${comm:-unknown}"
 }
 
-# Handles process exists.
+# Coordinates process exists behavior.
 process_exists() {
   local pid="$1"
   ps -p "$pid" >/dev/null 2>&1
@@ -56,7 +56,7 @@ print_col_header() {
   printf '%s\n' "----------------------------------------------------------------------"
 }
 
-# Handles list processes.
+# Coordinates list processes behavior.
 list_processes() {
   local rows count app_name
 
@@ -122,7 +122,7 @@ is_safe_pid() {
   (( pid != $$ )) || return 1
 }
 
-# Handles terminate process.
+# Coordinates terminate process behavior.
 terminate_process() {
   local pid="$1"
   local name="$2"

@@ -198,14 +198,14 @@ run_document_functions_command() {
   fi
 }
 
-# Handles pause if interactive.
+# Coordinates pause if interactive behavior.
 pause_if_interactive() {
   if [[ -t 0 ]]; then
     pause_enter
   fi
 }
 
-# Handles select document function targets.
+# Coordinates select document function targets behavior.
 select_document_function_targets() {
   local action="${1:-update}"
   local selection custom target
@@ -363,6 +363,33 @@ run_document_functions_check_selected() {
     ui_warn "Selected files need function comment updates."
   fi
 
+  print_footer
+  pause_if_interactive
+}
+
+# Runs document comment quality check selected.
+run_document_functions_quality_selected() {
+  if [[ ! -f "$DOCUMENT_FUNCTIONS" ]]; then
+    print_header
+    row "document-functions.sh not found:"
+    row " $DOCUMENT_FUNCTIONS"
+    print_footer
+    pause_if_interactive
+    return 1
+  fi
+
+  if ! select_document_function_targets "quality-check"; then
+    return 0
+  fi
+
+  print_header
+  row_bold "FUNCTION COMMENT QUALITY"
+  empty_row
+  if run_document_functions_command --quality --check --summary "${DOCUMENT_FUNCTION_ARGS[@]}" "${SELECTED_DOCUMENT_FUNCTION_TARGETS[@]}"; then
+    ui_ok "Selected function comments are specific enough."
+  else
+    ui_warn "Selected files have generic comments to review."
+  fi
   print_footer
   pause_if_interactive
 }
@@ -687,10 +714,11 @@ print_document_functions_menu() {
   surface_row "PREVIEW" "$width" "$panel_color"
   surface_split_row "1. Preview active areas" "2. Preview selected" "$width" "$panel_color"
   surface_split_row "3. Diff selected" "4. Check selected" "$width" "$panel_color"
+  surface_split_row "5. Quality selected" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "UPDATE" "$width" "$panel_color"
-  surface_split_row "5. Update selected" "6. Auto comment" "$width" "$panel_color"
-  surface_split_row "7. Ollama review" "8. mq-agent review" "$width" "$panel_color"
+  surface_split_row "6. Update selected" "7. Auto comment" "$width" "$panel_color"
+  surface_split_row "8. Ollama review" "9. mq-agent review" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -729,10 +757,11 @@ document_functions_menu_loop() {
       2) run_document_functions_preview_selected ;;
       3) run_document_functions_diff_selected ;;
       4) run_document_functions_check_selected ;;
-      5) run_document_functions_update ;;
-      6) auto_document_functions ;;
-      7) run_ollama_document_review ;;
-      8) run_mq_mcp_review ;;
+      5) run_document_functions_quality_selected ;;
+      6) run_document_functions_update ;;
+      7) auto_document_functions ;;
+      8) run_ollama_document_review ;;
+      9) run_mq_mcp_review ;;
       b|B|x|X|exit) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac

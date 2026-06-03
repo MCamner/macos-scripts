@@ -43,6 +43,9 @@ Rules:
 - Do not introduce dependencies.
 - Avoid obvious noise comments (do not explain what every line does).
 - Prefer concise comments that explain WHY something exists.
+- Return at most 5 high-signal suggestions per file.
+- Do not include a full unified diff unless the user explicitly asks for one.
+- Prefer "file:line — issue → better comment" over broad commentary.
 - If a function touches files, shell commands, credentials, environment
   variables, subprocesses, or network calls, suggest a short safety/side-effect note.
 - If no useful improvement is needed, write exactly: NO_COMMENT_CHANGES_NEEDED
@@ -144,20 +147,30 @@ def read_file_limited(path: Path, max_bytes: int) -> str | None:
     return data.decode("utf-8", errors="replace")
 
 
-def build_prompt(path: Path, content: str) -> str:
+def build_prompt(path: Path, content: str, include_diff: bool = False) -> str:
+    diff_instruction = (
+        "If useful, include a small unified diff for the comment-only changes."
+        if include_diff
+        else "Do not output a unified diff."
+    )
+
     return (
         f"Review this file and suggest documentation/comment improvements.\n\n"
         f"File: {path}\n\n"
         f"Return format:\n"
         f"1. A short summary of what the file does.\n"
-        f"2. Suggested comment/docstring improvements.\n"
-        f"3. If useful, a small unified diff that only changes comments/docstrings.\n"
+        f"2. Up to 5 high-signal comment/docstring improvements, each as:\n"
+        f"   file:line — issue → better comment.\n"
+        f"3. Mention any safety/side-effect note worth adding.\n"
         f"4. If nothing should change, write: NO_COMMENT_CHANGES_NEEDED\n\n"
         f"Important:\n"
         f"- Documentation-only suggestions.\n"
         f"- No behavior changes.\n"
         f"- No dependency changes.\n"
         f"- No formatting-only churn.\n\n"
+        f"{diff_instruction}\n"
+        f"Prefer comments that explain purpose, side effects, exit behavior, "
+        f"or the contract a smoke test protects.\n\n"
         f"File content:\n```\n{content}\n```\n"
     )
 
@@ -239,6 +252,11 @@ def main() -> int:
         default=DEFAULT_MAX_BYTES,
         help=f"Max bytes per file (default: {DEFAULT_MAX_BYTES})",
     )
+    parser.add_argument(
+        "--diff",
+        action="store_true",
+        help="Allow small unified diffs in the review output.",
+    )
 
     args = parser.parse_args()
     files = iter_target_files(args.targets, args.max_files)
@@ -264,7 +282,11 @@ def main() -> int:
         print()
 
         try:
-            result = call_ollama(args.model, args.endpoint, build_prompt(path, content))
+            result = call_ollama(
+                args.model,
+                args.endpoint,
+                build_prompt(path, content, include_diff=args.diff),
+            )
         except RuntimeError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1

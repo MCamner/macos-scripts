@@ -4,30 +4,30 @@ set -euo pipefail
 APP_NAME="MISSION CONTROL"
 WIDTH=68
 
-# Handles line.
+# Coordinates line behavior.
 line() {
   printf '═%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Handles subline.
+# Coordinates subline behavior.
 subline() {
   printf '─%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Handles section.
+# Coordinates section behavior.
 section() {
   printf '\n%s\n' "$1"
   subline
 }
 
-# Handles kv.
+# Coordinates kv behavior.
 kv() {
   printf '%-20s %s\n' "$1" "$2"
 }
 
-# Handles safe cmd.
+# Runs cmd through guardrails before acting.
 safe_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -155,7 +155,7 @@ get_git_info() {
   fi
 }
 
-# Handles top processes.
+# Coordinates top processes behavior.
 top_processes() {
   ps -Ao pid,comm,%cpu,%mem -r | head -n 6
 }

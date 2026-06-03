@@ -5,8 +5,8 @@ and script section headers using a local Ollama model.
 
 Available from:
 
-```
-mqlaunch → 7. Document functions → 7. Ollama review
+```text
+mqlaunch → 7. Document functions → 8. Ollama review
 ```
 
 Or run directly:
@@ -20,7 +20,8 @@ tools/scripts/ollama-document-review.py terminal/menus/ --model qwen3:4b
 
 - Reads selected `.sh`, `.bash`, `.zsh`, and `.py` files
 - Sends content to local Ollama
-- Prints documentation/comment suggestions
+- Prints up to five high-signal documentation/comment suggestions per file
+- Focuses on purpose, side effects, exit behavior, and smoke-test contracts
 - **Does not modify files**
 - **Does not commit changes**
 

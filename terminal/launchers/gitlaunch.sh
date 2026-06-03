@@ -124,7 +124,7 @@ function save_state() {
   } > "$STATE_FILE"
 }
 
-# Handles load state.
+# Loads state into the current script state.
 function load_state() {
   if [ -f "$STATE_FILE" ]; then
     source $STATE_FILE
@@ -178,7 +178,7 @@ function set_repo() {
   fi
 }
 
-# Handles switch repo.
+# Coordinates switch repo behavior.
 function switch_repo() {
   echo "Enter local repo path:"
   echo -n "> "
@@ -244,19 +244,19 @@ function clear_screen() {
   clear
 }
 
-# Handles use gum menu.
+# Coordinates use gum menu behavior.
 function use_gum_menu() {
   [[ -t 0 && -t 1 && -n "$GUM_BIN" ]]
 }
 
-# Handles repeat char.
+# Coordinates repeat char behavior.
 function repeat_char() {
   local char="$1"
   local count="$2"
   printf "%${count}s" "" | tr " " "$char"
 }
 
-# Handles truncate text.
+# Coordinates truncate text behavior.
 function truncate_text() {
   local text="$1"
   local max="$2"
@@ -270,12 +270,12 @@ function truncate_text() {
   fi
 }
 
-# Handles frame top.
+# Formats the top border element for terminal output.
 function frame_top() {
   printf "%b┌%s┐%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame top titled.
+# Formats the top titled border element for terminal output.
 function frame_top_titled() {
   local title="$1"
   local rest=$(( UI_WIDTH - 5 - ${#title} ))
@@ -283,29 +283,29 @@ function frame_top_titled() {
   printf "%b┌─ %b%s%b %s┐%b\n" "$C_BORDER" "$C_TITLE" "$title" "$C_BORDER" "$(repeat_char "─" "$rest")" "$C_RESET"
 }
 
-# Handles frame mid.
+# Formats the mid border element for terminal output.
 function frame_mid() {
   printf "%b├%s┤%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame bottom.
+# Formats the bottom border element for terminal output.
 function frame_bottom() {
   printf "%b└%s┘%b\n" "$C_BORDER" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
-# Handles frame blank.
+# Formats the blank border element for terminal output.
 function frame_blank() {
   printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame row.
+# Formats the row border element for terminal output.
 function frame_row() {
   local text
   text=$(truncate_text "$1" "$UI_INNER")
   printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_BORDER" "$C_RESET" "$text" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame row colored.
+# Formats the row colored border element for terminal output.
 function frame_row_colored() {
   local text color
   text=$(truncate_text "$1" "$UI_INNER")
@@ -313,7 +313,7 @@ function frame_row_colored() {
   printf "%b│%b %b%-${UI_INNER}s%b %b│%b\n" "$C_BORDER" "$C_RESET" "$color" "$text" "$C_RESET" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame two col.
+# Formats the two col border element for terminal output.
 function frame_two_col() {
   local left right col_width
   col_width=$(((UI_INNER - 3) / 2))
@@ -323,7 +323,7 @@ function frame_two_col() {
     "$C_BORDER" "$C_RESET" "$left" "$C_BORDER" "$C_RESET" "$right" "$C_BORDER" "$C_RESET"
 }
 
-# Handles frame title.
+# Formats the title border element for terminal output.
 function frame_title() {
   local title="$1"
   local title_len=${#title}
@@ -337,7 +337,7 @@ function frame_title() {
     "$C_BORDER" "$C_RESET" "" "$C_TITLE" "$title" "$C_RESET" "" "$C_BORDER" "$C_RESET"
 }
 
-# Handles render banner.
+# Renders the banner view for terminal output.
 function render_banner() {
   render_ascii
   echo
@@ -349,7 +349,7 @@ function render_banner() {
   frame_mid
 }
 
-# Handles remote state.
+# Coordinates remote state behavior.
 function remote_state() {
   local ahead behind
 
@@ -369,29 +369,29 @@ function remote_state() {
   fi
 }
 
-# Handles fallback border top.
+# Renders fallback border top output when richer UI helpers are unavailable.
 function fallback_border_top() {
   printf "%b┌────────────────────────────────────────────────────────────────────────┐%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback border mid.
+# Renders fallback border mid output when richer UI helpers are unavailable.
 function fallback_border_mid() {
   printf "%b├────────────────────────────────────────────────────────────────────────┤%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback border bottom.
+# Renders fallback border bottom output when richer UI helpers are unavailable.
 function fallback_border_bottom() {
   printf "%b└────────────────────────────────────────────────────────────────────────┘%b\n" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback row.
+# Renders fallback row output when richer UI helpers are unavailable.
 function fallback_row() {
   local text
   text=$(truncate_text "$1" 70)
   printf "%b│%b %-70s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback row colored.
+# Renders fallback row colored output when richer UI helpers are unavailable.
 function fallback_row_colored() {
   local text color
   text=$(truncate_text "$1" 70)
@@ -399,7 +399,7 @@ function fallback_row_colored() {
   printf "%b│%b %b%-70s%b %b│%b\n" "$C_CYAN" "$C_RESET" "$color" "$text" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
-# Handles fallback status row.
+# Renders fallback status row output when richer UI helpers are unavailable.
 function fallback_status_row() {
   local label="$1"
   local value="$2"
@@ -413,7 +413,7 @@ function fallback_status_row() {
 # STATUS
 # ------------------------
 
-# Handles status check.
+# Coordinates status check behavior.
 function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
@@ -476,7 +476,7 @@ function render_menu() {
   frame_bottom
 }
 
-# Handles render next action.
+# Renders the next action view for terminal output.
 function render_next_action() {
   if ! use_gum_menu; then
     fallback_border_mid
@@ -490,7 +490,7 @@ function render_next_action() {
   frame_bottom
 }
 
-# Handles prompt choice.
+# Prompts for choice with script-level validation.
 function prompt_choice() {
   local prompt_sep input
   prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
@@ -650,7 +650,7 @@ function is_protected_branch() {
   [[ "$protected" == *" $branch "* ]]
 }
 
-# Handles branch slug.
+# Coordinates branch slug behavior.
 function branch_slug() {
   local text="$1"
   local slug
@@ -663,7 +663,7 @@ function branch_slug() {
   echo "${slug:0:48}"
 }
 
-# Handles create pr branch for push.
+# Creates pr branch for push through the configured workflow.
 function create_pr_branch_for_push() {
   local base_branch="$1"
   local commit_message="$2"
@@ -699,7 +699,7 @@ function create_pr_branch_for_push() {
   fi
 }
 
-# Handles pr aware push.
+# Coordinates pr aware push behavior.
 function pr_aware_push() {
   local commit_message="${1:-update project files}"
   local branch output status
@@ -734,7 +734,7 @@ function pr_aware_push() {
   return "$status"
 }
 
-# Handles safe push.
+# Runs push through guardrails before acting.
 function safe_push() {
   git fetch
   BRANCH=$(git branch --show-current)

@@ -251,7 +251,7 @@ resolve_ai_status() {
   fi
 }
 
-# Handles safe run ai.
+# Runs ai through guardrails before acting.
 safe_run_ai() {
   local mode="$1"
 
@@ -695,7 +695,7 @@ open_terminal_guide() {
   fi
 }
 
-# Handles system check.
+# Coordinates system check behavior.
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""
@@ -1039,7 +1039,7 @@ open_themes_menu() {
   fi
 }
 
-# Handles theme cmd.
+# Reads or applies the theme cmd setting.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
   local cmd="${1:-current}"
@@ -1062,7 +1062,7 @@ theme_cmd() {
   fi
 }
 
-# Handles theme current variant.
+# Reads or applies the theme current variant setting.
 theme_current_variant() {
   local zshrc="$HOME/.zshrc"
 
@@ -1073,7 +1073,7 @@ theme_current_variant() {
   fi
 }
 
-# Handles theme source state.
+# Reads or applies the theme source state setting.
 theme_source_state() {
   local zshrc="$HOME/.zshrc"
 
@@ -1614,7 +1614,7 @@ run_demo_mode() {
   row "Demo complete. Run  mqlaunch  to open the full menu."
 }
 
-# Handles legacy alias notice.
+# Coordinates legacy alias notice behavior.
 legacy_alias_notice() {
   local old_cmd="$1"
   local new_cmd="$2"
@@ -1627,7 +1627,7 @@ legacy_alias_notice() {
   print_footer
 }
 
-# Handles tweaks menu loop.
+# Keeps the tweaks menu interactive until the user backs out.
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
 

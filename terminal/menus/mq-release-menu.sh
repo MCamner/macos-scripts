@@ -24,14 +24,14 @@ else
   exit 1
 fi
 
-# Handles refresh release paths.
+# Refreshes release paths before later checks use it.
 refresh_release_paths() {
   RELEASE_SCRIPT="$RELEASE_REPO/release.sh"
   CHANGELOG_FILE="$RELEASE_REPO/CHANGELOG.md"
   VERSION_FILE="$RELEASE_REPO/VERSION"
 }
 
-# Handles default release repo.
+# Returns the default release repo when no explicit value is set.
 default_release_repo() {
   local detected=""
 
@@ -124,7 +124,7 @@ _release_files_status() {
   [[ ! -x "$RELEASE_SCRIPT" ]] && printf 'not_executable' || printf 'ok'
 }
 
-# Handles require release script.
+# Verifies the required release script helper is available before continuing.
 require_release_script() {
   local files_status
   files_status="$(_release_files_status)"
@@ -153,7 +153,7 @@ require_release_script() {
   return 1
 }
 
-# Handles init release files.
+# Coordinates init release files behavior.
 init_release_files() {
   local version today confirm
 
@@ -223,7 +223,7 @@ EOF_CHANGELOG
   pause_enter
 }
 
-# Handles current version.
+# Reads the current version from repo or tool state.
 current_version() {
   if [[ -f "$VERSION_FILE" ]]; then
     head -n 1 "$VERSION_FILE"
@@ -232,7 +232,7 @@ current_version() {
   fi
 }
 
-# Handles latest tag.
+# Reads the latest tag from git or release state.
 latest_tag() {
   git -C "$RELEASE_REPO" describe --tags --abbrev=0 2>/dev/null || true
 }
@@ -316,7 +316,7 @@ open_release_script_in_editor() {
   fi
 }
 
-# Handles prompt version.
+# Prompts for version with script-level validation.
 prompt_version() {
   local prompt="$1"
 
@@ -378,7 +378,7 @@ run_release_live() {
   run_release_command "RUN RELEASE" "$version"
 }
 
-# Handles create github release only.
+# Creates github release only through the configured workflow.
 create_github_release_only() {
   local tag=""
   local latest=""
@@ -480,7 +480,7 @@ remove_changelog_section_for_version() {
   mv "$tmp_file" "$changelog"
 }
 
-# Handles generate changelog section.
+# Generates changelog section for docs or release automation.
 generate_changelog_section() {
   local version="$1"
   local changelog="$2"
@@ -561,7 +561,7 @@ generate_changelog_section() {
   pause_enter
 }
 
-# Handles auto release.
+# Coordinates auto release behavior.
 auto_release() {
   local version confirm dry_status
 

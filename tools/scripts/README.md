@@ -59,18 +59,18 @@ tools/scripts/
 | ------- | -------- | -------- | ------------ |
 | `doctor.sh` | Diagnostics | 🟢 Stable | Environment readiness check |
 | `mission-control.sh` | Observability | 🟢 Stable | System overview |
-| `overseer.sh` | Monitoring | 🟡 Beta | Interactive process monitor with search and kill |
+| `overseer.sh` | Monitoring | 🟡 Beta | Process monitor |
 | `network-ghost.sh` | Network | 🟢 Stable | Network diagnostics |
 | `port-scan.sh` | Network | 🟢 Stable | Local TCP port listener scan |
 | `vault-scan.sh` | Security | 🟢 Stable | Scan for secrets / config issues |
 | `system-check.sh` | Diagnostics | 🟢 Stable | Basic system validation |
-| `srm.sh` | AI / Repo memory | 🟡 Beta | Query a Semantic Repository Memory vector store with Responses API |
+| `srm.sh` | AI / Repo memory | 🟡 Beta | Query SRM vector store |
 | `create-debug-bundle.sh` | Support | 🟢 Stable | Generate debug snapshot |
 | `document-functions.sh` | Maintenance | 🟡 Beta | Add function comments |
 | `brew-check.sh` | Maintenance | 🟢 Stable | Homebrew health dashboard |
-| `cleanup.sh` | Maintenance | 🟢 Stable | macOS cleanup — trash, downloads, caches |
-| `focus.sh` | Productivity | 🟢 Stable | Pomodoro focus timer with macOS notifications |
-| `env-snap.sh` | Observability | 🟡 Beta | Environment snapshots — PATH, env, git, disk |
+| `cleanup.sh` | Maintenance | 🟢 Stable | macOS cleanup |
+| `focus.sh` | Productivity | 🟢 Stable | Pomodoro focus timer |
+| `env-snap.sh` | Observability | 🟡 Beta | Environment snapshots |
 | `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
 | `blackout.sh` | UX / Experimental | 🔴 Experimental | Focus effect tool |
 | `mqlaunch_desktop.sh` | Integration | 🟡 Beta | Desktop helper |
@@ -115,6 +115,12 @@ bash -n tools/scripts/document-functions.sh
 # Preview which function comments would be added to one script
 tools/scripts/document-functions.sh tools/scripts/scan.sh
 
+# Flag generic function comments that should be rewritten by a human
+tools/scripts/document-functions.sh --quality --check tools/scripts/scan.sh
+
+# Replace old generated comments that only repeat function names
+tools/scripts/document-functions.sh --rewrite-weak --write tools/scripts/scan.sh
+
 # Add missing function comments to one script
 tools/scripts/document-functions.sh --write tools/scripts/scan.sh
 
@@ -127,6 +133,10 @@ tools/scripts/document-functions.sh --write tools/scripts
 
 `document-functions.sh` preserves existing comments. It only adds a generated
 comment when a shell function has no comment directly above it.
+Use `--quality` to catch comments that are present but too generic, such as
+comments that simply repeat a function name.
+Use `--rewrite-weak` for the known generated patterns that can be upgraded
+mechanically.
 
 ---
 

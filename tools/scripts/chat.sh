@@ -9,7 +9,7 @@ source "$BASE_DIR/.env" 2>/dev/null || true
 VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
 previous_id=""
 
-# Handles  chat sep.
+# Coordinates chat sep behavior.
 _chat_sep() { printf '%.0s─' $(seq 1 "${COLUMNS:-80}"); printf '\n'; }
 
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then

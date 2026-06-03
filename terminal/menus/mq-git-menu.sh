@@ -32,7 +32,7 @@ ensure_repo() {
   fi
 }
 
-# Handles repo name.
+# Coordinates repo name behavior.
 repo_name() {
   basename "$CURRENT_REPO"
 }
@@ -59,7 +59,7 @@ normalize_remote_url() {
   echo "${remote_url%.git}"
 }
 
-# Handles github web url.
+# Coordinates github web url behavior.
 github_web_url() {
   local remote_url=""
   remote_url="$(git -C "$CURRENT_REPO" remote get-url origin 2>/dev/null || true)"
@@ -337,7 +337,7 @@ suggest_commit() {
   pause_enter
 }
 
-# Handles next action.
+# Coordinates next action behavior.
 next_action() {
   ensure_repo || return 1
 
@@ -456,7 +456,7 @@ commit_changes() {
   pause_enter
 }
 
-# Handles safe push.
+# Runs push through guardrails before acting.
 safe_push() {
   ensure_repo || return 1
 

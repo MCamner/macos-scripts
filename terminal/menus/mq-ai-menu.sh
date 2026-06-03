@@ -20,7 +20,7 @@ print_ai_menu() {
   printf '\n'
 }
 
-# Handles handle ai menu choice.
+# Routes the ai menu selection to the matching action.
 handle_ai_menu_choice() {
   local choice="$1"
 
@@ -41,7 +41,7 @@ handle_ai_menu_choice() {
   return 0
 }
 
-# Handles ai menu loop.
+# Keeps the ai menu interactive until the user backs out.
 ai_menu_loop() {
   local choice
 

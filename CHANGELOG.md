@@ -6,9 +6,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.5.1] - 2026-06-03
+
 ### Added
 
 - Added `mqlaunch workflows validate` for workflow command-surface health checks.
+- Added workflow validation to `mqlaunch release-check`.
+- Added `document-functions.sh --quality` to flag generic function comments.
+- Added a Document Functions menu entry for comment quality checks.
+
+### Changed
+
+- Synced README, ROADMAP and release metadata for `0.5.1`.
+- Tightened the Ollama document-review prompt to return fewer, higher-signal
+  comment suggestions without full diffs by default.
 
 ## [0.5.0] - 2026-06-02
 

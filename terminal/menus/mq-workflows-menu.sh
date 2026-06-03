@@ -27,7 +27,7 @@ else
   exit 1
 fi
 
-# Handles require project boot.
+# Verifies the required project boot helper is available before continuing.
 require_project_boot() {
   if [[ ! -x "$PROJECT_BOOT_SCRIPT" ]]; then
     print_header
@@ -43,7 +43,7 @@ require_project_boot() {
   fi
 }
 
-# Handles require project check.
+# Verifies the required project check helper is available before continuing.
 require_project_check() {
   if [[ ! -x "$PROJECT_CHECK_SCRIPT" ]]; then
     print_header
@@ -59,7 +59,7 @@ require_project_check() {
   fi
 }
 
-# Handles require workspace.
+# Verifies the required workspace helper is available before continuing.
 require_workspace() {
   if [[ ! -x "$WORKSPACE_SCRIPT" ]]; then
     print_header
@@ -75,7 +75,7 @@ require_workspace() {
   fi
 }
 
-# Handles require workflow validator.
+# Verifies the required workflow validator helper is available before continuing.
 require_workflow_validator() {
   if [[ ! -x "$WORKFLOW_VALIDATE_SCRIPT" ]]; then
     print_header
@@ -254,14 +254,14 @@ open_workspace_menu() {
   fi
 }
 
-# Handles save workspace snapshot.
+# Saves workspace snapshot so it can be restored later.
 save_workspace_snapshot() {
   require_workspace || return 1
   "$WORKSPACE_SCRIPT" save
   pause_enter
 }
 
-# Handles restore workspace snapshot.
+# Restores workspace snapshot from saved script state.
 restore_workspace_snapshot() {
   require_workspace || return 1
   "$WORKSPACE_SCRIPT" restore

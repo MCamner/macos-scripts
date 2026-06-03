@@ -21,7 +21,7 @@ else
   exit 1
 fi
 
-# Handles theme cmd.
+# Reads or applies the theme cmd setting.
 theme_cmd() {
   local cmd="${1:-current}"
   shift || true
@@ -60,7 +60,7 @@ print_themes_menu() {
   printf '\n'
 }
 
-# Handles themes menu loop.
+# Keeps the themes menu interactive until the user backs out.
 themes_menu_loop() {
   local choice
 

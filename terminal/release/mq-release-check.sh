@@ -11,38 +11,38 @@ cd "$BASE_DIR" || {
   exit 1
 }
 
-# Handles rule.
+# Prints a horizontal rule sized for release-check sections.
 rule() {
   printf '%*s\n' "${1:-72}" '' | tr ' ' '─'
 }
 
-# Handles section.
+# Starts a named release-check section with a visual separator.
 section() {
   echo
   echo "$1"
   rule 72
 }
 
-# Handles status ok.
+# Prints a successful release-check status line.
 status_ok() {
   echo "  ✔ $1"
 }
 
-# Handles status warn.
+# Prints a non-blocking release-check warning line.
 status_warn() {
   echo "  ⚠ $1"
 }
 
 # Prints section.
 print_section() { section "$1"; }
-# Handles pass.
+# Marks a validation step as passed.
 pass()          { status_ok "$1"; }
-# Handles warn.
+# Marks a validation step as warning-only.
 warn()          { status_warn "$1"; }
-# Handles fail.
+# Prints a blocking validation failure line.
 fail()          { echo "  ✘ $1"; }
 
-# Handles title.
+# Prints release-check context before running checks.
 title() {
   echo "MQ RELEASE CHECK"
   rule 72
@@ -78,6 +78,13 @@ else
   status_warn "doctor.sh not found"
 fi
 
+section "WORKFLOW VALIDATION"
+if [[ -x "$BASE_DIR/automation/workflows/validate.sh" ]]; then
+  MACOS_SCRIPTS_HOME="$BASE_DIR" "$BASE_DIR/automation/workflows/validate.sh" || exit 1
+else
+  status_warn "automation/workflows/validate.sh not found"
+fi
+
 section "RECENT COMMITS"
 git log --oneline -5
 
@@ -109,7 +116,7 @@ cat <<'CHECKLIST'
   [ ] tests or syntax checks passed
 CHECKLIST
 
-# Handles check changelog matches commits.
+# Verifies the current VERSION has concrete changelog coverage for recent commits.
 check_changelog_matches_commits() {
   print_section "CHANGELOG / COMMITS"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Handles render system panel.
+# Renders the system panel view for terminal output.
 render_system_panel() {
   local width panel_color
   width="$(surface_terminal_width)"

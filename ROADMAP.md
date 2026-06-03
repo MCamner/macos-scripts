@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 0.5.0
+Current version: 0.5.1
 
 ## Design boundary
 
@@ -41,9 +41,20 @@ mqlaunch without embedding any cognition in the shell layer.
 
 ---
 
+## v0.5.1 — workflow validation release gate — Done
+
+Goal: make workflow command-surface validation part of the release gate, so
+mqlaunch docs, routing and workflow scripts stay aligned before release.
+
+- [x] `mqlaunch workflows validate` documented in README and `docs/COMMANDS.md`
+- [x] workflow validation smoke coverage verifies docs, menu and launcher routing
+- [x] `mqlaunch release-check` runs `automation/workflows/validate.sh`
+- [x] release metadata synced to `0.5.1`
+
+---
+
 ## Near-term (unscheduled)
 
-- release gate integration (repo-signal publish checklist)
 - plugin-style extensions
 - remote execution support
 - improved onboarding

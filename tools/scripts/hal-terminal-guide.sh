@@ -8,7 +8,7 @@ VECTOR_STORE_ID="${MQ_TERMINAL_GUIDE_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36e
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
 HAL_NAV_PENDING=0
 
-# Handles hal width.
+# Coordinates hal width behavior.
 hal_width() {
   local cols
   cols="$(tput cols 2>/dev/null || echo 80)"
@@ -17,7 +17,7 @@ hal_width() {
   printf '%s\n' "$cols"
 }
 
-# Handles hal repeat.
+# Coordinates hal repeat behavior.
 hal_repeat() {
   local count="$1"
   local char="${2:- }"
@@ -31,7 +31,7 @@ hal_repeat() {
   printf '%s' "$out"
 }
 
-# Handles hal pad.
+# Coordinates hal pad behavior.
 hal_pad() {
   local text="$1"
   local width="$2"
@@ -47,7 +47,7 @@ hal_pad() {
   printf '%s%s' "$text" "$(hal_repeat "$pad" " ")"
 }
 
-# Handles hal top.
+# Coordinates hal top behavior.
 hal_top() {
   local title="$1"
   local width="$2"
@@ -59,7 +59,7 @@ hal_top() {
   printf '┌─ %s %s┐\n' "$title" "$(hal_repeat "$rest" "─")"
 }
 
-# Handles hal row.
+# Coordinates hal row behavior.
 hal_row() {
   local text="$1"
   local width="$2"
@@ -68,7 +68,7 @@ hal_row() {
   printf '│ %s │\n' "$(hal_pad "$text" "$inner")"
 }
 
-# Handles hal split row.
+# Coordinates hal split row behavior.
 hal_split_row() {
   local left="$1"
   local right="$2"
@@ -81,13 +81,13 @@ hal_split_row() {
   printf '│ %s%s │\n' "$(hal_pad "$left" "$left_width")" "$(hal_pad "$right" "$right_width")"
 }
 
-# Handles hal bottom.
+# Coordinates hal bottom behavior.
 hal_bottom() {
   local width="$1"
   printf '└%s┘\n' "$(hal_repeat "$(( width - 2 ))" "─")"
 }
 
-# Handles load env file.
+# Loads env file into the current script state.
 load_env_file() {
   local file="$1"
   local line key value
@@ -135,7 +135,7 @@ Examples:
 USAGE
 }
 
-# Handles guide file.
+# Coordinates guide file behavior.
 guide_file() {
   if [[ -f "$GUIDE_HTML" ]]; then
     printf '%s\n' "$GUIDE_HTML"
@@ -157,12 +157,12 @@ open_guide() {
   fi
 }
 
-# Handles lower text.
+# Coordinates lower text behavior.
 lower_text() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-# Handles trim text.
+# Coordinates trim text behavior.
 trim_text() {
   local text="$1"
   text="${text#"${text%%[![:space:]]*}"}"
@@ -211,7 +211,7 @@ resolve_nav_dir() {
   esac
 }
 
-# Handles extract nav target.
+# Extracts nav target from command or file content.
 extract_nav_target() {
   local lower="$1" result trigger
   local triggers=("gå till " "navigera till " "öppna katalogen " "öppna mappen " "öppna katalog " "öppna mapp " "go to " "navigate to " "cd to ")
@@ -225,7 +225,7 @@ extract_nav_target() {
   return 1
 }
 
-# Handles safe intent command.
+# Runs intent command through guardrails before acting.
 safe_intent_command() {
   local query app path lower
   query="$1"
@@ -322,7 +322,7 @@ safe_intent_command() {
   return 1
 }
 
-# Handles extract shell command.
+# Extracts shell command from command or file content.
 extract_shell_command() {
   local query lower command first
   query="$(trim_text "$1")"
@@ -375,7 +375,7 @@ is_blocked_shell_command() {
   return 1
 }
 
-# Handles execute shell command.
+# Executes shell command after validation.
 execute_shell_command() {
   local command confirm shell_bin status
   command="$(trim_text "$1")"
@@ -411,7 +411,7 @@ execute_shell_command() {
   return 0
 }
 
-# Handles execute safe intent.
+# Executes safe intent after validation.
 execute_safe_intent() {
   local intent="$1"
   local kind label command confirm
@@ -494,7 +494,7 @@ print_hal_menu() {
   hal_bottom "$width"
 }
 
-# Handles local guide search.
+# Coordinates local guide search behavior.
 local_guide_search() {
   local query guide term
   query="$1"
@@ -510,7 +510,7 @@ local_guide_search() {
     | sed -n '1,5p'
 }
 
-# Handles read hal prompt.
+# Reads hal prompt from user input or stdin.
 read_hal_prompt() {
   local width line
   width="$(hal_width)"
@@ -535,7 +535,7 @@ read_hal_prompt() {
   printf '>> press 1-14, use ! <command>, or /quit\n'
 }
 
-# Handles ask vector store.
+# Coordinates ask vector store behavior.
 ask_vector_store() {
   local question="$1"
   local payload response text
@@ -593,7 +593,7 @@ ask_vector_store() {
   printf '%s\n' "$text"
 }
 
-# Handles handle query.
+# Routes query input to the matching action.
 handle_query() {
   local mode="$1"
   local query="$2"
@@ -618,7 +618,7 @@ handle_query() {
   ask_vector_store "$query"
 }
 
-# Handles prompt loop.
+# Prompts for loop with script-level validation.
 prompt_loop() {
   local query
 

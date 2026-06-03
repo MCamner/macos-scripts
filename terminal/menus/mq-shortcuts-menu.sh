@@ -17,7 +17,7 @@ else
   exit 1
 fi
 
-# Handles require shortcuts script.
+# Verifies the required shortcuts script helper is available before continuing.
 require_shortcuts_script() {
   if [[ ! -x "$SHORTCUTS_SCRIPT" ]]; then
     print_header
@@ -53,7 +53,7 @@ run_shortcuts_screen() {
   pause_enter
 }
 
-# Handles list shortcuts menu.
+# Coordinates list shortcuts menu behavior.
 list_shortcuts_menu() {
   local folder=""
 
@@ -72,7 +72,7 @@ list_shortcuts_menu() {
   fi
 }
 
-# Handles search shortcuts menu.
+# Coordinates search shortcuts menu behavior.
 search_shortcuts_menu() {
   local query=""
   local folder=""
@@ -128,7 +128,7 @@ run_shortcut_menu() {
   fi
 }
 
-# Handles view shortcut menu.
+# Coordinates view shortcut menu behavior.
 view_shortcut_menu() {
   local name=""
 
