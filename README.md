@@ -21,9 +21,11 @@ Stop memorizing commands. Start running workflows.
 - `release.sh` validates VERSION, README badge, and CHANGELOG before every release
 - `mqlaunch doctor` supports `--json` output — machine-readable health report
 - `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
-- `mqlaunch release-check` gates every release on a `repo-signal` publish-readiness score
+- `mqlaunch release-check` gates every release on a `repo-signal`
+  publish-readiness score
 - HAL bridge supports read-only audit, release brief, repo status, and CI status
-- All `.sh` files pass `bash -n` syntax check — verified by CI and `scripts/install-smoke.sh`
+- All `.sh` files pass `bash -n` syntax check — verified by CI and
+  `scripts/install-smoke.sh`
 - GitHub Pages has smoke-test coverage via CI
 
 ---
@@ -39,13 +41,17 @@ the local tools used by the workflows, including `git`, `brew`, `node`,
 ### Option 1 — Install (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash
+curl -fsSL \
+  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
+  | bash
 ```
 
 Preview install changes without modifying your system:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh | bash -- --dry-run
+curl -fsSL \
+  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
+  | bash -- --dry-run
 ```
 
 ### Option 2 — Clone
@@ -72,10 +78,10 @@ mqlaunch doctor
 
 This will:
 
-* verify your environment
-* check required dependencies
-* validate your setup
-* highlight issues with clear fixes
+- verify your environment
+- check required dependencies
+- validate your setup
+- highlight issues with clear fixes
 
 ---
 
@@ -85,8 +91,8 @@ This will:
 mqlaunch
 ```
 
-* browse workflows via the interactive menu
-* or run commands directly (`perf`, `system`, `dev`, `tools`)
+- browse workflows via the interactive menu
+- or run commands directly (`perf`, `system`, `dev`, `tools`)
 
 ## Usage
 
@@ -149,10 +155,10 @@ This project turns:
 
 One command → structured workflows → repeatable execution
 
-* single entrypoint: `mqlaunch`
-* organized workflows (Dev, System, Performance, Git, Release, Tools)
-* works as interactive menu and direct CLI
-* built-in AI for questions, code generation, and error fixes
+- single entrypoint: `mqlaunch`
+- organized workflows (Dev, System, Performance, Git, Release, Tools)
+- works as interactive menu and direct CLI
+- built-in AI for questions, code generation, and error fixes
 
 ---
 
@@ -239,7 +245,8 @@ Query a specific Semantic Repository Memory store with the Responses API:
 ```bash
 mqlaunch srm inspect
 mqlaunch srm ask "what repo is indexed here?"
-SRM_VECTOR_STORE_ID=vs_your_semantic_memory_store_id mqlaunch srm search "vector store upload flow"
+SRM_VECTOR_STORE_ID=vs_your_semantic_memory_store_id \
+  mqlaunch srm search "vector store upload flow"
 ```
 
 Start an interactive session with Atlas — a senior systems engineer
@@ -307,7 +314,8 @@ Run the release check before every push:
 mqlaunch release-check
 ```
 
-The release check includes a `repo-signal` publish-readiness gate. Override the threshold with:
+The release check includes a `repo-signal` publish-readiness gate. Override the
+threshold with:
 
 ```bash
 MQ_REPO_SIGNAL_FAIL_UNDER=14 mqlaunch release-check
@@ -345,10 +353,10 @@ mqlaunch doctor
 mqlaunch workflows validate
 ```
 
-* checks required tools (git, brew, node, python, jq)
-* validates repo state (branch, dirty tree, required files)
-* evaluates workflow readiness (Git, Release, Dev, System)
-* highlights issues and gives actionable recommendations
+- checks required tools (git, brew, node, python, jq)
+- validates repo state (branch, dirty tree, required files)
+- evaluates workflow readiness (Git, Release, Dev, System)
+- highlights issues and gives actionable recommendations
 
 ---
 
@@ -406,11 +414,11 @@ macos-scripts/
 
 ## ⚖️ Design principles
 
-* keep it simple
-* structure > more tools
-* optimize for real usage
-* make workflows repeatable
-* reduce cognitive load
+- keep it simple
+- structure > more tools
+- optimize for real usage
+- make workflows repeatable
+- reduce cognitive load
 
 ---
 
@@ -444,10 +452,10 @@ mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 
 Near-term priorities:
 
-* release gate integration
-* plugin-style extensions
-* remote execution support
-* improved onboarding
+- release gate integration
+- plugin-style extensions
+- remote execution support
+- improved onboarding
 
 ---
 
@@ -457,10 +465,10 @@ PRs and issues are welcome.
 
 Good first contributions:
 
-* add or improve a workflow under `automation/`, `tools/`, or `system/`
-* improve command docs in [docs/COMMANDS.md](docs/COMMANDS.md)
-* add smoke coverage under `tests/`
-* polish terminal menu labels, spacing, or discoverability
+- add or improve a workflow under `automation/`, `tools/`, or `system/`
+- improve command docs in [docs/COMMANDS.md](docs/COMMANDS.md)
+- add smoke coverage under `tests/`
+- polish terminal menu labels, spacing, or discoverability
 
 Before opening a PR, run:
 
