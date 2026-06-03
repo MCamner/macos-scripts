@@ -14,7 +14,7 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_RESET=$'\e[0m'
   C_BOLD=$'\e[1m'
   C_DIM=$'\e[2m'
-  C_BORDER=$'\e[38;5;136m'
+  C_BORDER=$'\e[1;97m'
   C_ACCENT=$'\e[38;5;178m'
   C_TITLE=$'\e[1;38;5;178m'
   C_LABEL=$'\e[38;5;179m'
@@ -22,7 +22,7 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_WARN=$'\e[93m'
   C_BAD=$'\e[91m'
   C_DIM=$'\e[38;5;245m'
-  C_CYAN=$'\e[36m'
+  C_CYAN=$'\e[1;97m'
   C_YELLOW=$'\e[33m'
   C_AMBER=$'\e[38;5;136m'
   C_DARK_YELLOW=$'\e[38;5;100m'
@@ -336,12 +336,13 @@ function frame_row_colored() {
 
 # Formats the two col border element for terminal output.
 function frame_two_col() {
-  local left right col_width
-  col_width=$(((UI_INNER - 3) / 2))
-  left=$(truncate_text "$1" "$col_width")
-  right=$(truncate_text "$2" "$col_width")
-  printf "%b│%b %-${col_width}s %b│%b %-${col_width}s %b│%b\n" \
-    "$C_BORDER" "$C_RESET" "$left" "$C_BORDER" "$C_RESET" "$right" "$C_BORDER" "$C_RESET"
+  local left right left_width right_width
+  left_width=$((UI_INNER / 2))
+  right_width=$((UI_INNER - left_width - 1))
+  left=$(truncate_text "$1" "$left_width")
+  right=$(truncate_text "$2" "$right_width")
+  printf "%b│%b %-${left_width}s %-${right_width}s %b│%b\n" \
+    "$C_BORDER" "$C_RESET" "$left" "$right" "$C_BORDER" "$C_RESET"
 }
 
 # Formats the title border element for terminal output.
@@ -444,12 +445,13 @@ function fallback_status_row() {
   local label="$1"
   local value="$2"
   local color="${3:-}"
-  local value_width=$((UI_INNER - 10))
+  local label_width=8
+  local value_width
   update_ui_width
   value_width=$((UI_INNER - 10))
   (( value_width < 1 )) && value_width=1
   value=$(truncate_text "$value" "$value_width")
-  printf "%b│%b %b%-7s%b: %b%-${value_width}s%b %b│%b\n" \
+  printf "%b│%b %b%-${label_width}s%b: %b%-${value_width}s%b %b│%b\n" \
     "$C_CYAN" "$C_RESET" "$C_TITLE" "$label" "$C_RESET" "$color" "$value" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
@@ -553,7 +555,7 @@ function prompt_choice() {
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
-  printf "%b>> press 1-9%b\n" "$C_DIM" "$C_RESET"
+  printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[3A"
     printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
@@ -561,9 +563,9 @@ function prompt_choice() {
 
   input=""
   if [[ -t 0 ]]; then
-    read -rsk 1 input || true
+    read -rsk 1 input || input="b"
   else
-    IFS= read -r input || true
+    IFS= read -r input || input="b"
   fi
 
   printf "%s\n" "$input"
