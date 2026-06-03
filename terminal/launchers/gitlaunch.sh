@@ -53,7 +53,7 @@ else
 fi
 
 GUM_BIN="$(command -v gum 2>/dev/null || true)"
-UI_WIDTH=62
+UI_WIDTH=88
 UI_INNER=$((UI_WIDTH - 4))
 
 # ------------------------
@@ -256,6 +256,24 @@ function repeat_char() {
   printf "%${count}s" "" | tr " " "$char"
 }
 
+# Matches mqlaunch surface width so nested gitlaunch panels align visually.
+function gitlaunch_terminal_width() {
+  local cols width
+  cols="$(tput cols 2>/dev/null || true)"
+  [[ "$cols" =~ ^[0-9]+$ ]] || cols=92
+
+  width="$cols"
+  (( width > 112 )) && width=112
+  (( width < 60 )) && width=60
+  print -r -- "$width"
+}
+
+# Refreshes frame dimensions before rendering or prompting.
+function update_ui_width() {
+  UI_WIDTH="$(gitlaunch_terminal_width)"
+  UI_INNER=$((UI_WIDTH - 4))
+}
+
 # Coordinates truncate text behavior.
 function truncate_text() {
   local text="$1"
@@ -371,32 +389,37 @@ function remote_state() {
 
 # Renders fallback border top output when richer UI helpers are unavailable.
 function fallback_border_top() {
-  printf "%b┌────────────────────────────────────────────────────────────────────────┐%b\n" "$C_CYAN" "$C_RESET"
+  update_ui_width
+  printf "%b┌%s┐%b\n" "$C_CYAN" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
 # Renders fallback border mid output when richer UI helpers are unavailable.
 function fallback_border_mid() {
-  printf "%b├────────────────────────────────────────────────────────────────────────┤%b\n" "$C_CYAN" "$C_RESET"
+  update_ui_width
+  printf "%b├%s┤%b\n" "$C_CYAN" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
 # Renders fallback border bottom output when richer UI helpers are unavailable.
 function fallback_border_bottom() {
-  printf "%b└────────────────────────────────────────────────────────────────────────┘%b\n" "$C_CYAN" "$C_RESET"
+  update_ui_width
+  printf "%b└%s┘%b\n" "$C_CYAN" "$(repeat_char "─" "$((UI_WIDTH - 2))")" "$C_RESET"
 }
 
 # Renders fallback row output when richer UI helpers are unavailable.
 function fallback_row() {
   local text
-  text=$(truncate_text "$1" 70)
-  printf "%b│%b %-70s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
+  update_ui_width
+  text=$(truncate_text "$1" "$UI_INNER")
+  printf "%b│%b %-${UI_INNER}s %b│%b\n" "$C_CYAN" "$C_RESET" "$text" "$C_CYAN" "$C_RESET"
 }
 
 # Renders fallback row colored output when richer UI helpers are unavailable.
 function fallback_row_colored() {
   local text color
-  text=$(truncate_text "$1" 70)
+  update_ui_width
+  text=$(truncate_text "$1" "$UI_INNER")
   color="$2"
-  printf "%b│%b %b%-70s%b %b│%b\n" "$C_CYAN" "$C_RESET" "$color" "$text" "$C_RESET" "$C_CYAN" "$C_RESET"
+  printf "%b│%b %b%-${UI_INNER}s%b %b│%b\n" "$C_CYAN" "$C_RESET" "$color" "$text" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
 # Renders fallback status row output when richer UI helpers are unavailable.
@@ -404,8 +427,12 @@ function fallback_status_row() {
   local label="$1"
   local value="$2"
   local color="${3:-}"
-  value=$(truncate_text "$value" 61)
-  printf "%b│%b %b%-7s%b: %b%-61s%b %b│%b\n" \
+  local value_width=$((UI_INNER - 10))
+  update_ui_width
+  value_width=$((UI_INNER - 10))
+  (( value_width < 1 )) && value_width=1
+  value=$(truncate_text "$value" "$value_width")
+  printf "%b│%b %b%-7s%b: %b%-${value_width}s%b %b│%b\n" \
     "$C_CYAN" "$C_RESET" "$C_TITLE" "$label" "$C_RESET" "$color" "$value" "$C_RESET" "$C_CYAN" "$C_RESET"
 }
 
@@ -418,6 +445,7 @@ function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
   REMOTE=$(remote_state)
+  update_ui_width
 
   if ! use_gum_menu; then
     fallback_border_top
@@ -454,6 +482,7 @@ function status_check() {
 # ------------------------
 function render_menu() {
   local git_state host_name
+  update_ui_width
   host_name="$(hostname -s 2>/dev/null || echo unknown)"
   if [[ -z "${CHANGES}" ]]; then
     git_state="Clean"
@@ -478,6 +507,8 @@ function render_menu() {
 
 # Renders the next action view for terminal output.
 function render_next_action() {
+  update_ui_width
+
   if ! use_gum_menu; then
     fallback_border_mid
     fallback_row_colored "NEXT ACTION: $NEXT_ACTION_MESSAGE" "$NEXT_ACTION_COLOR"
@@ -493,6 +524,7 @@ function render_next_action() {
 # Prompts for choice with script-level validation.
 function prompt_choice() {
   local prompt_sep input
+  update_ui_width
   prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
 
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
