@@ -556,22 +556,11 @@ function prompt_choice() {
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
   printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
-  if [[ -t 0 && -t 1 ]]; then
-    printf "\033[3A"
-    printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
-  fi
-
   input=""
-  if [[ -t 0 ]]; then
-    read -rsk 1 input || input="b"
-  else
-    IFS= read -r input || input="b"
-  fi
+  IFS= read -r input || input="b"
+  input="${input[1,1]}"
 
   printf "%s\n" "$input"
-  if [[ -t 0 && -t 1 ]]; then
-    printf "\033[2B"
-  fi
 
   choice="$input"
 }
