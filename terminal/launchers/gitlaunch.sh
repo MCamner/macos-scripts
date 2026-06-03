@@ -535,20 +535,27 @@ function render_next_action() {
 
 # Prompts for choice with script-level validation.
 function prompt_choice() {
-  local prompt_sep input
+  local sep input
   update_ui_width
-  prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
+  sep="$(repeat_char "─" "$UI_WIDTH")"
 
-  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
-  printf "%bgitlaunch%b %b[1-9,b]%b > " "$C_TITLE" "$C_RESET" "$C_DIM" "$C_RESET"
-  input=""
-  IFS= read -r input || input="b"
-  input="${input[1,1]}"
-
-  if [[ ! -t 0 ]]; then
-    printf "%s\n" "$input"
+  printf "\n%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
+  printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
+  printf "%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
+  printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[3A\r"
+    printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
   fi
 
+  input=""
+  IFS= read -r input || input="b"
+
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[2B\r\n"
+  fi
+
+  input="${input[1,1]}"
   choice="$input"
 }
 
