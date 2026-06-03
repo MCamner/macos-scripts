@@ -7,6 +7,7 @@ semantic memory and release readiness.
 
 | Skill | Description |
 | ----- | ----------- |
+| [command-template-library](skills/command-template-library/SKILL.md) | Maintain mq-ums command contracts and generated command docs |
 | [docs-maintainer](skills/docs-maintainer/SKILL.md) | Keep command docs and repo docs aligned |
 | [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Maintain mqlaunch commands, menus, bridges and help text |
 | [release-readiness](skills/release-readiness/SKILL.md) | Prepare and verify releases |

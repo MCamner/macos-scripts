@@ -258,12 +258,16 @@ read_menu_choice() {
   printf "%b%s > %b\n" "${C_TITLE:-}" "$label" "${C_RESET:-}"
   printf "%b%s%b\n" "$sep_color" "$sep" "${C_RESET:-}"
   printf "%b>> option, mqlaunch command, shell command, or x to exit%b\n" "${C_DIM:-}" "${C_RESET:-}"
-  printf "\033[3A\r"
-  printf "%b%s > %b" "${C_TITLE:-}" "$label" "${C_RESET:-}"
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[3A\r"
+    printf "%b%s > %b" "${C_TITLE:-}" "$label" "${C_RESET:-}"
+  fi
 
   REPLY=""
   IFS= read -r REPLY
-  printf "\033[2B\r\n"
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[2B\r\n"
+  fi
 }
 
 # Sets terminal title.

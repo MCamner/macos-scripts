@@ -15,7 +15,7 @@ print_dev_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "NAVIGATION" "$width" "$panel_color"
   surface_split_row "7. Open launcher folder" "8. HAL terminal guide" "$width" "$panel_color"
-  surface_split_row "9. Net Launch" "10. Themes" "$width" "$panel_color"
+  surface_split_row "9. Network Tools" "10. Themes" "$width" "$panel_color"
   surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
   surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
   surface_split_row "15. Comment scripts" "" "$width" "$panel_color"

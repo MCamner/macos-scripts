@@ -55,6 +55,9 @@ fi
 GUM_BIN="$(command -v gum 2>/dev/null || true)"
 UI_WIDTH=88
 UI_INNER=$((UI_WIDTH - 4))
+STAGED_COUNT=0
+UNSTAGED_COUNT=0
+UNTRACKED_COUNT=0
 
 # ------------------------
 # ASCII ART
@@ -387,6 +390,20 @@ function remote_state() {
   fi
 }
 
+# Refreshes git status counters used by the status and menu panels.
+function refresh_git_counters() {
+  local git_status staged unstaged untracked
+  git_status="$(git status --porcelain 2>/dev/null || true)"
+
+  staged="$(printf "%s\n" "$git_status" | awk 'length($0) >= 2 && substr($0, 1, 1) != " " && substr($0, 1, 1) != "?" {count++} END {print count + 0}')"
+  unstaged="$(printf "%s\n" "$git_status" | awk 'length($0) >= 2 && substr($0, 2, 1) != " " {count++} END {print count + 0}')"
+  untracked="$(printf "%s\n" "$git_status" | awk '$0 ~ /^\?\?/ {count++} END {print count + 0}')"
+
+  STAGED_COUNT="$staged"
+  UNSTAGED_COUNT="$unstaged"
+  UNTRACKED_COUNT="$untracked"
+}
+
 # Renders fallback border top output when richer UI helpers are unavailable.
 function fallback_border_top() {
   update_ui_width
@@ -445,6 +462,7 @@ function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
   REMOTE=$(remote_state)
+  refresh_git_counters
   update_ui_width
 
   if ! use_gum_menu; then
@@ -456,6 +474,9 @@ function status_check() {
     fallback_status_row "Path" "${WORK_DIR:-$REPO}"
     fallback_status_row "Branch" "$BRANCH"
     fallback_status_row "Status" "${CHANGES} change(s)"
+    fallback_status_row "Staged" "$STAGED_COUNT"
+    fallback_status_row "Unstaged" "$UNSTAGED_COUNT"
+    fallback_status_row "Untrack" "$UNTRACKED_COUNT"
     if [ "$CHANGES" -eq 0 ]; then
       fallback_status_row "State" "CLEAN" "$C_GOOD"
     else
@@ -468,6 +489,7 @@ function status_check() {
   render_banner
   frame_row "PATH   : ${WORK_DIR:-$REPO}"
   frame_row "BRANCH : ${BRANCH:u}"
+  frame_row "COUNTS : STAGED $STAGED_COUNT  UNSTAGED $UNSTAGED_COUNT  UNTRACKED $UNTRACKED_COUNT"
   if [ "$CHANGES" -eq 0 ]; then
     frame_row_colored "STATE  : CLEAN" "$C_GOOD"
   else
@@ -482,8 +504,12 @@ function status_check() {
 # ------------------------
 function render_menu() {
   local git_state host_name
+  local repo_label branch_label
   update_ui_width
+  refresh_git_counters
   host_name="$(hostname -s 2>/dev/null || echo unknown)"
+  repo_label="$(basename "${REPO:-${WORK_DIR:-repo}}")"
+  branch_label="$(git branch --show-current 2>/dev/null || echo unknown)"
   if [[ -z "${CHANGES}" ]]; then
     git_state="Clean"
   else
@@ -491,17 +517,14 @@ function render_menu() {
   fi
 
   frame_top_titled "Gitlaunch"
-  frame_row "Host: $host_name   User: ${USER:-mansys}   Git: $git_state"
+  frame_row "Host: $host_name   User: ${USER:-mansys}   Repo: $repo_label   Branch: $branch_label"
+  frame_row "Git: $git_state   Staged: $STAGED_COUNT   Unstaged: $UNSTAGED_COUNT   Untracked: $UNTRACKED_COUNT"
   frame_mid
-  frame_row_colored "1. GIT STATUS" "$C_LABEL"
-  frame_row_colored "2. GIT PULL" "$C_LABEL"
-  frame_row_colored "3. AI COMMIT" "$C_LABEL"
-  frame_row_colored "4. SAFE PUSH" "$C_LABEL"
-  frame_row_colored "5. OPEN REPO" "$C_LABEL"
-  frame_row_colored "6. DEV MODE" "$C_LABEL"
-  frame_row_colored "7. SWITCH REPO" "$C_LABEL"
-  frame_row_colored "8. AUTO ACTION" "$C_WHITE"
-  frame_row_colored "b. BACK" "$C_LABEL"
+  frame_two_col "1. Git status" "2. Pull"
+  frame_two_col "3. Suggest commit" "4. Safe push"
+  frame_two_col "5. Open repo" "6. Dev mode"
+  frame_two_col "7. Switch repo" "8. Auto commit + push"
+  frame_two_col "9. Recent log" "b. Back"
   frame_bottom
 }
 
@@ -531,8 +554,10 @@ function prompt_choice() {
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
   printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
   printf "%b>> press 1-9%b\n" "$C_DIM" "$C_RESET"
-  printf "\033[3A"
-  printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[3A"
+    printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
+  fi
 
   input=""
   if [[ -t 0 ]]; then
@@ -542,7 +567,9 @@ function prompt_choice() {
   fi
 
   printf "%s\n" "$input"
-  printf "\033[2B"
+  if [[ -t 0 && -t 1 ]]; then
+    printf "\033[2B"
+  fi
 
   choice="$input"
 }
@@ -811,6 +838,15 @@ function suggest_commit() {
   fi
 }
 
+# Shows recent git history without leaving the Gitlaunch flow.
+function show_recent_log() {
+  echo ""
+  printf "%bRecent commits:%b\n" "$C_TITLE" "$C_RESET"
+  git log --oneline --decorate --graph -12 || true
+  echo ""
+  pause_git_menu
+}
+
 # Handles AI-assisted commit flow and always returns to the Git menu loop.
 function run_ai_commit() {
   local SUGGESTED proceed
@@ -930,7 +966,10 @@ while true; do
       fi
       pause_git_menu
       ;;
-    9|b|B)
+    9)
+      show_recent_log
+      ;;
+    b|B)
       break
       ;;
     *)
