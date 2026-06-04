@@ -855,7 +855,6 @@ function run_ai_commit() {
 
   if [[ "$proceed" != "y" ]]; then
     echo "❌ Commit cancelled"
-    pause_git_menu
     return 0
   fi
 
@@ -863,9 +862,6 @@ function run_ai_commit() {
   if git commit -m "$SUGGESTED"; then
     pr_aware_push "$SUGGESTED"
   fi
-
-  pause_git_menu
-  return 0
 }
 
 # ------------------------
@@ -927,6 +923,7 @@ while true; do
     3)
       run_ai_commit
       _MENU_ONLY=1
+      pause_git_menu
       ;;
     4)
       safe_push
