@@ -555,7 +555,7 @@ function prompt_choice() {
   fi
 
   input=""
-  IFS= read -r input || input="b"
+  IFS= read -r input </dev/tty || input="b"
 
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[2B\r\n"
@@ -570,7 +570,7 @@ function pause_git_menu() {
   local pause_reply
   stty sane 2>/dev/null || true
   printf "%bPress Enter to return to Git menu...%b" "$C_DIM" "$C_RESET"
-  read pause_reply
+  read pause_reply </dev/tty
 }
 
 # ------------------------
@@ -727,7 +727,7 @@ function create_pr_branch_for_push() {
   echo "GitHub requires these changes to go through a pull request."
   echo "Suggested PR branch: $pr_branch"
   printf "%bCreate and push this PR branch? [Y/n]: %b" "$C_LABEL" "$C_RESET"
-  read confirm
+  read confirm </dev/tty
 
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
     echo "Push cancelled. Commit remains local on $base_branch."
@@ -851,7 +851,7 @@ function run_ai_commit() {
   analyze_diff
 
   printf "%bProceed with commit? (y/n): %b" "$C_LABEL" "$C_RESET"
-  read proceed
+  read proceed </dev/tty
 
   if [[ "$proceed" != "y" ]]; then
     echo "❌ Commit cancelled"
