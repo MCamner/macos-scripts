@@ -768,13 +768,17 @@ function pr_aware_push() {
     return $?
   fi
 
+  local tmpfile
+  tmpfile="$(mktemp)"
+
   if [[ "${#push_args[@]}" -gt 0 ]]; then
-    output=$(git push "${push_args[@]}" 2>&1)
+    git push "${push_args[@]}" 2>&1 | tee "$tmpfile"; status=${pipestatus[1]}
   else
-    output=$(git push 2>&1)
+    git push 2>&1 | tee "$tmpfile"; status=${pipestatus[1]}
   fi
-  status=$?
-  echo "$output"
+
+  output="$(cat "$tmpfile")"
+  rm -f "$tmpfile"
 
   if [[ "$status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
     create_pr_branch_for_push "$branch" "$commit_message"
