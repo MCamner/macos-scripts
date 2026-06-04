@@ -1210,6 +1210,8 @@ open_git_menu() {
   local git_path=""
   local back_marker="/tmp/mq-gitlaunch-back.$$"
   local git_status=0
+  local restart_count=0
+  local -a git_cmd
 
   if [[ -n "$repo_arg" ]]; then
     git_path="$repo_arg"
@@ -1218,25 +1220,9 @@ open_git_menu() {
   fi
 
   if [[ -x "$git_script" ]]; then
-    while true; do
-      rm -f "$back_marker" 2>/dev/null || true
-      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" "$git_script"
-      git_status=$?
-      [[ -f "$back_marker" ]] && break
-      [[ "$git_status" -ne 0 ]] && break
-      git_path="$(pwd)"
-    done
-    rm -f "$back_marker" 2>/dev/null || true
+    git_cmd=("$git_script")
   elif [[ -f "$git_script" ]]; then
-    while true; do
-      rm -f "$back_marker" 2>/dev/null || true
-      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" zsh "$git_script"
-      git_status=$?
-      [[ -f "$back_marker" ]] && break
-      [[ "$git_status" -ne 0 ]] && break
-      git_path="$(pwd)"
-    done
-    rm -f "$back_marker" 2>/dev/null || true
+    git_cmd=(zsh "$git_script")
   else
     print_header
     row "GIT MENU"
@@ -1245,7 +1231,29 @@ open_git_menu() {
     row " $git_script"
     print_footer
     pause_enter
+    return
   fi
+
+  while true; do
+    rm -f "$back_marker" 2>/dev/null || true
+    MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" "${git_cmd[@]}"
+    git_status=$?
+    [[ -f "$back_marker" ]] && break
+
+    restart_count=$((restart_count + 1))
+    if [[ "$restart_count" -ge 5 ]]; then
+      echo "Gitlaunch exited unexpectedly $restart_count times; returning to mqlaunch."
+      sleep 1
+      break
+    fi
+
+    # Any exit without the explicit Back marker is treated as accidental.
+    # This keeps commit/push completion inside Gitlaunch instead of falling
+    # through to the mqlaunch main menu.
+    git_path="$(pwd)"
+  done
+
+  rm -f "$back_marker" 2>/dev/null || true
 }
 
 # Opens release menu.
