@@ -516,7 +516,7 @@ function render_menu() {
   frame_row "Git: $git_state   Staged: $STAGED_COUNT   Unstaged: $UNSTAGED_COUNT   Untracked: $UNTRACKED_COUNT"
   frame_mid
   frame_two_col "1. Git status" "2. Pull"
-  frame_two_col "3. Suggest commit" "4. Safe push"
+  frame_two_col "3. Commit with suggested message" "4. Safe push"
   frame_two_col "5. Open repo" "6. Dev mode"
   frame_two_col "7. Switch repo" "8. Auto commit + push"
   frame_two_col "9. Recent log" "b. Back"
@@ -555,7 +555,7 @@ function prompt_choice() {
   fi
 
   input=""
-  IFS= read -r input </dev/tty || input="b"
+  IFS= read -r input </dev/tty || true
 
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[2B\r\n"
@@ -567,10 +567,12 @@ function prompt_choice() {
 
 # Pauses inside gitlaunch without changing menu level.
 function pause_git_menu() {
-  local pause_reply
+  local pause_reply=""
   stty sane 2>/dev/null || true
-  printf "%bPress Enter to return to Git menu...%b" "$C_DIM" "$C_RESET"
-  read pause_reply </dev/tty
+  echo ""
+  printf "%bPress Enter to return to Gitlaunch menu...%b" "$C_DIM" "$C_RESET"
+  IFS= read -r pause_reply </dev/tty || true
+  choice=""
 }
 
 # ------------------------
