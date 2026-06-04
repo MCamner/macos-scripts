@@ -7,6 +7,7 @@ export LC_MESSAGES=C.UTF-8
 STATE_FILE=~/.gitlaunch_state
 DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
+BACK_MARKER="${MQ_GITLAUNCH_BACK_MARKER:-}"
 WORK_DIR=""
 _BANNER_SHOWN=0
 
@@ -224,7 +225,10 @@ function detect_repo() {
         REPO=$DEFAULT_REPO
         WORK_DIR=$DEFAULT_REPO
         ;;
-      *) exit ;;
+      *)
+        mark_gitlaunch_back
+        exit
+        ;;
     esac
   fi
 
@@ -575,6 +579,14 @@ function pause_git_menu() {
   choice=""
 }
 
+# Marks an intentional return to mqlaunch, distinct from an unexpected
+# Gitlaunch exit after a nested git operation.
+function mark_gitlaunch_back() {
+  if [[ -n "$BACK_MARKER" ]]; then
+    print -r -- "back" > "$BACK_MARKER" 2>/dev/null || true
+  fi
+}
+
 # ------------------------
 # NEXT ACTION ENGINE
 # ------------------------
@@ -842,7 +854,7 @@ function show_recent_log() {
 
 # Handles AI-assisted commit flow and always returns to the Git menu loop.
 function run_ai_commit() {
-  local SUGGESTED proceed
+  local SUGGESTED proceed push_status
 
   SUGGESTED=$(suggest_commit)
 
@@ -853,17 +865,26 @@ function run_ai_commit() {
   analyze_diff
 
   printf "%bProceed with commit? (y/n): %b" "$C_LABEL" "$C_RESET"
-  read proceed </dev/tty
+  IFS= read -r proceed </dev/tty || proceed=""
 
   if [[ "$proceed" != "y" ]]; then
     echo "❌ Commit cancelled"
+    pause_git_menu
     return 0
   fi
 
   git add .
   if git commit -m "$SUGGESTED"; then
     pr_aware_push "$SUGGESTED"
+    push_status=$?
+    if [[ "$push_status" -ne 0 ]]; then
+      echo ""
+      printf "%bPush did not complete; staying in Gitlaunch.%b\n" "$C_WARN" "$C_RESET"
+    fi
   fi
+
+  pause_git_menu
+  return 0
 }
 
 # ------------------------
@@ -919,7 +940,7 @@ while true; do
       ;;
     3)
       run_ai_commit
-      pause_git_menu
+      choice=""
       ;;
     4)
       safe_push
@@ -960,6 +981,7 @@ while true; do
       show_recent_log
       ;;
     b|B)
+      mark_gitlaunch_back
       break
       ;;
     *)

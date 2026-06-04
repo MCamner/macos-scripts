@@ -1208,6 +1208,8 @@ open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
   local git_path=""
+  local back_marker="/tmp/mq-gitlaunch-back.$$"
+  local git_status=0
 
   if [[ -n "$repo_arg" ]]; then
     git_path="$repo_arg"
@@ -1216,9 +1218,25 @@ open_git_menu() {
   fi
 
   if [[ -x "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" "$git_script"
+    while true; do
+      rm -f "$back_marker" 2>/dev/null || true
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" "$git_script"
+      git_status=$?
+      [[ -f "$back_marker" ]] && break
+      [[ "$git_status" -ne 0 ]] && break
+      git_path="$(pwd)"
+    done
+    rm -f "$back_marker" 2>/dev/null || true
   elif [[ -f "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" zsh "$git_script"
+    while true; do
+      rm -f "$back_marker" 2>/dev/null || true
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" zsh "$git_script"
+      git_status=$?
+      [[ -f "$back_marker" ]] && break
+      [[ "$git_status" -ne 0 ]] && break
+      git_path="$(pwd)"
+    done
+    rm -f "$back_marker" 2>/dev/null || true
   else
     print_header
     row "GIT MENU"
