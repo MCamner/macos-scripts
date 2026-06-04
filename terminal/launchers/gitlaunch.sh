@@ -568,7 +568,7 @@ function prompt_choice() {
 # Pauses inside gitlaunch without changing menu level.
 function pause_git_menu() {
   local pause_reply
-
+  stty sane 2>/dev/null || true
   printf "%bPress Enter to return to Git menu...%b" "$C_DIM" "$C_RESET"
   read pause_reply
 }
@@ -768,17 +768,13 @@ function pr_aware_push() {
     return $?
   fi
 
-  local tmpfile
-  tmpfile="$(mktemp)"
-
   if [[ "${#push_args[@]}" -gt 0 ]]; then
-    git push "${push_args[@]}" 2>&1 | tee "$tmpfile"; status=${pipestatus[1]}
+    output=$(git push "${push_args[@]}" 2>&1)
   else
-    git push 2>&1 | tee "$tmpfile"; status=${pipestatus[1]}
+    output=$(git push 2>&1)
   fi
-
-  output="$(cat "$tmpfile")"
-  rm -f "$tmpfile"
+  status=$?
+  echo "$output"
 
   if [[ "$status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
     create_pr_branch_for_push "$branch" "$commit_message"
