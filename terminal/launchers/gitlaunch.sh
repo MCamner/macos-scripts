@@ -893,22 +893,17 @@ fi
 # ------------------------
 trap 'printf "%b" "$C_RESET"' EXIT
 
-_MENU_ONLY=0
-
 while true; do
   detect_repo
   clear_screen
 
-  if [[ "$_MENU_ONLY" -eq 0 ]]; then
-    status_check
-    next_action
-    render_next_action
+  status_check
+  next_action
+  render_next_action
 
-    if use_gum_menu && [ -n "$(git status --porcelain)" ]; then
-      analyze_diff
-    fi
+  if use_gum_menu && [ -n "$(git status --porcelain)" ]; then
+    analyze_diff
   fi
-  _MENU_ONLY=0
 
   echo ""
   render_menu
@@ -926,7 +921,6 @@ while true; do
       ;;
     3)
       run_ai_commit
-      _MENU_ONLY=1
       pause_git_menu
       ;;
     4)
