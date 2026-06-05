@@ -53,6 +53,46 @@ mqlaunch docs, routing and workflow scripts stay aligned before release.
 
 ---
 
+## Planned: v0.6.0 — MQ review/release workflow entrypoints
+
+Goal: make the mq-agent + mq-mcp Release Gate v2 workflow reachable from the
+human terminal entrypoint without embedding review, perception or release-gate
+logic in shell scripts.
+
+Planned scope:
+
+- [ ] Add or document an mqlaunch entrypoint for repo review
+- [ ] Add or document an mqlaunch entrypoint for perception check
+- [ ] Add or document an mqlaunch entrypoint for release status
+- [ ] Add or document an mqlaunch entrypoint for stack health
+- [ ] Route through mq-agent for orchestration and approval handling
+- [ ] Keep mq-mcp Release Gate v2 execution behind mq-agent/operator workflow
+- [ ] Add workflow validation coverage so docs, menus and launchers stay aligned
+
+Target workflow:
+
+```text
+mqlaunch → review repo → perception check → release gate → status summary
+```
+
+Boundary:
+
+```text
+mqlaunch owns human terminal entrypoints.
+mq-agent owns workflow orchestration.
+mq-mcp owns release validation.
+mq-image-analyze owns visual extraction.
+repo-signal owns repo readiness signals.
+```
+
+Non-goals:
+
+- no cognition or review logic in shell scripts
+- no direct perception parsing in mqlaunch
+- no autonomous release fixes
+
+---
+
 ## Maintenance / future ideas
 
 The scheduled v0.5.x roadmap is complete. These ideas are intentionally
