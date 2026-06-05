@@ -53,7 +53,10 @@ mqlaunch docs, routing and workflow scripts stay aligned before release.
 
 ---
 
-## Near-term (unscheduled)
+## Maintenance / future ideas
+
+The scheduled v0.5.x roadmap is complete. These ideas are intentionally
+unscheduled until there is a concrete implementation target:
 
 - plugin-style extensions
 - remote execution support

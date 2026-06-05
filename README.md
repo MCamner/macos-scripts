@@ -450,12 +450,11 @@ Current focus is documented in [ROADMAP.md](ROADMAP.md). The main boundary is:
 mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 ```
 
-Near-term priorities:
+Current roadmap status:
 
-- release gate integration
-- plugin-style extensions
-- remote execution support
-- improved onboarding
+- v0.5.0 and v0.5.1 are complete.
+- Future ideas such as plugin-style extensions, remote execution support and
+  improved onboarding are unscheduled maintenance/backlog items.
 
 ---
 

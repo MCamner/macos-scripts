@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Polished the Dev menu with clearer groups and safer script fallbacks.
+- Clarified roadmap status: v0.5.x is complete, with remaining ideas tracked
+  as unscheduled maintenance/backlog items.
 
 ## [0.5.1] - 2026-06-03
 
