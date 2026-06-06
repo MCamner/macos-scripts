@@ -57,6 +57,10 @@ _run_agent_review() {
         scope="repo"
         shift
         ;;
+      release|--release)
+        scope="release"
+        shift
+        ;;
       file|--file)
         scope="file"
         file="${2:-}"
@@ -107,6 +111,9 @@ _run_agent_review() {
   case "$scope" in
     repo)
       _run_agent review repo "${mode_args[@]}" "${passthrough[@]}"
+      ;;
+    release)
+      _run_agent review release "${passthrough[@]}"
       ;;
     file)
       if [[ -z "$file" ]]; then
@@ -210,8 +217,17 @@ run_agent_command() {
       shift || true
       _run_agent release-check "$@"
       ;;
+    release-workflow)
+      shift || true
+      _run_agent release workflow "$@"
+      ;;
     review)
       shift || true
+      if [[ "${1:-}" == "release" || "${1:-}" == "--release" ]]; then
+        shift || true
+        _run_agent review release "$@"
+        return $?
+      fi
       _run_agent_review "$@"
       ;;
     architecture)
