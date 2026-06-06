@@ -28,6 +28,11 @@ _jc() {
   _J_SEP=","
 }
 
+mq_image_analyze_reachable() {
+  command -v curl >/dev/null 2>&1 || return 1
+  curl -fsS --max-time 2 "http://localhost:8766/health" >/dev/null 2>&1
+}
+
 # Runs JSON report mode.
 run_json_mode() {
   local version
@@ -51,6 +56,12 @@ run_json_mode() {
     _jc "mqlaunch" "ok"
   else
     _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  if mq_image_analyze_reachable; then
+    _jc "mq-image-analyze" "ok" "reachable at http://localhost:8766"
+  else
+    _jc "mq-image-analyze" "warn" "not reachable at http://localhost:8766; perception commands will use fallback/no live OCR"
   fi
 
   printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}}\n' \
@@ -86,6 +97,12 @@ run_normal_mode() {
     ok "mqlaunch available"
   else
     warn "mqlaunch not in PATH"
+  fi
+
+  if mq_image_analyze_reachable; then
+    ok "mq-image-analyze reachable at :8766"
+  else
+    warn "mq-image-analyze not reachable at :8766 — perception commands will use fallback/no live OCR"
   fi
 
   section "SUMMARY"

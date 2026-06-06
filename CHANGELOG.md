@@ -4,13 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.6.0] - 2026-06-06
 
-### Changed
+### Added
 
-- Polished the Dev menu with clearer groups and safer script fallbacks.
-- Clarified roadmap status: v0.5.x is complete, with remaining ideas tracked
-  as unscheduled maintenance/backlog items.
+- Added `mqlaunch perception <image-path>` — delegates to `mq-agent review perception` which routes to mq-image-analyze for visual extraction.
+- Added `mqlaunch stack-health` — delegates to `mq-agent dashboard` for full MQ stack health summary.
+- Added menu items 15 (stack health), 16 (release status), 17 (perception check) to the mq-agent menu in mqlaunch.
+- Documented both new commands in `docs/COMMANDS.md` and the routing smoke test.
 
 ## [0.5.1] - 2026-06-03
 
