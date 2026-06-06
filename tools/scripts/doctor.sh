@@ -61,7 +61,7 @@ run_json_mode() {
   if mq_image_analyze_reachable; then
     _jc "mq-image-analyze" "ok" "reachable at http://localhost:8766"
   else
-    _jc "mq-image-analyze" "warn" "not reachable at http://localhost:8766; perception commands will use fallback/no live OCR"
+    _jc "mq-image-analyze" "warn" "not reachable at http://localhost:8766; start with: mq-image mcp --transport sse"
   fi
 
   printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}}\n' \
@@ -102,7 +102,7 @@ run_normal_mode() {
   if mq_image_analyze_reachable; then
     ok "mq-image-analyze reachable at :8766"
   else
-    warn "mq-image-analyze not reachable at :8766 — perception commands will use fallback/no live OCR"
+    warn "mq-image-analyze not reachable at :8766 — start with: mq-image mcp --transport sse"
   fi
 
   section "SUMMARY"

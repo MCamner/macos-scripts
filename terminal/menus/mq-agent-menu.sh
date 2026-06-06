@@ -199,6 +199,19 @@ _mcp_stop() {
 }
 
 # Handles direct mqlaunch agent commands.
+_run_agent_release_check() {
+  if [[ "${1:-}" == "--execute" ]]; then
+    shift || true
+    if [[ -x "./release-check.sh" ]]; then
+      ./release-check.sh "$@"
+    else
+      _run_agent release gate --run-tests "$@"
+    fi
+    return
+  fi
+  _run_agent release-check "$@"
+}
+
 run_agent_command() {
   local subcmd="${1:-menu}"
   case "$subcmd" in
@@ -219,7 +232,7 @@ run_agent_command() {
       ;;
     release-check)
       shift || true
-      _run_agent release-check "$@"
+      _run_agent_release_check "$@"
       ;;
     release-workflow)
       shift || true

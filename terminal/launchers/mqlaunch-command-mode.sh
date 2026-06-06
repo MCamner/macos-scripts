@@ -29,10 +29,13 @@ print_command_help() {
       cat <<'HELP'
 mqlaunch system
 mqlaunch system perf
+mqlaunch system perf --report
 mqlaunch system network
 mqlaunch system check
+mqlaunch system check --json
 mqlaunch system self-check
 mqlaunch system debug
+mqlaunch system debug --out /tmp/mqlaunch-debug.tgz
 mqlaunch system repo
 mqlaunch system browser
 mqlaunch system time
@@ -82,7 +85,9 @@ Usage:
 
 Quick commands:
   mqlaunch demo
+  mqlaunch demo --script
   mqlaunch perf
+  mqlaunch perf --report
   mqlaunch network
   mqlaunch check
   mqlaunch self-check
@@ -116,6 +121,8 @@ Quick commands:
   mqlaunch release-check
   mqlaunch selftest
   mqlaunch version
+  mqlaunch version --plain
+  mqlaunch version --json
   mqlaunch notes
   mqlaunch about
   mqlaunch index
@@ -204,7 +211,7 @@ dispatch_cli_command() {
       ;;
 
     demo)
-      run_demo_mode
+      run_demo_mode "${@:2}"
       return 0
       ;;
 
@@ -345,8 +352,12 @@ dispatch_cli_command() {
       ;;
 
     release-check|/release-check|check-release)
-      "$BASE_DIR/terminal/release/mq-release-check.sh"
-      pause_enter
+      if [[ "${2:-}" == "--execute" && -x "./release-check.sh" ]]; then
+        ./release-check.sh "${@:3}"
+      else
+        "$BASE_DIR/terminal/release/mq-release-check.sh"
+        pause_enter
+      fi
       return 0
       ;;
 
@@ -380,22 +391,32 @@ dispatch_cli_command() {
           open_system_menu
           ;;
         perf|performance)
-          open_performance_menu
+          if [[ "${3:-}" == "--report" ]]; then
+            printf 'cpu_load: %s\n' "$(uptime 2>/dev/null | sed 's/^.*load averages*: //')"
+            printf 'memory: %s\n' "$(vm_stat 2>/dev/null | head -1)"
+            printf 'disk: %s\n' "$(df -h / 2>/dev/null | tail -1)"
+          else
+            open_performance_menu
+          fi
           ;;
         net|network)
           show_network_info
           ;;
         doctor)
-      "$BASE_DIR/tools/scripts/doctor.sh" "${@:3}"
-      ;;
-    check|health)
-          system_check
+          "$BASE_DIR/tools/scripts/doctor.sh" "${@:3}"
+          ;;
+        check|health)
+          if [[ "${3:-}" == "--json" ]]; then
+            "$BASE_DIR/tools/scripts/doctor.sh" --json
+          else
+            system_check
+          fi
           ;;
         self-check|selfcheck)
           run_self_check || true
           ;;
         debug|debug-bundle|bundle)
-          run_debug_bundle || true
+          run_debug_bundle "${@:3}" || true
           ;;
         repo|folder)
           open_base_dir
@@ -435,7 +456,7 @@ dispatch_cli_command() {
           show_release_notes || true
           ;;
         version)
-          show_version_info || true
+          show_version_info "${@:3}" || true
           ;;
         status)
           "$BASE_DIR/terminal/menus/mq-release-menu.sh" status
@@ -485,7 +506,7 @@ dispatch_cli_command() {
           show_about_dashboard || true
           ;;
         version)
-          show_version_info || true
+          show_version_info "${@:3}" || true
           ;;
         notes|release-notes)
           show_release_notes || true
@@ -505,7 +526,13 @@ dispatch_cli_command() {
       ;;
 
     perf|performance)
-      open_performance_menu
+      if [[ "${2:-}" == "--report" ]]; then
+        printf 'cpu_load: %s\n' "$(uptime 2>/dev/null | sed 's/^.*load averages*: //')"
+        printf 'memory: %s\n' "$(vm_stat 2>/dev/null | head -1)"
+        printf 'disk: %s\n' "$(df -h / 2>/dev/null | tail -1)"
+      else
+        open_performance_menu
+      fi
       return 0
       ;;
 
@@ -515,7 +542,11 @@ dispatch_cli_command() {
       ;;
 
     check|health)
-      system_check
+      if [[ "${2:-}" == "--json" ]]; then
+        "$BASE_DIR/tools/scripts/doctor.sh" --json
+      else
+        system_check
+      fi
       return 0
       ;;
 
@@ -525,7 +556,7 @@ dispatch_cli_command() {
       ;;
 
     debug|bundle|debug-bundle|support)
-      run_debug_bundle || true
+      run_debug_bundle "${@:2}" || true
       return 0
       ;;
 
@@ -550,7 +581,7 @@ dispatch_cli_command() {
       ;;
 
     version)
-      show_version_info || true
+      show_version_info "${@:2}" || true
       return 0
       ;;
 

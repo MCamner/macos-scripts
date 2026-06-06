@@ -1342,6 +1342,15 @@ get_repo_version() {
 
 # Shows version info.
 show_version_info() {
+  if [[ "${1:-}" == "--plain" ]]; then
+    printf 'mqlaunch %s\n' "$(get_repo_version)"
+    return 0
+  fi
+  if [[ "${1:-}" == "--json" ]]; then
+    printf '{"name":"mqlaunch","version":"%s","project":"macos-scripts"}\n' "$(get_repo_version)"
+    return 0
+  fi
+
   print_header
   row_bold "VERSION INFO"
   empty_row
@@ -1400,6 +1409,13 @@ run_self_check() {
 
 # Runs debug bundle.
 run_debug_bundle() {
+  if [[ "${1:-}" == "--out" && -n "${2:-}" ]]; then
+    mkdir -p "$(dirname "$2")"
+    tar -czf "$2" -C "$BASE_DIR" VERSION README.md CHANGELOG.md 2>/dev/null
+    printf '%s\n' "$2"
+    return 0
+  fi
+
   print_header
   row_bold "DEBUG BUNDLE"
   empty_row
@@ -1646,6 +1662,17 @@ EOF
 
 # Runs demo mode.
 run_demo_mode() {
+  if [[ "${1:-}" == "--script" ]]; then
+    cat <<EOF
+mqlaunch demo transcript
+1. doctor: environment readiness
+2. agent release-workflow: mq-agent release path
+3. agent mcp-status: MCP reachability
+4. perception: mq-agent -> mq-image-analyze routing
+EOF
+    return 0
+  fi
+
   local delay version prompt_dir prompt_count repo_state load_line disk_line ip_addr battery_line active_cmd
   local theme_variant theme_state
   delay="${MQLAUNCH_DEMO_DELAY:-1}"
@@ -1852,10 +1879,24 @@ run_arg_command() {
       ;;
     login|boot|session) run_mqlogin "$@" ;;
     shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
-    perf|performance) open_performance_menu ;;
-    demo) run_demo_mode ;;
-    version|ver) show_version_info ;;
-    ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
+    perf|performance)
+      if [[ "${1:-}" == "--report" ]]; then
+        printf 'cpu_load: %s\n' "$(uptime 2>/dev/null | sed 's/^.*load averages*: //')"
+        printf 'memory: %s\n' "$(vm_stat 2>/dev/null | head -1)"
+        printf 'disk: %s\n' "$(df -h / 2>/dev/null | tail -1)"
+      else
+        open_performance_menu
+      fi
+      ;;
+    demo) run_demo_mode "$@" ;;
+    version|ver) show_version_info "$@" ;;
+    ask)
+      if [[ "${1:-}" == "--no-clipboard" && -z "${OPENAI_API_KEY:-}" ]]; then
+        echo "ERROR: OPENAI_API_KEY is required for mqlaunch ask --no-clipboard" >&2
+        return 1
+      fi
+      "$BASE_DIR/tools/scripts/ask.sh" "$@"
+      ;;
     fix) "$BASE_DIR/tools/scripts/fix.sh" "$@" ;;
     skills|skill) "$BASE_DIR/tools/scripts/mq-skills.py" "$@" ;;
     repos)
@@ -1875,8 +1916,14 @@ run_arg_command() {
       ;;
     doctor) "$BASE_DIR/tools/scripts/doctor.sh" "$@" ;;
     selftest|self-test|self-check) run_self_check ;;
-    check|health) run_self_check ;;
-    bundle|debug-bundle|support) run_debug_bundle ;;
+    check|health)
+      if [[ "${1:-}" == "--json" ]]; then
+        "$BASE_DIR/tools/scripts/doctor.sh" --json
+      else
+        run_self_check
+      fi
+      ;;
+    bundle|debug-bundle|support) run_debug_bundle "$@" ;;
     notes|changelog|release-notes) show_release_notes ;;
     about|status) show_about_dashboard ;;
     commands|index) show_command_index ;;

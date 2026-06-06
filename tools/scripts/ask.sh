@@ -3,8 +3,8 @@
 set -euo pipefail
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
-source ~/.env 2>/dev/null || true
-source "$BASE_DIR/.env" 2>/dev/null || true
+[[ -f "$HOME/.env" ]] && source "$HOME/.env"
+[[ -f "$BASE_DIR/.env" ]] && source "$BASE_DIR/.env"
 
 VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
 
@@ -42,8 +42,18 @@ HELP
   exit 0
 fi
 
+NO_CLIPBOARD=0
+if [[ "${1:-}" == "--no-clipboard" ]]; then
+  NO_CLIPBOARD=1
+  shift
+fi
+
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-  echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
+  if [[ "$NO_CLIPBOARD" -eq 1 ]]; then
+    echo "ERROR: OPENAI_API_KEY is required for mqlaunch ask --no-clipboard"
+  else
+    echo "OPENAI_API_KEY is not set. Add it to ~/.env or $BASE_DIR/.env."
+  fi
   exit 1
 fi
 
