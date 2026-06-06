@@ -80,3 +80,9 @@ Report:
 - verification query result
 - any uncertainty about stale duplicates or ownership
 
+## When not to use
+
+- General docs changes unrelated to semantic retrieval
+- CLI command surface changes — use `mqlaunch-command-surface`
+- Release validation — use `release-readiness`
+- Vector store uploads outside planned memory maintenance — treat uploads as opt-in and destructive

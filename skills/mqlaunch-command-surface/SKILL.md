@@ -19,6 +19,13 @@ Use this skill when the user asks to:
 - review whether a new workflow belongs in `terminal/`, `tools/`, `automation/`, or `system/`
 - keep direct CLI commands and interactive menus consistent
 
+## When not to use
+
+- Command contract generation — use `command-template-library`
+- Backend or API-only changes with no CLI impact
+- Semantic memory updates — use `semantic-memory-maintainer`
+- Release validation — use `release-readiness`
+
 ## Core rule
 
 Every user-facing command should work in direct CLI mode and be discoverable from the relevant menu or help surface unless there is a clear reason not to.

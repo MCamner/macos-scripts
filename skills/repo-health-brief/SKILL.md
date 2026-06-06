@@ -53,6 +53,13 @@ repo-signal brief . --format markdown # paste into docs or PR
 - When asked "what state is this repo in?"
 - When triaging what to fix first
 
+## When not to use
+
+- When you need to make fixes — just take action after the brief
+- Deep code audit or review — use `repo-audit` or `repo-aware`
+- Release preparation requiring full gate checks — use `release-readiness`
+- Semantic memory or vector store work — use `semantic-memory-maintainer`
+
 ## Never
 
 - Invent risk or suggestion data — always run the command

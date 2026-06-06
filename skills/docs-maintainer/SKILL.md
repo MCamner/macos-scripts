@@ -18,6 +18,13 @@ Use this skill when the user asks to:
 - prepare docs for release, publishing, or GitHub Pages
 - explain what docs need to change after a feature or bug fix
 
+## When not to use
+
+- Code or script changes without docs impact
+- CLI command surface changes — use `mqlaunch-command-surface`
+- Product positioning — use `repo-product-auditor`
+- Semantic memory or vector store work — use `semantic-memory-maintainer`
+
 ## Core rule
 
 Document only behavior that exists or is intentionally being added in the same change.

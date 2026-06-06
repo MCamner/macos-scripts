@@ -17,6 +17,12 @@ Use this skill when the user asks to:
 * review whether a command follows the contract schema
 * create a Python wrapper for a UMS command
 
+## When not to use
+
+- Editing `commands.json` or `COMMANDS.md` directly for new commands — always use the generator
+- CLI or menu behavior changes — use `mqlaunch-command-surface`
+- Docs-only changes unrelated to command contracts — use `docs-maintainer`
+
 ## Core rule
 
 Every command must have a YAML contract in `mq-ums/docs/contracts/` before it is added to `commands.json` or `COMMANDS.md`. The generator is the only path from contract to output.
