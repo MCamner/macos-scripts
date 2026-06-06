@@ -21,6 +21,10 @@ print_agent_menu() {
   surface_split_row "5. Audit repository" "6. Signal + AI plan" "$width" "$panel_color"
   surface_split_row "7. Release check" "8. Diagnose CI" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
+  surface_row "REVIEW / RELEASE" "$width" "$panel_color"
+  surface_split_row "15. Stack health" "16. Release status" "$width" "$panel_color"
+  surface_row "17. Perception check (image path required)" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
   surface_split_row "13. Start MCP server" "14. Stop MCP server" "$width" "$panel_color"
@@ -256,6 +260,18 @@ run_agent_command() {
     mcp-stop)
       _mcp_stop
       ;;
+    perception|review-perception)
+      shift || true
+      _run_agent review perception "$@"
+      ;;
+    stack-health|stack|dashboard)
+      shift || true
+      _run_agent dashboard "$@"
+      ;;
+    release-status)
+      shift || true
+      _run_agent release status "$@"
+      ;;
     *)
       _run_agent "$@"
       ;;
@@ -280,6 +296,14 @@ handle_agent_menu_choice() {
     12) _run_agent mcp tools;   pause_enter ;;
     13) _mcp_start;             pause_enter ;;
     14) _mcp_stop;              pause_enter ;;
+    15) _run_agent dashboard;   pause_enter ;;
+    16) _run_agent release status; pause_enter ;;
+    17)
+      printf "Image path: "
+      read -r _img_path
+      _run_agent review perception "$_img_path"
+      pause_enter
+      ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac

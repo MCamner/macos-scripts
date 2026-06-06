@@ -165,6 +165,8 @@ mqlaunch risk-review                            # risk review current diff via m
 mqlaunch architecture                           # show mq-mcp architecture decisions
 mqlaunch repo-health                            # repo-signal + orchestration contract health
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
+mqlaunch perception <image-path>               # visual check via mq-agent -> mq-image-analyze
+mqlaunch stack-health                           # full stack health dashboard via mq-agent
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
 

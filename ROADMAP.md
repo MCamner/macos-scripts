@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 0.5.1
+Current version: 0.6.0
 
 ## Design boundary
 
@@ -53,21 +53,19 @@ mqlaunch docs, routing and workflow scripts stay aligned before release.
 
 ---
 
-## Planned: v0.6.0 — MQ review/release workflow entrypoints
+## v0.6.0 — MQ review/release workflow entrypoints — Done
 
 Goal: make the mq-agent + mq-mcp Release Gate v2 workflow reachable from the
 human terminal entrypoint without embedding review, perception or release-gate
 logic in shell scripts.
 
-Planned scope:
-
-- [ ] Add or document an mqlaunch entrypoint for repo review
-- [ ] Add or document an mqlaunch entrypoint for perception check
-- [ ] Add or document an mqlaunch entrypoint for release status
-- [ ] Add or document an mqlaunch entrypoint for stack health
-- [ ] Route through mq-agent for orchestration and approval handling
-- [ ] Keep mq-mcp Release Gate v2 execution behind mq-agent/operator workflow
-- [ ] Add workflow validation coverage so docs, menus and launchers stay aligned
+- [x] Add or document an mqlaunch entrypoint for repo review
+- [x] Add or document an mqlaunch entrypoint for perception check
+- [x] Add or document an mqlaunch entrypoint for release status
+- [x] Add or document an mqlaunch entrypoint for stack health
+- [x] Route through mq-agent for orchestration and approval handling
+- [x] Keep mq-mcp Release Gate v2 execution behind mq-agent/operator workflow
+- [x] Add workflow validation coverage so docs, menus and launchers stay aligned
 
 Target workflow:
 
