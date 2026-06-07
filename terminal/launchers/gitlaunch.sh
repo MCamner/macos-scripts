@@ -567,8 +567,10 @@ function prompt_choice() {
 
 # Pauses inside gitlaunch without changing menu level.
 function pause_git_menu() {
-  local pause_reply=""
-  stty sane 2>/dev/null || true
+  local pause_reply="" _drain=""
+  stty sane </dev/tty 2>/dev/null || true
+  # drain any newlines buffered during git operations or prior reads
+  read -t 0.1 -k 999 _drain </dev/tty 2>/dev/null || true
   echo ""
   printf "%bPress Enter to return to Gitlaunch menu...%b" "$C_DIM" "$C_RESET"
   IFS= read -r pause_reply </dev/tty || true
@@ -864,6 +866,7 @@ function run_ai_commit() {
   if git commit -m "$SUGGESTED"; then
     pr_aware_push "$SUGGESTED"
   fi
+  pause_git_menu
 }
 
 # ------------------------
@@ -919,7 +922,7 @@ while true; do
       ;;
     3)
       run_ai_commit
-      pause_git_menu
+      continue
       ;;
     4)
       safe_push
