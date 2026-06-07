@@ -1958,7 +1958,7 @@ run_arg_command() {
     netlaunch|net) open_net_menu ;;
     atlas) mq_ai_run_atlas "$@" ;;
     hal) mq_hal_run "$@" ;;
-    brain|note|sessions|decisions|reviews) mq_brain_run "$cmd" "$@" ;;
+    brain|note|sessions|decisions|reviews|learn) mq_brain_run "$cmd" "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
