@@ -1,21 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BOLD='\033[1m'
-NC='\033[0m'
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+source "$BASE_DIR/tools/cli/mq-ui.sh"
 
-if [[ ! -t 1 ]]; then
-  CYAN='' GREEN='' YELLOW='' RED='' BOLD='' NC=''
-fi
-
-# Prints header.
+# Prints header with ASCII art.
 print_header() {
   clear 2>/dev/null || true
-  printf '%b' "$CYAN"
+  printf '%b' "$C_INFO"
   cat <<'BANNER'
   ██████╗ ██████╗ ███████╗██╗    ██╗
   ██╔══██╗██╔══██╗██╔════╝██║    ██║
@@ -24,13 +16,13 @@ print_header() {
   ██████╔╝██║  ██║███████╗╚███╔███╔╝
   ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚══╝╚══╝
 BANNER
-  printf '       -- HOMEBREW HEALTH CHECK --%b\n\n' "$NC"
+  printf '       -- HOMEBREW HEALTH CHECK --%b\n\n' "$C_RESET"
 }
 
 # Checks brew is installed.
 require_brew() {
   if ! command -v brew >/dev/null 2>&1; then
-    printf '%b[ERROR] Homebrew not found. Install from https://brew.sh%b\n' "$RED" "$NC"
+    err "Homebrew not found. Install from https://brew.sh"
     exit 1
   fi
 }
@@ -40,19 +32,20 @@ show_brew_info() {
   local version prefix
   version="$(brew --version | head -1)"
   prefix="$(brew --prefix)"
-  printf '%b%s%b  prefix: %s\n\n' "$BOLD" "$version" "$NC" "$prefix"
+  printf '%b%s%b  prefix: %s\n\n' "$C_BOLD" "$version" "$C_RESET" "$prefix"
 }
 
 # Shows outdated formulae.
 show_outdated_formulae() {
   local output count
-  printf '%b[FORMULAE] Checking for outdated packages...%b\n' "$CYAN" "$NC"
+  section "FORMULAE"
+  printf '%bChecking for outdated packages...%b\n' "$C_INFO" "$C_RESET"
   output="$(brew outdated --formula 2>/dev/null || true)"
   if [[ -z "$output" ]]; then
-    printf '%b  All formulae up to date.%b\n' "$GREEN" "$NC"
+    ok "All formulae up to date."
   else
     count="$(echo "$output" | wc -l | tr -d ' ')"
-    printf '%b  %s outdated:%b\n' "$YELLOW" "$count" "$NC"
+    warn "$count outdated:"
     echo "$output" | while read -r line; do
       printf '  • %s\n' "$line"
     done
@@ -63,13 +56,14 @@ show_outdated_formulae() {
 # Shows outdated casks.
 show_outdated_casks() {
   local output count
-  printf '%b[CASKS] Checking for outdated casks...%b\n' "$CYAN" "$NC"
+  section "CASKS"
+  printf '%bChecking for outdated casks...%b\n' "$C_INFO" "$C_RESET"
   output="$(brew outdated --cask 2>/dev/null || true)"
   if [[ -z "$output" ]]; then
-    printf '%b  All casks up to date.%b\n' "$GREEN" "$NC"
+    ok "All casks up to date."
   else
     count="$(echo "$output" | wc -l | tr -d ' ')"
-    printf '%b  %s outdated:%b\n' "$YELLOW" "$count" "$NC"
+    warn "$count outdated:"
     echo "$output" | while read -r line; do
       printf '  • %s\n' "$line"
     done
@@ -81,12 +75,12 @@ show_outdated_casks() {
 show_disk_usage() {
   local prefix size
   prefix="$(brew --prefix)"
-  printf '%b[DISK] Cellar size...%b\n' "$CYAN" "$NC"
+  section "DISK"
   if size="$(du -sh "${prefix}/Cellar" 2>/dev/null | cut -f1)"; then
-    printf '  Cellar: %b%s%b\n' "$BOLD" "$size" "$NC"
+    printf '  Cellar:   %b%s%b\n' "$C_BOLD" "$size" "$C_RESET"
   fi
   if size="$(du -sh "${prefix}/Caskroom" 2>/dev/null | cut -f1)"; then
-    printf '  Caskroom: %b%s%b\n' "$BOLD" "$size" "$NC"
+    printf '  Caskroom: %b%s%b\n' "$C_BOLD" "$size" "$C_RESET"
   fi
   printf '\n'
 }
@@ -94,13 +88,14 @@ show_disk_usage() {
 # Runs brew doctor.
 run_doctor() {
   local output filtered
-  printf '%b[DOCTOR] Running brew doctor...%b\n' "$CYAN" "$NC"
+  section "DOCTOR"
+  printf '%bRunning brew doctor...%b\n' "$C_INFO" "$C_RESET"
   output="$(brew doctor 2>&1 || true)"
   filtered="$(printf '%s\n' "$output" | grep -v '^Your system is ready to brew\.' | grep -v '^$' || true)"
   if [[ -n "$filtered" ]]; then
     printf '%s\n' "$filtered"
   else
-    printf '%b  Your system is ready to brew.%b\n' "$GREEN" "$NC"
+    ok "Your system is ready to brew."
   fi
   printf '\n'
 }
@@ -108,11 +103,12 @@ run_doctor() {
 # Runs brew upgrade with confirmation.
 run_upgrade() {
   local confirm
-  printf '%b[UPGRADE] This will upgrade all outdated formulae and casks.%b\n' "$YELLOW" "$NC"
+  section "UPGRADE"
+  warn "This will upgrade all outdated formulae and casks."
   read -r -p "Proceed? [y/N]: " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     brew upgrade
-    printf '%b[+] Upgrade complete.%b\n' "$GREEN" "$NC"
+    ok "Upgrade complete."
   else
     printf 'Upgrade skipped.\n'
   fi
@@ -124,16 +120,17 @@ run_cleanup() {
   local confirm dry_run
   dry_run="$(brew cleanup --dry-run 2>/dev/null || true)"
   if [[ -z "$dry_run" ]]; then
-    printf '%b  Nothing to clean up.%b\n' "$GREEN" "$NC"
+    ok "Nothing to clean up."
     return
   fi
-  printf '%b[CLEANUP] Would remove:%b\n' "$CYAN" "$NC"
+  section "CLEANUP"
+  printf '%bWould remove:%b\n' "$C_INFO" "$C_RESET"
   echo "$dry_run" | head -20
   printf '\n'
   read -r -p "Run cleanup? [y/N]: " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     brew cleanup
-    printf '%b[+] Cleanup complete.%b\n' "$GREEN" "$NC"
+    ok "Cleanup complete."
   else
     printf 'Cleanup skipped.\n'
   fi
@@ -142,7 +139,7 @@ run_cleanup() {
 
 # Prints interactive menu.
 print_menu() {
-  printf '%b--- BREW CHECK MENU ---%b\n' "$CYAN" "$NC"
+  header "BREW CHECK MENU"
   printf '  1. Show outdated formulae + casks\n'
   printf '  2. Disk usage\n'
   printf '  3. Run brew doctor\n'
@@ -175,7 +172,7 @@ main() {
       upgrade)  run_upgrade ;;
       cleanup)  run_cleanup ;;
       full)     run_full_check ;;
-      *) printf '%b[ERROR] Unknown command: %s%b\n' "$RED" "$cmd" "$NC"; exit 1 ;;
+      *) err "Unknown command: $cmd"; exit 1 ;;
     esac
     return
   fi
@@ -193,7 +190,7 @@ main() {
       5) run_cleanup ;;
       6) run_full_check ;;
       q|Q|'') printf 'Exiting brew-check.\n'; break ;;
-      *) printf '%b[?] Unknown option: %s%b\n' "$YELLOW" "$choice" "$NC" ;;
+      *) warn "Unknown option: $choice" ;;
     esac
   done
 }
