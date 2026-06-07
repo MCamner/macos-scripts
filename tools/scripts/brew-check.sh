@@ -7,7 +7,7 @@ source "$BASE_DIR/tools/cli/mq-ui.sh"
 # Prints header with ASCII art.
 print_header() {
   clear 2>/dev/null || true
-  printf '%b' "$C_INFO"
+  printf '%b' "$C_TITLE"
   cat <<'BANNER'
   ██████╗ ██████╗ ███████╗██╗    ██╗
   ██╔══██╗██╔══██╗██╔════╝██║    ██║
@@ -32,14 +32,14 @@ show_brew_info() {
   local version prefix
   version="$(brew --version | head -1)"
   prefix="$(brew --prefix)"
-  printf '%b%s%b  prefix: %s\n\n' "$C_BOLD" "$version" "$C_RESET" "$prefix"
+  printf '%b%s%b  prefix: %s\n\n' "$C_TITLE" "$version" "$C_RESET" "$prefix"
 }
 
 # Shows outdated formulae.
 show_outdated_formulae() {
   local output count
   section "FORMULAE"
-  printf '%bChecking for outdated packages...%b\n' "$C_INFO" "$C_RESET"
+  printf '%bChecking for outdated packages...%b\n' "$C_TITLE" "$C_RESET"
   output="$(brew outdated --formula 2>/dev/null || true)"
   if [[ -z "$output" ]]; then
     ok "All formulae up to date."
@@ -57,7 +57,7 @@ show_outdated_formulae() {
 show_outdated_casks() {
   local output count
   section "CASKS"
-  printf '%bChecking for outdated casks...%b\n' "$C_INFO" "$C_RESET"
+  printf '%bChecking for outdated casks...%b\n' "$C_TITLE" "$C_RESET"
   output="$(brew outdated --cask 2>/dev/null || true)"
   if [[ -z "$output" ]]; then
     ok "All casks up to date."
@@ -77,10 +77,10 @@ show_disk_usage() {
   prefix="$(brew --prefix)"
   section "DISK"
   if size="$(du -sh "${prefix}/Cellar" 2>/dev/null | cut -f1)"; then
-    printf '  Cellar:   %b%s%b\n' "$C_BOLD" "$size" "$C_RESET"
+    printf '  Cellar:   %b%s%b\n' "$C_TITLE" "$size" "$C_RESET"
   fi
   if size="$(du -sh "${prefix}/Caskroom" 2>/dev/null | cut -f1)"; then
-    printf '  Caskroom: %b%s%b\n' "$C_BOLD" "$size" "$C_RESET"
+    printf '  Caskroom: %b%s%b\n' "$C_TITLE" "$size" "$C_RESET"
   fi
   printf '\n'
 }
@@ -89,7 +89,7 @@ show_disk_usage() {
 run_doctor() {
   local output filtered
   section "DOCTOR"
-  printf '%bRunning brew doctor...%b\n' "$C_INFO" "$C_RESET"
+  printf '%bRunning brew doctor...%b\n' "$C_TITLE" "$C_RESET"
   output="$(brew doctor 2>&1 || true)"
   filtered="$(printf '%s\n' "$output" | grep -v '^Your system is ready to brew\.' | grep -v '^$' || true)"
   if [[ -n "$filtered" ]]; then
@@ -124,7 +124,7 @@ run_cleanup() {
     return
   fi
   section "CLEANUP"
-  printf '%bWould remove:%b\n' "$C_INFO" "$C_RESET"
+  printf '%bWould remove:%b\n' "$C_TITLE" "$C_RESET"
   echo "$dry_run" | head -20
   printf '\n'
   read -r -p "Run cleanup? [y/N]: " confirm
