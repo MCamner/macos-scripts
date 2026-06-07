@@ -93,9 +93,12 @@ show_disk_usage() {
 
 # Runs brew doctor.
 run_doctor() {
+  local output filtered
   printf '%b[DOCTOR] Running brew doctor...%b\n' "$CYAN" "$NC"
-  if brew doctor 2>&1 | grep -v '^Your system is ready to brew\.' | grep -v '^$'; then
-    true
+  output="$(brew doctor 2>&1 || true)"
+  filtered="$(printf '%s\n' "$output" | grep -v '^Your system is ready to brew\.' | grep -v '^$' || true)"
+  if [[ -n "$filtered" ]]; then
+    printf '%s\n' "$filtered"
   else
     printf '%b  Your system is ready to brew.%b\n' "$GREEN" "$NC"
   fi

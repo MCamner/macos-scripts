@@ -58,7 +58,7 @@ print_dev_menu() {
   surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MAINTENANCE" "$width" "$panel_color"
-  surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
+  surface_split_row "${C_WARN}13. Repo Signal Folder Check${C_RESET}" "14. Env Snapshot" "$width" "$panel_color"
   surface_split_row "15. Comment scripts" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"

@@ -14,11 +14,11 @@ print_agent_menu() {
   print_header
   surface_panel_header "AI Agent Orchestrator" "mq-agent" "$width" "$panel_color"
   surface_row "REPO ANALYSIS  (no API key required)" "$width" "$panel_color"
-  surface_split_row "1. Score repository" "2. Full signal assessment" "$width" "$panel_color"
+  surface_split_row "${C_WARN}1. Score repository${C_RESET}" "${C_WARN}2. Full signal assessment${C_RESET}" "$width" "$panel_color"
   surface_split_row "3. Repo summary" "4. List tools" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "AI COMMANDS  (requires OPENAI_API_KEY)" "$width" "$panel_color"
-  surface_split_row "5. Audit repository" "6. Signal + AI plan" "$width" "$panel_color"
+  surface_split_row "5. Audit repository" "${C_WARN}6. Signal + AI plan${C_RESET}" "$width" "$panel_color"
   surface_split_row "7. Release check" "8. Diagnose CI" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
