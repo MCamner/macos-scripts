@@ -39,6 +39,12 @@ if [[ -f "$BASE_DIR/terminal/bridges/hal-bridge.sh" ]]; then
   # shellcheck disable=SC1091
   source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
 fi
+
+# Brain bridge (mqobsidian second brain vault)
+if [[ -f "$BASE_DIR/terminal/bridges/brain-bridge.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/bridges/brain-bridge.sh"
+fi
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
 PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
@@ -1879,6 +1885,7 @@ run_arg_command() {
     netlaunch|net) open_net_menu ;;
     atlas) mq_ai_run_atlas "$@" ;;
     hal) mq_hal_run "$@" ;;
+    brain|note|sessions|decisions|reviews) mq_brain_run "$cmd" "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;

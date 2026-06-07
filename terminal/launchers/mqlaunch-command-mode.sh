@@ -616,6 +616,26 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    brain)
+      if declare -f mq_brain_run >/dev/null; then
+        mq_brain_run "${@:2}"
+      else
+        echo "ERROR: brain-bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    note|sessions|decisions|reviews)
+      if declare -f mq_brain_run >/dev/null; then
+        mq_brain_run "$area" "${@:2}"
+      else
+        echo "ERROR: brain-bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"
