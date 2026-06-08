@@ -671,6 +671,11 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    b2tui|b2)
+      python3 "${BASE_DIR}/tools/scripts/b2tui.py" "${@:2}"
+      return 0
+      ;;
+
     *)
       if declare -f mq_ai_prompt_ask >/dev/null; then
         echo "Unknown command → routing to /ask"

@@ -1958,6 +1958,7 @@ run_arg_command() {
     signal-brain) _run_agent signal --brain "${2:-.}" ;;
     learn-promote|promote-pattern) _run_agent learn promote "${2:-}" --approve ;;
     prompts) prompts_pick ;;
+    b2tui|b2) python3 "$BASE_DIR/tools/scripts/b2tui.py" "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
