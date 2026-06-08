@@ -691,8 +691,8 @@ prompts_pick() {
 
   local selected
   selected="$(
-    find "$prompts_dir" -name "*.txt" | sort | while IFS= read -r f; do
-      label="$(basename "$(dirname "$f")" | sed 's/^[0-9]*_//')/$(basename "$f" .txt | sed 's/_/ /g')"
+    find "$prompts_dir" -name "*.md" -not -name "INDEX.md" -not -name "README.md" -not -name "EXPORT_NOTES.md" -not -name "PROMPT_EXPORT_INDEX.md" | sort | while IFS= read -r f; do
+      label="$(basename "$(dirname "$f")" | sed 's/^[0-9]*_//')/$(basename "$f" .md | sed 's/_/ /g')"
       printf "%s\t%s\n" "$label" "$f"
     done \
     | "$fzf_bin" \
