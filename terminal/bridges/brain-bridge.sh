@@ -59,10 +59,11 @@ Usage:
   mqlaunch brain                   # open vault dashboard
   mqlaunch brain note              # open inbox (drop notes here)
   mqlaunch brain sessions          # open sessions folder
-  mqlaunch brain decisions         # open decisions folder
+  mqlaunch brain decisions         # open decisions / ADRs folder
   mqlaunch brain reviews           # open reviews folder
-  mqlaunch brain learn             # open learned patterns folder
-  mqlaunch brain memory            # open memory folder
+  mqlaunch brain learn             # open learned patterns folder (inbox)
+  mqlaunch brain verified          # open learn/verified/ (curated patterns)
+  mqlaunch brain systems           # open systems/ (per-repo knowledge hubs)
   mqlaunch brain vault             # open vault root in Finder
 
 Vault: ~/mqobsidian
@@ -99,8 +100,11 @@ mq_brain_run() {
     learn|patterns)
       _brain_open_folder "learn"
       ;;
-    memory)
-      _brain_open_folder "memory"
+    verified)
+      _brain_open_folder "learn/verified"
+      ;;
+    systems|system)
+      _brain_open_folder "systems"
       ;;
     vault|root)
       open "$MQ_OBSIDIAN_DIR"
