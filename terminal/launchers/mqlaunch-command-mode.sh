@@ -326,6 +326,41 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    review-brain|/review-brain)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _rb_path="${2:-.}"
+      _run_agent review repo "$_rb_path" --brain
+      pause_enter
+      return 0
+      ;;
+
+    signal-brain|/signal-brain)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _sb_path="${2:-.}"
+      _run_agent signal --brain "$_sb_path"
+      pause_enter
+      return 0
+      ;;
+
+    learn-promote|/learn-promote|promote-pattern)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _slug="${2:-}"
+      if [[ -z "$_slug" ]]; then
+        echo "Usage: mqlaunch learn-promote <slug>" >&2
+        pause_enter
+        return 1
+      fi
+      _run_agent learn promote "$_slug" --approve
+      pause_enter
+      return 0
+      ;;
+
     selftest|/selftest|test-all)
       "$BASE_DIR/tools/scripts/test-all.sh"
       pause_enter
