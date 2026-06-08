@@ -190,6 +190,41 @@ _mcp_stop() {
   printf "mq-mcp stopped (port :%s is free)\n" "$MQ_MCP_PORT"
 }
 
+# Lists learn/ files and prompts for promotion. Uses fzf when available.
+_brain_pick_and_promote() {
+  local vault_dir="${MQ_OBSIDIAN_DIR:-$HOME/mqobsidian}"
+  local learn_dir="$vault_dir/learn"
+
+  if [[ ! -d "$learn_dir" ]]; then
+    printf "learn/ not found: %s\n" "$learn_dir" >&2
+    pause_enter; return 1
+  fi
+
+  local files=()
+  while IFS= read -r -d '' f; do
+    files+=("$(basename "$f" .md)")
+  done < <(find "$learn_dir" -maxdepth 1 -name "*.md" -not -name "index.md" -print0 | sort -z)
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    printf "No files in learn/ to promote.\n"
+    pause_enter; return 0
+  fi
+
+  local slug=""
+  if command -v fzf >/dev/null 2>&1; then
+    slug="$(printf '%s\n' "${files[@]}" | fzf --height=40% --layout=reverse --border --prompt="promote > ")"
+  else
+    printf "Available slugs in learn/:\n"
+    printf '  %s\n' "${files[@]}"
+    printf "\nSlug to promote: "
+    read -r slug
+  fi
+
+  [[ -z "$slug" ]] && return 0
+  _run_agent learn promote "$slug" --approve
+  pause_enter
+}
+
 # Handles direct mqlaunch agent commands.
 run_agent_command() {
   local subcmd="${1:-menu}"
@@ -268,8 +303,7 @@ handle_agent_menu_choice() {
     13) _mcp_start;             pause_enter ;;
     14) _mcp_stop;              pause_enter ;;
     15) _run_agent review repo . --brain; pause_enter ;;
-    16) printf "Slug (learn/<slug>.md): "; read -r _promote_slug
-        _run_agent learn promote "$_promote_slug" --approve; pause_enter ;;
+    16) _brain_pick_and_promote ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
