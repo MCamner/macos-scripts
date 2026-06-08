@@ -2,6 +2,11 @@
 set -u
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+
+BRAIN=0
+for arg in "${@:-}"; do
+  [[ "$arg" == "--brain" ]] && BRAIN=1
+done
 AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
 
 [[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
@@ -198,3 +203,14 @@ fi
 echo
 rule 72
 echo "Status: release-check complete"
+
+if [[ "$BRAIN" == "1" ]]; then
+  echo
+  echo "BRAIN RECORD"
+  echo "────────────────────────────────────────────────────────────"
+  if command -v mq-agent >/dev/null 2>&1; then
+    mq-agent signal --brain . || status_warn "brain record failed (mq-agent signal --brain)"
+  else
+    status_warn "mq-agent not found; skipping brain record"
+  fi
+fi

@@ -321,7 +321,7 @@ dispatch_cli_command() {
       ;;
 
     release-check|/release-check|check-release)
-      "$BASE_DIR/terminal/release/mq-release-check.sh"
+      "$BASE_DIR/terminal/release/mq-release-check.sh" "${@:2}"
       pause_enter
       return 0
       ;;
