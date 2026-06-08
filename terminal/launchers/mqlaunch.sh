@@ -1213,7 +1213,7 @@ theme_source_state() {
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
-  local git_path=""
+  local git_path="" back_marker restart_count
 
   if [[ -n "$repo_arg" ]]; then
     git_path="$repo_arg"
@@ -1221,11 +1221,7 @@ open_git_menu() {
     git_path="$(pwd)"
   fi
 
-  if [[ -x "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" "$git_script"
-  elif [[ -f "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" zsh "$git_script"
-  else
+  if [[ ! -x "$git_script" && ! -f "$git_script" ]]; then
     print_header
     row "GIT MENU"
     empty_row
@@ -1233,7 +1229,32 @@ open_git_menu() {
     row " $git_script"
     print_footer
     pause_enter
+    return
   fi
+
+  back_marker="/tmp/mq-gitlaunch-back.$$"
+  restart_count=0
+
+  while true; do
+    rm -f "$back_marker" 2>/dev/null || true
+
+    if [[ -x "$git_script" ]]; then
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" "$git_script"
+    else
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" zsh "$git_script"
+    fi
+
+    [[ -f "$back_marker" ]] && break
+
+    restart_count=$(( restart_count + 1 ))
+    if [[ "$restart_count" -ge 5 ]]; then
+      printf "Gitlaunch exited unexpectedly %d times; returning to mqlaunch.\n" "$restart_count"
+      sleep 1
+      break
+    fi
+  done
+
+  rm -f "$back_marker" 2>/dev/null || true
 }
 
 # Opens release menu.

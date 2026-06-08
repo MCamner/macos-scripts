@@ -9,6 +9,7 @@ DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
 _BANNER_SHOWN=0
+BACK_MARKER="${MQ_GITLAUNCH_BACK_MARKER:-}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -577,6 +578,13 @@ function pause_git_menu() {
   choice=""
 }
 
+# Writes back-marker so mqlaunch knows this was a deliberate back navigation.
+function mark_gitlaunch_back() {
+  if [[ -n "$BACK_MARKER" ]]; then
+    print -r -- "back" > "$BACK_MARKER" 2>/dev/null || true
+  fi
+}
+
 # ------------------------
 # NEXT ACTION ENGINE
 # ------------------------
@@ -963,6 +971,7 @@ while true; do
       show_recent_log
       ;;
     b|B)
+      mark_gitlaunch_back
       break
       ;;
     *)
