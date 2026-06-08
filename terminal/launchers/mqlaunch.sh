@@ -672,6 +672,53 @@ run_github_repo_picker() {
   esac
 }
 
+# fzf: bläddra och kopiera sparade AI-prompts från mqobsidian/_prompts/
+prompts_pick() {
+  local vault_dir="${MQ_OBSIDIAN_DIR:-$HOME/mqobsidian}"
+  local prompts_dir="$vault_dir/_prompts/saved-prompts-md-export"
+  local fzf_bin
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+
+  if [[ ! -d "$prompts_dir" ]]; then
+    printf "Prompts directory not found: %s\n" "$prompts_dir" >&2
+    return 1
+  fi
+
+  if [[ -z "$fzf_bin" ]]; then
+    printf "fzf is not installed. Install: brew install fzf\n" >&2
+    return 1
+  fi
+
+  local selected
+  selected="$(
+    find "$prompts_dir" -name "*.txt" | sort | while IFS= read -r f; do
+      label="$(basename "$(dirname "$f")" | sed 's/^[0-9]*_//')/$(basename "$f" .txt | sed 's/_/ /g')"
+      printf "%s\t%s\n" "$label" "$f"
+    done \
+    | "$fzf_bin" \
+        --delimiter='\t' \
+        --with-nth=1 \
+        --preview='head -40 {2}' \
+        --preview-window='right:55%:wrap' \
+        --reverse \
+        --border \
+        --header='Select prompt → copy to clipboard  (ESC = cancel)' \
+        --prompt='prompt > ' \
+        --height=80% \
+    | cut -f2
+  )"
+
+  [[ -z "$selected" ]] && return 0
+
+  if command -v pbcopy >/dev/null 2>&1; then
+    pbcopy < "$selected"
+    printf "Copied to clipboard: %s\n" "$(basename "$selected" .txt | sed 's/_/ /g')"
+  else
+    printf "pbcopy not available — printing prompt:\n\n"
+    cat "$selected"
+  fi
+}
+
 # fzf: bläddra git log med diff-preview
 fzf_git_log() {
   local fzf_bin commit
@@ -1910,6 +1957,7 @@ run_arg_command() {
     review-brain) _run_agent review repo "${2:-.}" --brain ;;
     signal-brain) _run_agent signal --brain "${2:-.}" ;;
     learn-promote|promote-pattern) _run_agent learn promote "${2:-}" --approve ;;
+    prompts) prompts_pick ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
