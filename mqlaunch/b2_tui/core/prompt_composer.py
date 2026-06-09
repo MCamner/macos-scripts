@@ -60,6 +60,7 @@ def cmd_run(prompts: list[Prompt], args: argparse.Namespace) -> int:
 
     save_history({
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "command": "compose",
         "prompt_id": target.id,
         "prompt_name": target.name,
         "category": target.category,

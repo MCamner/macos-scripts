@@ -89,6 +89,9 @@ def route(task: str) -> tuple[str, list[str], list[str]]:
 
 
 def cmd_route(prompts: list[Prompt], args: argparse.Namespace) -> int:
+    from datetime import datetime, timezone
+
+    from mqlaunch.b2_tui.core.history import save_history
     from mqlaunch.b2_tui.core.prompt_composer import cmd_run
 
     best_route, support_routes, matched_kws = route(args.task)
@@ -118,6 +121,14 @@ def cmd_route(prompts: list[Prompt], args: argparse.Namespace) -> int:
         kw_str = " + ".join(dict.fromkeys(matched_kws))
         print(f"  Reason:")
         print(f"  Task contains {kw_str} signals.")
+
+    save_history({
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "command": "route",
+        "prompt_id": primary_id,
+        "prompt_name": primary.name if primary else primary_id,
+        "context": args.task,
+    })
 
     if primary and not args.no_run:
         print()

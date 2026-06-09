@@ -545,20 +545,20 @@ ta fram blueprint för terminal TUI
 
 ### Tasks
 
-* [ ] Hämta projekt via ID
-* [ ] Läs prompttext
-* [ ] Kombinera med user input
-* [ ] Skapa markdown-output
-* [ ] Spara output till `mq-stack/runs`
-* [ ] Returnera filepath
+* [x] Hämta projekt via ID
+* [x] Läs prompttext
+* [x] Kombinera med user input
+* [x] Skapa markdown-output
+* [x] Spara output till `mq-stack/runs`
+* [x] Returnera filepath
 * [ ] Lägg stöd för multi-project compose senare
 
 ### Done when
 
-* [ ] `mq b2 compose 02.11 "..."` sparar `.md` i Obsidian runs
-* [ ] prompttext är komplett
-* [ ] task hamnar sist
-* [ ] tom user input nekas med tydligt fel
+* [x] `mq b2 compose 02.11 "..."` sparar `.md` i Obsidian runs
+* [x] prompttext är komplett
+* [x] task hamnar sist
+* [x] tom user input nekas med tydligt fel
 
 ---
 
@@ -599,11 +599,11 @@ mq b2 history show 5
 
 ### Done when
 
-* [ ] route sparas i history
-* [ ] compose sparas i history
-* [ ] senaste körning kan visas
-* [ ] trasig history-fil kraschar inte appen
-* [ ] history kan exporteras som markdown
+* [x] route sparas i history
+* [x] compose sparas i history
+* [x] senaste körning kan visas
+* [x] trasig history-fil kraschar inte appen
+* [x] history kan exporteras som markdown
 
 ---
 
@@ -623,12 +623,12 @@ B2 TUI ska kunna skriva utdata till `mq-stack`.
 
 ### Tasks
 
-* [ ] Skapa runs-folder om den saknas
-* [ ] Skapa filnamn från timestamp + task slug
-* [ ] Skriv composed prompt
-* [ ] Skriv route summary
+* [x] Skapa runs-folder om den saknas
+* [x] Skapa filnamn från timestamp + task slug
+* [x] Skriv composed prompt
+* [x] Skriv route summary
 * [ ] Uppdatera optional `logs/b2-tui-history.md`
-* [ ] Säkerställ markdownlint-vänligt format
+* [x] Säkerställ markdownlint-vänligt format
 
 ### Commands
 
@@ -639,11 +639,11 @@ mq b2 open-last
 
 ### Done when
 
-* [ ] output syns i Obsidian
-* [ ] interna länkar fungerar
-* [ ] markdown har rena code fences
-* [ ] inga trasiga tabeller
-* [ ] `open-last` öppnar senaste filen i editor/terminal
+* [x] output syns i Obsidian
+* [x] interna länkar fungerar
+* [x] markdown har rena code fences
+* [x] inga trasiga tabeller
+* [x] `open-last` öppnar senaste filen i editor/terminal
 
 ---
 
@@ -926,9 +926,9 @@ git tag v0.6.0
 ### Next
 
 * [x] Phase 5 — Router
-* [ ] Phase 6 — Prompt Composer
-* [ ] Phase 7 — History
-* [ ] Phase 8 — Obsidian writer
+* [x] Phase 6 — Prompt Composer
+* [x] Phase 7 — History
+* [x] Phase 8 — Obsidian writer
 
 ### Later
 

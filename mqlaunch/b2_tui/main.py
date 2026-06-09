@@ -69,6 +69,9 @@ def cmd_show(prompts: list[Prompt], args: argparse.Namespace) -> int:
 
 
 def cmd_compose(prompts: list[Prompt], args: argparse.Namespace) -> int:
+    if not args.task.strip():
+        print("  Error: task cannot be empty.", file=sys.stderr)
+        return 1
     run_args = argparse.Namespace(id=args.id, context=args.task)
     return cmd_run(prompts, run_args)
 
@@ -141,6 +144,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("config", help="Show path configuration status")
 
     hist_p = sub.add_parser("history", help="Show recent runs")
+    hist_p.add_argument("subcommand", nargs="?", choices=["last", "export"], help="last or export")
     hist_p.add_argument("--limit", "-n", type=int, default=10, help="Number of entries to show")
 
     return parser
