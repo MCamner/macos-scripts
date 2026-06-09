@@ -9,6 +9,7 @@ DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
 _BANNER_SHOWN=0
+BACK_MARKER="${MQ_GITLAUNCH_BACK_MARKER:-}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -63,24 +64,24 @@ UNTRACKED_COUNT=0
 # ASCII ART
 # ------------------------
 function render_ascii() {
-  local pulse line
-  local -a pulses dark_lines amber_lines
+  local i
+  local -a pulses figure labels
 
-  dark_lines=(
-    "   ▄████  ██▓▄▄▄█████▓"
-    "  ██▒ ▀█▒▓██▒▓  ██▒ ▓▒"
-    " ▒██░▄▄▄░▒██▒▒ ▓██░ ▒░"
-    " ░▓█  ██▓░██░░ ▓██▓ ░ "
-    " ░▒▓███▀▒░██░  ▒██▒ ░ "
-    "  ░▒   ▒ ░▓    ▒ ░░   "
+  figure=(
+    "    ████████    "
+    "    ██    ██    "
+    "    ████████    "
+    "  ████████████  "
+    "  ██        ██  "
+    "  ████    ████  "
   )
-  amber_lines=(
-    " ██▓    ▄▄▄       █    ██  ███▄    █  ▄████▄   ██░ ██ "
-    "▓██▒   ▒████▄     ██  ▓██▒ ██ ▀█   █ ▒██▀ ▀█  ▓██░ ██▒"
-    "▒██░   ▒██  ▀█▄  ▓██  ▒██░▓██  ▀█ ██▒▒▓█    ▄ ▒██▀▀██░"
-    "▒██░   ░██▄▄▄▄██ ▓▓█  ░██░▓██▒  ▐▌██▒▒▓▓▄ ▄██▒░▓█ ░██ "
-    "░██████▒▓█   ▓██▒▒▒█████▓ ▒██░   ▓██░▒ ▓███▀ ░░▓█▒░██▓"
-    "░ ▒░▓  ░▒▒   ▓▒█░░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒"
+  labels=(
+    ""
+    "  Gitlaunch"
+    ""
+    ""
+    ""
+    ""
   )
 
   if [[ "$_BANNER_SHOWN" -eq 0 ]]; then
@@ -95,21 +96,14 @@ function render_ascii() {
       sleep 0.05
     done
     printf "\033[2K"
-    printf "%b" "$C_TITLE"
-    for line in "${dark_lines[@]}"; do
-      printf '%s\n' "$line"
-      sleep 0.03
-    done
-    printf "%b" "$C_AMBER"
-    for line in "${amber_lines[@]}"; do
-      printf '%s\n' "$line"
-      sleep 0.03
+    for (( i=1; i<=${#figure[@]}; i++ )); do
+      printf "%b  %s%b%s%b\n" "$C_AMBER" "${figure[$i]}" "$C_TITLE" "${labels[$i]}" "$C_RESET"
+      sleep 0.06
     done
   else
-    printf "%b" "$C_TITLE"
-    for line in "${dark_lines[@]}"; do printf '%s\n' "$line"; done
-    printf "%b" "$C_AMBER"
-    for line in "${amber_lines[@]}"; do printf '%s\n' "$line"; done
+    for (( i=1; i<=${#figure[@]}; i++ )); do
+      printf "%b  %s%b%s%b\n" "$C_AMBER" "${figure[$i]}" "$C_TITLE" "${labels[$i]}" "$C_RESET"
+    done
   fi
 
   printf "%b" "$C_RESET"
@@ -523,7 +517,7 @@ function render_menu() {
   frame_row "Git: $git_state   Staged: $STAGED_COUNT   Unstaged: $UNSTAGED_COUNT   Untracked: $UNTRACKED_COUNT"
   frame_mid
   frame_two_col "1. Git status" "2. Pull"
-  frame_two_col "3. Suggest commit" "4. Safe push"
+  frame_two_col "3. Commit with suggested message" "4. Safe push"
   frame_two_col "5. Open repo" "6. Dev mode"
   frame_two_col "7. Switch repo" "8. Auto commit + push"
   frame_two_col "9. Recent log" "b. Back"
@@ -548,40 +542,47 @@ function render_next_action() {
 
 # Prompts for choice with script-level validation.
 function prompt_choice() {
-  local prompt_sep input
+  local sep input
   update_ui_width
-  prompt_sep="$(repeat_char "─" "$UI_WIDTH")"
+  sep="$(repeat_char "─" "$UI_WIDTH")"
 
-  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
+  printf "\n%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
-  printf "%b%s%b\n" "$C_BORDER" "$prompt_sep" "$C_RESET"
+  printf "%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
   printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
   if [[ -t 0 && -t 1 ]]; then
-    printf "\033[3A"
+    printf "\033[3A\r"
     printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
   fi
 
   input=""
-  if [[ -t 0 ]]; then
-    read -rsk 1 input || input="b"
-  else
-    IFS= read -r input || input="b"
-  fi
+  IFS= read -r input </dev/tty || true
 
-  printf "%s\n" "$input"
   if [[ -t 0 && -t 1 ]]; then
-    printf "\033[2B"
+    printf "\033[2B\r\n"
   fi
 
+  input="${input[1,1]}"
   choice="$input"
 }
 
 # Pauses inside gitlaunch without changing menu level.
 function pause_git_menu() {
-  local pause_reply
+  local pause_reply="" _drain=""
+  stty sane </dev/tty 2>/dev/null || true
+  # drain any newlines buffered during git operations or prior reads
+  read -t 0.1 -k 999 _drain </dev/tty 2>/dev/null || true
+  echo ""
+  printf "%bPress Enter to return to Gitlaunch menu...%b" "$C_DIM" "$C_RESET"
+  IFS= read -r pause_reply </dev/tty || true
+  choice=""
+}
 
-  printf "%bPress Enter to return to Git menu...%b" "$C_DIM" "$C_RESET"
-  read pause_reply
+# Writes back-marker so mqlaunch knows this was a deliberate back navigation.
+function mark_gitlaunch_back() {
+  if [[ -n "$BACK_MARKER" ]]; then
+    print -r -- "back" > "$BACK_MARKER" 2>/dev/null || true
+  fi
 }
 
 # ------------------------
@@ -738,7 +739,7 @@ function create_pr_branch_for_push() {
   echo "GitHub requires these changes to go through a pull request."
   echo "Suggested PR branch: $pr_branch"
   printf "%bCreate and push this PR branch? [Y/n]: %b" "$C_LABEL" "$C_RESET"
-  read confirm
+  read confirm </dev/tty
 
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
     echo "Push cancelled. Commit remains local on $base_branch."
@@ -862,11 +863,10 @@ function run_ai_commit() {
   analyze_diff
 
   printf "%bProceed with commit? (y/n): %b" "$C_LABEL" "$C_RESET"
-  read proceed
+  read proceed </dev/tty
 
   if [[ "$proceed" != "y" ]]; then
     echo "❌ Commit cancelled"
-    pause_git_menu
     return 0
   fi
 
@@ -874,9 +874,6 @@ function run_ai_commit() {
   if git commit -m "$SUGGESTED"; then
     pr_aware_push "$SUGGESTED"
   fi
-
-  pause_git_menu
-  return 0
 }
 
 # ------------------------
@@ -907,6 +904,7 @@ trap 'printf "%b" "$C_RESET"' EXIT
 while true; do
   detect_repo
   clear_screen
+
   status_check
   next_action
   render_next_action
@@ -931,7 +929,7 @@ while true; do
       ;;
     3)
       run_ai_commit
-      continue
+      pause_git_menu
       ;;
     4)
       safe_push
@@ -972,6 +970,7 @@ while true; do
       show_recent_log
       ;;
     b|B)
+      mark_gitlaunch_back
       break
       ;;
     *)

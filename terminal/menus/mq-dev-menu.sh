@@ -57,8 +57,11 @@ print_dev_menu() {
   surface_split_row "9. Network Tools" "10. Themes" "$width" "$panel_color"
   surface_split_row "11. Tools Menu" "12. Create Repo" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
+  surface_row "B2 ATLAS" "$width" "$panel_color"
+  surface_split_row "a. B2 Atlas Prompt TUI" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
   surface_row "MAINTENANCE" "$width" "$panel_color"
-  surface_split_row "13. Repo Signal Folder Check" "14. Env Snapshot" "$width" "$panel_color"
+  surface_split_row "${C_WARN}13. Repo Signal Folder Check${C_RESET}" "14. Env Snapshot" "$width" "$panel_color"
   surface_split_row "15. Comment scripts" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
@@ -88,6 +91,7 @@ handle_dev_menu_choice() {
     13) run_dev_script "REPO SIGNAL FOLDER CHECK" "$(dev_repo_path "terminal/dev/mq-repo-signal-folder-check.sh")" ;;
     14) run_dev_script "ENV SNAPSHOT" "$(dev_repo_path "tools/scripts/env-snap.sh")" ;;
     15) run_dev_script "COMMENT SCRIPTS" "$(dev_repo_path "terminal/menus/mq-tools-menu.sh")" docfunc ;;
+    a|A) PYTHONPATH="${BASE_DIR}" python3 -m mqlaunch.b2_tui.main ;;
     b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;
   esac

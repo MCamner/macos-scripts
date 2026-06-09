@@ -6,294 +6,307 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-09
+
+### Added
+
+* **B2 Atlas Prompt OS TUI** — full terminal interface for structured prompt
+  work (`mq b2`). Phases 0–12 complete: CLI commands (list, show, compose, run,
+  route, validate, config, history, export-last, open-last), textual TUI with
+  two-panel browser + preview pane, rule-based task router, Obsidian run writer,
+  JSONL history, 40 passing tests. Accessible via Dev menu → `a`.
+* Added `docs/B2_TUI.md` — full B2 TUI reference.
+* Added `mq b2` section to `docs/COMMANDS.md`.
+
 ### Changed
 
-- Polished the Dev menu with clearer groups and safer script fallbacks.
+* Polished the Dev menu with clearer groups and safer script fallbacks.
+* Bumped version to 0.6.0 — B2 Atlas Prompt OS TUI MVP.
 
 ## [0.5.1] - 2026-06-03
 
 ### Added
 
-- Added `mqlaunch workflows validate` for workflow command-surface health checks.
-- Added workflow validation to `mqlaunch release-check`.
-- Added `document-functions.sh --quality` to flag generic function comments.
-- Added a Document Functions menu entry for comment quality checks.
+* Added `mqlaunch workflows validate` for workflow command-surface health checks.
+* Added workflow validation to `mqlaunch release-check`.
+* Added `document-functions.sh --quality` to flag generic function comments.
+* Added a Document Functions menu entry for comment quality checks.
 
 ### Changed
 
-- Synced README, ROADMAP and release metadata for `0.5.1`.
-- Tightened the Ollama document-review prompt to return fewer, higher-signal
+* Synced README, ROADMAP and release metadata for `0.5.1`.
+* Tightened the Ollama document-review prompt to return fewer, higher-signal
   comment suggestions without full diffs by default.
 
 ## [0.5.0] - 2026-06-02
 
 ### Added
 
-- Added mq-agent review, risk-review, architecture, repo-health and mcp-status routing from mqlaunch.
-- Added MQ ecosystem repo status, roadmap, skills and diff-summary commands.
-- Added command-template-library skill.
+* Added mq-agent review, risk-review, architecture, repo-health and mcp-status routing from mqlaunch.
+* Added MQ ecosystem repo status, roadmap, skills and diff-summary commands.
+* Added command-template-library skill.
 
 ### Changed
 
-- Improved README onboarding with requirements, usage examples, docs map, roadmap context and contribution guidance.
-- Updated Git menu AI COMMIT flow so it returns to the Git menu instead of the start menu.
-- Preserved mq-agent bridge loading when running mq-mcp review from the Tools menu.
+* Improved README onboarding with requirements, usage examples, docs map, roadmap context and contribution guidance.
+* Updated Git menu AI COMMIT flow so it returns to the Git menu instead of the start menu.
+* Preserved mq-agent bridge loading when running mq-mcp review from the Tools menu.
 
 ### Fixed
 
-- Fixed protected-branch push handling by routing main/master pushes through PR branches.
-- Fixed auto comment flow so existing comments are preserved.
-- Fixed mq-agent bridge loading in `run_mq_mcp_review`.
+* Fixed protected-branch push handling by routing main/master pushes through PR branches.
+* Fixed auto comment flow so existing comments are preserved.
+* Fixed mq-agent bridge loading in `run_mq_mcp_review`.
 
 ## [0.4.12] - 2026-05-23
 
 ### Added
 
-- `.github/workflows/quality.yml` — CI shell syntax check: `bash -n` on `install.sh`, `release.sh`, and all `.sh` files; `shellcheck` (warn-only).
-- `scripts/install-smoke.sh` — local install smoke test covering `install.sh --dry-run`, `release.sh` syntax, all `.sh` bash -n, `mqlaunch doctor --json`, and `mqlaunch selftest`.
-- `terminal/menus/mq-agent-menu.sh` — mq-agent submenu with ten commands across repo analysis, AI, and environment groups.
-- `Proof` section in README listing what is verified: dry-run, release validation, JSON health report, selftest, publish gate, HAL read-only commands, and CI syntax coverage.
+* `.github/workflows/quality.yml` — CI shell syntax check: `bash -n` on `install.sh`, `release.sh`, and all `.sh` files; `shellcheck` (warn-only).
+* `scripts/install-smoke.sh` — local install smoke test covering `install.sh --dry-run`, `release.sh` syntax, all `.sh` bash -n, `mqlaunch doctor --json`, and `mqlaunch selftest`.
+* `terminal/menus/mq-agent-menu.sh` — mq-agent submenu with ten commands across repo analysis, AI, and environment groups.
+* `Proof` section in README listing what is verified: dry-run, release validation, JSON health report, selftest, publish gate, HAL read-only commands, and CI syntax coverage.
 
 ### Changed
 
-- README version badge bumped to `0.4.12`.
-- Main menu panel: added `g. Agent` quick access slot.
-- `mqlaunch.sh`: sources `mq-agent-menu.sh` when present.
-- `mq-main-menu.sh`: routes `g`/`G` and text aliases (`agent`, `score`, `signal`, `audit`, `doctor`) to mq-agent menu.
+* README version badge bumped to `0.4.12`.
+* Main menu panel: added `g. Agent` quick access slot.
+* `mqlaunch.sh`: sources `mq-agent-menu.sh` when present.
+* `mq-main-menu.sh`: routes `g`/`G` and text aliases (`agent`, `score`, `signal`, `audit`, `doctor`) to mq-agent menu.
 
 ## [0.4.11] - 2026-05-20
 
 ### Changed
 
-- Reworked `docs/index.html` into a clearer GitHub Pages project front door.
-- Added a visible Install, Run, Explore flow for first-time users.
-- Added a screenshots section covering HAL, main menu, performance, and release workflows.
-- Added a docs map linking the case study, HAL page, command reference, and terminal guide.
-- Updated the GitHub Pages sitemap for the refreshed front door and HAL page.
+* Reworked `docs/index.html` into a clearer GitHub Pages project front door.
+* Added a visible Install, Run, Explore flow for first-time users.
+* Added a screenshots section covering HAL, main menu, performance, and release workflows.
+* Added a docs map linking the case study, HAL page, command reference, and terminal guide.
+* Updated the GitHub Pages sitemap for the refreshed front door and HAL page.
 
 ### Added
 
-- Added Pages index smoke test coverage.
+* Added Pages index smoke test coverage.
 
 ## [0.4.10] - 2026-05-20
 
 ### Added
 
-- Added `docs/screenshots/hal-menu.png` as a rendered HAL menu screenshot.
-- Added the HAL screenshot to `docs/hal.html`.
-- Added a stronger HAL preview card on the GitHub Pages index.
-- Added HAL screenshot smoke test coverage.
+* Added `docs/screenshots/hal-menu.png` as a rendered HAL menu screenshot.
+* Added the HAL screenshot to `docs/hal.html`.
+* Added a stronger HAL preview card on the GitHub Pages index.
+* Added HAL screenshot smoke test coverage.
 
 ## [0.4.9] - 2026-05-19
 
 ### Added
 
-- Added `docs/hal.html` as a GitHub Pages overview for the MQLaunch HAL command surface.
-- Linked the HAL overview from existing Pages docs.
-- Added HAL Pages smoke test.
-- Linked HAL overview from README and command reference.
+* Added `docs/hal.html` as a GitHub Pages overview for the MQLaunch HAL command surface.
+* Linked the HAL overview from existing Pages docs.
+* Added HAL Pages smoke test.
+* Linked HAL overview from README and command reference.
 
 ## [0.4.8] - 2026-05-19
 
 ### Added
 
-- Added `docs/hal-gallery.md` as a visual reference for the MQLaunch HAL menu.
-- Added `docs/hal-menu-preview.txt` with a plain text menu preview.
-- Added HAL gallery smoke test.
-- Linked HAL gallery docs from README and command reference.
+* Added `docs/hal-gallery.md` as a visual reference for the MQLaunch HAL menu.
+* Added `docs/hal-menu-preview.txt` with a plain text menu preview.
+* Added HAL gallery smoke test.
+* Linked HAL gallery docs from README and command reference.
 
 ## [0.4.7] - 2026-05-19
 
 ### Added
 
-- Added `docs/hal-command-surface.md` for the full MQLaunch HAL command surface.
-- Added smoke test for HAL command surface documentation.
-- Added HAL menu layout smoke test.
-- Added HAL file formatting smoke test.
-- Linked HAL command surface docs from README and command reference.
+* Added `docs/hal-command-surface.md` for the full MQLaunch HAL command surface.
+* Added smoke test for HAL command surface documentation.
+* Added HAL menu layout smoke test.
+* Added HAL file formatting smoke test.
+* Linked HAL command surface docs from README and command reference.
 
 ## [0.4.6] - 2026-05-18
 
 ### Added
 
-- Added Ollama review as option 7 in the Document Functions menu.
-- Added local review-only helper for comments, docstrings, and function descriptions.
-- Added documentation for Ollama Document Review.
+* Added Ollama review as option 7 in the Document Functions menu.
+* Added local review-only helper for comments, docstrings, and function descriptions.
+* Added documentation for Ollama Document Review.
 
 ### Changed
 
-- Aligned Ollama review default model with installed `qwen3:4b-instruct` tag.
+* Aligned Ollama review default model with installed `qwen3:4b-instruct` tag.
 
 ### Safety
 
-- Ollama review is review-only and does not modify files automatically.
+* Ollama review is review-only and does not modify files automatically.
 
 ### Fixed
 
-- Fixed `mq-release-check.sh` opening ChatGPT browser when called non-interactively (e.g. from `mq-hal release-brief`). AI prompt calls (`mq_ai_prompt_review`, `mq_ai_prompt_ui`) are now guarded with `[[ -t 1 ]]` — skipped when stdout is not a TTY.
+* Fixed `mq-release-check.sh` opening ChatGPT browser when called non-interactively (e.g. from `mq-hal release-brief`). AI prompt calls (`mq_ai_prompt_review`, `mq_ai_prompt_ui`) are now guarded with `[[ -t 1 ]]` — skipped when stdout is not a TTY.
 
 ## [0.4.5] - 2026-05-17
 
 ### Fixed
 
-- Fixed `mqlaunch hal release-brief` (and any `mqlaunch <cmd>` typed from inside the menu prompt) routing to AI — `dispatch_cli_command` now handles `area="mqlaunch"` by stripping the prefix and re-dispatching, so typing the full `mqlaunch hal <sub>` form inside the menu works the same as typing `hal <sub>`.
+* Fixed `mqlaunch hal release-brief` (and any `mqlaunch <cmd>` typed from inside the menu prompt) routing to AI — `dispatch_cli_command` now handles `area="mqlaunch"` by stripping the prefix and re-dispatching, so typing the full `mqlaunch hal <sub>` form inside the menu works the same as typing `hal <sub>`.
 
 ## [0.4.4] - 2026-05-17
 
 ### Fixed
 
-- Restored `mq_hal_run()` alias in bridge — mqlaunch calls `mq_hal_run` but the function was renamed to `mq_hal_main` in a prior refactor, causing all `mqlaunch hal <command>` calls to route to AI instead of the bridge.
+* Restored `mq_hal_run()` alias in bridge — mqlaunch calls `mq_hal_run` but the function was renamed to `mq_hal_main` in a prior refactor, causing all `mqlaunch hal <command>` calls to route to AI instead of the bridge.
 
 ## [0.4.3] - 2026-05-17
 
 ### Fixed
 
-- HAL menu restored to the correct mqlaunch surface pattern: `surface_panel_header`, `surface_split_row`, `surface_bottom`, and `read_main_choice "hal"`.
-- Menu now renders identically to other mqlaunch submenus (panel box + pinned prompt).
-- `_hal_pause_enter` helper added for standalone-safe pause.
+* HAL menu restored to the correct mqlaunch surface pattern: `surface_panel_header`, `surface_split_row`, `surface_bottom`, and `read_main_choice "hal"`.
+* Menu now renders identically to other mqlaunch submenus (panel box + pinned prompt).
+* `_hal_pause_enter` helper added for standalone-safe pause.
 
 ## [0.4.2] - 2026-05-17
 
 ### Fixed
 
-- HAL menu now uses `print_header` when called from within mqlaunch, matching the style of all other submenus. Falls back to a plain standalone header when run directly.
+* HAL menu now uses `print_header` when called from within mqlaunch, matching the style of all other submenus. Falls back to a plain standalone header when run directly.
 
 ## [0.4.1] - 2026-05-17
 
 ### Changed
 
-- Rewrote HAL menu as self-contained (`mq-hal-menu.sh` no longer depends on `surface_*`, `print_header`, or `read_main_choice`).
-- Reordered OBSERVE: Audit is now item 2 (between Brief and Release Brief).
-- Expanded `tests/hal-menu-smoke.sh` from 6 to 8 checks — now verifies audit and release-brief routes and menu labels.
+* Rewrote HAL menu as self-contained (`mq-hal-menu.sh` no longer depends on `surface_*`, `print_header`, or `read_main_choice`).
+* Reordered OBSERVE: Audit is now item 2 (between Brief and Release Brief).
+* Expanded `tests/hal-menu-smoke.sh` from 6 to 8 checks — now verifies audit and release-brief routes and menu labels.
 
 ## [0.4.0] - 2026-05-17
 
 ### Added
 
-- Added `mqlaunch hal audit` bridge command (publish quality + README score via `repo-signal`).
-- Added Audit as item 8 in HAL menu OBSERVE section (total 16 items).
-- Documented HAL Audit in `docs/COMMANDS.md` and README quick-reference.
+* Added `mqlaunch hal audit` bridge command (publish quality + README score via `repo-signal`).
+* Added Audit as item 8 in HAL menu OBSERVE section (total 16 items).
+* Documented HAL Audit in `docs/COMMANDS.md` and README quick-reference.
 
 ## [0.3.9] - 2026-05-17
 
 ### Added
 
-- Added `mqlaunch hal release-brief` bridge command.
-- Added `release-brief` to HAL bridge usage text.
-- Updated HAL menu OBSERVE section: Release Brief is now item 2; total 15 items.
-- Documented HAL Release Brief in `docs/COMMANDS.md`.
-- Added `brief`, `release-brief`, `repo-status`, and `ci` to README quick-reference.
+* Added `mqlaunch hal release-brief` bridge command.
+* Added `release-brief` to HAL bridge usage text.
+* Updated HAL menu OBSERVE section: Release Brief is now item 2; total 15 items.
+* Documented HAL Release Brief in `docs/COMMANDS.md`.
+* Added `brief`, `release-brief`, `repo-status`, and `ci` to README quick-reference.
 
 ## [0.3.8] - 2026-05-17
 
 ### Added
 
-- Added `mqlaunch hal repo-status` bridge command.
-- Added `mqlaunch hal ci` bridge command.
-- Updated HAL menu OBSERVE section: added Repo Status (2) and CI Status (3); items renumbered to 14.
-- Documented HAL Repo Status and CI Status in `docs/COMMANDS.md`.
+* Added `mqlaunch hal repo-status` bridge command.
+* Added `mqlaunch hal ci` bridge command.
+* Updated HAL menu OBSERVE section: added Repo Status (2) and CI Status (3); items renumbered to 14.
+* Documented HAL Repo Status and CI Status in `docs/COMMANDS.md`.
 
 ## [0.3.7] - 2026-05-17
 
 ### Added
 
-- Added `mqlaunch hal brief` bridge command.
-- Rewrote HAL bridge (`hal-bridge.sh`) with `mq_hal_main` entry point, robust help text, and cleaner subcommand routing.
-- Rewrote HAL menu (`mq-hal-menu.sh`) as a standalone grouped menu (Observe, Plan, Memory, Debug) with box-drawn prompts; no `surface_*` dependency.
-- Updated smoke test (`tests/hal-menu-smoke.sh`) to 5 checks including brief coverage.
-- Added HAL Brief section to `docs/COMMANDS.md`.
+* Added `mqlaunch hal brief` bridge command.
+* Rewrote HAL bridge (`hal-bridge.sh`) with `mq_hal_main` entry point, robust help text, and cleaner subcommand routing.
+* Rewrote HAL menu (`mq-hal-menu.sh`) as a standalone grouped menu (Observe, Plan, Memory, Debug) with box-drawn prompts; no `surface_*` dependency.
+* Updated smoke test (`tests/hal-menu-smoke.sh`) to 5 checks including brief coverage.
+* Added HAL Brief section to `docs/COMMANDS.md`.
 
 ## [0.3.6] - 2026-05-16
 
 ### Added
 
-- Added interactive `mqlaunch hal` menu (`terminal/menus/mq-hal-menu.sh`).
-- Added HAL menu smoke test (`tests/hal-menu-smoke.sh`).
-- Documented HAL menu in README and `docs/COMMANDS.md`.
+* Added interactive `mqlaunch hal` menu (`terminal/menus/mq-hal-menu.sh`).
+* Added HAL menu smoke test (`tests/hal-menu-smoke.sh`).
+* Documented HAL menu in README and `docs/COMMANDS.md`.
 
 ## [0.3.5] - 2026-05-16
 
 ### Added
 
-- Added `mqlaunch hal timeline` bridge command.
-- Documented HAL Timeline UI in README and command reference.
+* Added `mqlaunch hal timeline` bridge command.
+* Documented HAL Timeline UI in README and command reference.
 
 ## [0.3.4] - 2026-05-16
 
 ### Added
 
-- Added `mqlaunch hal session`, `mqlaunch hal last`, `mqlaunch hal remember`, and `mqlaunch hal memory-path` bridge commands.
-- Added HAL Session Memory section to README and command reference.
+* Added `mqlaunch hal session`, `mqlaunch hal last`, `mqlaunch hal remember`, and `mqlaunch hal memory-path` bridge commands.
+* Added HAL Session Memory section to README and command reference.
 
 ## [0.3.3] - 2026-05-16
 
 ### Added
 
-- Added `mqlaunch hal fix-doctor` bridge command for HAL Fix Planner.
-- Documented HAL Fix Planner in README and command reference.
+* Added `mqlaunch hal fix-doctor` bridge command for HAL Fix Planner.
+* Documented HAL Fix Planner in README and command reference.
 
 ## [0.3.2] - 2026-05-16
 
 ### Added
 
-- Added `mqlaunch hal doctor` — delegates to `mq-hal doctor-summary` for local doctor JSON summaries and safe next-step recommendations.
-- Added HAL Doctor Summary docs to README and `docs/COMMANDS.md`.
+* Added `mqlaunch hal doctor` — delegates to `mq-hal doctor-summary` for local doctor JSON summaries and safe next-step recommendations.
+* Added HAL Doctor Summary docs to README and `docs/COMMANDS.md`.
 
 ## [0.3.1] - 2026-05-16
 
 ### Added
 
-- Added `mqlaunch hal` bridge — local Ollama-powered safe command router via [mq-hal](https://github.com/MCamner/mq-hal).
-- Added `hal)` route in `dispatch_cli_command` and `run_arg_command`.
-- Added `terminal/bridges/hal-bridge.sh` with `mq_hal_run()`.
-- Added HAL bridge docs to README and `docs/COMMANDS.md`.
+* Added `mqlaunch hal` bridge — local Ollama-powered safe command router via [mq-hal](https://github.com/MCamner/mq-hal).
+* Added `hal)` route in `dispatch_cli_command` and `run_arg_command`.
+* Added `terminal/bridges/hal-bridge.sh` with `mq_hal_run()`.
+* Added HAL bridge docs to README and `docs/COMMANDS.md`.
 
 ### Fixed
 
-- Fixed `mqlaunch hal` routing — `dispatch_cli_command` catch-all was intercepting `hal` before `run_arg_command` could handle it.
-- Removed stale `hal` alias from `apps|hal|guide-ai` case; old terminal guide still reachable via `guide-ai`.
+* Fixed `mqlaunch hal` routing — `dispatch_cli_command` catch-all was intercepting `hal` before `run_arg_command` could handle it.
+* Removed stale `hal` alias from `apps|hal|guide-ai` case; old terminal guide still reachable via `guide-ai`.
 
 ## [0.3.0] - 2026-05-16
 
 ### Fixed
 
-- Fixed `mqlaunch doctor --json` arg passthrough — `dispatch_cli_command` was calling `doctor.sh` without forwarding flags, silently dropping `--json` and returning ANSI output instead of JSON.
-- Fixed `doctor --json` summary counts — subshell `$(...)` calls lost counter updates; replaced with in-process string accumulation.
-- Fixed `read_menu_choice` prompt rendering — `vared` (ZSH ZLE) was clearing below-cursor content on init, erasing bottom separator and hint. Replaced with plain `read`.
-- Fixed `read-only variable: status` ZSH error in release menu — renamed conflicting locals to `files_status` / `exit_code`.
-- Fixed mq-help-menu.sh function name collisions — guarded standalone `print_header`/`print_footer`/`row` etc. so they only activate outside mqlaunch context.
-- Fixed `x` and `exit` not working as back/quit in all 13 submenus.
+* Fixed `mqlaunch doctor --json` arg passthrough — `dispatch_cli_command` was calling `doctor.sh` without forwarding flags, silently dropping `--json` and returning ANSI output instead of JSON.
+* Fixed `doctor --json` summary counts — subshell `$(...)` calls lost counter updates; replaced with in-process string accumulation.
+* Fixed `read_menu_choice` prompt rendering — `vared` (ZSH ZLE) was clearing below-cursor content on init, erasing bottom separator and hint. Replaced with plain `read`.
+* Fixed `read-only variable: status` ZSH error in release menu — renamed conflicting locals to `files_status` / `exit_code`.
+* Fixed mq-help-menu.sh function name collisions — guarded standalone `print_header`/`print_footer`/`row` etc. so they only activate outside mqlaunch context.
+* Fixed `x` and `exit` not working as back/quit in all 13 submenus.
 
 ### Added
 
-- Added `doctor --json` full output: `project`, `version`, `status`, `checks[]`, `summary{}` per spec.
-- Added `docs/COMMANDS.md` — complete command reference for all mqlaunch commands, menus, env vars, and exit shortcuts.
-- Added `x` / `exit` as back shortcut in all submenu prompts.
-- Added prompt hint text: `>> option, mqlaunch command, shell command, or x to exit`.
-- Added VERIFY section to Tools menu (doctor, doctor --json, selftest, smoke test).
+* Added `doctor --json` full output: `project`, `version`, `status`, `checks[]`, `summary{}` per spec.
+* Added `docs/COMMANDS.md` — complete command reference for all mqlaunch commands, menus, env vars, and exit shortcuts.
+* Added `x` / `exit` as back shortcut in all submenu prompts.
+* Added prompt hint text: `>> option, mqlaunch command, shell command, or x to exit`.
+* Added VERIFY section to Tools menu (doctor, doctor --json, selftest, smoke test).
 
 ## [0.2.4] - 2026-05-15
 
 ### Fixed
 
-- Fixed Document Functions submenu prompt missing separator lines — pre-draws full separator block before input using cursor repositioning, matching all other menu prompts.
-- Fixed subprocess menus (git, release, themes, shortcuts, login) converted to in-process sourced modules — eliminates exiting mqlaunch on return.
-- Removed stale Git Menu option from dev menu and renumbered options 10–14.
+* Fixed Document Functions submenu prompt missing separator lines — pre-draws full separator block before input using cursor repositioning, matching all other menu prompts.
+* Fixed subprocess menus (git, release, themes, shortcuts, login) converted to in-process sourced modules — eliminates exiting mqlaunch on return.
+* Removed stale Git Menu option from dev menu and renumbered options 10–14.
 
 ### Added
 
-- Added submenu prompt separator template to `.claude/templates/` for future reference.
-- Updated `tools/scripts/README.md` with status table entries for brew-check, port-scan, focus, env-snap, and cleanup scripts.
+* Added submenu prompt separator template to `.claude/templates/` for future reference.
+* Updated `tools/scripts/README.md` with status table entries for brew-check, port-scan, focus, env-snap, and cleanup scripts.
 
 ## [0.2.3] - 2026-05-12
 
 ### Added
 
-- Added `mq-repo-signal-check.sh` — wrapper that runs `repo-signal publish-checklist . --fail-under 14` as a release gate.
-- Added repo-signal check to `mq-release-check.sh` — blocks release if publish checklist score is below threshold.
-- Added option 12 (Repo Signal Check) to `mqlaunch` release menu.
-- Added `MQ_REPO_SIGNAL_FAIL_UNDER` env var to configure publish checklist threshold without hardcoding.
-- Added `ROADMAP.md`, `.github/ISSUE_TEMPLATE/bug_report.md`, and security note to README so `macos-scripts` scores 16/16.
+* Added `mq-repo-signal-check.sh` — wrapper that runs `repo-signal publish-checklist . --fail-under 14` as a release gate.
+* Added repo-signal check to `mq-release-check.sh` — blocks release if publish checklist score is below threshold.
+* Added option 12 (Repo Signal Check) to `mqlaunch` release menu.
+* Added `MQ_REPO_SIGNAL_FAIL_UNDER` env var to configure publish checklist threshold without hardcoding.
+* Added `ROADMAP.md`, `.github/ISSUE_TEMPLATE/bug_report.md`, and security note to README so `macos-scripts` scores 16/16.
 
 ## [0.2.2] - 2026-05-10
 

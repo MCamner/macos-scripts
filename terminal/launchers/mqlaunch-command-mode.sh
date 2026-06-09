@@ -321,7 +321,42 @@ dispatch_cli_command() {
       ;;
 
     release-check|/release-check|check-release)
-      "$BASE_DIR/terminal/release/mq-release-check.sh"
+      "$BASE_DIR/terminal/release/mq-release-check.sh" "${@:2}"
+      pause_enter
+      return 0
+      ;;
+
+    review-brain|/review-brain)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _rb_path="${2:-.}"
+      _run_agent review repo "$_rb_path" --brain
+      pause_enter
+      return 0
+      ;;
+
+    signal-brain|/signal-brain)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _sb_path="${2:-.}"
+      _run_agent signal --brain "$_sb_path"
+      pause_enter
+      return 0
+      ;;
+
+    learn-promote|/learn-promote|promote-pattern)
+      if ! declare -f _run_agent >/dev/null; then
+        echo "ERROR: mq-agent-menu not loaded" >&2; return 1
+      fi
+      local _slug="${2:-}"
+      if [[ -z "$_slug" ]]; then
+        echo "Usage: mqlaunch learn-promote <slug>" >&2
+        pause_enter
+        return 1
+      fi
+      _run_agent learn promote "$_slug" --approve
       pause_enter
       return 0
       ;;
@@ -613,6 +648,31 @@ dispatch_cli_command() {
 
     recent|recent-files|rf)
       declare -f fzf_recent_files >/dev/null && fzf_recent_files || "$BASE_DIR/bin/mqlaunch" recent
+      return 0
+      ;;
+
+    brain)
+      if declare -f mq_brain_run >/dev/null; then
+        mq_brain_run "${@:2}"
+      else
+        echo "ERROR: brain-bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    note|sessions|decisions|reviews|learn|verified|systems|memory)
+      if declare -f mq_brain_run >/dev/null; then
+        mq_brain_run "$area" "${@:2}"
+      else
+        echo "ERROR: brain-bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    b2tui|b2)
+      PYTHONPATH="${BASE_DIR}" python3 -m mqlaunch.b2_tui.main "${@:2}"
       return 0
       ;;
 

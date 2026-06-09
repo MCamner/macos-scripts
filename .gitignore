@@ -1,3 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+
 # Secrets
 .env
 .env.*

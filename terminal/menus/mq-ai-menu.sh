@@ -13,7 +13,8 @@ print_ai_menu() {
   surface_split_row "3. Atlas Router" "4. Decision" "$width" "$panel_color"
   surface_split_row "5. Research" "6. Root Cause" "$width" "$panel_color"
   surface_split_row "7. Problem Solving" "8. Prompt Debugger" "$width" "$panel_color"
-  surface_split_row "9. AI Menu" "b. Back" "$width" "$panel_color"
+  surface_split_row "9. AI Menu" "t. B2 Atlas TUI" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -34,6 +35,7 @@ handle_ai_menu_choice() {
     7) safe_run_ai solve ;;
     8) safe_run_ai pdebug ;;
     9) safe_run_ai menu ;;
+    t|T) PYTHONPATH="${BASE_DIR}" python3 -m mqlaunch.b2_tui.main ;;
     b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid AI selection:${C_RESET} $choice"; pause_enter ;;
   esac

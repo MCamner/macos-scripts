@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-0.5.1-blue)
+![Version](https://img.shields.io/badge/version-0.6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -17,16 +17,16 @@ Stop memorizing commands. Start running workflows.
 
 ## Proof
 
-- `install.sh` supports `--dry-run`, `--uninstall`, and `--yes` (non-interactive)
-- `release.sh` validates VERSION, README badge, and CHANGELOG before every release
-- `mqlaunch doctor` supports `--json` output — machine-readable health report
-- `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
-- `mqlaunch release-check` gates every release on a `repo-signal`
+* `install.sh` supports `--dry-run`, `--uninstall`, and `--yes` (non-interactive)
+* `release.sh` validates VERSION, README badge, and CHANGELOG before every release
+* `mqlaunch doctor` supports `--json` output — machine-readable health report
+* `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
+* `mqlaunch release-check` gates every release on a `repo-signal`
   publish-readiness score
-- HAL bridge supports read-only audit, release brief, repo status, and CI status
-- All `.sh` files pass `bash -n` syntax check — verified by CI and
+* HAL bridge supports read-only audit, release brief, repo status, and CI status
+* All `.sh` files pass `bash -n` syntax check — verified by CI and
   `scripts/install-smoke.sh`
-- GitHub Pages has smoke-test coverage via CI
+* GitHub Pages has smoke-test coverage via CI
 
 ---
 
@@ -78,10 +78,10 @@ mqlaunch doctor
 
 This will:
 
-- verify your environment
-- check required dependencies
-- validate your setup
-- highlight issues with clear fixes
+* verify your environment
+* check required dependencies
+* validate your setup
+* highlight issues with clear fixes
 
 ---
 
@@ -91,8 +91,8 @@ This will:
 mqlaunch
 ```
 
-- browse workflows via the interactive menu
-- or run commands directly (`perf`, `system`, `dev`, `tools`)
+* browse workflows via the interactive menu
+* or run commands directly (`perf`, `system`, `dev`, `tools`)
 
 ## Usage
 
@@ -155,10 +155,10 @@ This project turns:
 
 One command → structured workflows → repeatable execution
 
-- single entrypoint: `mqlaunch`
-- organized workflows (Dev, System, Performance, Git, Release, Tools)
-- works as interactive menu and direct CLI
-- built-in AI for questions, code generation, and error fixes
+* single entrypoint: `mqlaunch`
+* organized workflows (Dev, System, Performance, Git, Release, Tools)
+* works as interactive menu and direct CLI
+* built-in AI for questions, code generation, and error fixes
 
 ---
 
@@ -213,15 +213,33 @@ HAL overview page: [docs/hal.html](docs/hal.html)
 
 HAL menu screenshot: [docs/screenshots/hal-menu.png](docs/screenshots/hal-menu.png)
 
+## 🧠 B2 Atlas Prompt OS
+
+Structured prompt browser and composer for architecture, review, research,
+and content work — built on your local Obsidian vault.
+
+```bash
+mq b2                   # open interactive TUI
+mq b2 list              # browse all 43 prompts
+mq b2 route "ta fram blueprint för nytt API"
+mq b2 compose 02.11 "design the payment service"
+```
+
+Navigate with `j/k`, search with `/`, compose with `c`, quit with `q`.
+Full reference: [docs/B2_TUI.md](docs/B2_TUI.md)
+
+---
+
 ## 📚 Documentation map
 
-- [Command reference](docs/COMMANDS.md) — full `mqlaunch` command surface
-- [Terminal guide](terminal/README.md) — launchers, menus, themes, and bridges
-- [Tools guide](tools/README.md) — helper scripts and utility workflows
-- [Automation guide](automation/README.md) — login, shortcuts, and workflows
-- [System guide](system/README.md) — macOS tweaks, monitoring, and performance
-- [Skills](SKILLS.md) — local maintenance skills for this repo
-- [Roadmap](ROADMAP.md) — current design boundary and next priorities
+* [Command reference](docs/COMMANDS.md) — full `mqlaunch` command surface
+* [B2 TUI reference](docs/B2_TUI.md) — B2 Atlas Prompt OS terminal interface
+* [Terminal guide](terminal/README.md) — launchers, menus, themes, and bridges
+* [Tools guide](tools/README.md) — helper scripts and utility workflows
+* [Automation guide](automation/README.md) — login, shortcuts, and workflows
+* [System guide](system/README.md) — macOS tweaks, monitoring, and performance
+* [Skills](SKILLS.md) — local maintenance skills for this repo
+* [Roadmap](ROADMAP.md) — current design boundary and next priorities
 
 ---
 
@@ -353,10 +371,10 @@ mqlaunch doctor
 mqlaunch workflows validate
 ```
 
-- checks required tools (git, brew, node, python, jq)
-- validates repo state (branch, dirty tree, required files)
-- evaluates workflow readiness (Git, Release, Dev, System)
-- highlights issues and gives actionable recommendations
+* checks required tools (git, brew, node, python, jq)
+* validates repo state (branch, dirty tree, required files)
+* evaluates workflow readiness (Git, Release, Dev, System)
+* highlights issues and gives actionable recommendations
 
 ---
 
@@ -414,11 +432,11 @@ macos-scripts/
 
 ## ⚖️ Design principles
 
-- keep it simple
-- structure > more tools
-- optimize for real usage
-- make workflows repeatable
-- reduce cognitive load
+* keep it simple
+* structure > more tools
+* optimize for real usage
+* make workflows repeatable
+* reduce cognitive load
 
 ---
 
@@ -452,10 +470,10 @@ mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 
 Near-term priorities:
 
-- release gate integration
-- plugin-style extensions
-- remote execution support
-- improved onboarding
+* release gate integration
+* plugin-style extensions
+* remote execution support
+* improved onboarding
 
 ---
 
@@ -465,10 +483,10 @@ PRs and issues are welcome.
 
 Good first contributions:
 
-- add or improve a workflow under `automation/`, `tools/`, or `system/`
-- improve command docs in [docs/COMMANDS.md](docs/COMMANDS.md)
-- add smoke coverage under `tests/`
-- polish terminal menu labels, spacing, or discoverability
+* add or improve a workflow under `automation/`, `tools/`, or `system/`
+* improve command docs in [docs/COMMANDS.md](docs/COMMANDS.md)
+* add smoke coverage under `tests/`
+* polish terminal menu labels, spacing, or discoverability
 
 Before opening a PR, run:
 

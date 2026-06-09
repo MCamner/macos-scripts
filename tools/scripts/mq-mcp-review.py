@@ -10,6 +10,7 @@ Requires OPENAI_API_KEY in environment or mq-mcp/.env.
 from __future__ import annotations
 
 import argparse
+import importlib
 import os
 import sys
 from pathlib import Path
@@ -112,12 +113,13 @@ def load_skill_for(path: Path, mode: str) -> tuple[str, str]:
     skills_dir = MQ_MCP_HOME / "reviews" / "skills"
 
     try:
-        from review_engine.review_router import route_file
-        # Use suffix-based routing — path may be outside mq-mcp repo
-        fake_rel = path.name
-        name, content = route_file(fake_rel)
-        if name != "none":
-            return name, content
+        review_router = importlib.import_module("review_engine.review_router")
+        route_file = getattr(review_router, "route_file", None)
+        if callable(route_file):
+            fake_rel = path.name
+            name, content = route_file(fake_rel)
+            if name != "none":
+                return name, content
     except Exception:
         pass
 
@@ -157,7 +159,10 @@ def review_file(
     content = data.decode("utf-8", errors="replace")
     skill_name, skill_content = load_skill_for(path, mode)
 
-    import openai
+    try:
+        openai = importlib.import_module("openai")
+    except Exception as exc:
+        return f"OpenAI client not available: {exc}"
 
     api_key = os.environ.get("OPENAI_API_KEY", "")
     if not api_key:
@@ -166,10 +171,13 @@ def review_file(
     client = openai.OpenAI(api_key=api_key)
 
     try:
-        from review_engine.severity_engine import parse_findings, format_summary
+        severity_engine = importlib.import_module("review_engine.severity_engine")
+        parse_findings = getattr(severity_engine, "parse_findings")
+        format_summary = getattr(severity_engine, "format_summary")
 
         if deep:
-            from review_engine.multi_pass_reviewer import MultiPassReviewer
+            multi_pass = importlib.import_module("review_engine.multi_pass_reviewer")
+            MultiPassReviewer = getattr(multi_pass, "MultiPassReviewer")
             reviewer = MultiPassReviewer(client, model)
             result = reviewer.run(
                 file_path=path.name,

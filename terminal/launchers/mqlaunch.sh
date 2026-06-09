@@ -39,6 +39,12 @@ if [[ -f "$BASE_DIR/terminal/bridges/hal-bridge.sh" ]]; then
   # shellcheck disable=SC1091
   source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
 fi
+
+# Brain bridge (mqobsidian second brain vault)
+if [[ -f "$BASE_DIR/terminal/bridges/brain-bridge.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/bridges/brain-bridge.sh"
+fi
 AI_SCRIPT="$BASE_DIR/tools/cli/ai-mode.sh"
 PROMPT_DIR="$BASE_DIR/ai-prompts"
 REPO_URL="https://github.com/MCamner/macos-scripts"
@@ -666,6 +672,53 @@ run_github_repo_picker() {
   esac
 }
 
+# fzf: bläddra och kopiera sparade AI-prompts från mqobsidian/_prompts/
+prompts_pick() {
+  local vault_dir="${MQ_OBSIDIAN_DIR:-$HOME/mqobsidian}"
+  local prompts_dir="$vault_dir/_prompts/saved-prompts-md-export"
+  local fzf_bin
+  fzf_bin="$(command -v fzf 2>/dev/null || true)"
+
+  if [[ ! -d "$prompts_dir" ]]; then
+    printf "Prompts directory not found: %s\n" "$prompts_dir" >&2
+    return 1
+  fi
+
+  if [[ -z "$fzf_bin" ]]; then
+    printf "fzf is not installed. Install: brew install fzf\n" >&2
+    return 1
+  fi
+
+  local selected
+  selected="$(
+    find "$prompts_dir" -name "*.md" -not -name "INDEX.md" -not -name "README.md" -not -name "EXPORT_NOTES.md" -not -name "PROMPT_EXPORT_INDEX.md" | sort | while IFS= read -r f; do
+      label="$(basename "$(dirname "$f")" | sed 's/^[0-9]*_//')/$(basename "$f" .md | sed 's/_/ /g')"
+      printf "%s\t%s\n" "$label" "$f"
+    done \
+    | "$fzf_bin" \
+        --delimiter='\t' \
+        --with-nth=1 \
+        --preview='head -40 {2}' \
+        --preview-window='right:55%:wrap' \
+        --reverse \
+        --border \
+        --header='Select prompt → copy to clipboard  (ESC = cancel)' \
+        --prompt='prompt > ' \
+        --height=80% \
+    | cut -f2
+  )"
+
+  [[ -z "$selected" ]] && return 0
+
+  if command -v pbcopy >/dev/null 2>&1; then
+    pbcopy < "$selected"
+    printf "Copied to clipboard: %s\n" "$(basename "$selected" .txt | sed 's/_/ /g')"
+  else
+    printf "pbcopy not available — printing prompt:\n\n"
+    cat "$selected"
+  fi
+}
+
 # fzf: bläddra git log med diff-preview
 fzf_git_log() {
   local fzf_bin commit
@@ -1207,7 +1260,7 @@ theme_source_state() {
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
-  local git_path=""
+  local git_path="" back_marker restart_count
 
   if [[ -n "$repo_arg" ]]; then
     git_path="$repo_arg"
@@ -1215,11 +1268,7 @@ open_git_menu() {
     git_path="$(pwd)"
   fi
 
-  if [[ -x "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" "$git_script"
-  elif [[ -f "$git_script" ]]; then
-    MQ_GIT_REPO="$git_path" zsh "$git_script"
-  else
+  if [[ ! -x "$git_script" && ! -f "$git_script" ]]; then
     print_header
     row "GIT MENU"
     empty_row
@@ -1227,7 +1276,32 @@ open_git_menu() {
     row " $git_script"
     print_footer
     pause_enter
+    return
   fi
+
+  back_marker="/tmp/mq-gitlaunch-back.$$"
+  restart_count=0
+
+  while true; do
+    rm -f "$back_marker" 2>/dev/null || true
+
+    if [[ -x "$git_script" ]]; then
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" "$git_script"
+    else
+      MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" zsh "$git_script"
+    fi
+
+    [[ -f "$back_marker" ]] && break
+
+    restart_count=$(( restart_count + 1 ))
+    if [[ "$restart_count" -ge 5 ]]; then
+      printf "Gitlaunch exited unexpectedly %d times; returning to mqlaunch.\n" "$restart_count"
+      sleep 1
+      break
+    fi
+  done
+
+  rm -f "$back_marker" 2>/dev/null || true
 }
 
 # Opens release menu.
@@ -1879,6 +1953,12 @@ run_arg_command() {
     netlaunch|net) open_net_menu ;;
     atlas) mq_ai_run_atlas "$@" ;;
     hal) mq_hal_run "$@" ;;
+    brain|note|sessions|decisions|reviews|learn|verified|systems|memory|stack|roadmap) mq_brain_run "$cmd" "$@" ;;
+    review-brain) _run_agent review repo "${2:-.}" --brain ;;
+    signal-brain) _run_agent signal --brain "${2:-.}" ;;
+    learn-promote|promote-pattern) _run_agent learn promote "${2:-}" --approve ;;
+    prompts) prompts_pick ;;
+    b2tui|b2) shift; PYTHONPATH="$BASE_DIR" python3 -m mqlaunch.b2_tui.main "$@" ;;
     auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
     mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
     ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
