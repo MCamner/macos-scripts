@@ -73,7 +73,29 @@ def cmd_compose(prompts: list[Prompt], args: argparse.Namespace) -> int:
         print("  Error: task cannot be empty.", file=sys.stderr)
         return 1
     run_args = argparse.Namespace(id=args.id, context=args.task)
-    return cmd_run(prompts, run_args)
+    rc = cmd_run(prompts, run_args)
+    if rc == 0 and getattr(args, "review", False):
+        return cmd_review_last(prompts, args)
+    return rc
+
+
+def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
+    import shutil
+    import subprocess
+    path = last_run_path()
+    if path is None:
+        print("  No runs found. Run 'mq b2 compose' first.", file=sys.stderr)
+        return 1
+    if shutil.which("mq-agent") is None:
+        print("  mq-agent not found in PATH.", file=sys.stderr)
+        return 1
+    cmd = ["mq-agent", "review", "file", str(path)]
+    if getattr(args, "architecture", False):
+        cmd.append("--architecture")
+    if getattr(args, "security", False):
+        cmd.append("--security")
+    print(f"  Reviewing: {path.name}")
+    return subprocess.run(cmd).returncode
 
 
 def cmd_export_last(_prompts: list[Prompt], _args: argparse.Namespace) -> int:
@@ -129,6 +151,9 @@ def build_parser() -> argparse.ArgumentParser:
     compose_p = sub.add_parser("compose", help="Compose prompt from ID + task description")
     compose_p.add_argument("id", help="Prompt ID, e.g. 02.11")
     compose_p.add_argument("task", help="Task description")
+    compose_p.add_argument("--review", action="store_true", help="Review composed prompt with mq-agent after compose")
+    compose_p.add_argument("--architecture", action="store_true", help="Use architecture review mode")
+    compose_p.add_argument("--security", action="store_true", help="Use security review mode")
 
     run_p = sub.add_parser("run", help="Run a prompt by ID (interactive)")
     run_p.add_argument("id", help="Prompt ID, e.g. 02.11")
@@ -142,6 +167,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("export-last", help="Show path to last Obsidian run")
     sub.add_parser("open-last", help="Open last Obsidian run in editor")
     sub.add_parser("config", help="Show path configuration status")
+
+    review_p = sub.add_parser("review-last", help="Review last B2 run with mq-agent")
+    review_p.add_argument("--architecture", action="store_true", help="Architecture review mode")
+    review_p.add_argument("--security", action="store_true", help="Security review mode")
 
     hist_p = sub.add_parser("history", help="Show recent runs")
     hist_p.add_argument("subcommand", nargs="?", choices=["last", "export"], help="last or export")
@@ -171,10 +200,11 @@ def main() -> int:
         "run":        cmd_run,
         "route":      cmd_route,
         "validate":   cmd_validate,
-        "export-last": cmd_export_last,
-        "open-last":   cmd_open_last,
-        "config":      cmd_config,
-        "history":    cmd_history,
+        "export-last":  cmd_export_last,
+        "open-last":    cmd_open_last,
+        "config":       cmd_config,
+        "history":      cmd_history,
+        "review-last":  cmd_review_last,
     }
 
     handler = dispatch.get(args.command)

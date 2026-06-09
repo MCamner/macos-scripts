@@ -882,10 +882,22 @@ git tag v0.6.0
 
 ## v0.7.0 — mq-agent bridge
 
-* [ ] Export route result to mq-agent
-* [ ] mq-agent can read B2 composed prompt
-* [ ] workflow: route → compose → review → output
-* [ ] no duplicated review logic
+Goal: koppla B2 TUI:s compose-output till mq-agent review utan att duplicera
+review-logik i mqlaunch. All review-logik stannar i mq-agent/mq-mcp.
+
+Flöde:
+
+```text
+mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
+```
+
+* [x] `mq b2 review-last` — hämtar senaste run-path, kör `mq-agent review file`
+* [x] `mq b2 review-last --architecture` / `--security` — vidarebefordrar mode-flag
+* [x] `mq b2 compose 02.11 "..." --review` — compose + review i ett steg
+* [x] Graceful fallback om mq-agent saknas i PATH
+* [x] 5 tester i `test_review_bridge.py`
+* [x] `docs/COMMANDS.md` uppdaterad
+* [ ] `mq b2 route "..." --compose --review` — route + compose + review i ett kommando
 
 ## v0.8.0 — mq-mcp review bridge
 

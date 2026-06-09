@@ -459,6 +459,10 @@ mq b2 history last      # most recent run
 mq b2 history export    # write history to Obsidian
 mq b2 export-last       # path to last run file
 mq b2 open-last         # open last run in editor
+mq b2 review-last                       # review last run with mq-agent
+mq b2 review-last --architecture        # architecture review mode
+mq b2 review-last --security            # security review mode
+mq b2 compose 02.11 "task" --review     # compose + review in one step
 ```
 
 See [docs/B2_TUI.md](B2_TUI.md) for full reference.
