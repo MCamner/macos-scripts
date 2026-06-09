@@ -661,7 +661,7 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    note|sessions|decisions|reviews|learn|verified|systems)
+    note|sessions|decisions|reviews|learn|verified|systems|memory)
       if declare -f mq_brain_run >/dev/null; then
         mq_brain_run "$area" "${@:2}"
       else

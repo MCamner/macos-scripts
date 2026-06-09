@@ -1953,7 +1953,7 @@ run_arg_command() {
     netlaunch|net) open_net_menu ;;
     atlas) mq_ai_run_atlas "$@" ;;
     hal) mq_hal_run "$@" ;;
-    brain|note|sessions|decisions|reviews|learn|verified|systems|stack|roadmap) mq_brain_run "$cmd" "$@" ;;
+    brain|note|sessions|decisions|reviews|learn|verified|systems|memory|stack|roadmap) mq_brain_run "$cmd" "$@" ;;
     review-brain) _run_agent review repo "${2:-.}" --brain ;;
     signal-brain) _run_agent signal --brain "${2:-.}" ;;
     learn-promote|promote-pattern) _run_agent learn promote "${2:-}" --approve ;;

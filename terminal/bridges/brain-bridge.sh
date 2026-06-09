@@ -64,6 +64,7 @@ Usage:
   mqlaunch brain learn             # open learned patterns folder (inbox)
   mqlaunch brain verified          # open learn/verified/ (curated patterns)
   mqlaunch brain systems           # open systems/ (per-repo knowledge hubs)
+  mqlaunch brain memory            # open memory folder
   mqlaunch brain vault             # open vault root in Finder
   mqlaunch stack                   # open mq-stack release status (05_RELEASE_STATUS.md)
   mqlaunch roadmap                 # open mq-stack roadmap (01_ROADMAP.md)
@@ -107,6 +108,9 @@ mq_brain_run() {
       ;;
     systems|system)
       _brain_open_folder "systems"
+      ;;
+    memory)
+      _brain_open_folder "memory"
       ;;
     stack|mq-stack)
       _brain_open_file "mq-stack/05_RELEASE_STATUS.md"
