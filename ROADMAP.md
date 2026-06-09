@@ -799,10 +799,10 @@ pytest mqlaunch/b2_tui/tests
 
 ### Done when
 
-* [ ] all tests pass
-* [ ] tests do not depend on real Obsidian path
-* [ ] tests use fixtures/tempdir
-* [ ] CI can run tests
+* [x] all tests pass
+* [x] tests do not depend on real Obsidian path
+* [x] tests use fixtures/tempdir
+* [x] CI can run tests
 
 ---
 
