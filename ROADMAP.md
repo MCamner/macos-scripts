@@ -501,11 +501,11 @@ Task contains blueprint + terminal TUI + implementation signals.
 
 ### Done when
 
-* [ ] router väljer primary project
-* [ ] router kan lägga till support projects
-* [ ] router visar kort reason
-* [ ] router fungerar utan AI/API
-* [ ] router testas med minst 15 cases
+* [x] router väljer primary project
+* [x] router kan lägga till support projects
+* [x] router visar kort reason
+* [x] router fungerar utan AI/API
+* [x] router testas med minst 15 cases
 
 ---
 
@@ -925,7 +925,7 @@ git tag v0.6.0
 
 ### Next
 
-* [ ] Phase 5 — Router (support projects + reason text saknas)
+* [x] Phase 5 — Router
 * [ ] Phase 6 — Prompt Composer
 * [ ] Phase 7 — History
 * [ ] Phase 8 — Obsidian writer

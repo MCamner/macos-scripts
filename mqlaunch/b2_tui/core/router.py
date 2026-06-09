@@ -46,44 +46,83 @@ ROUTE_PRIMARY: dict[str, str] = {
     "decision": "03.04",
 }
 
+# Which routes provide support context for each primary route
+ROUTE_SUPPORT: dict[str, list[str]] = {
+    "architecture":    ["implementation", "review"],
+    "implementation":  ["architecture", "review"],
+    "review":          ["architecture", "implementation"],
+    "research":        ["decision", "architecture"],
+    "content":         ["implementation", "architecture"],
+    "learning":        ["decision", "research"],
+    "decision":        ["architecture", "research"],
+}
+
+
+def route(task: str) -> tuple[str, list[str], list[str]]:
+    """Return (primary_route, support_routes, matched_keywords)."""
+    task_lower = task.lower()
+    scores: dict[str, int] = {r: 0 for r in ROUTES}
+    matched: dict[str, list[str]] = {r: [] for r in ROUTES}
+
+    for r, keywords in ROUTES.items():
+        for kw in keywords:
+            if kw in task_lower:
+                scores[r] += 1
+                matched[r].append(kw)
+
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    best_route = ranked[0][0] if ranked[0][1] > 0 else "architecture"
+
+    # Support: other routes that also scored > 0, capped at 2
+    support = [
+        r for r, score in ranked[1:]
+        if score > 0 and r in ROUTE_SUPPORT.get(best_route, [])
+    ][:2]
+
+    # Fallback support from ROUTE_SUPPORT if nothing else scored
+    if not support:
+        support = ROUTE_SUPPORT.get(best_route, [])[:2]
+
+    all_matched = matched[best_route] + [kw for r in support for kw in matched[r]]
+
+    return best_route, support, all_matched
+
 
 def cmd_route(prompts: list[Prompt], args: argparse.Namespace) -> int:
     from mqlaunch.b2_tui.core.prompt_composer import cmd_run
 
-    task = args.task.lower()
-    scores: dict[str, int] = {route: 0 for route in ROUTES}
-    for route, keywords in ROUTES.items():
-        for kw in keywords:
-            if kw in task:
-                scores[route] += 1
-
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    best_route, best_score = ranked[0]
-
-    if best_score == 0:
-        print("  No clear route match — defaulting to: architecture")
-        best_route = "architecture"
+    best_route, support_routes, matched_kws = route(args.task)
 
     primary_id = ROUTE_PRIMARY[best_route]
     primary = find_prompt(prompts, primary_id)
+    support_prompts = [
+        p for r in support_routes
+        if (p := find_prompt(prompts, ROUTE_PRIMARY[r])) is not None
+    ]
 
-    print(f"\n  Route: {best_route}")
-    if primary:
-        print(f"  Primary prompt: {primary.id} — {primary.name}")
     print()
+    print("  Primary:")
+    if primary:
+        print(f"  {primary.id}  {primary.name}")
+    else:
+        print(f"  {primary_id}")
 
-    print("  All route scores:")
-    for route, score in ranked:
-        marker = "→" if route == best_route else " "
-        pid = ROUTE_PRIMARY[route]
-        p = find_prompt(prompts, pid)
-        pname = p.name if p else pid
-        print(f"  {marker} {route:<14} {score}  ({pid} {pname})")
+    if support_prompts:
+        print()
+        print("  Support:")
+        for sp in support_prompts:
+            print(f"  {sp.id}  {sp.name}")
+
+    if matched_kws:
+        print()
+        kw_str = " + ".join(dict.fromkeys(matched_kws))
+        print(f"  Reason:")
+        print(f"  Task contains {kw_str} signals.")
 
     if primary and not args.no_run:
         print()
         try:
-            run = input("  Run this prompt? [Y/n]: ").strip().lower()
+            run = input("  Compose with this prompt? [Y/n]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             return 0
         if run in ("", "y", "yes", "ja"):
