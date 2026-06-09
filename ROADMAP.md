@@ -186,13 +186,13 @@ macos-scripts/
 
 ### Out of scope for MVP
 
-* [ ] No automatic OpenAI API execution
-* [ ] No GitHub write actions
-* [ ] No automatic commits
-* [ ] No agentic execution
-* [ ] No complex memory engine
-* [ ] No RAG/vector database
-* [ ] No modification of B2 source files
+* [x] No automatic OpenAI API execution
+* [x] No GitHub write actions
+* [x] No automatic commits
+* [x] No agentic execution
+* [x] No complex memory engine
+* [x] No RAG/vector database
+* [x] No modification of B2 source files
 
 MVP ska vara **read-only mot B2-källor**.
 
@@ -359,8 +359,8 @@ Snabbt kunna kontrollera att B2 TUI kan köras på aktuell maskin.
 * [x] Projects can be parsed
 * [ ] Project IDs are unique
 * [x] Prompts are not empty
-* [ ] Obsidian stack path exists
-* [ ] Runs path exists or can be created
+* [x] Obsidian stack path exists
+* [x] Runs path exists or can be created
 * [ ] History file is writable
 * [x] mqlaunch wrapper exists
 
@@ -694,7 +694,7 @@ mq b2 history
 * [x] inga relativa path-problem
 * [x] fungerar från annan katalog än repo-roten
 * [x] fel visas snyggt
-* [ ] wrapper är dokumenterad
+* [x] wrapper är dokumenterad
 
 ---
 
@@ -778,18 +778,18 @@ mqlaunch/b2_tui/tests/
 
 ### Minimum test cases
 
-* [ ] config loads default paths
-* [ ] missing source path returns clear error
-* [ ] project loader finds categories
-* [ ] project loader finds project IDs
-* [ ] show project by ID works
-* [ ] router maps blueprint task to `02.11`
-* [ ] router maps TUI task to `05.03`
-* [ ] composer includes prompt and user input
-* [ ] history writes JSONL
-* [ ] validator returns OK/WARN/FAIL
-* [ ] obsidian writer uses tempdir in tests
-* [ ] no test writes to real vault
+* [x] config loads default paths
+* [x] missing source path returns clear error
+* [x] project loader finds categories
+* [x] project loader finds project IDs
+* [x] show project by ID works
+* [x] router maps blueprint task to `02.11`
+* [x] router maps TUI task to `05.03`
+* [x] composer includes prompt and user input
+* [x] history writes JSONL
+* [x] validator returns OK/WARN/FAIL
+* [x] obsidian writer uses tempdir in tests
+* [x] no test writes to real vault
 
 ### Commands
 
@@ -950,10 +950,10 @@ mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
 
 ### Later
 
-* [ ] Phase 10 — Terminal TUI skeleton
-* [ ] mq-agent bridge
-* [ ] mq-mcp bridge
-* [ ] repo-signal integration
+* [x] Phase 10 — Terminal TUI skeleton
+* [x] mq-agent bridge
+* [x] mq-mcp bridge
+* [x] repo-signal integration
 
 ---
 
@@ -967,16 +967,16 @@ Få första körbara CLI-versionen.
 
 ### Tasks
 
-* [ ] skapa `mqlaunch/b2_tui`
-* [ ] skapa datamodeller
-* [ ] skapa config
-* [ ] skapa project loader
-* [ ] skapa validator
-* [ ] skapa argparse CLI
-* [ ] koppla `mq b2 validate`
-* [ ] koppla `mq b2 list`
-* [ ] koppla `mq b2 show 02.11`
-* [ ] skriva tester
+* [x] skapa `mqlaunch/b2_tui`
+* [x] skapa datamodeller
+* [x] skapa config
+* [x] skapa project loader
+* [x] skapa validator
+* [x] skapa argparse CLI
+* [x] koppla `mq b2 validate`
+* [x] koppla `mq b2 list`
+* [x] koppla `mq b2 show 02.11`
+* [x] skriva tester
 
 ### Acceptance commands
 
@@ -1013,10 +1013,10 @@ går grönt.
 
 MVP:n ska dessutom:
 
-* [ ] inte ändra B2-källfiler
-* [ ] inte kräva OpenAI API
-* [ ] inte kräva Ollama
-* [ ] inte kräva GitHub access
-* [ ] fungera från valfri terminalkatalog
-* [ ] skriva tydliga felmeddelanden
-* [ ] exportera markdown till Obsidian
+* [x] inte ändra B2-källfiler
+* [x] inte kräva OpenAI API
+* [x] inte kräva Ollama
+* [x] inte kräva GitHub access
+* [x] fungera från valfri terminalkatalog
+* [x] skriva tydliga felmeddelanden
+* [x] exportera markdown till Obsidian
