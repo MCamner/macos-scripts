@@ -14,12 +14,15 @@ print_agent_menu() {
   print_header
   surface_panel_header "AI Agent Orchestrator" "mq-agent" "$width" "$panel_color"
   surface_row "REPO ANALYSIS  (no API key required)" "$width" "$panel_color"
-  surface_split_row "1. Score repository" "2. Full signal assessment" "$width" "$panel_color"
+  surface_split_row "${C_WARN}1. Score repository${C_RESET}" "${C_WARN}2. Full signal assessment${C_RESET}" "$width" "$panel_color"
   surface_split_row "3. Repo summary" "4. List tools" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "AI COMMANDS  (requires OPENAI_API_KEY)" "$width" "$panel_color"
-  surface_split_row "5. Audit repository" "6. Signal + AI plan" "$width" "$panel_color"
+  surface_split_row "5. Audit repository" "${C_WARN}6. Signal + save to brain${C_RESET}" "$width" "$panel_color"
   surface_split_row "7. Release check" "8. Diagnose CI" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "SECOND BRAIN  (writes to mqobsidian)" "$width" "$panel_color"
+  surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
@@ -187,6 +190,41 @@ _mcp_stop() {
   printf "mq-mcp stopped (port :%s is free)\n" "$MQ_MCP_PORT"
 }
 
+# Lists learn/ files and prompts for promotion. Uses fzf when available.
+_brain_pick_and_promote() {
+  local vault_dir="${MQ_OBSIDIAN_DIR:-$HOME/mqobsidian}"
+  local learn_dir="$vault_dir/learn"
+
+  if [[ ! -d "$learn_dir" ]]; then
+    printf "learn/ not found: %s\n" "$learn_dir" >&2
+    pause_enter; return 1
+  fi
+
+  local files=()
+  while IFS= read -r -d '' f; do
+    files+=("$(basename "$f" .md)")
+  done < <(find "$learn_dir" -maxdepth 1 -name "*.md" -not -name "index.md" -print0 | sort -z)
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    printf "No files in learn/ to promote.\n"
+    pause_enter; return 0
+  fi
+
+  local slug=""
+  if command -v fzf >/dev/null 2>&1; then
+    slug="$(printf '%s\n' "${files[@]}" | fzf --height=40% --layout=reverse --border --prompt="promote > ")"
+  else
+    printf "Available slugs in learn/:\n"
+    printf '  %s\n' "${files[@]}"
+    printf "\nSlug to promote: "
+    read -r slug
+  fi
+
+  [[ -z "$slug" ]] && return 0
+  _run_agent learn promote "$slug" --approve
+  pause_enter
+}
+
 # Handles direct mqlaunch agent commands.
 run_agent_command() {
   local subcmd="${1:-menu}"
@@ -255,7 +293,7 @@ handle_agent_menu_choice() {
     3) _run_agent repo-summary .; pause_enter ;;
     4) _run_agent tools;      pause_enter ;;
     5) _run_agent audit .;    pause_enter ;;
-    6) _run_agent signal .;   pause_enter ;;
+    6) _run_agent signal --brain .; pause_enter ;;
     7) _run_agent release-check; pause_enter ;;
     8) _run_agent fix-ci;     pause_enter ;;
     9) _run_agent doctor;     pause_enter ;;
@@ -264,6 +302,8 @@ handle_agent_menu_choice() {
     12) _run_agent mcp tools;   pause_enter ;;
     13) _mcp_start;             pause_enter ;;
     14) _mcp_stop;              pause_enter ;;
+    15) _run_agent review repo . --brain; pause_enter ;;
+    16) _brain_pick_and_promote ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac

@@ -9,6 +9,7 @@ DEFAULT_REPO=~/macos-scripts
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
 _BANNER_SHOWN=0
+BACK_MARKER="${MQ_GITLAUNCH_BACK_MARKER:-}"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -567,12 +568,21 @@ function prompt_choice() {
 
 # Pauses inside gitlaunch without changing menu level.
 function pause_git_menu() {
-  local pause_reply=""
-  stty sane 2>/dev/null || true
+  local pause_reply="" _drain=""
+  stty sane </dev/tty 2>/dev/null || true
+  # drain any newlines buffered during git operations or prior reads
+  read -t 0.1 -k 999 _drain </dev/tty 2>/dev/null || true
   echo ""
   printf "%bPress Enter to return to Gitlaunch menu...%b" "$C_DIM" "$C_RESET"
   IFS= read -r pause_reply </dev/tty || true
   choice=""
+}
+
+# Writes back-marker so mqlaunch knows this was a deliberate back navigation.
+function mark_gitlaunch_back() {
+  if [[ -n "$BACK_MARKER" ]]; then
+    print -r -- "back" > "$BACK_MARKER" 2>/dev/null || true
+  fi
 }
 
 # ------------------------
@@ -960,6 +970,7 @@ while true; do
       show_recent_log
       ;;
     b|B)
+      mark_gitlaunch_back
       break
       ;;
     *)

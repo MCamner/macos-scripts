@@ -126,6 +126,9 @@ show_command_index() {
   row " mqlaunch chat                  Konversationsläge med minne"
   row " mqlaunch review                Review via mq-agent → mq-mcp"
   row " mqlaunch risk-review           Risk review via mq-agent → mq-mcp"
+  row " mqlaunch review-brain [path]   Granska repo + spara till brain → reviews/"
+  row " mqlaunch signal-brain [path]   repo-signal + spara till brain → reviews/"
+  row " mqlaunch learn-promote <slug>  Kuraterar learn/<slug> → learn/verified/"
   row " mqlaunch mcp-status            Visa mq-mcp status och contract health"
   row " mqlaunch ui                    Kopiera UI-prompt till clipboard"
 
@@ -198,6 +201,9 @@ AI
   mqlaunch fix "error message"   Få körbara shell-kommandon för fel/uppgifter
   mqlaunch review                Review via mq-agent → mq-mcp
   mqlaunch risk-review           Risk review via mq-agent → mq-mcp
+  mqlaunch review-brain [path]   Granska repo + spara till brain → reviews/
+  mqlaunch signal-brain [path]   repo-signal + spara till brain → reviews/
+  mqlaunch learn-promote <slug>  Kuraterar learn/<slug> → learn/verified/
   mqlaunch mcp-status            Visa mq-mcp status och contract health
   mqlaunch ui                    Kopiera UI-prompt till clipboard
 

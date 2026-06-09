@@ -747,7 +747,7 @@ print_release_menu() {
   surface_row "CHECKS" "$width" "$panel_color"
   surface_split_row "1. Release status" "2. Change repo" "$width" "$panel_color"
   surface_split_row "3. Initialize files" "4. Dry run release" "$width" "$panel_color"
-  surface_row "12. Repo Signal Check" "$width" "$panel_color"
+  surface_row "${C_WARN}12. Repo Signal Check${C_RESET}" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "SHIP" "$width" "$panel_color"
   surface_split_row "5. Run release" "6. Create GitHub release" "$width" "$panel_color"

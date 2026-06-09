@@ -59,11 +59,15 @@ Usage:
   mqlaunch brain                   # open vault dashboard
   mqlaunch brain note              # open inbox (drop notes here)
   mqlaunch brain sessions          # open sessions folder
-  mqlaunch brain decisions         # open decisions folder
+  mqlaunch brain decisions         # open decisions / ADRs folder
   mqlaunch brain reviews           # open reviews folder
-  mqlaunch brain learn             # open learned patterns folder
+  mqlaunch brain learn             # open learned patterns folder (inbox)
+  mqlaunch brain verified          # open learn/verified/ (curated patterns)
+  mqlaunch brain systems           # open systems/ (per-repo knowledge hubs)
   mqlaunch brain memory            # open memory folder
   mqlaunch brain vault             # open vault root in Finder
+  mqlaunch stack                   # open mq-stack release status (05_RELEASE_STATUS.md)
+  mqlaunch roadmap                 # open mq-stack roadmap (01_ROADMAP.md)
 
 Vault: ~/mqobsidian
 Owner: mq-mcp writes — mqlaunch only reads/opens
@@ -99,8 +103,20 @@ mq_brain_run() {
     learn|patterns)
       _brain_open_folder "learn"
       ;;
+    verified)
+      _brain_open_folder "learn/verified"
+      ;;
+    systems|system)
+      _brain_open_folder "systems"
+      ;;
     memory)
       _brain_open_folder "memory"
+      ;;
+    stack|mq-stack)
+      _brain_open_file "mq-stack/05_RELEASE_STATUS.md"
+      ;;
+    roadmap)
+      _brain_open_file "mq-stack/01_ROADMAP.md"
       ;;
     vault|root)
       open "$MQ_OBSIDIAN_DIR"

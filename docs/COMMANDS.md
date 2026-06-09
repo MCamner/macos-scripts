@@ -90,6 +90,7 @@ MQ_REPO_SIGNAL_FAIL_UNDER=16 mqlaunch release-check   # custom threshold
 ```
 
 Auto Release flow (option 11 inside the menu):
+
 1. Working tree check (commit or stash)
 2. Changelog auto-generation from commits
 3. Dry run
@@ -248,9 +249,9 @@ mqlaunch bundle                     # create debug/support bundle
 
 In any submenu prompt, type:
 
-- `b` or `x` or `exit` — go back / exit the submenu
-- A number — select that menu option
-- A mqlaunch command — run it directly (e.g. `doctor`)
+* `b` or `x` or `exit` — go back / exit the submenu
+* A number — select that menu option
+* A mqlaunch command — run it directly (e.g. `doctor`)
 
 ---
 
@@ -438,3 +439,26 @@ mqlaunch hal timeline --json
 ```
 
 Shows local HAL Session Memory as a compact terminal timeline table.
+
+---
+
+## B2 Atlas Prompt OS
+
+```bash
+mq b2                   # open interactive TUI
+mq b2 list              # list all prompts by category
+mq b2 categories        # list categories with counts
+mq b2 show 02.11        # show a single prompt
+mq b2 compose 02.11 "design TUI architecture"
+mq b2 run 02.11         # interactive compose
+mq b2 route "bygga blueprint för nytt API"
+mq b2 validate          # check all prompt files
+mq b2 config            # show path configuration
+mq b2 history           # show last 10 runs
+mq b2 history last      # most recent run
+mq b2 history export    # write history to Obsidian
+mq b2 export-last       # path to last run file
+mq b2 open-last         # open last run in editor
+```
+
+See [docs/B2_TUI.md](B2_TUI.md) for full reference.
