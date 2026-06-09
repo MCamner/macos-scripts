@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-09
+
 ### Added
 
 * **B2 Atlas Prompt OS TUI** — full terminal interface for structured prompt
-  work (`mq b2`). Phases 0–11 complete: CLI commands (list, show, compose, run,
+  work (`mq b2`). Phases 0–12 complete: CLI commands (list, show, compose, run,
   route, validate, config, history, export-last, open-last), textual TUI with
   two-panel browser + preview pane, rule-based task router, Obsidian run writer,
   JSONL history, 40 passing tests. Accessible via Dev menu → `a`.
@@ -19,6 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 * Polished the Dev menu with clearer groups and safer script fallbacks.
+* Bumped version to 0.6.0 — B2 Atlas Prompt OS TUI MVP.
 
 ## [0.5.1] - 2026-06-03
 

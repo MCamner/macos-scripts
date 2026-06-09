@@ -848,21 +848,21 @@ Första stabila B2 TUI MVP.
 
 ### Release checklist
 
-* [ ] `mq b2 validate` works
-* [ ] `mq b2 list` works
-* [ ] `mq b2 categories` works
-* [ ] `mq b2 show 02.11` works
-* [ ] `mq b2 route "..."` works
-* [ ] `mq b2 compose 02.11 "..."` works
-* [ ] `mq b2 history` works
-* [ ] output exports to Obsidian
-* [ ] tests pass
-* [ ] README updated
-* [ ] ROADMAP updated
-* [ ] CHANGELOG updated
-* [ ] version updated
-* [ ] no dirty debug files
-* [ ] branch merged or ready for PR
+* [x] `mq b2 validate` works
+* [x] `mq b2 list` works
+* [x] `mq b2 categories` works
+* [x] `mq b2 show 02.11` works
+* [x] `mq b2 route "..."` works
+* [x] `mq b2 compose 02.11 "..."` works
+* [x] `mq b2 history` works
+* [x] output exports to Obsidian
+* [x] tests pass
+* [x] README updated
+* [x] ROADMAP updated
+* [x] CHANGELOG updated
+* [x] version updated
+* [x] no dirty debug files
+* [x] branch merged or ready for PR
 
 ### Version target
 
