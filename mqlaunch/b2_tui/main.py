@@ -98,6 +98,29 @@ def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
     return subprocess.run(cmd).returncode
 
 
+def cmd_route_pipeline(prompts: list[Prompt], args: argparse.Namespace) -> int:
+    from mqlaunch.b2_tui.core.router import ROUTE_PRIMARY, route
+    best_route, _support, matched_kws = route(args.task)
+    prompt_id = ROUTE_PRIMARY[best_route]
+    prompt = find_prompt(prompts, prompt_id)
+
+    print()
+    print(f"  Routed to: {prompt_id}  {prompt.name if prompt else ''}")
+    if matched_kws:
+        kw_str = " + ".join(dict.fromkeys(matched_kws))
+        print(f"  Reason: {kw_str}")
+    print()
+
+    compose_args = argparse.Namespace(
+        id=prompt_id,
+        task=args.task,
+        review=getattr(args, "review", False),
+        architecture=getattr(args, "architecture", False),
+        security=getattr(args, "security", False),
+    )
+    return cmd_compose(prompts, compose_args)
+
+
 def cmd_export_last(_prompts: list[Prompt], _args: argparse.Namespace) -> int:
     path = last_run_path()
     if path is None:
@@ -162,6 +185,10 @@ def build_parser() -> argparse.ArgumentParser:
     route_p = sub.add_parser("route", help="Find best prompt for a task description")
     route_p.add_argument("task", help="Task description, e.g. 'ta fram blueprint för TUI'")
     route_p.add_argument("--no-run", action="store_true", help="Only show route, don't offer to run")
+    route_p.add_argument("--compose", action="store_true", help="Compose with routed prompt (non-interactive)")
+    route_p.add_argument("--review", action="store_true", help="Review after compose (implies --compose)")
+    route_p.add_argument("--architecture", action="store_true", help="Architecture review mode")
+    route_p.add_argument("--security", action="store_true", help="Security review mode")
 
     sub.add_parser("validate", help="Validate all prompt files are readable")
     sub.add_parser("export-last", help="Show path to last Obsidian run")
@@ -206,6 +233,9 @@ def main() -> int:
         "history":      cmd_history,
         "review-last":  cmd_review_last,
     }
+
+    if args.command == "route" and (getattr(args, "compose", False) or getattr(args, "review", False)):
+        return cmd_route_pipeline(prompts, args)
 
     handler = dispatch.get(args.command)
     if handler is None:

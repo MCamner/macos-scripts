@@ -463,6 +463,9 @@ mq b2 review-last                       # review last run with mq-agent
 mq b2 review-last --architecture        # architecture review mode
 mq b2 review-last --security            # security review mode
 mq b2 compose 02.11 "task" --review     # compose + review in one step
+mq b2 route "ta fram blueprint" --compose               # route + compose (non-interactive)
+mq b2 route "ta fram blueprint" --compose --review      # route + compose + review in one step
+mq b2 route "ta fram blueprint" --compose --review --architecture
 ```
 
 See [docs/B2_TUI.md](B2_TUI.md) for full reference.

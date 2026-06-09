@@ -897,7 +897,8 @@ mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
 * [x] Graceful fallback om mq-agent saknas i PATH
 * [x] 5 tester i `test_review_bridge.py`
 * [x] `docs/COMMANDS.md` uppdaterad
-* [ ] `mq b2 route "..." --compose --review` — route + compose + review i ett kommando
+* [x] `mq b2 route "..." --compose --review` — route + compose + review i ett kommando
+* [x] 5 tester i `test_route_pipeline.py`
 
 ## v0.8.0 — mq-mcp review bridge
 
