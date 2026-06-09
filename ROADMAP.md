@@ -133,8 +133,8 @@ B2 TUI ska ligga under `mqlaunch`:
 
 ```text
 macos-scripts/
+├─ terminal/launchers/mqlaunch.sh
 ├─ mqlaunch/
-│  ├─ mqlaunch.sh
 │  ├─ commands/
 │  │  └─ b2.sh
 │  └─ b2_tui/
@@ -170,19 +170,19 @@ macos-scripts/
 
 ### In scope
 
-* [ ] Load B2 project files
-* [ ] Parse `PROJECT_INDEX.md`
-* [ ] Parse `B2_ALL_PROMPT_PROJECTS.md`
-* [ ] Support optional `registry/projects.json`
-* [ ] List all B2 projects
-* [ ] List all B2 categories
-* [ ] Show single project by ID
-* [ ] Route a task to best B2 project
-* [ ] Compose prompt from selected project + user input
-* [ ] Save run history
-* [ ] Export prompt runs to Obsidian
-* [ ] Expose commands through `mq b2`
-* [ ] Add tests
+* [x] Load B2 project files
+* [x] Parse `PROJECT_INDEX.md`
+* [x] Parse `B2_ALL_PROMPT_PROJECTS.md` (ersatt av PROJECT_INDEX.md — ingen separat fil i vaulten)
+* [x] Support optional `registry/projects.json` (WARN i validate om saknas)
+* [x] List all B2 projects
+* [x] List all B2 categories
+* [x] Show single project by ID
+* [x] Route a task to best B2 project
+* [x] Compose prompt from selected project + user input
+* [x] Save run history
+* [x] Export prompt runs to Obsidian
+* [x] Expose commands through `mq b2`
+* [x] Add tests
 
 ### Out of scope for MVP
 
@@ -206,13 +206,13 @@ Skapa stabil grundstruktur i `macos-scripts`.
 
 ### Tasks
 
-* [ ] Skapa branch:
+* [x] Skapa branch:
 
 ```bash
 git checkout -b feat/b2-tui-mvp
 ```
 
-* [ ] Skapa katalogstruktur:
+* [x] Skapa katalogstruktur:
 
 ```bash
 mkdir -p mqlaunch/b2_tui/{core,adapters,tui,tests}
@@ -226,11 +226,11 @@ touch mqlaunch/b2_tui/tui/{app.py,screens.py}
 touch mqlaunch/b2_tui/tests/{test_project_loader.py,test_router.py,test_prompt_composer.py,test_validator.py,test_history.py,test_obsidian_writer.py}
 ```
 
-* [ ] Lägg till minimal `main.py`
-* [ ] Lägg till `config.py`
-* [ ] Lägg till `models.py`
-* [ ] Lägg till första unit test
-* [ ] Säkerställ att modulen startar utan importfel
+* [x] Lägg till minimal `main.py`
+* [x] Lägg till `config.py`
+* [x] Lägg till `models.py`
+* [x] Lägg till första unit test
+* [x] Säkerställ att modulen startar utan importfel
 
 ### Done when
 
@@ -266,11 +266,11 @@ Roadmaps:
 
 ### Tasks
 
-* [ ] Skapa `B2Config`
-* [ ] Lägg in default paths
+* [x] Skapa `B2Config`
+* [x] Lägg in default paths
 * [ ] Stöd environment overrides senare
-* [ ] Validera att paths finns
-* [ ] Ge tydliga felmeddelanden om paths saknas
+* [x] Validera att paths finns
+* [x] Ge tydliga felmeddelanden om paths saknas
 
 ### Done when
 
@@ -316,16 +316,16 @@ class B2Project:
 
 ### Tasks
 
-* [ ] Läs `PROJECT_INDEX.md`
-* [ ] Extrahera kategorier
-* [ ] Läs `B2_ALL_PROMPT_PROJECTS.md`
-* [ ] Extrahera projekt-ID
-* [ ] Extrahera projektnamn
-* [ ] Extrahera status
-* [ ] Extrahera roll
-* [ ] Extrahera prompttext
-* [ ] Normalisera till `B2Project`
-* [ ] Hantera saknade fält utan crash
+* [x] Läs `PROJECT_INDEX.md`
+* [x] Extrahera kategorier
+* [ ] Läs `B2_ALL_PROMPT_PROJECTS.md` (filen finns ej — ersatt av PROJECT_INDEX.md)
+* [x] Extrahera projekt-ID
+* [x] Extrahera projektnamn
+* [x] Extrahera status (mq_stack-annotation)
+* [ ] Extrahera roll (separat fält)
+* [x] Extrahera prompttext
+* [x] Normalisera till `B2Project`
+* [x] Hantera saknade fält utan crash
 
 ### Commands
 
@@ -337,10 +337,10 @@ mq b2 show 02.11
 
 ### Done when
 
-* [ ] `mq b2 categories` visar 8 kategorier
-* [ ] `mq b2 list` visar alla importerade B2-projekt
-* [ ] `mq b2 show 02.11` visar `Integration Architecture Blueprint`
-* [ ] Saknad registry-fil ger warning, inte crash
+* [x] `mq b2 categories` visar 8 kategorier
+* [x] `mq b2 list` visar alla importerade B2-projekt
+* [x] `mq b2 show 02.11` visar `Integration Architecture Blueprint`
+* [x] Saknad registry-fil ger warning, inte crash
 
 ---
 
@@ -352,17 +352,17 @@ Snabbt kunna kontrollera att B2 TUI kan köras på aktuell maskin.
 
 ### Validator checks
 
-* [ ] B2 source path exists
-* [ ] `PROJECT_INDEX.md` exists
-* [ ] `B2_ALL_PROMPT_PROJECTS.md` exists
-* [ ] Categories can be parsed
-* [ ] Projects can be parsed
+* [x] B2 source path exists
+* [x] `PROJECT_INDEX.md` exists
+* [ ] `B2_ALL_PROMPT_PROJECTS.md` exists (filen finns ej)
+* [x] Categories can be parsed
+* [x] Projects can be parsed
 * [ ] Project IDs are unique
-* [ ] Prompts are not empty
+* [x] Prompts are not empty
 * [ ] Obsidian stack path exists
 * [ ] Runs path exists or can be created
 * [ ] History file is writable
-* [ ] mqlaunch wrapper exists
+* [x] mqlaunch wrapper exists
 
 ### Command
 
@@ -390,10 +390,10 @@ Status: usable
 
 ### Done when
 
-* [ ] validator ger OK/WARN/FAIL
-* [ ] exit code fungerar
-* [ ] felmeddelanden är begripliga
-* [ ] validator kan köras i test/CI
+* [x] validator ger OK/WARN/FAIL
+* [x] exit code fungerar
+* [x] felmeddelanden är begripliga
+* [x] validator kan köras i test/CI
 
 ---
 
@@ -420,15 +420,15 @@ mq b2 export-last
 
 ### Tasks
 
-* [ ] Bygg `argparse` eller `typer` command parser
-* [ ] Koppla `list`
-* [ ] Koppla `categories`
-* [ ] Koppla `show`
-* [ ] Koppla `validate`
-* [ ] Koppla `route`
-* [ ] Koppla `compose`
-* [ ] Koppla `history`
-* [ ] Lägg help-text
+* [x] Bygg `argparse` eller `typer` command parser
+* [x] Koppla `list`
+* [x] Koppla `categories`
+* [x] Koppla `show`
+* [x] Koppla `validate`
+* [x] Koppla `route`
+* [x] Koppla `compose`
+* [x] Koppla `history`
+* [x] Lägg help-text
 
 ### Done when
 
@@ -917,14 +917,15 @@ git tag v0.6.0
 
 ### Now
 
-* [ ] Phase 0 — Foundation
-* [ ] Phase 1 — Project Loader
-* [ ] Phase 3 — Validator
-* [ ] Phase 4 — CLI command surface
+* [x] Phase 0 — Foundation
+* [x] Phase 1 — Config
+* [x] Phase 2 — Project Loader
+* [x] Phase 3 — Validator
+* [x] Phase 4 — CLI command surface
 
 ### Next
 
-* [ ] Phase 5 — Router
+* [ ] Phase 5 — Router (support projects + reason text saknas)
 * [ ] Phase 6 — Prompt Composer
 * [ ] Phase 7 — History
 * [ ] Phase 8 — Obsidian writer
