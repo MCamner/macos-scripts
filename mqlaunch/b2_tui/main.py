@@ -155,7 +155,10 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command is None:
-        parser.print_help()
+        from mqlaunch.b2_tui.tui.app import B2App
+        prompts = load_prompts()
+        app = B2App(prompts)
+        app.run()
         return 0
 
     prompts = load_prompts()

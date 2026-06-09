@@ -748,12 +748,12 @@ Use `textual`.
 
 ### Done when
 
-* [ ] `mq b2` öppnar TUI
-* [ ] projekt visas
-* [ ] search fungerar
-* [ ] project preview fungerar
-* [ ] compose kan triggas från TUI
-* [ ] quit fungerar rent
+* [x] `mq b2` öppnar TUI
+* [x] projekt visas
+* [x] search fungerar
+* [x] project preview fungerar
+* [x] compose kan triggas från TUI
+* [x] quit fungerar rent
 
 ---
 
