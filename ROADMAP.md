@@ -911,10 +911,12 @@ mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
 
 ## v0.9.0 — repo-signal integration
 
-* [ ] Show repo status in B2 TUI
-* [ ] Export repo status to Obsidian
-* [ ] Link route decisions to repo health
-* [ ] Add roadmap drift view
+* [x] `mq b2 repo-status` — visar repo-health via repo-signal (git, readiness score, issues)
+* [x] `mq b2 repo-status --export` — exporterar status till Obsidian runs-dir
+* [x] Route-pipeline visar repo health-varning om issues finns
+* [x] `mq b2 roadmap-drift` — visar unchecked ROADMAP-items per sektion vs VERSION
+* [x] `repo_signal_contract.py` — contract-modul: call_inspect, render, has_issues
+* [x] 16 nya tester i `test_repo_signal_contract.py`, 83 totalt
 
 ### v1.0.0 — Stack cockpit
 

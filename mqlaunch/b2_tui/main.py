@@ -5,8 +5,12 @@ from __future__ import annotations
 import argparse
 import sys
 
+from pathlib import Path
+
 from mqlaunch.b2_tui.adapters.obsidian_writer import last_run_path, open_file, write_run
 from mqlaunch.b2_tui.config import B2_SOURCE_DIR, HISTORY_FILE, PROJECT_INDEX, PROMPTS_DIR, RUNS_DIR
+
+_REPO_ROOT = Path(__file__).parent.parent.parent
 from mqlaunch.b2_tui.core.history import cmd_history
 from mqlaunch.b2_tui.core.project_loader import find_prompt, load_prompts
 from mqlaunch.b2_tui.core.prompt_composer import cmd_run
@@ -115,8 +119,75 @@ def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def cmd_repo_status(_prompts: list[Prompt], args: argparse.Namespace) -> int:
+    from mqlaunch.b2_tui.core.repo_signal_contract import call_inspect, has_issues, render_repo_status
+    path = getattr(args, "path", ".") or "."
+    data = call_inspect(path)
+    print()
+    print(render_repo_status(data))
+    print()
+    if getattr(args, "export", False):
+        return _export_repo_status(data, path)
+    return 1 if "_error" in data else 0
+
+
+def _export_repo_status(data: dict, _path: str) -> int:
+    from datetime import datetime
+    from mqlaunch.b2_tui.core.repo_signal_contract import render_repo_status
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now()
+    filename = f"{ts.strftime('%Y-%m-%d-%H%M%S')}-b2-repo-status.md"
+    out = RUNS_DIR / filename
+    content = f"# Repo Status — {ts.strftime('%Y-%m-%d %H:%M')}\n\n{render_repo_status(data)}\n"
+    out.write_text(content)
+    print(f"  Exported: {out}")
+    return 0
+
+
+def cmd_roadmap_drift(_prompts: list[Prompt], _args: argparse.Namespace) -> int:
+    import re
+    roadmap = _REPO_ROOT / "ROADMAP.md"
+    if not roadmap.exists():
+        print(f"  ROADMAP.md not found at {roadmap}", file=sys.stderr)
+        return 1
+    version = (_REPO_ROOT / "VERSION").read_text().strip() if (_REPO_ROOT / "VERSION").exists() else "?"
+    text = roadmap.read_text()
+    section_re = re.compile(r"^#{1,3} (v[\d.]+[^\n]*)", re.MULTILINE)
+    check_re = re.compile(r"^\s*\* \[([ x])\]", re.MULTILINE)
+
+    sections: list[tuple[str, int, int]] = []
+    for m in section_re.finditer(text):
+        sections.append((m.group(1), m.start(), m.end()))
+
+    print()
+    print(f"  Current version: {version}")
+    print()
+    print(f"  {'Section':<35} {'Done':>4}  {'Open':>4}")
+    print(f"  {'─' * 35}  {'────':>4}  {'────':>4}")
+
+    total_open = 0
+    for i, (title, start, _) in enumerate(sections):
+        end = sections[i + 1][1] if i + 1 < len(sections) else len(text)
+        block = text[start:end]
+        checks = check_re.findall(block)
+        done = sum(1 for c in checks if c == "x")
+        open_ = sum(1 for c in checks if c == " ")
+        total_open += open_
+        marker = " ←" if open_ > 0 else ""
+        print(f"  {title:<35} {done:>4}  {open_:>4}{marker}")
+
+    print()
+    if total_open == 0:
+        print("  All checklist items done.")
+    else:
+        print(f"  {total_open} open items remaining across roadmap.")
+    print()
+    return 0
+
+
 def cmd_route_pipeline(prompts: list[Prompt], args: argparse.Namespace) -> int:
     from mqlaunch.b2_tui.core.router import ROUTE_PRIMARY, route
+    from mqlaunch.b2_tui.core.repo_signal_contract import call_inspect, has_issues, issues, render_repo_status
     best_route, _support, matched_kws = route(args.task)
     prompt_id = ROUTE_PRIMARY[best_route]
     prompt = find_prompt(prompts, prompt_id)
@@ -126,6 +197,12 @@ def cmd_route_pipeline(prompts: list[Prompt], args: argparse.Namespace) -> int:
     if matched_kws:
         kw_str = " + ".join(dict.fromkeys(matched_kws))
         print(f"  Reason: {kw_str}")
+
+    # Show repo health warning if issues exist
+    repo_data = call_inspect()
+    if has_issues(repo_data):
+        open_issues = issues(repo_data)
+        print(f"\n  Repo health: {len(open_issues)} open issue(s) — run 'mq b2 repo-status' for details")
     print()
 
     compose_args = argparse.Namespace(
@@ -223,6 +300,12 @@ def build_parser() -> argparse.ArgumentParser:
     hist_p.add_argument("subcommand", nargs="?", choices=["last", "export"], help="last or export")
     hist_p.add_argument("--limit", "-n", type=int, default=10, help="Number of entries to show")
 
+    repo_p = sub.add_parser("repo-status", help="Show repo health via repo-signal")
+    repo_p.add_argument("--path", default=".", help="Repo path (default: current directory)")
+    repo_p.add_argument("--export", action="store_true", help="Export status to Obsidian runs dir")
+
+    sub.add_parser("roadmap-drift", help="Show unchecked roadmap items vs current version")
+
     return parser
 
 
@@ -252,6 +335,8 @@ def main() -> int:
         "config":       cmd_config,
         "history":      cmd_history,
         "review-last":  cmd_review_last,
+        "repo-status":  cmd_repo_status,
+        "roadmap-drift": cmd_roadmap_drift,
     }
 
     if args.command == "route" and (getattr(args, "compose", False) or getattr(args, "review", False)):

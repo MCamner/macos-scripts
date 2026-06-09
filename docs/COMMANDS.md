@@ -466,6 +466,9 @@ mq b2 compose 02.11 "task" --review     # compose + review in one step
 mq b2 route "ta fram blueprint" --compose               # route + compose (non-interactive)
 mq b2 route "ta fram blueprint" --compose --review      # route + compose + review in one step
 mq b2 route "ta fram blueprint" --compose --review --architecture
+mq b2 repo-status                           # show repo health via repo-signal
+mq b2 repo-status --export                  # export status to Obsidian runs dir
+mq b2 roadmap-drift                         # show unchecked roadmap items vs VERSION
 ```
 
 See [docs/B2_TUI.md](B2_TUI.md) for full reference.
