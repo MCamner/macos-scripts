@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-10
+
+### Added
+
+* **B2 Stack Cockpit** (`mq b2 stack`) — aggregated dashboard: repo health,
+  B2 prompts, roadmap drift, last run, validation health, Obsidian sync status.
+* **v0.7.0 mq-agent bridge** — `mq b2 review-last`, `--review` on compose,
+  `route --compose --review` full pipeline. Thin subprocess bridge to mq-agent.
+* **v0.8.0 review contract** — `review_contract.py`: capture `--json` from
+  mq-agent, B2-style severity rendering, BLOCKER exit gate. `--risk` flag added.
+* **v0.9.0 repo-signal integration** — `mq b2 repo-status`, `--export`,
+  `mq b2 roadmap-drift`, repo health warning in route pipeline.
+* 89 passing tests total across b2_tui test suite.
+
 ## [0.6.0] - 2026-06-09
 
 ### Added

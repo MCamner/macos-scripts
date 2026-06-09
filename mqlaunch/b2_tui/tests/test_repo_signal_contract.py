@@ -107,14 +107,14 @@ def test_render_repo_status_error():
 
 def test_cmd_repo_status_ok(capsys):
     payload = _sample_data()
-    with patch("mqlaunch.b2_tui.core.repo_signal_contract.call_inspect", return_value=payload):
+    with patch("mqlaunch.b2_tui.main.call_inspect", return_value=payload):
         rc = cmd_repo_status([], argparse.Namespace(path=".", export=False))
     assert rc == 0
     assert "macos-scripts" in capsys.readouterr().out
 
 
 def test_cmd_repo_status_error_returns_1(capsys):
-    with patch("mqlaunch.b2_tui.core.repo_signal_contract.call_inspect", return_value={"_error": "nope"}):
+    with patch("mqlaunch.b2_tui.main.call_inspect", return_value={"_error": "nope"}):
         rc = cmd_repo_status([], argparse.Namespace(path=".", export=False))
     assert rc == 1
 

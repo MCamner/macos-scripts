@@ -14,6 +14,7 @@ _REPO_ROOT = Path(__file__).parent.parent.parent
 from mqlaunch.b2_tui.core.history import cmd_history
 from mqlaunch.b2_tui.core.project_loader import find_prompt, load_prompts
 from mqlaunch.b2_tui.core.prompt_composer import cmd_run
+from mqlaunch.b2_tui.core.repo_signal_contract import call_inspect
 from mqlaunch.b2_tui.core.router import cmd_route
 from mqlaunch.b2_tui.core.validator import cmd_validate
 from mqlaunch.b2_tui.models import Prompt
@@ -119,8 +120,99 @@ def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def cmd_stack(prompts: list[Prompt], _args: argparse.Namespace) -> int:
+    import re
+    from datetime import date
+    from mqlaunch.b2_tui.core.repo_signal_contract import (
+        git_summary, readiness_summary, issues as rs_issues,
+    )
+
+    W = 54
+    bar = "  " + "─" * W
+
+    def row(label: str, value: str) -> None:
+        print(f"  {label:<16}{value}")
+
+    def section(title: str) -> None:
+        print(f"\n  {title}")
+
+    print()
+    print(bar)
+    print(f"  B2 Stack Cockpit  —  {date.today()}")
+    print(bar)
+
+    # ── Repo ──────────────────────────────────────────
+    section("Repo")
+    repo_data = call_inspect()
+    if "_error" in repo_data:
+        row("  status", f"repo-signal unavailable: {repo_data['_error']}")
+    else:
+        version_file = _REPO_ROOT / "VERSION"
+        version = version_file.read_text().strip() if version_file.exists() else "?"
+        row("  name", str(repo_data.get("repo", {}).get("name", "?")))
+        row("  version", version)
+        row("  git", git_summary(repo_data))
+        row("  readiness", readiness_summary(repo_data))
+        open_issues = rs_issues(repo_data)
+        row("  issues", f"{len(open_issues)} open" if open_issues else "none")
+
+    # ── B2 Prompts ────────────────────────────────────
+    section("B2 Prompts")
+    categories = list(dict.fromkeys(p.category for p in prompts))
+    row("  prompts", f"{len(prompts)} total  {len(categories)} categories")
+    run_path = last_run_path()
+    row("  last run", run_path.name if run_path else "none")
+
+    # ── Roadmap ───────────────────────────────────────
+    section("Roadmap")
+    roadmap = _REPO_ROOT / "ROADMAP.md"
+    if roadmap.exists():
+        text = roadmap.read_text()
+        section_re = re.compile(r"^#{1,3} (v[\d.]+[^\n]*)", re.MULTILINE)
+        check_re = re.compile(r"^\s*\* \[([ x])\]", re.MULTILINE)
+        sections_found = list(section_re.finditer(text))
+        for i, m in enumerate(sections_found):
+            title = m.group(1)
+            end = sections_found[i + 1].start() if i + 1 < len(sections_found) else len(text)
+            block = text[m.start():end]
+            checks = check_re.findall(block)
+            if not checks:
+                continue
+            done = sum(1 for c in checks if c == "x")
+            open_ = sum(1 for c in checks if c == " ")
+            marker = f"  ← {open_} open" if open_ > 0 else ""
+            row(f"  {title[:16]}", f"{done}/{done + open_} done{marker}")
+    else:
+        row("  status", "ROADMAP.md not found")
+
+    # ── Validation ────────────────────────────────────
+    section("Validation")
+    errors = sum(1 for p in prompts if not p.path.exists())
+    ok = len(prompts) - errors
+    row("  prompts", f"{ok} ok  {errors} errors")
+    from mqlaunch.b2_tui.core.router import ROUTE_PRIMARY
+    from mqlaunch.b2_tui.core.project_loader import find_prompt as _find_prompt
+    missing_routes = [r for r, pid in ROUTE_PRIMARY.items() if _find_prompt(prompts, pid) is None]
+    row("  routes", "all ok" if not missing_routes else f"{len(missing_routes)} missing")
+
+    # ── Obsidian sync ─────────────────────────────────
+    section("Obsidian sync")
+    for label, path in [
+        ("  runs dir", RUNS_DIR),
+        ("  prompts dir", PROMPTS_DIR),
+        ("  source dir", B2_SOURCE_DIR),
+    ]:
+        status = "ok" if path.exists() else "missing"
+        row(label, f"{status}  {path}")
+
+    print()
+    print(bar)
+    print()
+    return 0
+
+
 def cmd_repo_status(_prompts: list[Prompt], args: argparse.Namespace) -> int:
-    from mqlaunch.b2_tui.core.repo_signal_contract import call_inspect, has_issues, render_repo_status
+    from mqlaunch.b2_tui.core.repo_signal_contract import has_issues, render_repo_status
     path = getattr(args, "path", ".") or "."
     data = call_inspect(path)
     print()
@@ -187,7 +279,7 @@ def cmd_roadmap_drift(_prompts: list[Prompt], _args: argparse.Namespace) -> int:
 
 def cmd_route_pipeline(prompts: list[Prompt], args: argparse.Namespace) -> int:
     from mqlaunch.b2_tui.core.router import ROUTE_PRIMARY, route
-    from mqlaunch.b2_tui.core.repo_signal_contract import call_inspect, has_issues, issues, render_repo_status
+    from mqlaunch.b2_tui.core.repo_signal_contract import has_issues, issues, render_repo_status
     best_route, _support, matched_kws = route(args.task)
     prompt_id = ROUTE_PRIMARY[best_route]
     prompt = find_prompt(prompts, prompt_id)
@@ -300,6 +392,8 @@ def build_parser() -> argparse.ArgumentParser:
     hist_p.add_argument("subcommand", nargs="?", choices=["last", "export"], help="last or export")
     hist_p.add_argument("--limit", "-n", type=int, default=10, help="Number of entries to show")
 
+    sub.add_parser("stack", help="Stack cockpit — aggregated B2 + repo + roadmap status")
+
     repo_p = sub.add_parser("repo-status", help="Show repo health via repo-signal")
     repo_p.add_argument("--path", default=".", help="Repo path (default: current directory)")
     repo_p.add_argument("--export", action="store_true", help="Export status to Obsidian runs dir")
@@ -335,6 +429,7 @@ def main() -> int:
         "config":       cmd_config,
         "history":      cmd_history,
         "review-last":  cmd_review_last,
+        "stack":         cmd_stack,
         "repo-status":  cmd_repo_status,
         "roadmap-drift": cmd_roadmap_drift,
     }

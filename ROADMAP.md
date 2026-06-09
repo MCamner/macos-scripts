@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 0.5.1
+Current version: 1.0.0
 
 ## Design boundary
 
@@ -920,13 +920,14 @@ mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
 
 ### v1.0.0 — Stack cockpit
 
-* [ ] `mq stack` dashboard
-* [ ] B2 projects
-* [ ] repo status
-* [ ] roadmap status
-* [ ] last runs
-* [ ] validation health
-* [ ] Obsidian sync status
+* [x] `mq b2 stack` — aggregerat dashboard: repo + B2 prompts + roadmap + validation + Obsidian sync
+* [x] B2 projects: antal prompts och kategorier
+* [x] Repo status: git-state, readiness-poäng, öppna issues
+* [x] Roadmap status: done/open per version med `←`-markering
+* [x] Last run: senaste Obsidian-run filnamn
+* [x] Validation health: ok/errors per prompt-set + route-check
+* [x] Obsidian sync status: runs-dir, prompts-dir, source-dir
+* [x] 6 tester i `test_stack.py`, 89 totalt
 
 ---
 
