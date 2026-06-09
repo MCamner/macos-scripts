@@ -672,7 +672,7 @@ dispatch_cli_command() {
       ;;
 
     b2tui|b2)
-      python3 "${BASE_DIR}/tools/scripts/b2tui.py" "${@:2}"
+      PYTHONPATH="${BASE_DIR}" python3 -m mqlaunch.b2_tui.main "${@:2}"
       return 0
       ;;
 

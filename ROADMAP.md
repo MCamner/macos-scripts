@@ -690,10 +690,10 @@ mq b2 history
 
 ### Done when
 
-* [ ] `mq b2` fungerar från vanlig terminal
-* [ ] inga relativa path-problem
-* [ ] fungerar från annan katalog än repo-roten
-* [ ] fel visas snyggt
+* [x] `mq b2` fungerar från vanlig terminal
+* [x] inga relativa path-problem
+* [x] fungerar från annan katalog än repo-roten
+* [x] fel visas snyggt
 * [ ] wrapper är dokumenterad
 
 ---
