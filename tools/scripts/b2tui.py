@@ -253,13 +253,14 @@ def cmd_validate(prompts: list[Prompt], _args: argparse.Namespace) -> int:
             print(f"  OK    {p.id}  {p.name}")
 
     print(f"\n  {len(prompts)} prompts checked, {errors} errors")
-    if errors:
-        return 1
 
     for route, pid in ROUTE_PRIMARY.items():
-        p = find_prompt(prompts, pid)
-        if p is None:
+        primary_prompt = find_prompt(prompts, pid)
+        if primary_prompt is None:
             print(f"  WARN  route '{route}' primary prompt {pid} not found")
+
+    if errors:
+        return 1
 
     return 0
 
