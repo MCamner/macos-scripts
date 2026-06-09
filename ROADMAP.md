@@ -814,29 +814,29 @@ Dokumentera så att framtida jag fattar systemet snabbt.
 
 ### Files to update
 
-* [ ] `README.md`
-* [ ] `ROADMAP.md`
-* [ ] `CHANGELOG.md`
-* [ ] `docs/B2_TUI.md`
-* [ ] `docs/MQLAUNCH_COMMANDS.md`
+* [x] `README.md`
+* [x] `ROADMAP.md`
+* [x] `CHANGELOG.md`
+* [x] `docs/B2_TUI.md`
+* [x] `docs/MQLAUNCH_COMMANDS.md`
 
 ### Docs must include
 
-* [ ] What B2 TUI is
-* [ ] What B2 TUI is not
-* [ ] Local path assumptions
-* [ ] Commands
-* [ ] Examples
-* [ ] Troubleshooting
-* [ ] Test commands
-* [ ] Roadmap
+* [x] What B2 TUI is
+* [x] What B2 TUI is not
+* [x] Local path assumptions
+* [x] Commands
+* [x] Examples
+* [x] Troubleshooting
+* [x] Test commands
+* [x] Roadmap
 
 ### Done when
 
-* [ ] README has quickstart
-* [ ] ROADMAP has B2 TUI section
-* [ ] CHANGELOG mentions MVP
-* [ ] docs explain `mq b2`
+* [x] README has quickstart
+* [x] ROADMAP has B2 TUI section
+* [x] CHANGELOG mentions MVP
+* [x] docs explain `mq b2`
 
 ---
 
