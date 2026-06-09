@@ -30,14 +30,20 @@ def test_review_last_mq_agent_not_found(tmp_path, capsys):
     assert "mq-agent" in capsys.readouterr().err
 
 
+def _ok_result(returncode: int = 0) -> MagicMock:
+    r = MagicMock()
+    r.returncode = returncode
+    r.stdout = '{"findings": []}'
+    r.stderr = ""
+    return r
+
+
 def test_review_last_calls_mq_agent(tmp_path):
     fake_path = tmp_path / "2026-06-09-b2-test.md"
     fake_path.write_text("# B2 Prompt Run\n")
-    mock_result = MagicMock()
-    mock_result.returncode = 0
     with patch("mqlaunch.b2_tui.main.last_run_path", return_value=fake_path):
         with patch("shutil.which", return_value="/usr/local/bin/mq-agent"):
-            with patch("subprocess.run", return_value=mock_result) as mock_run:
+            with patch("subprocess.run", return_value=_ok_result()) as mock_run:
                 rc = cmd_review_last([], _args())
     assert rc == 0
     called_cmd = mock_run.call_args[0][0]
@@ -50,11 +56,9 @@ def test_review_last_calls_mq_agent(tmp_path):
 def test_review_last_passes_architecture_flag(tmp_path):
     fake_path = tmp_path / "2026-06-09-b2-test.md"
     fake_path.write_text("# B2 Prompt Run\n")
-    mock_result = MagicMock()
-    mock_result.returncode = 0
     with patch("mqlaunch.b2_tui.main.last_run_path", return_value=fake_path):
         with patch("shutil.which", return_value="/usr/local/bin/mq-agent"):
-            with patch("subprocess.run", return_value=mock_result) as mock_run:
+            with patch("subprocess.run", return_value=_ok_result()) as mock_run:
                 rc = cmd_review_last([], _args(architecture=True))
     assert rc == 0
     assert "--architecture" in mock_run.call_args[0][0]
@@ -63,11 +67,9 @@ def test_review_last_passes_architecture_flag(tmp_path):
 def test_review_last_passes_security_flag(tmp_path):
     fake_path = tmp_path / "2026-06-09-b2-test.md"
     fake_path.write_text("# B2 Prompt Run\n")
-    mock_result = MagicMock()
-    mock_result.returncode = 0
     with patch("mqlaunch.b2_tui.main.last_run_path", return_value=fake_path):
         with patch("shutil.which", return_value="/usr/local/bin/mq-agent"):
-            with patch("subprocess.run", return_value=mock_result) as mock_run:
+            with patch("subprocess.run", return_value=_ok_result()) as mock_run:
                 rc = cmd_review_last([], _args(security=True))
     assert rc == 0
     assert "--security" in mock_run.call_args[0][0]

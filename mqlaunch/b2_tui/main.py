@@ -82,6 +82,7 @@ def cmd_compose(prompts: list[Prompt], args: argparse.Namespace) -> int:
 def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
     import shutil
     import subprocess
+    from mqlaunch.b2_tui.core.review_contract import has_blocking, parse_review_json, render_findings, render_summary
     path = last_run_path()
     if path is None:
         print("  No runs found. Run 'mq b2 compose' first.", file=sys.stderr)
@@ -89,13 +90,29 @@ def cmd_review_last(_prompts: list[Prompt], args: argparse.Namespace) -> int:
     if shutil.which("mq-agent") is None:
         print("  mq-agent not found in PATH.", file=sys.stderr)
         return 1
-    cmd = ["mq-agent", "review", "file", str(path)]
+    cmd = ["mq-agent", "review", "file", str(path), "--json"]
     if getattr(args, "architecture", False):
         cmd.append("--architecture")
     if getattr(args, "security", False):
         cmd.append("--security")
+    if getattr(args, "risk", False):
+        cmd.append("--risk")
     print(f"  Reviewing: {path.name}")
-    return subprocess.run(cmd).returncode
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.stdout:
+        findings = parse_review_json(result.stdout)
+        if findings:
+            print()
+            print(render_findings(findings))
+            print()
+            print(render_summary(findings))
+        else:
+            print(result.stdout, end="")
+    if result.returncode != 0 and result.stderr:
+        print(result.stderr, file=sys.stderr)
+    if has_blocking(parse_review_json(result.stdout or "")):
+        return 1
+    return result.returncode
 
 
 def cmd_route_pipeline(prompts: list[Prompt], args: argparse.Namespace) -> int:
@@ -177,6 +194,7 @@ def build_parser() -> argparse.ArgumentParser:
     compose_p.add_argument("--review", action="store_true", help="Review composed prompt with mq-agent after compose")
     compose_p.add_argument("--architecture", action="store_true", help="Use architecture review mode")
     compose_p.add_argument("--security", action="store_true", help="Use security review mode")
+    compose_p.add_argument("--risk", action="store_true", help="Use risk review mode")
 
     run_p = sub.add_parser("run", help="Run a prompt by ID (interactive)")
     run_p.add_argument("id", help="Prompt ID, e.g. 02.11")
@@ -189,6 +207,7 @@ def build_parser() -> argparse.ArgumentParser:
     route_p.add_argument("--review", action="store_true", help="Review after compose (implies --compose)")
     route_p.add_argument("--architecture", action="store_true", help="Architecture review mode")
     route_p.add_argument("--security", action="store_true", help="Security review mode")
+    route_p.add_argument("--risk", action="store_true", help="Risk review mode")
 
     sub.add_parser("validate", help="Validate all prompt files are readable")
     sub.add_parser("export-last", help="Show path to last Obsidian run")
@@ -198,6 +217,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_p = sub.add_parser("review-last", help="Review last B2 run with mq-agent")
     review_p.add_argument("--architecture", action="store_true", help="Architecture review mode")
     review_p.add_argument("--security", action="store_true", help="Security review mode")
+    review_p.add_argument("--risk", action="store_true", help="Risk review mode")
 
     hist_p = sub.add_parser("history", help="Show recent runs")
     hist_p.add_argument("subcommand", nargs="?", choices=["last", "export"], help="last or export")

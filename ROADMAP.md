@@ -902,10 +902,12 @@ mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
 
 ## v0.8.0 — mq-mcp review bridge
 
-* [ ] Send composed prompt/output to mq-mcp
-* [ ] Use mq-mcp for architecture review
-* [ ] Add review contract
-* [ ] Add severity result output
+* [x] `mq-agent review file --json` — capture structured review output
+* [x] `review_contract.py` — parse findings, severity counts, has_blocking, render
+* [x] B2-style severity rendering: `[HIGH] file:line` + summary line
+* [x] Exit gate: rc=1 om BLOCKER/CRITICAL/RISK findings finns
+* [x] `--risk` flag på `review-last`, `compose`, `route`
+* [x] 17 nya tester i `test_review_contract.py`, 67 totalt
 
 ## v0.9.0 — repo-signal integration
 
