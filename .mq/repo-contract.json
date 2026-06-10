@@ -1,0 +1,11 @@
+{
+  "repo": "mqlaunch",
+  "role": "terminal-entrypoint",
+  "version": "1.0.0",
+  "status": "active",
+  "contracts": [
+    "mqlaunch.v1",
+    "stack_cockpit.v1"
+  ],
+  "next_focus": ""
+}
