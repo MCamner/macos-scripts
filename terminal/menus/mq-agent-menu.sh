@@ -23,6 +23,7 @@ print_agent_menu() {
   surface_row "" "$width" "$panel_color"
   surface_row "SECOND BRAIN  (writes to mqobsidian)" "$width" "$panel_color"
   surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
+  surface_split_row "${C_WARN}17. Demo flow (full stack)${C_RESET}" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
@@ -304,6 +305,7 @@ handle_agent_menu_choice() {
     14) _mcp_stop;              pause_enter ;;
     15) _run_agent review repo . --brain; pause_enter ;;
     16) _brain_pick_and_promote ;;
+    17) _run_demo_flow; pause_enter ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
@@ -326,6 +328,21 @@ agent_menu_loop() {
       break
     fi
   done
+}
+
+# Runs the full MQ demo flow: signal → review → release-check, all writing to brain.
+_run_demo_flow() {
+  local target="${1:-.}"
+  local demo_script
+  demo_script="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/commands/demo-flow.sh"
+  if [[ -x "$demo_script" ]]; then
+    bash "$demo_script" "$target"
+  else
+    printf "signal → review → release-check\n"
+    _run_agent signal "$target" --brain
+    _run_agent review repo "$target" --brain
+    _run_agent release-check --dry-run
+  fi
 }
 
 # Opens agent menu.
