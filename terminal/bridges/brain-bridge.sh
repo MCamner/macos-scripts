@@ -15,10 +15,12 @@ fi
 MQ_OBSIDIAN_DIR="${MQ_OBSIDIAN_DIR:-$HOME/mqobsidian}"
 MQ_OBSIDIAN_VAULT_NAME="${MQ_OBSIDIAN_VAULT_NAME:-mqobsidian}"
 
+# Coordinates mq brain available behavior.
 mq_brain_available() {
   [[ -d "$MQ_OBSIDIAN_DIR" ]]
 }
 
+# Coordinates brain open file behavior.
 _brain_open_file() {
   local rel="$1"
   local abs="$MQ_OBSIDIAN_DIR/$rel"
@@ -39,6 +41,7 @@ _brain_open_file() {
   open "$abs"
 }
 
+# Coordinates brain open folder behavior.
 _brain_open_folder() {
   local rel="$1"
   local abs="$MQ_OBSIDIAN_DIR/$rel"
@@ -51,6 +54,7 @@ _brain_open_folder() {
   open "$abs"
 }
 
+# Coordinates mq brain usage behavior.
 mq_brain_usage() {
   cat <<'USAGE'
 MQ Brain — second brain vault commands
@@ -74,6 +78,7 @@ Owner: mq-mcp writes — mqlaunch only reads/opens
 USAGE
 }
 
+# Coordinates mq brain run behavior.
 mq_brain_run() {
   if ! mq_brain_available; then
     echo "[brain] Vault not found: $MQ_OBSIDIAN_DIR" >&2

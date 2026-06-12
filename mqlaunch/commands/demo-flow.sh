@@ -5,6 +5,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 MQ_AGENT_BIN="${MQ_AGENT_BIN:-$HOME/mq-agent}"
 
+# Coordinates run agent behavior.
 _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
