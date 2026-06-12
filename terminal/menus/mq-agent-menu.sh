@@ -24,6 +24,7 @@ print_agent_menu() {
   surface_row "SECOND BRAIN  (writes to mqobsidian)" "$width" "$panel_color"
   surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
   surface_split_row "${C_WARN}17. Demo flow (full stack)${C_RESET}" "${C_WARN}18. Stack health sweep${C_RESET}" "$width" "$panel_color"
+  surface_split_row "${C_WARN}19. Stack loop plan${C_RESET}" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
@@ -307,6 +308,7 @@ handle_agent_menu_choice() {
     16) _brain_pick_and_promote ;;
     17) _run_demo_flow; pause_enter ;;
     18) _run_agent stack sweep --brain; pause_enter ;;
+    19) _run_agent stack loop; pause_enter ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
