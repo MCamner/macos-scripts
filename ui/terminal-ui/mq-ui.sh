@@ -226,6 +226,9 @@ header_dual_row() {
 
 # Handles pause enter.
 pause_enter() {
+  if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+    return 0
+  fi
   echo
   printf 'Press Enter to continue...'
   read -r _
@@ -264,6 +267,9 @@ read_menu_choice() {
   fi
 
   REPLY=""
+  if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+    return 1
+  fi
   IFS= read -r REPLY
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[2B\r\n"

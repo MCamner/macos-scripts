@@ -369,7 +369,7 @@ dispatch_cli_command() {
 
     doctor|/doctor)
       "$BASE_DIR/tools/scripts/doctor.sh" "${@:2}"
-      [[ "${2:-}" != "--json" ]] && pause_enter
+      [[ "${2:-}" != "--json" && -z "${MQ_NO_TUI:-}" ]] && pause_enter
       return 0
       ;;
 

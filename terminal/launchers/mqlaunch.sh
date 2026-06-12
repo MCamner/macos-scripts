@@ -16,6 +16,10 @@ APP_AUTHOR="Author Mattias Camner"
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 
+if [[ ! -t 0 || ! -t 1 || -n "${MQLAUNCH_HEADLESS:-}" ]]; then
+  export MQ_NO_TUI=1
+fi
+
 # Performance bridge
 if [[ -f "$BASE_DIR/terminal/bridges/performance-bridge.sh" ]]; then
   # shellcheck disable=SC1091
