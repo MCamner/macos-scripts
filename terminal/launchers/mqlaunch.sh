@@ -650,6 +650,7 @@ run_github_repo_picker() {
       cd "$repo_dir" || return 1
       clear
       printf "📁 %s\n" "$repo_dir"
+      exec "$SHELL" -l
       ;;
     "Klona och hoppa in i terminalen")
       if [[ ! -d "$repo_dir" ]]; then
@@ -658,6 +659,7 @@ run_github_repo_picker() {
       cd "$repo_dir" || return 1
       clear
       printf "📁 %s\n" "$repo_dir"
+      exec "$SHELL" -l
       ;;
     "Klona till ~/repos")
       "$gh_bin" repo clone "$selected" "$repo_dir" 2>&1 | tail -3
