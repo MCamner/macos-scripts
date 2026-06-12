@@ -628,8 +628,10 @@ run_github_repo_picker() {
 
   clone_dir="$HOME/repos"
   mkdir -p "$clone_dir"
-  local repo_dir
-  repo_dir="$clone_dir/$(basename "$selected")"
+  local repo_name repo_dir home_repo_dir
+  repo_name="$(basename "$selected")"
+  repo_dir="$clone_dir/$repo_name"
+  home_repo_dir="$HOME/$repo_name"
 
   case "$action" in
     "Öppna i webbläsaren")
@@ -638,8 +640,10 @@ run_github_repo_picker() {
       pause_enter
       ;;
     "Gå till repo i terminalen")
-      if [[ ! -d "$repo_dir" ]]; then
-        printf "Repo saknas lokalt: %s\nKlona först med 'Klona och hoppa in i terminalen'.\n" "$repo_dir"
+      if [[ -d "$home_repo_dir" ]]; then
+        repo_dir="$home_repo_dir"
+      elif [[ ! -d "$repo_dir" ]]; then
+        printf "Repo saknas lokalt: %s\nKlona först med 'Klona och hoppa in i terminalen'.\n" "$home_repo_dir"
         pause_enter
         return 0
       fi
