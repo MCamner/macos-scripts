@@ -184,7 +184,7 @@ Justera med blanksteg — aldrig med tab.
 
 ## 5. Separator-prompten — fullständig visuell representation
 
-S� här ser det ut i terminalen efter `print_footer`:
+Så här ser det ut i terminalen efter `print_footer`:
 
 ```
 ────────────────────────────────────────────────────────────────────────────────
@@ -194,6 +194,7 @@ system >
 ```
 
 Användaren kan skriva:
+
 * Ett nummer (`1`, `2`, `3` …) → menyval
 * Ett mqlaunch-kommando direkt (`git`, `dev`, `perf` …) → dispatchar till `run_arg_command`
 * Ett shell-kommando → exekveras i subshell
