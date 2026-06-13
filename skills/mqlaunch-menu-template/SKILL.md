@@ -303,3 +303,21 @@ När Codex eller Claude Code ska bygga en ny meny, följ dessa steg:
 6. Lägg till source-block i `mqlaunch.sh`
 7. Registrera argument i `run_arg_command`
 8. Lägg till menyval i `mq-main-menu.sh` om relevant
+
+---
+
+## Evals
+
+### Should trigger
+
+* "bygg en ny mqlaunch-meny för X"
+* "lägg till en submeny i mqlaunch"
+* "skapa en ny menu-modul i macos-scripts"
+* "den nya menyn renderar boxen fel — följ template-mönstret"
+
+### Should not trigger
+
+* "lägg till ett nytt kommando i en befintlig meny" → use `mqlaunch-command-surface`
+* "gör doctor-outputen lättare att läsa" → use `terminal-ui-polisher`
+* "synka docs/COMMANDS.md efter ändringen" → use `docs-maintainer`
+* "är repot redo att släppas?" → use `release-readiness`

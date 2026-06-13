@@ -17,6 +17,7 @@ it documents actually live.
 | ----- | ----------- |
 | [docs-maintainer](skills/docs-maintainer/SKILL.md) | Use when keeping repository documentation consistent after code, CLI, release, workflow, README, wiki, or GitHub Pages changes. Helps update docs surfaces without inventing behavior. |
 | [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Use when changing macos-scripts mqlaunch commands, terminal GUI menus, HAL routing, command aliases, help text, or CLI/TUI command-surface behavior. |
+| [mqlaunch-menu-template](skills/mqlaunch-menu-template/SKILL.md) | > |
 | [release-readiness](skills/release-readiness/SKILL.md) | Use when preparing a macos-scripts release. Validates git state, version sync, changelog, docs, smoke tests, the mqlaunch release-check gate, and the MQ stack contract. |
 | [repo-health-brief](skills/repo-health-brief/SKILL.md) | Use when asked for a quick health check, daily repo status, or before deciding what to work on next. Runs repo-signal brief and interprets the output. |
 | [terminal-ui-polisher](skills/terminal-ui-polisher/SKILL.md) | Improve terminal GUI menus, CLI, TUI, ASCII, ANSI, and command-surface interfaces with focus on clarity, hierarchy, keyboard flow, spacing, status feedback, and product-level polish. |
