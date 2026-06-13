@@ -1,11 +1,15 @@
 ---
-name: semantic-memory-maintainer
-description: Use when maintaining OpenAI vector stores, semantic repository memory, knowledge packs, indexed markdown, file_search sources, or repo memory freshness across projects.
+name: vector-store-maintainer
+description: Use when maintaining OpenAI vector stores, knowledge packs, indexed markdown, file_search sources, or repo memory freshness across projects. Distinct from mq-mcp's semantic-memory-maintainer, which owns repo packs.
 ---
 
-# Semantic Memory Maintainer
+# Vector Store Maintainer
 
-Maintain high-signal semantic memory for repositories and assistants.
+Maintain high-signal OpenAI vector-store memory for repositories and assistants.
+
+Renamed from `semantic-memory-maintainer` to avoid routing collision with
+mq-mcp's skill of the same name (which owns semantic repo packs, not OpenAI
+vector stores).
 
 ## When to use
 
@@ -18,6 +22,27 @@ Use this skill when the user asks to:
 - compare local repo content against indexed OpenAI Storage files
 - debug `file_search`, `mqlaunch ask`, `mqlaunch srm`, or repo-memory behavior
 - document vector store IDs, upload scripts, or memory policy
+
+## When not to use
+
+- mq-mcp semantic repo packs or its semantic-index docs — use mq-mcp's `semantic-memory-maintainer`
+- Docs content changes unrelated to memory — use `docs-maintainer`
+- mqlaunch command routing for `ask`/`srm` — use `mqlaunch-command-surface`
+
+## Evals
+
+### Should trigger
+
+- "refresh the vector store for this repo"
+- "what files should go into the knowledge pack?"
+- "file_search isn't finding the new docs"
+- "clean stale files out of OpenAI Storage"
+
+### Should not trigger
+
+- "rebuild the mq-mcp semantic memory pack" → mq-mcp's `semantic-memory-maintainer`
+- "update the README" → use `docs-maintainer`
+- "add an mqlaunch ask alias" → use `mqlaunch-command-surface`
 
 ## Core rule
 

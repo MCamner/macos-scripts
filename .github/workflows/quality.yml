@@ -17,6 +17,9 @@ jobs:
       - name: Install zsh
         run: sudo apt-get install -y zsh
 
+      - name: Skills are consistent (frontmatter, cross-refs, paths, SKILLS.md)
+        run: ./scripts/check-skills.sh
+
       - name: bash -n on install.sh
         run: bash -n install.sh
 

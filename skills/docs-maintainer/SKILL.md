@@ -11,12 +11,36 @@ Keep repository documentation accurate, consistent, and easy to navigate.
 
 Use this skill when the user asks to:
 
-- update README, docs, wiki exports, command references, roadmap, changelog, or case pages
-- sync documentation after code or CLI changes
-- check whether documented commands still match implemented commands
-- improve docs discoverability without changing product positioning
-- prepare docs for release, publishing, or GitHub Pages
-- explain what docs need to change after a feature or bug fix
+* update README, docs, wiki exports, command references, roadmap, changelog, or case pages
+* sync documentation after code or CLI changes
+* check whether documented commands still match implemented commands
+* improve docs discoverability without changing product positioning
+* prepare docs for release, publishing, or GitHub Pages
+* explain what docs need to change after a feature or bug fix
+
+## When not to use
+
+* mqlaunch command or menu behavior changes — use `mqlaunch-command-surface`
+* Terminal output/menu polish — use `terminal-ui-polisher`
+* Vector store or semantic memory work — use `vector-store-maintainer`
+* Release validation — use `release-readiness`
+* Product positioning or launch polish — run `repo-signal positioning` / `repo-signal suggest`
+
+## Evals
+
+### Should trigger
+
+* "sync docs/COMMANDS.md after the new mqlaunch command"
+* "the README quick-start steps are stale"
+* "update the changelog and roadmap after this feature"
+* "check that documented commands still exist"
+
+### Should not trigger
+
+* "add a new mqlaunch menu" → use `mqlaunch-command-surface`
+* "make the doctor output easier to scan" → use `terminal-ui-polisher`
+* "refresh the vector store" → use `vector-store-maintainer`
+* "is this repo ready to release?" → use `release-readiness`
 
 ## Core rule
 
@@ -38,15 +62,15 @@ Check the relevant docs surface first, then verify against implementation:
 
 ## What to check
 
-- command names, aliases, flags, examples, and exit behavior
-- install and quick-start steps
-- file paths and generated artifacts
-- GitHub Pages links and screenshots
-- release/version/changelog consistency
-- docs that mention removed or renamed behavior
-- duplicate docs that may drift apart
-- broken internal links
-- stale future-tense roadmap items that are now shipped
+* command names, aliases, flags, examples, and exit behavior
+* install and quick-start steps
+* file paths and generated artifacts
+* GitHub Pages links and screenshots
+* release/version/changelog consistency
+* docs that mention removed or renamed behavior
+* duplicate docs that may drift apart
+* broken internal links
+* stale future-tense roadmap items that are now shipped
 
 ## Editing guidance
 
@@ -54,15 +78,14 @@ Prefer small docs edits that remove ambiguity.
 
 Keep examples copy-pasteable and grounded in repo commands. When docs and code disagree, either fix the docs or flag the code/docs mismatch clearly before changing both.
 
-Do not turn docs into marketing unless the request is product-positioning work; use `repo-product-auditor` for that.
+Do not turn docs into marketing unless the request is product-positioning work; run `repo-signal positioning` for that.
 
 ## Output
 
 When reporting, include:
 
-- docs surfaces checked
-- mismatches found
-- files changed
-- commands or checks run
-- anything left unverified
-
+* docs surfaces checked
+* mismatches found
+* files changed
+* commands or checks run
+* anything left unverified

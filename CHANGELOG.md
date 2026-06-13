@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `scripts/check-skills.sh` — validates skill frontmatter, cross-references,
+  referenced paths, and the generated SKILLS.md table; wired into the Quality
+  workflow. `--fix` regenerates the table.
+* Evals sections (should/should-not trigger) in every skill.
+
+### Changed
+
+* `semantic-memory-maintainer` renamed to `vector-store-maintainer` to avoid
+  routing collision with mq-mcp's skill of the same name.
+* `command-template-library` skill moved to mq-ums, where the contracts and
+  generator it documents live.
+* The mqlaunch menu/GUI construction standard now has a single owner
+  (`mqlaunch-command-surface`); `terminal-ui-polisher` references it instead of
+  duplicating it. Stack surfaces (agent menu 17–18, `mq b2 stack`) documented.
+* `release-readiness` rebuilt around `mqlaunch release-check`, the stack
+  contract gate, and smoke tests. `docs-maintainer` no longer routes to the
+  non-existent `repo-product-auditor`.
+
 ## [1.0.0] - 2026-06-10
 
 ### Added

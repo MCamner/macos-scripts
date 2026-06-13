@@ -1,16 +1,24 @@
 # Skills
 
 macos-scripts ships local skills for maintaining mqlaunch, terminal UX, docs,
-semantic memory and release readiness.
+vector-store memory and release readiness.
+
+The table below is generated from SKILL.md frontmatter by
+`./scripts/check-skills.sh --fix`. Do not edit it by hand.
+
+Note: `command-template-library` moved to the mq-ums repo
+(`mq-ums/skills/command-template-library/`), where the contracts and generator
+it documents actually live.
 
 ## Built-in skills
 
+<!-- BEGIN GENERATED SKILLS TABLE -->
 | Skill | Description |
 | ----- | ----------- |
-| [command-template-library](skills/command-template-library/SKILL.md) | Maintain mq-ums command contracts and generated command docs |
-| [docs-maintainer](skills/docs-maintainer/SKILL.md) | Keep command docs and repo docs aligned |
-| [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Maintain mqlaunch commands, menus, bridges and help text |
-| [release-readiness](skills/release-readiness/SKILL.md) | Prepare and verify releases |
-| [repo-health-brief](skills/repo-health-brief/SKILL.md) | Run repo-signal brief and interpret health score, risks and suggestions |
-| [semantic-memory-maintainer](skills/semantic-memory-maintainer/SKILL.md) | Maintain semantic memory and vector-store workflows |
-| [terminal-ui-polisher](skills/terminal-ui-polisher/SKILL.md) | Polish terminal menus, CLI output and command UX |
+| [docs-maintainer](skills/docs-maintainer/SKILL.md) | Use when keeping repository documentation consistent after code, CLI, release, workflow, README, wiki, or GitHub Pages changes. Helps update docs surfaces without inventing behavior. |
+| [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Use when changing macos-scripts mqlaunch commands, terminal GUI menus, HAL routing, command aliases, help text, or CLI/TUI command-surface behavior. |
+| [release-readiness](skills/release-readiness/SKILL.md) | Use when preparing a macos-scripts release. Validates git state, version sync, changelog, docs, smoke tests, the mqlaunch release-check gate, and the MQ stack contract. |
+| [repo-health-brief](skills/repo-health-brief/SKILL.md) | Use when asked for a quick health check, daily repo status, or before deciding what to work on next. Runs repo-signal brief and interprets the output. |
+| [terminal-ui-polisher](skills/terminal-ui-polisher/SKILL.md) | Improve terminal GUI menus, CLI, TUI, ASCII, ANSI, and command-surface interfaces with focus on clarity, hierarchy, keyboard flow, spacing, status feedback, and product-level polish. |
+| [vector-store-maintainer](skills/vector-store-maintainer/SKILL.md) | Use when maintaining OpenAI vector stores, knowledge packs, indexed markdown, file_search sources, or repo memory freshness across projects. Distinct from mq-mcp's semantic-memory-maintainer, which owns repo packs. |
+<!-- END GENERATED SKILLS TABLE -->
