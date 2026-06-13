@@ -1,7 +1,7 @@
 ---
 name: mqlaunch-menu-template
 description: >
-  Mall för att bygga mqlaunch-menyer med korrekt box-rendering, tvålinjig prompt
+  Mall för att bygga mqlaunch-menyer med korrekt box-rendering, separator-prompt
   och konsekvent UI-mönster. Använd när Codex, Claude Code eller Claude ska skapa
   en ny mqlaunch-meny (t.ex. mq-workflows-menu.sh, mq-system-menu.sh). Triggas av
   fraser som "bygg en ny mqlaunch-meny", "lägg till ett menyval", "skapa submeny
@@ -46,27 +46,38 @@ Tillgängliga UI-funktioner (definierade i `mq-ui.sh`):
 
 ---
 
-## 2. Menystruktur — Tvålinjig prompt
+## 2. Prompt-format — Separator-prompt
 
-Alla mqlaunch-menyer använder **tvålinjig prompt**:
+**Detta är det enda godkända prompt-formatet för mqlaunch-menyer.**
+
+Prompten består av tre delar i sekvens — utanför boxen, efter `print_footer`:
 
 ```
-┌─────────── Rad 1: Menyval (numrerade) ───────────┐
-│  1. Alternativ A    2. Alternativ B               │
-│  3. Alternativ C    4. Alternativ D               │
-│                                                   │
-│  b. Tillbaka        q. Avsluta                   │
-└───────────────────────────────────────────────────┘
-
-Välj [1-4 / b / q]:
->
+────────────────────────────────────────────────────────────────────────────────
+<menynamn> >
+────────────────────────────────────────────────────────────────────────────────
+>> option, mqlaunch command, shell command, or x to exit
 ```
 
-Prompten är alltid två rader:
-* Rad 1: `"Välj [1-N / b / q]:"` (eller anpassad text)
-* Rad 2: `"> "` (inmatningsrad)
+* Rad 1: horisontell separator (80 `─`-tecken, U+2500)
+* Rad 2: `<menynamn> >` — menyns titel i lowercase följt av ` > `
+* Rad 3: horisontell separator (80 `─`-tecken)
+* Rad 4: `>> option, mqlaunch command, shell command, or x to exit`
 
-Detta är det enda godkända prompt-formatet för mqlaunch-menyer.
+Sedan `read -r choice` på samma rad som `>>`-prompten, eller direkt efter.
+
+### Implementering i zsh
+
+```bash
+# Separator-konstant (definiera en gång i toppen av menyfilen eller i UI-lib)
+SEP="────────────────────────────────────────────────────────────────────────────────"
+
+# I menyloopen, efter print_footer:
+printf '\n%s\n%s >\n%s\n>> ' "$SEP" "system" "$SEP"
+read -r choice
+```
+
+Byt ut `"system"` mot menyns faktiska namn (lowercase, t.ex. `"workflows"`, `"dev"`, `"net"`).
 
 ---
 
@@ -77,21 +88,24 @@ Detta är det enda godkända prompt-formatet för mqlaunch-menyer.
 # mq-NAMN-menu.sh — Kort beskrivning av menyn
 # Sourceas av mqlaunch.sh — kräver inte eget source av mq-ui.sh
 
+# Separator — 80 st U+2500
+MQ_NAMN_SEP="────────────────────────────────────────────────────────────────────────────────"
+
 # Öppnar NAMN-menyn.
 open_NAMN_menu() {
   while true; do
     print_header
-    row_bold "NAMN"                        # Rubrik i versaler
+    row_bold "NAMN"
     empty_row
     row "  1. Första alternativet"
     row "  2. Andra alternativet"
     row "  3. Tredje alternativet"
     empty_row
     row "  b. Tillbaka"
-    row "  q. Avsluta"
+    row "  x. Avsluta"
     print_footer
 
-    printf '\nVälj [1-3 / b / q]:\n> '
+    printf '\n%s\nnamn >\n%s\n>> ' "$MQ_NAMN_SEP" "$MQ_NAMN_SEP"
     read -r choice
 
     case "$choice" in
@@ -99,7 +113,8 @@ open_NAMN_menu() {
       2) action_tva ;;
       3) action_tre ;;
       b|B) return 0 ;;
-      q|Q) exit 0 ;;
+      x|X) exit 0 ;;
+      "")  continue ;;
       *)
         print_header
         row "Ogiltigt val: $choice"
@@ -150,8 +165,8 @@ fi
 
 ## 4. Tvåkolumns-layout (valfritt, för många val)
 
-Använd tvåkolumner när du har 6+ val. Placera valen i jämna kolumner
-med fast padding så att kolumn 2 alltid börjar på teckenposition ~46.
+Använd tvåkolumner när du har 6+ val. Placera valen med fast kolumnbredd
+så att kolumn 2 alltid börjar på teckenposition ~27.
 
 ```bash
 row "  1. Workflows             2. System"
@@ -159,15 +174,53 @@ row "  3. Dev                   4. AI"
 row "  5. Net                   6. Apps"
 row "  7. Git                   8. Release"
 empty_row
-row "  b. Tillbaka              q. Avsluta"
+row "  b. Tillbaka              x. Avsluta"
 ```
 
-Regel: Kolumn 1 börjar på position 2, kolumn 2 börjar på position 27
-(justera med blanksteg, aldrig med tab).
+Regel: Kolumn 1 börjar på position 2, kolumn 2 börjar på position 27.
+Justera med blanksteg — aldrig med tab.
 
 ---
 
-## 5. Namnkonventioner
+## 5. Separator-prompten — fullständig visuell representation
+
+S� här ser det ut i terminalen efter `print_footer`:
+
+```
+────────────────────────────────────────────────────────────────────────────────
+system >
+────────────────────────────────────────────────────────────────────────────────
+>> option, mqlaunch command, shell command, or x to exit
+```
+
+Användaren kan skriva:
+* Ett nummer (`1`, `2`, `3` …) → menyval
+* Ett mqlaunch-kommando direkt (`git`, `dev`, `perf` …) → dispatchar till `run_arg_command`
+* Ett shell-kommando → exekveras i subshell
+* `x` → avslutar
+
+### Dispatcha fritt inmatade kommandon
+
+Om menyn ska stödja fri mqlaunch-dispatch (som huvudmenyn), lägg till
+detta i case-satsen:
+
+```bash
+*)
+  # Försök dispatcha som mqlaunch-kommando
+  if declare -f run_arg_command >/dev/null 2>&1; then
+    run_arg_command "$choice"
+  else
+    print_header
+    row "Ogiltigt val: $choice"
+    print_footer
+    pause_enter
+  fi
+  ;;
+```
+
+---
+
+## 6. Namnkonventioner
 
 | Vad | Konvention |
 |---|---|
@@ -175,15 +228,17 @@ Regel: Kolumn 1 börjar på position 2, kolumn 2 börjar på position 27
 | Entry-funktion | `open_<namn>_menu()` |
 | Action-funktioner | `action_<verb>()` eller `<verb>_<noun>()` |
 | Rubrik i `row_bold` | VERSALER, max 40 tecken |
+| Promptnamn | lowercase, matchar filnamn utan `mq-` och `-menu.sh` |
 | Kommentar per funktion | `# Beskriver vad funktionen gör.` (punkt i slutet) |
+| Exit-tangent | alltid `x` (inte `q`) — matchar separator-promptens text |
 
 ---
 
-## 6. Registrering i mqlaunch.sh
+## 7. Registrering i mqlaunch.sh
 
 När en ny meny är skapad, lägg till i `mqlaunch.sh`:
 
-**Source-block** (i rätt ordning bland övriga menyer):
+**Source-block** (bland övriga menyer, i rätt ordning):
 
 ```bash
 if [[ -f "$BASE_DIR/terminal/menus/mq-NAMN-menu.sh" ]]; then
@@ -203,7 +258,7 @@ namn|namn-menu) open_NAMN_menu ;;
 row "  N. NAMN"
 ```
 
-Och i case-satsen:
+Och i case-satsen för huvudmenyns `read`:
 
 ```bash
 N|n) open_NAMN_menu ;;
@@ -211,35 +266,36 @@ N|n) open_NAMN_menu ;;
 
 ---
 
-## 7. Vanliga misstag att undvika
+## 8. Vanliga misstag att undvika
 
-* **Aldrig** `echo` direkt för UI — använd alltid `row()` innanför boxen
-* **Aldrig** `read -p "Välj: "` — använd tvålinjig `printf + read`
+* **Aldrig** `read -p "Välj: "` — använd `printf + read` med separator-formatet
+* **Aldrig** `q` som exit-tangent — det är `x` i separator-prompten
 * **Aldrig** hårdkoda `BOX_INNER` i menyfilen
 * **Aldrig** source `mq-ui.sh` i menyfilen (görs av mqlaunch.sh)
-* **Alltid** avsluta aktions med `pause_enter` om de visar output
-* **Alltid** ha `b. Tillbaka` och `q. Avsluta` i varje meny
+* **Alltid** avsluta aktioner med `pause_enter` om de visar output
+* **Alltid** ha `b. Tillbaka` och `x. Avsluta` i varje meny
 * **Alltid** ha ett `*)` wildcard-fall i case-satsen
+* **Alltid** definiera `SEP` lokalt i filen (inte global — den kan skilja sig)
 
 ---
 
-## 8. Exempelmenyer att studera
+## 9. Exempelmenyer att studera
 
 Dessa filer i `$BASE_DIR/terminal/menus/` är referensimplementationer:
 
-* `mq-main-menu.sh` — Huvudmenystruktur, tvåkolumner
+* `mq-main-menu.sh` — Huvudmenystruktur, tvåkolumner, separator-prompt
 * `mq-system-menu.sh` — Enkla aktioner med pause_enter
 * `mq-dev-menu.sh` — Git-integration och submenyer
 * `mq-workflows-menu.sh` — Workflow-loop med statusvisning
 
 ---
 
-## 9. Snabbreferens — generera en meny
+## 10. Snabbreferens — generera en meny
 
 När Codex eller Claude Code ska bygga en ny meny, följ dessa steg:
 
 1. Kopiera template från avsnitt 3
-2. Ersätt `NAMN` med menyns namn (snake_case)  
+2. Ersätt `NAMN`/`namn` med menyns namn (snake_case / lowercase)
 3. Definiera action-funktioner för varje val
 4. Spara som `$BASE_DIR/terminal/menus/mq-<namn>-menu.sh`
 5. Gör filen körbar: `chmod +x mq-<namn>-menu.sh`
