@@ -99,6 +99,8 @@ Quick commands:
   mqlaunch ask "your question"
   mqlaunch srm ask "your question"
   mqlaunch agent
+  mqlaunch obsidian
+  mqlaunch mqobsidian
   mqlaunch agent doctor
   mqlaunch agent score .
   mqlaunch agent audit .
@@ -601,6 +603,16 @@ dispatch_cli_command() {
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
+      ;;
+
+    obsidian|mqobsidian|memory-menu|mq-memory)
+      if declare -f mq_obsidian_menu_main >/dev/null; then
+        mq_obsidian_menu_main
+      else
+        echo "ERROR: mqobsidian menu not loaded" >&2
+        return 1
+      fi
+      return 0
       ;;
 
     mqlaunch)

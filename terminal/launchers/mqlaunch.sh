@@ -182,6 +182,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-agent-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-agent-menu.sh"
 fi
 
+# mqobsidian menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh"
+fi
+
 # Prints header.
 print_header() {
   clear
@@ -1682,6 +1688,7 @@ kill-port	Frigör port med fzf
 snippets	Kör ett script från macos-scripts
 recent	Senast ändrade filer — öppna direkt
 hal	Local Ollama command router (mq-hal)
+obsidian	Open MQ Obsidian / Memory menu
 guide	Open terminal guide
 commands	Show command index
 EOF
@@ -1902,6 +1909,7 @@ run_arg_command() {
     theme-macos) theme_cmd apply macos ;;
     release|rel) open_release_menu ;;
     agent|mq-agent|g) run_agent_command "$@" ;;
+    obsidian|mqobsidian|memory-menu|mq-memory) mq_obsidian_menu_main ;;
     workflows|workflow|wf) run_mqworkflows "$@" ;;
     git|git-menu|gitmenu|menu-git) open_git_menu "${1:-}" ;;
     gitlaunch)
