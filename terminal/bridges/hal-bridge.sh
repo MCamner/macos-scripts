@@ -27,6 +27,7 @@ Usage:
   mqlaunch hal                         # open HAL menu
   mqlaunch hal brief                   # compact repo status brief
   mqlaunch hal release-brief           # release readiness brief
+  mqlaunch hal context                 # mqobsidian context-pack status
   mqlaunch hal audit                   # publish quality + README score via repo-signal
   mqlaunch hal doctor                  # doctor summary
   mqlaunch hal fix-doctor              # safe fix plan
@@ -99,6 +100,11 @@ mq_hal_main() {
     ci|ci-status)
       shift || true
       "$MQ_HAL_BIN" ci "$@"
+      ;;
+
+    context|context-status)
+      shift || true
+      "$MQ_HAL_BIN" context "$@"
       ;;
 
     doctor|doctor-summary|summary)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -16,8 +17,11 @@ DEFAULT_REPOS = [
     "mq-image-analyze",
     "mq-hal",
     "mq-ums",
+    "mqobsidian",
     "atlas-one",
 ]
+
+GITHUB_OWNER = "MCamner"
 
 
 def repo_paths(selected: list[str] | None = None) -> list[Path]:
@@ -61,6 +65,108 @@ def git_output(repo: Path, args: list[str]) -> tuple[int, str]:
         check=False,
     )
     return proc.returncode, (proc.stdout or proc.stderr).strip()
+
+
+def command_output(args: list[str], cwd: Path | None = None) -> tuple[int, str]:
+    proc = subprocess.run(
+        args,
+        cwd=str(cwd) if cwd else None,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    return proc.returncode, (proc.stdout or proc.stderr).strip()
+
+
+def first_file_line(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace").splitlines()[0].strip()
+    except (IndexError, OSError):
+        return "-"
+
+
+def file_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def version_for(repo: Path) -> str:
+    return first_file_line(repo / "VERSION")
+
+
+def readme_version_refs(repo: Path, limit: int = 3) -> list[str]:
+    text = file_text(repo / "README.md")
+    refs: list[str] = []
+    for line in text.splitlines():
+        if re.search(r"version|status|v\d+\.\d+\.\d+|\d+\.\d+\.\d+", line, re.I):
+            refs.append(line.strip())
+        if len(refs) >= limit:
+            break
+    return refs
+
+
+def changelog_latest(repo: Path) -> str:
+    for line in file_text(repo / "CHANGELOG.md").splitlines():
+        stripped = line.strip()
+        if "unreleased" in stripped.lower():
+            continue
+        if stripped.startswith("## [") or re.match(r"^##\s+v?\d+\.\d+\.\d+", stripped):
+            return stripped
+    return "-"
+
+
+def roadmap_latest(repo: Path) -> str:
+    for path in (repo / "ROADMAP.md", repo / "docs" / "ROADMAP.md"):
+        for line in file_text(path).splitlines():
+            stripped = line.strip()
+            if re.search(r"Current|Latest|Next|v\d+\.\d+\.\d+", stripped):
+                return stripped
+    return "-"
+
+
+def wiki_head(repo_name: str) -> tuple[str, str]:
+    url = f"https://github.com/{GITHUB_OWNER}/{repo_name}.wiki.git"
+    code, output = command_output(["git", "ls-remote", url, "HEAD"])
+    if code != 0:
+        return "missing", "-"
+    sha = output.split()[0] if output else "-"
+    return "yes", sha[:7]
+
+
+def wiki_status(repo: Path) -> dict[str, str | list[str]]:
+    version = version_for(repo)
+    refs = readme_version_refs(repo)
+    changelog = changelog_latest(repo)
+    roadmap = roadmap_latest(repo)
+    wiki, wiki_commit = wiki_head(repo.name)
+
+    reasons: list[str] = []
+    if version == "-":
+        reasons.append("no VERSION")
+    if not refs:
+        reasons.append("no README version refs")
+    elif version != "-" and not any(version in ref for ref in refs):
+        reasons.append("README version mismatch")
+    if version != "-" and version not in changelog:
+        reasons.append("CHANGELOG version mismatch")
+    if wiki != "yes":
+        reasons.append("wiki missing")
+
+    status = "OK" if not reasons else "STALE"
+    return {
+        "repo": repo.name,
+        "version": version,
+        "readme": " | ".join(refs) if refs else "-",
+        "changelog": changelog,
+        "roadmap": roadmap,
+        "wiki": wiki,
+        "wiki_commit": wiki_commit,
+        "status": status,
+        "reasons": reasons,
+    }
 
 
 def branch_summary(repo: Path) -> tuple[str, str]:
@@ -166,6 +272,26 @@ def cmd_diff_summary(args: argparse.Namespace) -> int:
     return 1 if dirty and args.fail_on_dirty else 0
 
 
+def cmd_wiki_status(args: argparse.Namespace) -> int:
+    stale = 0
+    for repo in repo_paths(args.repo):
+        data = wiki_status(repo)
+        reasons = data["reasons"]
+        if reasons:
+            stale += 1
+        print(f"{data['repo']}: {data['status']}")
+        print(f"  VERSION:   {data['version']}")
+        print(f"  README:    {data['readme']}")
+        print(f"  CHANGELOG: {data['changelog']}")
+        print(f"  ROADMAP:   {data['roadmap']}")
+        print(f"  Wiki:      {data['wiki']} ({data['wiki_commit']})")
+        if reasons:
+            print("  Reasons:")
+            for reason in reasons:
+                print(f"    - {reason}")
+    return 1 if stale and args.fail_on_stale else 0
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", action="append", help="Repo name/path; may be repeated")
@@ -191,6 +317,10 @@ def main(argv: list[str]) -> int:
     p.add_argument("--limit", type=int, default=6, help="Changed-file preview limit per repo")
     p.add_argument("--fail-on-dirty", action="store_true")
     p.set_defaults(func=cmd_status)
+    p = sub.add_parser("wiki-status", help="Show local docs and GitHub Wiki freshness signals")
+    p.add_argument("--repo", action="append", help="Repo name/path; may be repeated")
+    p.add_argument("--fail-on-stale", action="store_true")
+    p.set_defaults(func=cmd_wiki_status)
     args = parser.parse_args(argv)
     if getattr(args, "modified", False) and getattr(args, "untracked", False):
         parser.error("--modified and --untracked are mutually exclusive")

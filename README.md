@@ -190,6 +190,7 @@ mqlaunch hal session             # show local HAL session memory
 mqlaunch hal last                # show latest HAL memory item
 mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
+mqlaunch hal context             # show mqobsidian context-pack status
 mqlaunch hal brief               # compact repo status brief
 mqlaunch hal release-brief       # release readiness brief
 mqlaunch hal audit               # publish quality + README score via repo-signal
@@ -200,6 +201,7 @@ mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch workflows validate      # workflow files, docs and routing check
 mqlaunch selftest                # smoke tests + shell lint
 mqlaunch release-check           # release readiness check
+mqlaunch repos wiki-status       # local docs + GitHub Wiki freshness
 mqlaunch demo                    # guided demo
 ```
 

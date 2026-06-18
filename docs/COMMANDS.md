@@ -140,6 +140,7 @@ mqlaunch skills validate --ecosystem  # validate cross-repo skill uniqueness and
 mqlaunch skills new my-skill --repo mq-mcp --description "Use when ..."
 mqlaunch repos list                   # list known local MQ repos
 mqlaunch repos status                 # show branch/upstream/origin/dirty state per repo
+mqlaunch repos wiki-status            # show local docs and GitHub Wiki freshness
 mqlaunch repos roadmaps               # list roadmap files per repo
 mqlaunch repos skills                 # summarize skill counts per repo
 mqlaunch repos diff-summary           # show git change summary per repo
@@ -314,6 +315,7 @@ mqlaunch hal timeline
 mqlaunch hal session
 mqlaunch hal last
 mqlaunch hal remember "note"
+mqlaunch hal context
 mqlaunch hal repos
 ```
 
@@ -339,6 +341,17 @@ mqlaunch hal release-brief --skip-release-check
 ```
 
 Read-only release readiness brief powered by `mq-hal`. Checks VERSION, CHANGELOG, README version reference, git state, CI status, latest GitHub release, doctor summary, and release-check.
+
+### HAL Context Status
+
+```bash
+mqlaunch hal context
+mqlaunch hal context --json
+mqlaunch hal context latest-pack
+mqlaunch hal context budget
+```
+
+Shows read-only mqobsidian context-pack readiness. Delegates to `mq-hal context`; it does not generate packs or write to mqobsidian.
 
 ### HAL Repo Status
 
