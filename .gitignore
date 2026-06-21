@@ -22,13 +22,10 @@ __pycache__/
 # Local Playwright CLI captures
 .playwright-cli/
 
-# Local debug bundles
-backups/debug-bundles/*.txt
-
-# Local backup files
-backups/launchers/*.bak
-backups/scripts/*
-!backups/scripts/.gitkeep
+# Backups: project-generated snapshots, bundles, and reports are local-only.
+# Write scripts mkdir -p their own subdirs at runtime; only the README is tracked.
+backups/*
+!backups/README.md
 terminal/launchers/*.bak.*
 terminal/menus/*.bak.*
 tools/*.bak.*
