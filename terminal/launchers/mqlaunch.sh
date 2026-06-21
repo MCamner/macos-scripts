@@ -1318,6 +1318,11 @@ open_git_menu() {
   done
 
   rm -f "$back_marker" 2>/dev/null || true
+
+  # The git menu can commit/stash, so the cached dashboard header is now stale.
+  # Drop it so the main loop re-renders fresh Git status instead of waiting out
+  # the cache TTL.
+  command -v mq_dashboard_cache_invalidate >/dev/null 2>&1 && mq_dashboard_cache_invalidate
 }
 
 # Opens release menu.
@@ -1340,6 +1345,10 @@ open_release_menu() {
     print_footer
     pause_enter
   fi
+
+  # The release flow can commit/tag, so invalidate the cached dashboard header
+  # before returning to the main loop.
+  command -v mq_dashboard_cache_invalidate >/dev/null 2>&1 && mq_dashboard_cache_invalidate
 }
 
 # Runs mqworkflows.
