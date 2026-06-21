@@ -357,13 +357,54 @@ get_nickname() {
 }
 
 # Prints header.
+# Cached dashboard header state. Rapid menu transitions — returning from a
+# sub-menu (Back) or re-rendering after invalid input — would otherwise re-fork
+# the dashboard subprocess (pmset + several git calls) on every loop tick. The
+# cache reuses the last render within a short TTL so only genuinely fresh ticks
+# pay the cost.
+MQ_DASHBOARD_CACHE_OUTPUT=""
+MQ_DASHBOARD_CACHE_KEY=""
+MQ_DASHBOARD_CACHE_TS=0
+
+# Invalidates the cached dashboard header. Call after an action that changes
+# what the header reports (e.g. a commit) so the next render recomputes.
+mq_dashboard_cache_invalidate() {
+  MQ_DASHBOARD_CACHE_OUTPUT=""
+  MQ_DASHBOARD_CACHE_KEY=""
+  MQ_DASHBOARD_CACHE_TS=0
+}
+
+# Renders the dashboard header, reusing a cached render within MQ_DASHBOARD_CACHE_TTL
+# seconds (default 5; set to 0 to disable caching). The cache key includes the
+# working directory because the dashboard's git status depends on it.
+print_dashboard_header() {
+  local dashboard="$1"
+  local ttl now key
+  ttl="${MQ_DASHBOARD_CACHE_TTL:-5}"
+  now="$(date +%s)"
+  key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}"
+
+  if [[ "$ttl" != "0" \
+        && -n "$MQ_DASHBOARD_CACHE_OUTPUT" \
+        && "$MQ_DASHBOARD_CACHE_KEY" == "$key" \
+        && $(( now - MQ_DASHBOARD_CACHE_TS )) -lt "$ttl" ]]; then
+    printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"
+    return
+  fi
+
+  MQ_DASHBOARD_CACHE_OUTPUT="$(bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
+  MQ_DASHBOARD_CACHE_KEY="$key"
+  MQ_DASHBOARD_CACHE_TS="$now"
+  printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"
+}
+
 print_header() {
   local dashboard nickname
 
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
     dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
     if [[ -f "$dashboard" ]]; then
-      bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
+      print_dashboard_header "$dashboard"
       printf '\n'
       return
     fi
