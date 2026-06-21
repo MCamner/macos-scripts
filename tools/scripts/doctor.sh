@@ -33,7 +33,7 @@ run_json_mode() {
   local version
   version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
 
-  for cmd in git eza fzf jq gitleaks pbcopy; do
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
     if command -v "$cmd" >/dev/null 2>&1; then
       _jc "$cmd" "ok"
     else
@@ -66,7 +66,7 @@ run_normal_mode() {
   ok "Shell: $SHELL"
 
   section "TOOLS"
-  for cmd in git eza fzf jq gitleaks pbcopy; do
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
     if command -v "$cmd" >/dev/null 2>&1; then
       ok "$cmd"
     else

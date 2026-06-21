@@ -349,7 +349,7 @@ mq_build_prompt() {
     git_part=" ${MQC_DIM}•%f ${MQC_GIT} ${git_info}%f"
   fi
 
-  PROMPT=$'\n'"${user_host} ${MQC_DIM}•%f ${path_part}${git_part}"$'\n'"${status_icon} "
+  PROMPT="$(starship prompt --status=$exit_code)"
   RPROMPT=""
 }
 

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Python Kommandoguide v2.2</title>
+<meta name="description" content="Svensk Python-kommandoguide v2.2 med python.org-inspirerat tema, live-filter, resultatmätare och praktiska exempel." />
+<style>
+:root {
+  --blue-950: #162638;
+  --blue-900: #1c2c45;
+  --blue-800: #22395c;
+  --blue-700: #2b4b77;
+  --blue-600: #3776ab;
+  --blue-500: #4b8bbe;
+  --gold-500: #ffd43b;
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-2: #f9fbfd;
+  --text: #213547;
+  --muted: #596b7b;
+  --line: #d8e2ec;
+  --danger: #c62828;
+  --shadow: 0 10px 30px rgba(28, 44, 69, 0.08);
+  --shadow-soft: 0 6px 18px rgba(28, 44, 69, 0.06);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ui: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255,212,59,.24), transparent 28%),
+    radial-gradient(circle at top right, rgba(75,139,190,.16), transparent 24%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+}
+.topbar {
+  background: linear-gradient(180deg, var(--blue-950), var(--blue-800));
+  color: white;
+  border-bottom: 4px solid var(--gold-500);
+}
+.topbar-inner {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 12px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.brand-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  font: 700 12px var(--mono);
+  color: #dfe9f5;
+}
+.network {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  opacity: .92;
+  flex-wrap: wrap;
+}
+.hero {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 30px 22px 34px;
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  gap: 22px;
+  align-items: stretch;
+}
+.hero-main {
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  color: #dfe9f5;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+h1 {
+  margin: 0 0 12px;
+  font-size: 44px;
+  line-height: 1.06;
+  letter-spacing: -.02em;
+}
+.hero p {
+  margin: 0;
+  color: #dfe9f5;
+  line-height: 1.75;
+  max-width: 70ch;
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: var(--gold-500);
+  color: #2a2a2a;
+}
+.btn-secondary {
+  background: rgba(255,255,255,.08);
+  color: white;
+  border-color: rgba(255,255,255,.16);
+}
+.hero-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.hero-card {
+  background: rgba(255,255,255,.08);
+  color: #f5f8fb;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.hero-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.hero-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #dfe9f5;
+}
+.app {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 312px 1fr;
+  gap: 22px;
+}
+.sidebar {
+  align-self: start;
+  position: sticky;
+  top: 14px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.panel.pad { padding: 18px; }
+.search {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+}
+.search:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 4px rgba(75,139,190,.16);
+}
+.search-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+.sidebar-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.cat-btn, .quick-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.cat-btn:hover, .cat-btn.active,
+.quick-btn:hover, .quick-btn.active {
+  background: rgba(55,118,171,.08);
+  border-color: rgba(55,118,171,.16);
+}
+.count {
+  min-width: 28px;
+  text-align: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,212,59,.25);
+  color: #6b5200;
+  font: 700 12px var(--mono);
+}
+.sidebar-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.sidebar-link {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.sidebar-link:hover {
+  color: var(--blue-700);
+  border-color: rgba(55,118,171,.18);
+  background: rgba(55,118,171,.06);
+}
+.main {
+  min-width: 0;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.stat .num {
+  font: 700 28px var(--mono);
+  color: var(--blue-600);
+}
+.stat .label {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 13px;
+}
+.note {
+  background: linear-gradient(180deg, #fffdf4, #fff9df);
+  border: 1px solid #f1df99;
+  color: #5a4a13;
+  border-radius: 18px;
+  padding: 16px 18px;
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+.statusbar {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  margin-bottom: 16px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.status-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font: 700 12px var(--mono);
+}
+.status-badge strong {
+  color: var(--blue-700);
+}
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(55,118,171,.08);
+  border: 1px solid rgba(55,118,171,.16);
+  color: var(--blue-700);
+  font: 700 12px var(--mono);
+}
+.clear-btn {
+  border-radius: 12px;
+  border: 1px solid rgba(55,118,171,.18);
+  background: rgba(55,118,171,.08);
+  color: var(--blue-700);
+  padding: 9px 12px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.clear-btn:hover {
+  background: rgba(55,118,171,.14);
+}
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.toolbar-chip {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 12px;
+  cursor: pointer;
+  font: 700 12px var(--mono);
+  color: var(--muted);
+}
+.toolbar-chip.active, .toolbar-chip:hover {
+  border-color: rgba(55,118,171,.22);
+  background: rgba(55,118,171,.08);
+  color: var(--blue-700);
+}
+.section-title {
+  margin: 4px 0 16px;
+  font-size: 28px;
+  color: var(--blue-900);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-head {
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid #eef3f8;
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cmd {
+  margin: 0 0 8px;
+  font: 700 16px var(--mono);
+  color: var(--blue-700);
+}
+.cat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.short {
+  color: var(--muted);
+  line-height: 1.6;
+  min-height: 48px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font: 700 11px var(--mono);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-2);
+}
+.tag.builtin { background: rgba(55,118,171,.08); color: var(--blue-700); border-color: rgba(55,118,171,.16); }
+.tag.stdlib { background: rgba(75,139,190,.1); color: var(--blue-600); border-color: rgba(75,139,190,.16); }
+.tag.pathlib { background: rgba(75,139,190,.1); color: var(--blue-600); border-color: rgba(75,139,190,.16); }
+.tag.optional { background: rgba(255,212,59,.22); color: #705200; border-color: rgba(247,201,72,.5); }
+.tag.net { background: rgba(0,150,136,.1); color: #00796b; border-color: rgba(0,150,136,.18); }
+.tag.windows { background: rgba(123,104,238,.1); color: #5b52c7; border-color: rgba(123,104,238,.2); }
+.tag.tooling { background: rgba(255,87,34,.08); color: #c6451c; border-color: rgba(255,87,34,.2); }
+.tag.danger { background: rgba(198,40,40,.08); color: var(--danger); border-color: rgba(198,40,40,.2); }
+.examples {
+  padding: 14px 18px 18px;
+}
+.examples-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.examples-title {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.copy-all-btn {
+  border-radius: 10px;
+  border: 1px solid rgba(55,118,171,.18);
+  background: rgba(55,118,171,.08);
+  color: var(--blue-700);
+  padding: 7px 10px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.copy-all-btn:hover {
+  background: rgba(55,118,171,.14);
+}
+.example {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.example:last-child { margin-bottom: 0; }
+.example-top {
+  background: #f7fafc;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.example-top span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.copy-btn {
+  flex-shrink: 0;
+  border: 1px solid rgba(55,118,171,.18);
+  background: rgba(55,118,171,.08);
+  color: var(--blue-700);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.copy-btn:hover {
+  background: rgba(55,118,171,.14);
+}
+pre {
+  margin: 0;
+  padding: 14px;
+  font: 13px/1.65 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  color: #14344d;
+  background: #fbfdff;
+}
+.footer {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty {
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  padding: 40px 18px;
+  text-align: center;
+  color: var(--muted);
+}
+.small-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+@media (max-width: 1100px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-side { grid-template-columns: 1fr 1fr; }
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .statusbar { position: static; }
+}
+@media (max-width: 700px) {
+  h1 { font-size: 31px; }
+  .grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .hero-side { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span>Python Kommandoguide</span>
+        <span class="brand-badge">v2.2</span>
+      </div>
+      <div class="network">
+        <span>Get Started</span>
+        <span>Docs</span>
+        <span>Downloads</span>
+        <span>Standard Library</span>
+        <span>Automation</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <section class="hero-main">
+        <div class="badge">python.org-inspirerat tema • svensk referens • ren Python</div>
+        <h1>Python-kommandon för vardag, automation och systemjobb</h1>
+        <p>Version 2.2 fokuserar på snabbare användning: live-resultaträknare, tydligare filterstatus, kortnivå för att kopiera alla exempel och ett bättre tangentbordsflöde för sökning och navigering.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#guide">Öppna guiden</a>
+          <a class="btn btn-secondary" href="#optional">Se externa paket</a>
+        </div>
+      </section>
+
+      <aside class="hero-side">
+        <section class="hero-card"><h3>Live-resultat</h3><p>v2.2 visar hur många kort som matchar din sökning och dina filter i realtid.</p></section><section class="hero-card"><h3>Snabbare jobbflöde</h3><p>Kortnivå-knappar för att kopiera alla exempel samtidigt sparar tid.</p></section><section class="hero-card"><h3>Tydligare filterstatus</h3><p>Aktiva kategori-, snabb- och toolbar-filter syns direkt och går att nollstäställa.</p></section><section class="hero-card"><h3>Bättre tangentbordsflöde</h3><p>Tryck / för att fokusera sökrutan och Esc för att rensa sökning.</p></section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="app" id="guide">
+    <aside class="sidebar">
+      <div class="panel pad">
+        <h2 class="sidebar-title">Sök</h2>
+        <input id="search" class="search" type="search" placeholder="Sök kategori, kommando, kod eller beskrivning…" />
+        <div class="search-hint">Tryck <strong>/</strong> för att hoppa hit och <strong>Esc</strong> för att rensa.</div>
+      </div>
+
+      <div class="panel pad" style="margin-top:14px;">
+        <h2 class="sidebar-title">Snabbfilter</h2>
+        <button class="quick-btn" data-tag="builtin"><span>Built-in</span><span class="count">23</span></button><button class="quick-btn" data-tag="stdlib"><span>Standard library</span><span class="count">72</span></button><button class="quick-btn" data-tag="pathlib"><span>Pathlib</span><span class="count">13</span></button><button class="quick-btn" data-tag="net"><span>Nätverk</span><span class="count">11</span></button><button class="quick-btn" data-tag="windows"><span>Windows</span><span class="count">6</span></button><button class="quick-btn" data-tag="optional"><span>Extra paket</span><span class="count">7</span></button><button class="quick-btn" data-tag="danger"><span>Försiktighet</span><span class="count">4</span></button>
+      </div>
+
+      <div class="panel pad" style="margin-top:14px;">
+        <h2 class="sidebar-title">Kategorier</h2>
+        <button class="cat-btn active" data-cat="Alla"><span>Alla kategorier</span><span class="count">114</span></button>
+        <button class="cat-btn" data-cat="Kom igång"><span>Kom igång</span><span class="count">12</span></button><button class="cat-btn" data-cat="Data &amp; Text"><span>Data &amp; Text</span><span class="count">13</span></button><button class="cat-btn" data-cat="Filer &amp; Sökvägar"><span>Filer &amp; Sökvägar</span><span class="count">15</span></button><button class="cat-btn" data-cat="Dataformat"><span>Dataformat</span><span class="count">12</span></button><button class="cat-btn" data-cat="OS &amp; Processer"><span>OS &amp; Processer</span><span class="count">13</span></button><button class="cat-btn" data-cat="Nätverk &amp; Webb"><span>Nätverk &amp; Webb</span><span class="count">11</span></button><button class="cat-btn" data-cat="Automation"><span>Automation</span><span class="count">11</span></button><button class="cat-btn" data-cat="Loggning &amp; Felsökning"><span>Loggning &amp; Felsökning</span><span class="count">11</span></button><button class="cat-btn" data-cat="Windows &amp; System"><span>Windows &amp; System</span><span class="count">8</span></button><button class="cat-btn" data-cat="Miljö &amp; Paket"><span>Miljö &amp; Paket</span><span class="count">8</span></button>
+        <div class="sidebar-actions">
+          <button class="sidebar-link" id="clearFiltersTop">rensa filter</button>
+          <button class="sidebar-link" id="scrollTopBtn">till toppen</button>
+        </div>
+      </div>
+
+      <div class="panel pad" id="optional" style="margin-top:14px;">
+        <h2 class="sidebar-title">Vanliga tillägg</h2>
+        <div class="small-note">
+          <div><code>requests</code> för HTTP/API</div>
+          <div><code>psutil</code> för processer, nät och disk</div>
+          <div style="margin-top:10px;"><code>python -m pip install requests psutil</code></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="info-grid">
+        <div class="stat"><div class="num">114</div><div class="label">kommandokort</div></div>
+        <div class="stat"><div class="num">10</div><div class="label">kategorier</div></div>
+        <div class="stat"><div class="num">live</div><div class="label">resultaträknare och filterstatus</div></div>
+        <div class="stat"><div class="num">/ + Esc</div><div class="label">snabbare sökflöde</div></div>
+      </div>
+
+      <div class="note">Version 2.2 fokuserar på snabbare användning: live-resultaträknare, tydligare filterstatus, kortnivå för att kopiera alla exempel och ett bättre tangentbordsflöde för sökning och navigering.</div>
+
+      <div class="statusbar">
+        <div class="status-left">
+          <div class="status-badge">träffar <strong id="resultCount">0</strong></div>
+          <div class="status-badge">kort totalt <strong>114</strong></div>
+          <div class="status-badge">kategorier <strong>10</strong></div>
+        </div>
+        <div class="active-filters" id="activeFilters"></div>
+        <button class="clear-btn" id="clearFilters">nollställ allt</button>
+      </div>
+
+      <div class="toolbar" id="toolbar">
+        <button class="toolbar-chip active" data-filter="all">Alla</button><button class="toolbar-chip" data-filter="builtin">Built-in</button><button class="toolbar-chip" data-filter="stdlib">Stdlib</button><button class="toolbar-chip" data-filter="net">Nätverk</button><button class="toolbar-chip" data-filter="windows">Windows</button><button class="toolbar-chip" data-filter="optional">Extra paket</button>
+      </div>
+
+      <h2 class="section-title">Kommandoguide</h2>
+      <div id="grid" class="grid"></div>
+      <div class="footer">Tips: flera kort bygger bara på standardbiblioteket. Kort märkta <strong>optional</strong> använder externa paket.</div>
+    </main>
+  </div>
+
+<script>
+const COMMANDS = [{"cat": "Kom igång", "cmd": "print / input", "short": "Skriv ut text och läs in användarinput", "tags": ["builtin"], "examples": [{"code": "name = input('Vad heter du? ')\nprint(f'Hej {name}!')", "desc": "Läs in text från användaren"}, {"code": "print('Python är igång')", "desc": "Skriv ut enkel text"}, {"code": "print('A', 'B', 'C', sep=' | ')", "desc": "Sätt egen separator"}]}, {"cat": "Kom igång", "cmd": "variabler", "short": "Tilldela och använd värden", "tags": ["builtin"], "examples": [{"code": "x = 10\ny = 20\nprint(x + y)", "desc": "Skapa och använd variabler"}, {"code": "title = 'python'\nprint(title.upper())", "desc": "Arbeta med strängmetoder"}, {"code": "price = 99.5\nprint(type(price))", "desc": "Visa datatyp"}]}, {"cat": "Kom igång", "cmd": "if / elif / else", "short": "Villkorsstyrd logik", "tags": ["builtin"], "examples": [{"code": "age = 18\nif age >= 18:\n    print('vuxen')\nelse:\n    print('barn')", "desc": "Enkelt villkor"}, {"code": "score = 82\nif score >= 90:\n    print('A')\nelif score >= 80:\n    print('B')\nelse:\n    print('C')", "desc": "Flera villkor"}, {"code": "name = 'Ada'\nif name:\n    print('har innehåll')", "desc": "Tomma värden är falsy"}]}, {"cat": "Kom igång", "cmd": "for / while / range", "short": "Loopar över data eller tills villkor ändras", "tags": ["builtin"], "examples": [{"code": "for i in range(5):\n    print(i)", "desc": "Loop från 0 till 4"}, {"code": "items = ['a', 'b', 'c']\nfor item in items:\n    print(item)", "desc": "Loop över lista"}, {"code": "n = 3\nwhile n > 0:\n    print(n)\n    n -= 1", "desc": "while-loop med nedräkning"}]}, {"cat": "Kom igång", "cmd": "funktioner", "short": "Skapa egna återanvändbara funktioner", "tags": ["builtin"], "examples": [{"code": "def hello(name):\n    return f'Hej {name}'\n\nprint(hello('Ada'))", "desc": "Enkel funktion"}, {"code": "def add(a, b=10):\n    return a + b\n\nprint(add(5))", "desc": "Standardargument"}, {"code": "def log(*parts):\n    print(' | '.join(map(str, parts)))\n\nlog('INFO', 'klar')", "desc": "Valfritt antal argument"}]}, {"cat": "Kom igång", "cmd": "list comprehensions", "short": "Bygg listor kompakt och snabbt", "tags": ["builtin"], "examples": [{"code": "nums = [1, 2, 3, 4]\nprint([n * n for n in nums])", "desc": "Skapa kvadrater"}, {"code": "words = ['python', 'guide']\nprint([w.upper() for w in words])", "desc": "Transformera strängar"}, {"code": "print([n for n in range(10) if n % 2 == 0])", "desc": "Filtrera jämna tal"}]}, {"cat": "Kom igång", "cmd": "enumerate / zip", "short": "Loopa med index eller flera sekvenser samtidigt", "tags": ["builtin"], "examples": [{"code": "for i, value in enumerate(['a', 'b', 'c'], start=1):\n    print(i, value)", "desc": "Loop med index"}, {"code": "for name, age in zip(['Ada', 'Linus'], [28, 35]):\n    print(name, age)", "desc": "Loop över två listor"}, {"code": "pairs = list(zip(['x', 'y'], [10, 20]))\nprint(pairs)", "desc": "Bygg lista av par"}]}, {"cat": "Kom igång", "cmd": "help / dir", "short": "Utforska objekt och inbyggda funktioner", "tags": ["builtin"], "examples": [{"code": "help(str)", "desc": "Visa hjälp för str"}, {"code": "print(dir(list))", "desc": "Visa metoder och attribut på list"}, {"code": "text = 'hej'\nprint(dir(text))", "desc": "Inspektera konkret objekt"}]}, {"cat": "Kom igång", "cmd": "lambda", "short": "Små anonyma funktioner för enkel transformation", "tags": ["builtin"], "examples": [{"code": "square = lambda x: x * x\nprint(square(5))", "desc": "Definiera liten funktion"}, {"code": "items = ['bbb', 'a', 'cc']\nprint(sorted(items, key=lambda s: len(s)))", "desc": "Sortera med lambda"}, {"code": "pairs = [(1, 'c'), (3, 'a'), (2, 'b')]\nprint(sorted(pairs, key=lambda p: p[1]))", "desc": "Sortera tuples på andra värdet"}]}, {"cat": "Kom igång", "cmd": "any / all", "short": "Kontrollera om något eller allt matchar", "tags": ["builtin"], "examples": [{"code": "values = [0, 0, 5]\nprint(any(values))", "desc": "True om minst ett värde är truthy"}, {"code": "values = [1, 2, 3]\nprint(all(v > 0 for v in values))", "desc": "True om alla villkor är sanna"}, {"code": "names = ['Ada', '', 'Linus']\nprint(all(names))", "desc": "Tom sträng gör resultatet False"}]}, {"cat": "Kom igång", "cmd": "sum / min / max", "short": "Vanliga aggregeringar på sekvenser", "tags": ["builtin"], "examples": [{"code": "nums = [4, 7, 1]\nprint(sum(nums))", "desc": "Summera lista"}, {"code": "nums = [4, 7, 1]\nprint(min(nums), max(nums))", "desc": "Minsta och största värde"}, {"code": "users = [{'name': 'Ada', 'age': 28}, {'name': 'Bea', 'age': 22}]\nprint(max(users, key=lambda u: u['age']))", "desc": "Hitta största objekt via key"}]}, {"cat": "Kom igång", "cmd": "typannoteringar", "short": "Gör funktioner tydligare med typer", "tags": ["builtin"], "examples": [{"code": "def hello(name: str) -> str:\n    return f'Hej {name}'", "desc": "Typannoterad funktion"}, {"code": "def add(nums: list[int]) -> int:\n    return sum(nums)", "desc": "Annotera lista av heltal"}, {"code": "value: int = 42\nprint(value)", "desc": "Annotera variabel"}]}, {"cat": "Data & Text", "cmd": "split / join / replace", "short": "Vanlig textbearbetning", "tags": ["builtin"], "examples": [{"code": "text = 'a,b,c'\nprint(text.split(','))", "desc": "Dela text till lista"}, {"code": "parts = ['a', 'b', 'c']\nprint('-'.join(parts))", "desc": "Slå ihop lista till text"}, {"code": "print('hej världen'.replace('världen', 'Stockholm'))", "desc": "Byt ut del av text"}]}, {"cat": "Data & Text", "cmd": "strip / lower / upper", "short": "Städa och normalisera text", "tags": ["builtin"], "examples": [{"code": "text = '  Python  '\nprint(text.strip())", "desc": "Ta bort inledande och avslutande whitespace"}, {"code": "print('PyThOn'.lower())", "desc": "Gör om till gemener"}, {"code": "print('python'.upper())", "desc": "Gör om till versaler"}]}, {"cat": "Data & Text", "cmd": "f-strings", "short": "Bygg läsbar formatterad text", "tags": ["builtin"], "examples": [{"code": "name = 'Ada'\nage = 28\nprint(f'{name} är {age} år')", "desc": "Infoga variabler i sträng"}, {"code": "price = 19.9\nprint(f'{price:.2f} kr')", "desc": "Formatera tal med två decimaler"}, {"code": "value = 255\nprint(f'hex={value:x}')", "desc": "Formatera till hexadecimal"}]}, {"cat": "Data & Text", "cmd": "dict / set", "short": "Arbeta med uppslagsdata och unika värden", "tags": ["builtin"], "examples": [{"code": "user = {'name': 'Ada', 'role': 'Admin'}\nprint(user['name'])", "desc": "Läs värde ur dict"}, {"code": "user = {}\nuser['active'] = True\nprint(user)", "desc": "Skapa och uppdatera dict"}, {"code": "print(set(['a', 'a', 'b']))", "desc": "Ta fram unika värden"}]}, {"cat": "Data & Text", "cmd": "sortering", "short": "Sortera listor och objekt", "tags": ["builtin"], "examples": [{"code": "nums = [5, 1, 8, 2]\nprint(sorted(nums))", "desc": "Sortera tal"}, {"code": "names = ['Linus', 'ada', 'Bea']\nprint(sorted(names, key=str.lower))", "desc": "Case-insensitiv sortering"}, {"code": "users = [{'name':'Ada','age':28}, {'name':'Bea','age':22}]\nprint(sorted(users, key=lambda u: u['age']))", "desc": "Sortera dictar på nyckel"}]}, {"cat": "Data & Text", "cmd": "regex", "short": "Sök och extrahera med reguljära uttryck", "tags": ["stdlib"], "examples": [{"code": "import re\ntext = 'Order 12345 klar'\nprint(re.search(r'\\d+', text).group())", "desc": "Hitta första talet"}, {"code": "import re\ntext = 'a1 b22 c333'\nprint(re.findall(r'\\d+', text))", "desc": "Hitta alla tal"}, {"code": "import re\nprint(re.sub(r'\\s+', ' ', 'hej   python\\nvärld').strip())", "desc": "Normalisera whitespace"}]}, {"cat": "Data & Text", "cmd": "collections.Counter", "short": "Räkna förekomster snabbt", "tags": ["stdlib"], "examples": [{"code": "from collections import Counter\nprint(Counter('mississippi'))", "desc": "Räkna tecken"}, {"code": "from collections import Counter\nwords = ['python', 'api', 'python']\nprint(Counter(words).most_common())", "desc": "Räkna ord och sortera vanligast först"}, {"code": "from collections import Counter\nnums = [1,1,2,3,3,3]\nprint(Counter(nums)[3])", "desc": "Hämta antal för ett visst värde"}]}, {"cat": "Data & Text", "cmd": "slicing", "short": "Ta ut delar av strängar och listor", "tags": ["builtin"], "examples": [{"code": "text = 'python'\nprint(text[:3])", "desc": "Ta första tre tecknen"}, {"code": "nums = [0,1,2,3,4,5]\nprint(nums[::2])", "desc": "Ta vartannat element"}, {"code": "print('python'[::-1])", "desc": "Vänd strängen baklänges"}]}, {"cat": "Data & Text", "cmd": "startswith / endswith", "short": "Kontrollera prefix och suffix", "tags": ["builtin"], "examples": [{"code": "filename = 'report.csv'\nprint(filename.endswith('.csv'))", "desc": "Kontrollera filändelse"}, {"code": "url = 'https://python.org'\nprint(url.startswith('https://'))", "desc": "Kontrollera prefix"}, {"code": "print('README.md'.endswith(('.md', '.txt')))", "desc": "Matcha flera suffix"}]}, {"cat": "Data & Text", "cmd": "map / filter", "short": "Transformera och filtrera iterabler funktionellt", "tags": ["builtin"], "examples": [{"code": "nums = [1, 2, 3]\nprint(list(map(lambda n: n * 2, nums)))", "desc": "Dubbla varje värde"}, {"code": "nums = [1, 2, 3, 4]\nprint(list(filter(lambda n: n % 2 == 0, nums)))", "desc": "Filtrera jämna tal"}, {"code": "words = ['1', '2', '3']\nprint(list(map(int, words)))", "desc": "Konvertera lista av strängar till heltal"}]}, {"cat": "Data & Text", "cmd": "itertools", "short": "Effektiva kombinationer, kedjor och upprepningar", "tags": ["stdlib"], "examples": [{"code": "from itertools import chain\nprint(list(chain([1, 2], [3, 4])))", "desc": "Kedja ihop flera sekvenser"}, {"code": "from itertools import combinations\nprint(list(combinations(['a', 'b', 'c'], 2)))", "desc": "Alla par-kombinationer"}, {"code": "from itertools import islice\nprint(list(islice(range(100), 5)))", "desc": "Ta ut de första fem elementen ur iterator"}]}, {"cat": "Data & Text", "cmd": "collections.defaultdict", "short": "Skapa dict med standardvärden automatiskt", "tags": ["stdlib"], "examples": [{"code": "from collections import defaultdict\nd = defaultdict(list)\nd['errors'].append('E1')\nprint(d)", "desc": "Bygg grupperade listor"}, {"code": "from collections import defaultdict\ncounts = defaultdict(int)\nfor ch in 'banana':\n    counts[ch] += 1\nprint(dict(counts))", "desc": "Räkna utan att initiera nycklar först"}, {"code": "from collections import defaultdict\ngroups = defaultdict(set)\ngroups['a'].add(1)\nprint(groups['a'])", "desc": "Använd set som standardtyp"}]}, {"cat": "Data & Text", "cmd": "deque", "short": "Snabb kö och stack från collections", "tags": ["stdlib"], "examples": [{"code": "from collections import deque\nq = deque([1, 2, 3])\nq.append(4)\nprint(q)", "desc": "Lägg till sist i kö"}, {"code": "from collections import deque\nq = deque([1, 2, 3])\nprint(q.popleft())", "desc": "Ta första elementet effektivt"}, {"code": "from collections import deque\nhistory = deque(maxlen=3)\nfor n in [1,2,3,4]:\n    history.append(n)\nprint(history)", "desc": "Behåll bara de senaste N elementen"}]}, {"cat": "Filer & Sökvägar", "cmd": "Path.cwd / Path.home", "short": "Visa aktuellt läge och hemkatalog", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nprint(Path.cwd())", "desc": "Visa aktuell arbetskatalog"}, {"code": "from pathlib import Path\nprint(Path.home())", "desc": "Visa användarens hemkatalog"}, {"code": "from pathlib import Path\nprint((Path.home() / 'Downloads'))", "desc": "Bygg sökväg med /-operatorn"}]}, {"cat": "Filer & Sökvägar", "cmd": "Path.mkdir", "short": "Skapa mappar och katalogstrukturer", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nPath('projekt').mkdir(exist_ok=True)", "desc": "Skapa en mapp"}, {"code": "from pathlib import Path\nPath('data/inbox').mkdir(parents=True, exist_ok=True)", "desc": "Skapa hela sökvägen"}, {"code": "from pathlib import Path\nprint(Path('projekt').exists())", "desc": "Kontrollera om mappen finns"}]}, {"cat": "Filer & Sökvägar", "cmd": "read_text / write_text", "short": "Läs och skriv textfiler enkelt", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nPath('note.txt').write_text('hej\\n', encoding='utf-8')", "desc": "Skriv text till fil"}, {"code": "from pathlib import Path\nprint(Path('note.txt').read_text(encoding='utf-8'))", "desc": "Läs hela textfilen"}, {"code": "from pathlib import Path\nwith Path('log.txt').open('a', encoding='utf-8') as f:\n    f.write('ny rad\\n')", "desc": "Append till befintlig fil"}]}, {"cat": "Filer & Sökvägar", "cmd": "iterdir / glob / rglob", "short": "Lista och sök filer i katalogträd", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nfor p in Path('.').iterdir():\n    print(p)", "desc": "Lista direkt innehåll"}, {"code": "from pathlib import Path\nprint(list(Path('.').glob('*.py')))", "desc": "Sök filer med mönster"}, {"code": "from pathlib import Path\nfor p in Path('.').rglob('*.json'):\n    print(p)", "desc": "Sök rekursivt"}]}, {"cat": "Filer & Sökvägar", "cmd": "shutil.copy / move", "short": "Kopiera, flytta och byta namn", "tags": ["stdlib"], "examples": [{"code": "import shutil\nshutil.copy('a.txt', 'backup_a.txt')", "desc": "Kopiera en fil"}, {"code": "import shutil\nshutil.move('a.txt', 'arkiv/a.txt')", "desc": "Flytta fil till ny plats"}, {"code": "from pathlib import Path\nPath('gammal.txt').rename('ny.txt')", "desc": "Byt namn på fil"}]}, {"cat": "Filer & Sökvägar", "cmd": "unlink / rmdir / rmtree", "short": "Ta bort filer och mappar", "tags": ["danger", "stdlib"], "examples": [{"code": "from pathlib import Path\nPath('gammal.txt').unlink(missing_ok=True)", "desc": "Ta bort fil om den finns"}, {"code": "from pathlib import Path\nPath('tom_mapp').rmdir()", "desc": "Ta bort tom katalog"}, {"code": "import shutil\nshutil.rmtree('cache', ignore_errors=True)", "desc": "Ta bort hel katalog rekursivt — försiktighet krävs"}]}, {"cat": "Filer & Sökvägar", "cmd": "tempfile", "short": "Skapa tillfälliga filer och mappar", "tags": ["stdlib"], "examples": [{"code": "import tempfile\nwith tempfile.NamedTemporaryFile(mode='w+', delete=True) as f:\n    f.write('hej')\n    f.seek(0)\n    print(f.read())", "desc": "Tillfällig fil som tas bort automatiskt"}, {"code": "import tempfile\nwith tempfile.TemporaryDirectory() as d:\n    print(d)", "desc": "Tillfällig katalog"}, {"code": "import tempfile\nprint(tempfile.gettempdir())", "desc": "Visa systemets temp-katalog"}]}, {"cat": "Filer & Sökvägar", "cmd": "zipfile", "short": "Skapa och läsa zip-filer", "tags": ["stdlib"], "examples": [{"code": "from zipfile import ZipFile\nwith ZipFile('demo.zip', 'w') as z:\n    z.write('note.txt')", "desc": "Packa fil i zip"}, {"code": "from zipfile import ZipFile\nwith ZipFile('demo.zip') as z:\n    print(z.namelist())", "desc": "Lista innehåll i zip"}, {"code": "from zipfile import ZipFile\nwith ZipFile('demo.zip') as z:\n    z.extractall('unzipped')", "desc": "Packa upp zip-fil"}]}, {"cat": "Filer & Sökvägar", "cmd": "hashlib", "short": "Beräkna filhashar för verifiering", "tags": ["stdlib"], "examples": [{"code": "import hashlib\nfrom pathlib import Path\ncontent = Path('note.txt').read_bytes()\nprint(hashlib.sha256(content).hexdigest())", "desc": "SHA-256 för en fil"}, {"code": "import hashlib\nprint(hashlib.md5(b'hello').hexdigest())", "desc": "MD5 för bytes"}, {"code": "import hashlib\nh = hashlib.sha1()\nh.update(b'a')\nh.update(b'b')\nprint(h.hexdigest())", "desc": "Bygg hash stegvis"}]}, {"cat": "Filer & Sökvägar", "cmd": "exists / is_file / is_dir", "short": "Kontrollera om sökvägar finns och vilken typ de är", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\np = Path('note.txt')\nprint(p.exists())", "desc": "Finns sökvägen?"}, {"code": "from pathlib import Path\np = Path('note.txt')\nprint(p.is_file())", "desc": "Är det en fil?"}, {"code": "from pathlib import Path\np = Path('data')\nprint(p.is_dir())", "desc": "Är det en katalog?"}]}, {"cat": "Filer & Sökvägar", "cmd": "Path.stat", "short": "Hämta metadata som storlek och ändringstid", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\np = Path('note.txt')\nprint(p.stat().st_size)", "desc": "Filstorlek i bytes"}, {"code": "from pathlib import Path\np = Path('note.txt')\nprint(p.stat().st_mtime)", "desc": "Senaste ändringstid som timestamp"}, {"code": "from pathlib import Path\nfor p in Path('.').glob('*'):\n    print(p.name, p.stat().st_size)", "desc": "Visa namn och storlek för flera filer"}]}, {"cat": "Filer & Sökvägar", "cmd": "shutil.make_archive", "short": "Skapa zip-arkiv av kataloger", "tags": ["stdlib"], "examples": [{"code": "import shutil\nshutil.make_archive('backup', 'zip', 'projekt')", "desc": "Skapa zip från en katalog"}, {"code": "import shutil\narchive = shutil.make_archive('site', 'gztar', 'webroot')\nprint(archive)", "desc": "Skapa gzip-tar arkiv"}, {"code": "import shutil\nprint(shutil.get_archive_formats())", "desc": "Visa tillgängliga arkivformat"}]}, {"cat": "Filer & Sökvägar", "cmd": "filecmp", "short": "Jämför filer och kataloger", "tags": ["stdlib"], "examples": [{"code": "import filecmp\nprint(filecmp.cmp('a.txt', 'b.txt', shallow=False))", "desc": "Jämför två filer på innehåll"}, {"code": "import filecmp\ncmp = filecmp.dircmp('old', 'new')\nprint(cmp.left_only, cmp.right_only)", "desc": "Jämför kataloger"}, {"code": "import filecmp\nprint(filecmp.cmpfiles('folder1', 'folder2', ['a.txt', 'b.txt']))", "desc": "Jämför flera filer samtidigt"}]}, {"cat": "Filer & Sökvägar", "cmd": "fnmatch", "short": "Matcha filnamn mot wildcard-mönster", "tags": ["stdlib"], "examples": [{"code": "import fnmatch\nprint(fnmatch.fnmatch('report.csv', '*.csv'))", "desc": "Matcha enkelt wildcard"}, {"code": "import fnmatch\nfiles = ['a.txt', 'b.csv', 'c.txt']\nprint(fnmatch.filter(files, '*.txt'))", "desc": "Filtrera lista av filnamn"}, {"code": "import fnmatch\nprint(fnmatch.fnmatchcase('README.MD', '*.md'))", "desc": "Case-sensitiv matchning"}]}, {"cat": "Filer & Sökvägar", "cmd": "pathlib batch rename", "short": "Byt namn på många filer i en loop", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nfor i, p in enumerate(Path('.').glob('*.txt'), start=1):\n    p.rename(f'doc_{i}.txt')", "desc": "Döp om alla txt-filer numeriskt"}, {"code": "from pathlib import Path\nfor p in Path('.').glob('*.log'):\n    p.rename(p.with_suffix('.txt'))", "desc": "Byt filändelse"}, {"code": "from pathlib import Path\nfor p in Path('photos').glob('*.jpg'):\n    p.rename(p.with_name(p.stem.lower() + p.suffix))", "desc": "Gör filnamn till gemener"}]}, {"cat": "Dataformat", "cmd": "json.loads / dumps", "short": "Läs och skriv JSON-data", "tags": ["stdlib"], "examples": [{"code": "import json\ndata = json.loads('{\"name\": \"Ada\"}')\nprint(data['name'])", "desc": "Parsa JSON-sträng"}, {"code": "import json\npayload = {'name': 'Ada', 'role': 'Admin'}\nprint(json.dumps(payload, ensure_ascii=False, indent=2))", "desc": "Skriv ut JSON snyggt"}, {"code": "import json\nfrom pathlib import Path\nPath('data.json').write_text(json.dumps({'ok': True}), encoding='utf-8')", "desc": "Spara JSON till fil"}]}, {"cat": "Dataformat", "cmd": "csv", "short": "Läs och skriv CSV-filer", "tags": ["stdlib"], "examples": [{"code": "import csv\nwith open('users.csv', newline='', encoding='utf-8') as f:\n    for row in csv.reader(f):\n        print(row)", "desc": "Läs CSV rad för rad"}, {"code": "import csv\nrows = [{'name':'Ada','age':28}, {'name':'Bea','age':22}]\nwith open('users.csv', 'w', newline='', encoding='utf-8') as f:\n    writer = csv.DictWriter(f, fieldnames=['name', 'age'])\n    writer.writeheader()\n    writer.writerows(rows)", "desc": "Skriv CSV från dictar"}, {"code": "import csv\nwith open('users.csv', newline='', encoding='utf-8') as f:\n    for row in csv.DictReader(f):\n        print(row['name'])", "desc": "Läs CSV med kolumnnamn"}]}, {"cat": "Dataformat", "cmd": "sqlite3", "short": "Arbeta med enkel lokal SQL-databas", "tags": ["stdlib"], "examples": [{"code": "import sqlite3\ncon = sqlite3.connect('demo.db')\ncur = con.cursor()\ncur.execute('CREATE TABLE IF NOT EXISTS users (name TEXT, age INTEGER)')\ncon.commit()\ncon.close()", "desc": "Skapa tabell"}, {"code": "import sqlite3\ncon = sqlite3.connect('demo.db')\ncur = con.cursor()\ncur.execute('INSERT INTO users VALUES (?, ?)', ('Ada', 28))\ncon.commit()\ncon.close()", "desc": "Insert med parametrar"}, {"code": "import sqlite3\ncon = sqlite3.connect('demo.db')\ncur = con.cursor()\nfor row in cur.execute('SELECT name, age FROM users'):\n    print(row)\ncon.close()", "desc": "Läs data från tabell"}]}, {"cat": "Dataformat", "cmd": "datetime", "short": "Hantera datum och tid", "tags": ["stdlib"], "examples": [{"code": "from datetime import datetime\nprint(datetime.now())", "desc": "Visa nuvarande tid"}, {"code": "from datetime import datetime\nprint(datetime.now().strftime('%Y-%m-%d %H:%M'))", "desc": "Formatera datum och tid"}, {"code": "from datetime import datetime, timedelta\nprint(datetime.now() + timedelta(days=7))", "desc": "Räkna fram datum i framtiden"}]}, {"cat": "Dataformat", "cmd": "decimal", "short": "Exaktare decimalaritmetik för pengar", "tags": ["stdlib"], "examples": [{"code": "from decimal import Decimal\nprint(Decimal('0.1') + Decimal('0.2'))", "desc": "Undvik flyttalsavrundning"}, {"code": "from decimal import Decimal\nprice = Decimal('19.90')\nqty = Decimal('3')\nprint(price * qty)", "desc": "Räkna pengar säkrare"}, {"code": "from decimal import Decimal, ROUND_HALF_UP\nprint(Decimal('2.345').quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))", "desc": "Runda till två decimaler"}]}, {"cat": "Dataformat", "cmd": "base64", "short": "Koda och avkoda text eller bytes", "tags": ["stdlib"], "examples": [{"code": "import base64\nprint(base64.b64encode(b'hello').decode())", "desc": "Koda bytes till Base64"}, {"code": "import base64\nprint(base64.b64decode('aGVsbG8=').decode())", "desc": "Avkoda Base64 till text"}, {"code": "import base64\npayload = base64.urlsafe_b64encode(b'user:123').decode()\nprint(payload)", "desc": "URL-säker Base64"}]}, {"cat": "Dataformat", "cmd": "uuid", "short": "Skapa unika identifierare", "tags": ["stdlib"], "examples": [{"code": "import uuid\nprint(uuid.uuid4())", "desc": "Slumpmässigt UUID"}, {"code": "import uuid\nprint(uuid.uuid1())", "desc": "Tidsbaserat UUID"}, {"code": "import uuid\nprint(uuid.UUID('12345678-1234-5678-1234-567812345678'))", "desc": "Parsa UUID från text"}]}, {"cat": "Dataformat", "cmd": "tomllib", "short": "Läs TOML-konfigurationer", "tags": ["stdlib"], "examples": [{"code": "import tomllib\nwith open('pyproject.toml', 'rb') as f:\n    data = tomllib.load(f)\nprint(data)", "desc": "Läs TOML-fil som dict"}, {"code": "import tomllib\ncfg = tomllib.loads('name = \"demo\"\\n[tool]\\nactive = true')\nprint(cfg['tool']['active'])", "desc": "Parsa TOML-sträng"}, {"code": "import tomllib\nwith open('settings.toml', 'rb') as f:\n    print(tomllib.load(f).get('database', {}))", "desc": "Hämta del av konfigurationen"}]}, {"cat": "Dataformat", "cmd": "configparser", "short": "Läs klassiska INI-filer", "tags": ["stdlib"], "examples": [{"code": "import configparser\ncfg = configparser.ConfigParser()\ncfg.read('app.ini', encoding='utf-8')\nprint(cfg.sections())", "desc": "Läs INI-fil"}, {"code": "import configparser\ncfg = configparser.ConfigParser()\ncfg['app'] = {'name': 'demo', 'debug': 'true'}\nwith open('app.ini', 'w', encoding='utf-8') as f:\n    cfg.write(f)", "desc": "Skriv INI-fil"}, {"code": "import configparser\ncfg = configparser.ConfigParser()\ncfg.read_string('[app]\\nport=8080')\nprint(cfg.getint('app', 'port'))", "desc": "Läs typad siffra från INI"}]}, {"cat": "Dataformat", "cmd": "urllib.parse", "short": "Bygg och analysera URL:er", "tags": ["stdlib"], "examples": [{"code": "from urllib.parse import urlencode\nprint(urlencode({'q': 'python guide', 'page': 1}))", "desc": "Bygg querystring"}, {"code": "from urllib.parse import urlparse\nprint(urlparse('https://python.org/docs/?page=2'))", "desc": "Parsa URL till delar"}, {"code": "from urllib.parse import parse_qs\nprint(parse_qs('page=2&tag=python&tag=api'))", "desc": "Läs query-parametrar"}]}, {"cat": "Dataformat", "cmd": "dataclasses", "short": "Skapa lätta dataobjekt med mindre boilerplate", "tags": ["stdlib"], "examples": [{"code": "from dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    age: int\n\nprint(User('Ada', 28))", "desc": "Enkel dataclass"}, {"code": "from dataclasses import dataclass, asdict\n\n@dataclass\nclass Point:\n    x: int\n    y: int\n\nprint(asdict(Point(1, 2)))", "desc": "Konvertera dataclass till dict"}, {"code": "from dataclasses import dataclass, field\n\n@dataclass\nclass Job:\n    tags: list[str] = field(default_factory=list)\n\nprint(Job())", "desc": "Säker default för listor"}]}, {"cat": "Dataformat", "cmd": "pathlib JSON/CSV export", "short": "Snabba exportmönster med Path", "tags": ["pathlib", "stdlib"], "examples": [{"code": "from pathlib import Path\nimport json\nPath('out.json').write_text(json.dumps({'ok': True}, indent=2), encoding='utf-8')", "desc": "Exportera JSON till fil"}, {"code": "from pathlib import Path\nrows = ['name,age', 'Ada,28', 'Bea,22']\nPath('users.csv').write_text('\\n'.join(rows), encoding='utf-8')", "desc": "Skriv enkel CSV manuellt"}, {"code": "from pathlib import Path\ntext = Path('users.csv').read_text(encoding='utf-8')\nprint(text.splitlines())", "desc": "Läs tillbaka exporterad text"}]}, {"cat": "OS & Processer", "cmd": "os / sys / platform", "short": "Visa systeminfo och miljö", "tags": ["stdlib"], "examples": [{"code": "import platform\nprint(platform.platform())", "desc": "Visa plattform och version"}, {"code": "import sys\nprint(sys.version)", "desc": "Visa Python-version"}, {"code": "import os\nprint(os.environ.get('USERNAME'))", "desc": "Läs miljövariabel"}]}, {"cat": "OS & Processer", "cmd": "subprocess.run", "short": "Kör externa kommandon och fånga output", "tags": ["stdlib"], "examples": [{"code": "import subprocess\nresult = subprocess.run(['cmd', '/c', 'echo hej'], capture_output=True, text=True)\nprint(result.stdout)", "desc": "Kör kommando och läs stdout"}, {"code": "import subprocess\nresult = subprocess.run(['python', '--version'], capture_output=True, text=True)\nprint(result.stdout or result.stderr)", "desc": "Läs versionsoutput"}, {"code": "import subprocess\nsubprocess.run(['notepad.exe'])", "desc": "Starta program och vänta tills det stängs"}]}, {"cat": "OS & Processer", "cmd": "subprocess.Popen", "short": "Starta process i bakgrunden", "tags": ["stdlib"], "examples": [{"code": "import subprocess\np = subprocess.Popen(['notepad.exe'])\nprint(p.pid)", "desc": "Starta process och visa PID"}, {"code": "import subprocess, time\np = subprocess.Popen(['cmd', '/c', 'timeout', '2'])\ntime.sleep(1)\nprint(p.poll())", "desc": "Kontrollera om process avslutats"}, {"code": "import subprocess\np = subprocess.Popen(['notepad.exe'])\np.terminate()", "desc": "Avsluta startad process"}]}, {"cat": "OS & Processer", "cmd": "psutil processer", "short": "Lista, filtrera och inspektera processer", "tags": ["optional"], "examples": [{"code": "import psutil\nfor p in psutil.process_iter(['pid', 'name']):\n    print(p.info)", "desc": "Lista processer"}, {"code": "import psutil\nmatches = [p.info for p in psutil.process_iter(['pid','name']) if (p.info['name'] or '').lower() == 'notepad.exe']\nprint(matches)", "desc": "Filtrera på processnamn"}, {"code": "import psutil\nprint(psutil.cpu_percent(interval=1))", "desc": "Visa CPU-användning"}]}, {"cat": "OS & Processer", "cmd": "psutil avsluta process", "short": "Avsluta processer säkrare än råa shell-kommandon", "tags": ["optional", "danger"], "examples": [{"code": "import psutil\npsutil.Process(1234).terminate()", "desc": "Avsluta process via PID"}, {"code": "import psutil\np = psutil.Process(1234)\nprint(p.name(), p.status())", "desc": "Visa namn och status för PID"}, {"code": "import psutil\nfor p in psutil.process_iter(['pid','name']):\n    if (p.info['name'] or '').lower() == 'notepad.exe':\n        p.terminate()", "desc": "Avsluta alla notepad-processer — försiktighet krävs"}]}, {"cat": "OS & Processer", "cmd": "argparse", "short": "Ta emot argument från kommandoraden", "tags": ["stdlib"], "examples": [{"code": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--name', required=True)\nargs = parser.parse_args()\nprint(f'Hej {args.name}')", "desc": "Enkelt CLI-verktyg"}, {"code": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--dry-run', action='store_true')\nargs = parser.parse_args()\nprint(args.dry_run)", "desc": "Boolesk flagga"}, {"code": "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('path')\nargs = parser.parse_args()\nprint(args.path)", "desc": "Positional argument"}]}, {"cat": "OS & Processer", "cmd": "getpass", "short": "Läs lösenord utan att ekoa det i terminalen", "tags": ["stdlib"], "examples": [{"code": "import getpass\npwd = getpass.getpass('Lösenord: ')\nprint('Inläst', len(pwd), 'tecken')", "desc": "Dold inmatning"}, {"code": "import getpass\nprint(getpass.getuser())", "desc": "Visa aktuell användare"}, {"code": "import getpass\nuser = input('User: ')\npwd = getpass.getpass('Password: ')", "desc": "Kombinera vanlig input och dold input"}]}, {"cat": "OS & Processer", "cmd": "shutil.which", "short": "Hitta exekverbara program i PATH", "tags": ["stdlib"], "examples": [{"code": "import shutil\nprint(shutil.which('python'))", "desc": "Visa sökväg till python"}, {"code": "import shutil\nprint(shutil.which('git'))", "desc": "Kontrollera om git finns i PATH"}, {"code": "import shutil\nfor tool in ['python', 'git', 'node']:\n    print(tool, shutil.which(tool))", "desc": "Kolla flera verktyg"}]}, {"cat": "OS & Processer", "cmd": "os.walk", "short": "Gå igenom hela katalogträd", "tags": ["stdlib"], "examples": [{"code": "import os\nfor root, dirs, files in os.walk('.'):\n    print(root, len(files))", "desc": "Iterera över katalogträd"}, {"code": "import os\nfor root, dirs, files in os.walk('.'):\n    for name in files:\n        if name.endswith('.py'):\n            print(os.path.join(root, name))", "desc": "Hitta alla Python-filer"}, {"code": "import os\nsize = 0\nfor root, dirs, files in os.walk('.'):\n    for name in files:\n        path = os.path.join(root, name)\n        if os.path.isfile(path):\n            size += os.path.getsize(path)\nprint(size)", "desc": "Summera filstorlek rekursivt"}]}, {"cat": "OS & Processer", "cmd": "threading basics", "short": "Kör kod i flera trådar för IO-tunga jobb", "tags": ["stdlib"], "examples": [{"code": "import threading\n\ndef worker():\n    print('jobb körs')\n\nt = threading.Thread(target=worker)\nt.start()\nt.join()", "desc": "Starta en enkel tråd"}, {"code": "import threading, time\n\ndef worker(name):\n    time.sleep(1)\n    print(name)\n\nthreads = [threading.Thread(target=worker, args=(f't{i}',)) for i in range(3)]\nfor t in threads: t.start()\nfor t in threads: t.join()", "desc": "Kör flera trådar"}, {"code": "import threading\nlock = threading.Lock()\nwith lock:\n    print('låst sektion')", "desc": "Skydda kritisk sektion med Lock"}]}, {"cat": "OS & Processer", "cmd": "queue.Queue", "short": "Skicka arbete säkert mellan trådar", "tags": ["stdlib"], "examples": [{"code": "from queue import Queue\nq = Queue()\nq.put('jobb')\nprint(q.get())", "desc": "Lägg i och hämta från kö"}, {"code": "from queue import Queue\nq = Queue(maxsize=2)\nq.put(1)\nq.put(2)\nprint(q.qsize())", "desc": "Begränsad kö med storlek"}, {"code": "from queue import Queue\nq = Queue()\nfor i in range(3):\n    q.put(i)\nwhile not q.empty():\n    print(q.get())", "desc": "Töm kö stegvis"}]}, {"cat": "OS & Processer", "cmd": "multiprocessing", "short": "Kör CPU-tyngre jobb i separata processer", "tags": ["stdlib"], "examples": [{"code": "from multiprocessing import Process\n\ndef worker():\n    print('process körs')\n\np = Process(target=worker)\np.start()\np.join()", "desc": "Starta separat process"}, {"code": "from multiprocessing import Pool\nwith Pool(2) as pool:\n    print(pool.map(lambda x: x * x, [1, 2, 3, 4]))", "desc": "Pool för flera jobb"}, {"code": "from multiprocessing import cpu_count\nprint(cpu_count())", "desc": "Visa antal CPU-kärnor"}]}, {"cat": "OS & Processer", "cmd": "pathlib + permissions", "short": "Grundläggande filåtkomst och rättighetskontroll", "tags": ["pathlib", "stdlib"], "examples": [{"code": "import os\nprint(os.access('note.txt', os.R_OK))", "desc": "Kan filen läsas?"}, {"code": "import os\nprint(os.access('note.txt', os.W_OK))", "desc": "Kan filen skrivas?"}, {"code": "from pathlib import Path\np = Path('note.txt')\nprint(oct(p.stat().st_mode))", "desc": "Visa filens mode-bitar"}]}, {"cat": "Nätverk & Webb", "cmd": "socket porttest", "short": "Testa om host och port går att nå", "tags": ["net", "stdlib"], "examples": [{"code": "import socket\nwith socket.socket() as s:\n    s.settimeout(3)\n    ok = s.connect_ex(('google.com', 443)) == 0\nprint(ok)", "desc": "Testa en TCP-port"}, {"code": "import socket\nfor port in [80, 443, 3389]:\n    with socket.socket() as s:\n        s.settimeout(1)\n        print(port, s.connect_ex(('127.0.0.1', port)) == 0)", "desc": "Testa flera portar"}, {"code": "import socket\nprint(socket.gethostname())", "desc": "Visa lokalt hostnamn"}]}, {"cat": "Nätverk & Webb", "cmd": "DNS med socket", "short": "Gör enkla DNS-uppslag", "tags": ["net", "stdlib"], "examples": [{"code": "import socket\nprint(socket.gethostbyname('python.org'))", "desc": "Slå upp IPv4-adress"}, {"code": "import socket\nprint(socket.gethostbyname_ex('python.org'))", "desc": "Visa namn, alias och adresser"}, {"code": "import socket\nprint(socket.getfqdn())", "desc": "Visa fullständigt domännamn"}]}, {"cat": "Nätverk & Webb", "cmd": "urllib.request", "short": "Hämta webbinnehåll med standardbiblioteket", "tags": ["net", "stdlib"], "examples": [{"code": "from urllib.request import urlopen\nwith urlopen('https://www.python.org/') as r:\n    print(r.status)\n    print(r.read(120))", "desc": "Hämta rådata från URL"}, {"code": "from urllib.request import Request, urlopen\nreq = Request('https://www.python.org/', headers={'User-Agent': 'python'})\nwith urlopen(req) as r:\n    print(r.read(200).decode('utf-8', 'ignore'))", "desc": "Anropa URL med header"}, {"code": "from urllib.parse import urlencode\nprint(urlencode({'page': 1, 'active': 'true'}))", "desc": "Bygg querystring"}]}, {"cat": "Nätverk & Webb", "cmd": "requests GET / POST", "short": "Arbeta bekvämt med REST-API:er", "tags": ["net", "optional"], "examples": [{"code": "import requests\nr = requests.get('https://api.github.com')\nprint(r.status_code)\nprint(r.json())", "desc": "GET och JSON-parsning"}, {"code": "import requests\npayload = {'name': 'Ada'}\nr = requests.post('https://httpbin.org/post', json=payload)\nprint(r.json()['json'])", "desc": "POST med JSON-body"}, {"code": "import requests\nheaders = {'Authorization': 'Bearer TOKEN'}\nr = requests.get('https://api.example.com/users', headers=headers)\nprint(r.status_code)", "desc": "GET med auth-header"}]}, {"cat": "Nätverk & Webb", "cmd": "requests Session", "short": "Återanvänd anslutningar och headers", "tags": ["net", "optional"], "examples": [{"code": "import requests\ns = requests.Session()\ns.headers.update({'User-Agent': 'demo-client'})\nr = s.get('https://api.github.com')\nprint(r.status_code)", "desc": "Session med gemensamma headers"}, {"code": "import requests\nwith requests.Session() as s:\n    s.auth = ('user', 'pass')\n    print(s.get('https://httpbin.org/basic-auth/user/pass').status_code)", "desc": "Session med auth"}, {"code": "import requests\nwith requests.Session() as s:\n    s.cookies.set('mode', 'demo')\n    print(s.cookies.get('mode'))", "desc": "Återanvänd cookies i session"}]}, {"cat": "Nätverk & Webb", "cmd": "download fil", "short": "Ladda ner fil med streaming", "tags": ["net", "optional"], "examples": [{"code": "import requests\nwith requests.get('https://www.python.org/static/img/python-logo.png', stream=True) as r:\n    r.raise_for_status()\n    with open('python-logo.png', 'wb') as f:\n        for chunk in r.iter_content(chunk_size=8192):\n            f.write(chunk)", "desc": "Ladda ner fil i chunkar"}, {"code": "import requests\nr = requests.get('https://www.python.org/robots.txt')\nprint(r.text)", "desc": "Läs textfil från webben"}, {"code": "from urllib.request import urlretrieve\nurlretrieve('https://www.python.org/robots.txt', 'robots.txt')", "desc": "Snabb nedladdning med standardbiblioteket"}]}, {"cat": "Nätverk & Webb", "cmd": "http.server", "short": "Starta enkel lokal webbserver", "tags": ["net", "stdlib"], "examples": [{"code": "python -m http.server 8000", "desc": "Snabb statisk webbserver från terminalen"}, {"code": "from http.server import HTTPServer, SimpleHTTPRequestHandler\nserver = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)\nserver.serve_forever()", "desc": "Starta enkel server från script"}, {"code": "from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler\nserver = ThreadingHTTPServer(('127.0.0.1', 9000), SimpleHTTPRequestHandler)\nserver.serve_forever()", "desc": "Trådad server för flera samtidiga klienter"}]}, {"cat": "Nätverk & Webb", "cmd": "ipaddress", "short": "Validera och arbeta med IP-nät", "tags": ["net", "stdlib"], "examples": [{"code": "import ipaddress\nprint(ipaddress.ip_address('192.168.1.10'))", "desc": "Parsa IP-adress"}, {"code": "import ipaddress\nnet = ipaddress.ip_network('192.168.1.0/24')\nprint(net.num_addresses)", "desc": "Visa antal adresser i nät"}, {"code": "import ipaddress\nnet = ipaddress.ip_network('10.0.0.0/30')\nprint(list(net.hosts()))", "desc": "Lista host-adresser i litet nät"}]}, {"cat": "Nätverk & Webb", "cmd": "ssl", "short": "Skapa TLS-kontext för säkra anslutningar", "tags": ["net", "stdlib"], "examples": [{"code": "import ssl\nctx = ssl.create_default_context()\nprint(ctx)", "desc": "Skapa standard TLS-kontext"}, {"code": "import ssl\nctx = ssl.create_default_context(cafile='ca.pem')\nprint(ctx.verify_mode)", "desc": "Använd egen CA-fil"}, {"code": "import ssl\nprint(ssl.OPENSSL_VERSION)", "desc": "Visa underliggande OpenSSL-version"}]}, {"cat": "Nätverk & Webb", "cmd": "subprocess ping", "short": "Kör ping via operativsystemets verktyg", "tags": ["net", "stdlib"], "examples": [{"code": "import subprocess\nresult = subprocess.run(['ping', 'python.org'], capture_output=True, text=True)\nprint(result.stdout)", "desc": "Ping och skriv ut resultat"}, {"code": "import subprocess\nok = subprocess.run(['ping', '127.0.0.1'], capture_output=True).returncode == 0\nprint(ok)", "desc": "True om ping lyckas"}, {"code": "import subprocess\nfor host in ['python.org', 'github.com']:\n    result = subprocess.run(['ping', host], capture_output=True)\n    print(host, result.returncode == 0)", "desc": "Testa flera hosts"}]}, {"cat": "Nätverk & Webb", "cmd": "psutil nätverk", "short": "Visa interface, IP-adresser och nätstats", "tags": ["optional", "net"], "examples": [{"code": "import psutil\nprint(psutil.net_if_addrs())", "desc": "Visa alla nätverksinterface med adresser"}, {"code": "import psutil\nprint(psutil.net_if_stats())", "desc": "Visa status och hastighet per interface"}, {"code": "import psutil\nprint(psutil.net_connections(kind='inet')[:5])", "desc": "Visa några aktiva nätverksanslutningar"}]}, {"cat": "Automation", "cmd": "os.environ", "short": "Läs konfiguration från miljövariabler", "tags": ["stdlib"], "examples": [{"code": "import os\napi_key = os.environ.get('API_KEY')\nprint(api_key)", "desc": "Läs env-var"}, {"code": "import os\nis_prod = os.environ.get('APP_ENV') == 'prod'\nprint(is_prod)", "desc": "Styr logik från miljön"}, {"code": "import os\nrequired = ['API_KEY', 'APP_ENV']\nmissing = [k for k in required if not os.environ.get(k)]\nprint(missing)", "desc": "Validera nödvändiga variabler"}]}, {"cat": "Automation", "cmd": "threading.Timer", "short": "Kör funktion senare i samma process", "tags": ["stdlib"], "examples": [{"code": "import threading\nthreading.Timer(5, lambda: print('5 sek senare')).start()", "desc": "Skjut upp körning"}, {"code": "import threading\n\ndef job():\n    print('jobb klart')\n\nthreading.Timer(1, job).start()", "desc": "Kör namngiven funktion senare"}, {"code": "import threading\n\nt = threading.Timer(10, lambda: print('hej'))\nt.start()\nt.cancel()", "desc": "Avbryt timer innan körning"}]}, {"cat": "Automation", "cmd": "time.sleep loop", "short": "Bygg enkel återkommande körning", "tags": ["stdlib"], "examples": [{"code": "import time\nwhile True:\n    print('kör jobb')\n    time.sleep(60)", "desc": "Kör jobb varje minut medan processen lever"}, {"code": "import time\nfor _ in range(3):\n    print('tick')\n    time.sleep(1)", "desc": "Pausa mellan iterationer"}, {"code": "import time\nstart = time.time()\ntime.sleep(2)\nprint(time.time() - start)", "desc": "Mät enkel tidsåtgång"}]}, {"cat": "Automation", "cmd": "asyncio", "short": "Skriv asynkron logik för IO-tunga jobb", "tags": ["stdlib"], "examples": [{"code": "import asyncio\n\nasync def main():\n    print('start')\n    await asyncio.sleep(1)\n    print('klart')\n\nasyncio.run(main())", "desc": "Minsta asyncio-exempel"}, {"code": "import asyncio\n\nasync def worker(n):\n    await asyncio.sleep(1)\n    return n * 2\n\nasync def main():\n    results = await asyncio.gather(worker(1), worker(2))\n    print(results)\n\nasyncio.run(main())", "desc": "Kör flera coroutines parallellt"}, {"code": "import asyncio\n\nasync def main():\n    task = asyncio.create_task(asyncio.sleep(2))\n    await task\n\nasyncio.run(main())", "desc": "Skapa och await:a task"}]}, {"cat": "Automation", "cmd": "concurrent.futures", "short": "Parallell körning med trådar eller processer", "tags": ["stdlib"], "examples": [{"code": "from concurrent.futures import ThreadPoolExecutor\nwith ThreadPoolExecutor(max_workers=3) as ex:\n    print(list(ex.map(lambda x: x * 2, [1,2,3])))", "desc": "Kör flera jobb i trådpool"}, {"code": "from concurrent.futures import ProcessPoolExecutor\nwith ProcessPoolExecutor() as ex:\n    print(list(ex.map(abs, [-1, -2, -3])))", "desc": "Processpool för CPU-jobb"}, {"code": "from concurrent.futures import ThreadPoolExecutor\nwith ThreadPoolExecutor() as ex:\n    future = ex.submit(sum, [1,2,3])\n    print(future.result())", "desc": "Skicka enstaka jobb och hämta resultat"}]}, {"cat": "Automation", "cmd": "retry loop", "short": "Prova om operationer som kan fallera tillfälligt", "tags": ["builtin"], "examples": [{"code": "import time\nfor attempt in range(3):\n    try:\n        print('försök', attempt + 1)\n        break\n    except Exception:\n        time.sleep(1)", "desc": "Enkel retry-struktur"}, {"code": "import time\nfor attempt in range(5):\n    ok = attempt == 3\n    if ok:\n        print('lyckades')\n        break\n    time.sleep(0.5)", "desc": "Bryt när villkor blir sant"}, {"code": "import time\nfor attempt in range(1, 4):\n    wait = attempt * 2\n    print('väntar', wait)\n    time.sleep(0.1)", "desc": "Enkel backoff-logik"}]}, {"cat": "Automation", "cmd": "contextlib", "short": "Skapa egna context managers", "tags": ["stdlib"], "examples": [{"code": "from contextlib import contextmanager\n\n@contextmanager\ndef banner(name):\n    print('start', name)\n    yield\n    print('slut', name)\n\nwith banner('jobb'):\n    print('kör')", "desc": "Egen context manager med decorator"}, {"code": "from contextlib import suppress\nwith suppress(FileNotFoundError):\n    open('saknas.txt')", "desc": "Undertryck specifikt fel"}, {"code": "from contextlib import nullcontext\nwith nullcontext('demo') as value:\n    print(value)", "desc": "No-op context manager"}]}, {"cat": "Automation", "cmd": "glob batch jobs", "short": "Kör samma jobb mot många filer", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nfor p in Path('.').glob('*.txt'):\n    print(p.read_text(encoding='utf-8'))", "desc": "Loopa över alla txt-filer"}, {"code": "from pathlib import Path\nfor p in Path('logs').rglob('*.log'):\n    p.rename(p.with_suffix('.txt'))", "desc": "Massuppdatera filändelser"}, {"code": "from pathlib import Path\nsizes = {p.name: p.stat().st_size for p in Path('.').glob('*') if p.is_file()}\nprint(sizes)", "desc": "Samla metadata från många filer"}]}, {"cat": "Automation", "cmd": "subprocess pipelines", "short": "Kedja externa kommandon via Python", "tags": ["stdlib"], "examples": [{"code": "import subprocess\np1 = subprocess.Popen(['cmd', '/c', 'echo hej'], stdout=subprocess.PIPE, text=True)\nout = subprocess.check_output(['findstr', 'hej'], stdin=p1.stdout, text=True)\nprint(out)", "desc": "Enkel pipeline på Windows"}, {"code": "import subprocess\nresult = subprocess.run('dir | findstr .py', capture_output=True, text=True, shell=True)\nprint(result.stdout)", "desc": "Shell-pipeline i ett steg"}, {"code": "import subprocess\nproc = subprocess.run(['cmd', '/c', 'set'], capture_output=True, text=True)\nprint(proc.returncode)", "desc": "Fånga exitkod från kommando"}]}, {"cat": "Automation", "cmd": "pathlib templating", "short": "Bygg filer och mappar från mallar", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nbase = Path('project')\nfor name in ['src', 'tests', 'docs']:\n    (base / name).mkdir(parents=True, exist_ok=True)", "desc": "Skapa standardstruktur"}, {"code": "from pathlib import Path\n(base := Path('project')).mkdir(exist_ok=True)\n(base / 'README.md').write_text('# Demo\\n', encoding='utf-8')", "desc": "Skriv mallfil"}, {"code": "from pathlib import Path\nfor env in ['dev', 'prod']:\n    Path(f'.env.{env}').write_text('APP_ENV=' + env, encoding='utf-8')", "desc": "Generera flera miljöfiler"}]}, {"cat": "Automation", "cmd": "sched", "short": "Schemalägg körning inom en Python-process", "tags": ["stdlib"], "examples": [{"code": "import sched, time\nscheduler = sched.scheduler(time.time, time.sleep)\nscheduler.enter(1, 1, print, argument=('hej',))\nscheduler.run()", "desc": "Kör ett jobb om en sekund"}, {"code": "import sched, time\nscheduler = sched.scheduler(time.time, time.sleep)\ndef job():\n    print('jobb')\nscheduler.enter(2, 1, job)\nscheduler.run()", "desc": "Schemalägg namngiven funktion"}, {"code": "import sched, time\nscheduler = sched.scheduler(time.time, time.sleep)\nevent = scheduler.enter(5, 1, print, argument=('senare',))\nscheduler.cancel(event)", "desc": "Skapa och avbryt event"}]}, {"cat": "Loggning & Felsökning", "cmd": "logging.basicConfig", "short": "Skriv loggar till fil eller konsol", "tags": ["stdlib"], "examples": [{"code": "import logging\nlogging.basicConfig(level=logging.INFO)\nlogging.info('Programmet startade')", "desc": "Logga till konsol"}, {"code": "import logging\nlogging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')\nlogging.info('Programmet startade')", "desc": "Logga till fil"}, {"code": "import logging\nlogging.warning('Det här är en varning')", "desc": "Olika loggnivåer"}]}, {"cat": "Loggning & Felsökning", "cmd": "logging.exception", "short": "Logga full stacktrace vid fel", "tags": ["stdlib"], "examples": [{"code": "import logging\ntry:\n    1 / 0\nexcept Exception:\n    logging.exception('Något gick fel')", "desc": "Stacktrace i logg"}, {"code": "import logging\nlogging.basicConfig(level=logging.ERROR)\ntry:\n    open('saknas.txt')\nexcept Exception:\n    logging.exception('Filen saknas')", "desc": "Fel med kontext"}, {"code": "import logging\nlogger = logging.getLogger('demo')\ntry:\n    int('x')\nexcept ValueError:\n    logger.exception('Kunde inte konvertera')", "desc": "Använd egen logger"}]}, {"cat": "Loggning & Felsökning", "cmd": "try / except / finally", "short": "Hantera fel och städa upp resurser", "tags": ["builtin"], "examples": [{"code": "try:\n    x = 1 / 0\nexcept ZeroDivisionError as e:\n    print(f'Fel: {e}')", "desc": "Fånga specifikt fel"}, {"code": "f = None\ntry:\n    f = open('note.txt', encoding='utf-8')\n    print(f.read())\nfinally:\n    if f:\n        f.close()", "desc": "Stäng fil i finally"}, {"code": "try:\n    value = int('42')\nexcept ValueError:\n    value = 0\nprint(value)", "desc": "Fallback vid fel"}]}, {"cat": "Loggning & Felsökning", "cmd": "traceback", "short": "Skriv ut stacktrace manuellt", "tags": ["stdlib"], "examples": [{"code": "import traceback\ntry:\n    1 / 0\nexcept Exception:\n    traceback.print_exc()", "desc": "Skriv stacktrace till stderr"}, {"code": "import traceback\ntry:\n    open('saknas.txt')\nexcept Exception as e:\n    print(traceback.format_exc())", "desc": "Få stacktrace som text"}, {"code": "import traceback\ntry:\n    int('x')\nexcept Exception as e:\n    print(type(e).__name__)\n    print(traceback.format_exception_only(type(e), e))", "desc": "Visa bara feltyp och meddelande"}]}, {"cat": "Loggning & Felsökning", "cmd": "pprint", "short": "Skriv ut komplex data läsbart", "tags": ["stdlib"], "examples": [{"code": "from pprint import pprint\npprint({'users': [{'name': 'Ada', 'roles': ['admin', 'dev']}]})", "desc": "Läsbar utskrift för nested data"}, {"code": "from pprint import pprint\nitems = [{'id': i, 'square': i*i} for i in range(5)]\npprint(items)", "desc": "Skriv lista av dictar snyggt"}, {"code": "from pprint import pformat\ntext = pformat({'ok': True, 'count': 3})\nprint(text)", "desc": "Få formatterad sträng"}]}, {"cat": "Loggning & Felsökning", "cmd": "warnings", "short": "Visa eller filtrera varningar", "tags": ["stdlib"], "examples": [{"code": "import warnings\nwarnings.warn('Det här är en testvarning')", "desc": "Skapa egen varning"}, {"code": "import warnings\nwarnings.simplefilter('ignore')\nwarnings.warn('Denna visas inte')", "desc": "Ignorera varningar"}, {"code": "import warnings\nwarnings.simplefilter('error')\ntry:\n    warnings.warn('blir exception')\nexcept Warning as e:\n    print(e)", "desc": "Behandla varningar som fel"}]}, {"cat": "Loggning & Felsökning", "cmd": "time.perf_counter", "short": "Mät exekveringstid noggrannare", "tags": ["stdlib"], "examples": [{"code": "import time\nstart = time.perf_counter()\nsum(range(1000000))\nprint(time.perf_counter() - start)", "desc": "Mät tid för kodblock"}, {"code": "import time\nstart = time.perf_counter()\nfor _ in range(3):\n    pass\nprint(time.perf_counter() - start)", "desc": "Mät snabb operation"}, {"code": "import time\nsamples = []\nfor _ in range(5):\n    s = time.perf_counter()\n    sum(range(10000))\n    samples.append(time.perf_counter() - s)\nprint(samples)", "desc": "Samla flera tidsmätningar"}]}, {"cat": "Loggning & Felsökning", "cmd": "cProfile", "short": "Profilera var tiden går i programmet", "tags": ["stdlib"], "examples": [{"code": "import cProfile\ncProfile.run('sum(range(1000000))')", "desc": "Profilera ett uttryck snabbt"}, {"code": "import cProfile\n\ndef work():\n    return sum(i*i for i in range(10000))\n\ncProfile.run('work()')", "desc": "Profilera egen funktion"}, {"code": "import cProfile, pstats\nprof = cProfile.Profile()\nprof.enable()\nsum(range(100000))\nprof.disable()\npstats.Stats(prof).sort_stats('cumulative').print_stats(5)", "desc": "Sortera och visa toppanrop"}]}, {"cat": "Loggning & Felsökning", "cmd": "unittest", "short": "Skriv enkla tester i standardbiblioteket", "tags": ["stdlib"], "examples": [{"code": "import unittest\n\nclass TestMath(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(1 + 1, 2)\n\nunittest.main()", "desc": "Minsta testfall"}, {"code": "import unittest\n\nclass TestText(unittest.TestCase):\n    def test_upper(self):\n        self.assertEqual('py'.upper(), 'PY')", "desc": "Testa stränglogik"}, {"code": "import unittest\n\nclass TestList(unittest.TestCase):\n    def test_contains(self):\n        self.assertIn(2, [1,2,3])", "desc": "Vanlig assertion för medlemskap"}]}, {"cat": "Loggning & Felsökning", "cmd": "doctest", "short": "Testa direkt i docstrings", "tags": ["stdlib"], "examples": [{"code": "def add(a, b):\n    '''\n    >>> add(1, 2)\n    3\n    '''\n    return a + b", "desc": "Lägg test i docstring"}, {"code": "import doctest\n\ndef hello(name):\n    '''\n    >>> hello('Ada')\n    'Hej Ada'\n    '''\n    return f'Hej {name}'\n\ndoctest.testmod()", "desc": "Kör doctest för modul"}, {"code": "import doctest\nprint(doctest.testmod())", "desc": "Visa resultat från doctest-körning"}]}, {"cat": "Loggning & Felsökning", "cmd": "RotatingFileHandler", "short": "Rulla loggfiler när de blir stora", "tags": ["stdlib"], "examples": [{"code": "import logging\nfrom logging.handlers import RotatingFileHandler\nhandler = RotatingFileHandler('app.log', maxBytes=100000, backupCount=3)\nlogging.basicConfig(level=logging.INFO, handlers=[handler])", "desc": "Rotera loggar på storlek"}, {"code": "import logging\nfrom logging.handlers import RotatingFileHandler\nlogger = logging.getLogger('demo')\nlogger.addHandler(RotatingFileHandler('demo.log', maxBytes=5000, backupCount=2))\nlogger.warning('test')", "desc": "Egen logger med rotation"}, {"code": "from logging.handlers import TimedRotatingFileHandler\nhandler = TimedRotatingFileHandler('daily.log', when='midnight', backupCount=7)\nprint(handler)", "desc": "Rotera loggar per tid"}]}, {"cat": "Windows & System", "cmd": "winreg läsa", "short": "Läs värden från Windows-registret", "tags": ["windows", "stdlib"], "examples": [{"code": "import winreg\nkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion')\nprint(winreg.QueryValueEx(key, 'ProductName')[0])\nwinreg.CloseKey(key)", "desc": "Visa Windows-produktnamn"}, {"code": "import winreg\nwith winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Control Panel\\\\Desktop') as key:\n    print(winreg.QueryValueEx(key, 'Wallpaper')[0])", "desc": "Läs user setting från registret"}, {"code": "import winreg\nwith winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer') as key:\n    print(winreg.QueryValueEx(key, 'Shell Folders')[0])", "desc": "Läs skalväg"}]}, {"cat": "Windows & System", "cmd": "winreg skriva", "short": "Skapa, ändra och radera registervärden", "tags": ["windows", "stdlib", "danger"], "examples": [{"code": "import winreg\nkey = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'Software\\\\MyApp')\nwinreg.SetValueEx(key, 'Enabled', 0, winreg.REG_DWORD, 1)\nwinreg.CloseKey(key)", "desc": "Skriv DWORD-värde"}, {"code": "import winreg\nkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\\\\MyApp', 0, winreg.KEY_SET_VALUE)\nwinreg.SetValueEx(key, 'Name', 0, winreg.REG_SZ, 'Demo')\nwinreg.CloseKey(key)", "desc": "Skriv strängvärde"}, {"code": "import winreg\nkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\\\\MyApp', 0, winreg.KEY_SET_VALUE)\nwinreg.DeleteValue(key, 'Enabled')\nwinreg.CloseKey(key)", "desc": "Radera värde"}]}, {"cat": "Windows & System", "cmd": "psutil disk", "short": "Visa partitioner och ledigt utrymme", "tags": ["optional"], "examples": [{"code": "import psutil\nfor part in psutil.disk_partitions():\n    print(part)", "desc": "Lista partitioner"}, {"code": "import psutil\nusage = psutil.disk_usage('C:\\\\')\nprint(usage.total, usage.free, usage.percent)", "desc": "Visa storlek, ledigt och procent"}, {"code": "import psutil\nfor part in psutil.disk_partitions():\n    try:\n        usage = psutil.disk_usage(part.mountpoint)\n        print(part.device, usage.percent)\n    except PermissionError:\n        pass", "desc": "Visa användning per partition"}]}, {"cat": "Windows & System", "cmd": "pathlib + env", "short": "Arbeta med användarprofil och vanliga systemvägar", "tags": ["pathlib", "stdlib"], "examples": [{"code": "from pathlib import Path\nprint(Path.home())", "desc": "Visa hemkatalog"}, {"code": "import os\nprint(os.environ.get('USERPROFILE'))", "desc": "Visa Windows användarprofil"}, {"code": "from pathlib import Path\nprint(Path.home() / 'Downloads')", "desc": "Bygg sökväg till Downloads"}]}, {"cat": "Windows & System", "cmd": "os.startfile", "short": "Öppna filer eller mappar med standardapp i Windows", "tags": ["windows", "stdlib"], "examples": [{"code": "import os\nos.startfile('note.txt')", "desc": "Öppna fil i associerad app"}, {"code": "import os\nos.startfile('.')", "desc": "Öppna aktuell katalog i Explorer"}, {"code": "import os\nos.startfile('https://www.python.org/')", "desc": "Öppna URL i standardwebbläsare"}]}, {"cat": "Windows & System", "cmd": "winsound", "short": "Spela enkla ljud i Windows", "tags": ["windows", "stdlib"], "examples": [{"code": "import winsound\nwinsound.Beep(1000, 300)", "desc": "Spela enkel ton"}, {"code": "import winsound\nwinsound.MessageBeep()", "desc": "Systemljud"}, {"code": "import winsound\nwinsound.PlaySound('SystemExit', winsound.SND_ALIAS)", "desc": "Spela systemalias"}]}, {"cat": "Windows & System", "cmd": "tasklist / taskkill via subprocess", "short": "Prata med Windows processverktyg från Python", "tags": ["windows", "stdlib", "danger"], "examples": [{"code": "import subprocess\nprint(subprocess.run(['tasklist'], capture_output=True, text=True).stdout)", "desc": "Lista processer via tasklist"}, {"code": "import subprocess\nprint(subprocess.run(['tasklist', '/FI', 'IMAGENAME eq notepad.exe'], capture_output=True, text=True).stdout)", "desc": "Filtrera specifik process"}, {"code": "import subprocess\nsubprocess.run(['taskkill', '/IM', 'notepad.exe', '/F'])", "desc": "Avsluta process via taskkill — försiktighet krävs"}]}, {"cat": "Windows & System", "cmd": "winreg enum", "short": "Lista nycklar och värden i registret", "tags": ["windows", "stdlib"], "examples": [{"code": "import winreg\nwith winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software') as key:\n    print(winreg.EnumKey(key, 0))", "desc": "Hämta första undernyckeln"}, {"code": "import winreg\nwith winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software') as key:\n    i = 0\n    while True:\n        try:\n            print(winreg.EnumKey(key, i))\n            i += 1\n        except OSError:\n            break", "desc": "Loopa över alla undernycklar"}, {"code": "import winreg\nwith winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Environment') as key:\n    print(winreg.EnumValue(key, 0))", "desc": "Visa första värdet i nyckel"}]}, {"cat": "Miljö & Paket", "cmd": "venv", "short": "Skapa isolerad Python-miljö", "tags": ["stdlib"], "examples": [{"code": "python -m venv .venv", "desc": "Skapa virtuell miljö"}, {"code": ".venv\\\\Scripts\\\\activate", "desc": "Aktivera venv i Windows-shell"}, {"code": "python -m pip install requests psutil", "desc": "Installera paket i aktiv miljö"}]}, {"cat": "Miljö & Paket", "cmd": "pip", "short": "Installera, lista och exportera paket", "tags": ["tooling"], "examples": [{"code": "python -m pip install requests", "desc": "Installera paket"}, {"code": "python -m pip list", "desc": "Lista installerade paket"}, {"code": "python -m pip freeze > requirements.txt", "desc": "Exportera beroenden"}]}, {"cat": "Miljö & Paket", "cmd": "requirements.txt", "short": "Arbeta med låsta beroenden", "tags": ["tooling"], "examples": [{"code": "python -m pip freeze > requirements.txt", "desc": "Skriv nuvarande beroenden till fil"}, {"code": "python -m pip install -r requirements.txt", "desc": "Installera från requirements-fil"}, {"code": "requests==2.32.0\npsutil==6.0.0", "desc": "Exempel på requirements-innehåll"}]}, {"cat": "Miljö & Paket", "cmd": "importlib", "short": "Ladda moduler dynamiskt", "tags": ["stdlib"], "examples": [{"code": "import importlib\nmath = importlib.import_module('math')\nprint(math.sqrt(16))", "desc": "Importera modul via namnsträng"}, {"code": "import importlib\nmodule_name = 'json'\nmod = importlib.import_module(module_name)\nprint(mod.dumps({'ok': True}))", "desc": "Välj modul dynamiskt"}, {"code": "import importlib.util\nprint(importlib.util.find_spec('requests'))", "desc": "Kontrollera om modul finns"}]}, {"cat": "Miljö & Paket", "cmd": "site / sys.path", "short": "Se var Python söker efter moduler", "tags": ["stdlib"], "examples": [{"code": "import sys\nprint(sys.path)", "desc": "Visa import-sökvägar"}, {"code": "import site\nprint(site.getsitepackages())", "desc": "Visa site-packages-sökvägar"}, {"code": "import site\nprint(site.getusersitepackages())", "desc": "Visa user site-packages"}]}, {"cat": "Miljö & Paket", "cmd": "pkgutil", "short": "Lista tillgängliga moduler och paket", "tags": ["stdlib"], "examples": [{"code": "import pkgutil\nmods = [m.name for m in pkgutil.iter_modules()]\nprint(mods[:20])", "desc": "Visa några installerade moduler"}, {"code": "import pkgutil\nprint(any(m.name == 'requests' for m in pkgutil.iter_modules()))", "desc": "Kontrollera om visst paket finns"}, {"code": "import pkgutil\nfor m in pkgutil.iter_modules():\n    if m.name.startswith('json'):\n        print(m.name)", "desc": "Sök efter moduler via prefix"}]}, {"cat": "Miljö & Paket", "cmd": "__name__ == '__main__'", "short": "Gör modul körbar som script", "tags": ["builtin"], "examples": [{"code": "def main():\n    print('kör som script')\n\nif __name__ == '__main__':\n    main()", "desc": "Standardmönster för körbar modul"}, {"code": "if __name__ == '__main__':\n    print('direktkörning')", "desc": "Kod som bara körs direkt"}, {"code": "def helper():\n    return 42\n\nif __name__ == '__main__':\n    print(helper())", "desc": "Bra struktur för återanvändbara moduler"}]}, {"cat": "Miljö & Paket", "cmd": "pathlib project bootstrap", "short": "Skapa enkel projektstruktur för Python", "tags": ["pathlib"], "examples": [{"code": "from pathlib import Path\nroot = Path('myapp')\nfor p in ['myapp', 'tests', 'docs']:\n    (root / p).mkdir(parents=True, exist_ok=True)", "desc": "Skapa grundstruktur"}, {"code": "from pathlib import Path\nroot = Path('myapp')\n(root / 'README.md').write_text('# myapp\\n', encoding='utf-8')", "desc": "Generera README"}, {"code": "from pathlib import Path\n(root := Path('myapp')).mkdir(exist_ok=True)\n(root / 'pyproject.toml').write_text('[project]\\nname = \"myapp\"\\n', encoding='utf-8')", "desc": "Skapa enkel pyproject-fil"}]}];
+let activeCat = "Alla";
+let query = "";
+let activeTag = "";
+let toolbarFilter = "all";
+
+const searchInput = document.getElementById("search");
+const resultCountEl = document.getElementById("resultCount");
+const activeFiltersEl = document.getElementById("activeFilters");
+
+function esc(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function tagMatch(card) {
+  const tags = card.tags || [];
+  if (activeTag && !tags.includes(activeTag)) return false;
+  if (toolbarFilter !== "all" && !tags.includes(toolbarFilter)) return false;
+  return true;
+}
+
+function matches(card) {
+  const haystack = [
+    card.cat,
+    card.cmd,
+    card.short,
+    ...(card.tags || []),
+    ...(card.examples || []).flatMap(e => [e.desc, e.code])
+  ].join("\n").toLowerCase();
+  return haystack.includes(query.toLowerCase());
+}
+
+function filtered() {
+  return COMMANDS.filter(card =>
+    (activeCat === "Alla" || card.cat === activeCat) &&
+    tagMatch(card) &&
+    matches(card)
+  );
+}
+
+function renderActiveFilters() {
+  const chips = [];
+  if (query) chips.push(`<span class="active-chip">sök: ${esc(query)}</span>`);
+  if (activeCat !== "Alla") chips.push(`<span class="active-chip">kategori: ${esc(activeCat)}</span>`);
+  if (activeTag) chips.push(`<span class="active-chip">snabbfilter: ${esc(activeTag)}</span>`);
+  if (toolbarFilter !== "all") chips.push(`<span class="active-chip">toolbar: ${esc(toolbarFilter)}</span>`);
+  activeFiltersEl.innerHTML = chips.join("");
+}
+
+function render() {
+  const root = document.getElementById("grid");
+  const items = filtered();
+  resultCountEl.textContent = items.length;
+  renderActiveFilters();
+
+  if (!items.length) {
+    root.innerHTML = '<div class="empty">Ingen träff. Testa en annan sökning, snabbfilter eller kategori.</div>';
+    return;
+  }
+
+  root.innerHTML = items.map((card, i) => `
+    <article class="card">
+      <div class="card-head">
+        <div class="meta">
+          <div class="cat-label">${esc(card.cat)}</div>
+          <div class="cat-label">${(card.examples || []).length} exempel</div>
+        </div>
+        <h3 class="cmd">${esc(card.cmd)}</h3>
+        <div class="short">${esc(card.short)}</div>
+        <div class="tags">
+          ${(card.tags || []).map(tag => `<span class="tag ${esc(tag)}">${esc(tag)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="examples">
+        <div class="examples-header">
+          <div class="examples-title">Exempel</div>
+          <button class="copy-all-btn" onclick="copyAllExamples($18, this)">kopiera alla</button>
+        </div>
+        ${(card.examples || []).map((e, idx) => `
+          <div class="example">
+            <div class="example-top">
+              <span>${esc(e.desc)}</span>
+              <button class="copy-btn" onclick="copyCode('code-${i}-${idx}', this)">kopiera</button>
+            </div>
+            <pre id="code-${i}-${idx}">${esc(e.code)}</pre>
+          </div>
+        `).join('')}
+      </div>
+    </article>
+  `).join('');
+}
+
+function flashButton(button) {
+  const old = button.textContent;
+  button.textContent = 'kopierat';
+  setTimeout(() => button.textContent = old, 1200);
+}
+
+function copyCode(id, button) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => flashButton(button));
+}
+
+function copyAllExamples(cardIndex, button) {
+  const text = (COMMANDS[cardIndex].examples || []).map(e => e.code).join("\n\n# ---\n\n");
+  navigator.clipboard.writeText(text).then(() => flashButton(button));
+}
+
+function clearAllFilters() {
+  activeCat = "Alla";
+  query = "";
+  activeTag = "";
+  toolbarFilter = "all";
+  searchInput.value = "";
+  document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+  document.querySelector('.cat-btn[data-cat="Alla"]').classList.add("active");
+  document.querySelectorAll(".quick-btn").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".toolbar-chip").forEach(x => x.classList.remove("active"));
+  document.querySelector('.toolbar-chip[data-filter="all"]').classList.add("active");
+  render();
+}
+
+searchInput.addEventListener("input", e => {
+  query = e.target.value || "";
+  render();
+});
+
+document.querySelectorAll(".cat-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    activeCat = btn.dataset.cat;
+    render();
+  });
+});
+
+document.querySelectorAll(".quick-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const same = activeTag === btn.dataset.tag;
+    document.querySelectorAll(".quick-btn").forEach(x => x.classList.remove("active"));
+    if (same) {
+      activeTag = "";
+    } else {
+      btn.classList.add("active");
+      activeTag = btn.dataset.tag;
+    }
+    render();
+  });
+});
+
+document.querySelectorAll(".toolbar-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".toolbar-chip").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    toolbarFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById("clearFilters").addEventListener("click", clearAllFilters);
+document.getElementById("clearFiltersTop").addEventListener("click", clearAllFilters);
+document.getElementById("scrollTopBtn").addEventListener("click", () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  if (e.key === "Escape") {
+    if (document.activeElement === searchInput) {
+      searchInput.blur();
+    }
+    if (query) {
+      query = "";
+      searchInput.value = "";
+      render();
+    }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
