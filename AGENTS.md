@@ -9,7 +9,7 @@ repo-specific build, test, safety, or release instructions.
 
 Default local vault path:
 
-`/Users/mansys/mqobsidian`
+`$MQ_OBSIDIAN_DIR`
 
 If `MQ_OBSIDIAN_DIR` is set, prefer that value.
 
@@ -18,10 +18,10 @@ If `MQ_OBSIDIAN_DIR` is set, prefer that value.
 For work related to `macos-scripts`:
 
 0. Read `.mq/context/task-pack.md` if it exists and matches the task.
-1. Read `/Users/mansys/mqobsidian/memory/learn/agent/macos-scripts.md` if it exists.
-2. Read `/Users/mansys/mqobsidian/systems/macos-scripts/hot.md` if it exists.
-3. Read `/Users/mansys/mqobsidian/systems/macos-scripts/index.md` if it exists.
-4. Read `/Users/mansys/mqobsidian/memory/learn/repos/macos-scripts.md` if it exists.
+1. Read `$MQ_OBSIDIAN_DIR/memory/learn/agent/macos-scripts.md` if it exists.
+2. Read `$MQ_OBSIDIAN_DIR/systems/macos-scripts/hot.md` if it exists.
+3. Read `$MQ_OBSIDIAN_DIR/systems/macos-scripts/index.md` if it exists.
+4. Read `$MQ_OBSIDIAN_DIR/memory/learn/repos/macos-scripts.md` if it exists.
 5. Read individual pattern notes only if the compressed notes are insufficient.
 
 Stop reading as soon as the task is grounded.
