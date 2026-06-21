@@ -182,17 +182,6 @@ surface_compact_dual_figure_row() {
     "$C_RESET"
 }
 
-# Formats git state for the compact terminal surface.
-surface_git_state() {
-  local count
-  count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
-  if [[ -z "$count" || "$count" == "0" ]]; then
-    printf "Clean"
-  else
-    printf "Dirty (%s)" "$count"
-  fi
-}
-
 # Renders the command surface view for terminal output.
 render_command_surface() {
   local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR ALT_FIGURE_COLOR width git_state tip activity system_state

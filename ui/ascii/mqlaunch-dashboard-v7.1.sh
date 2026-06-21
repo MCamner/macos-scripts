@@ -33,6 +33,14 @@ ACCENT_YELLOW="${C_YELLOW}"
 ACCENT_RED="${C_RED}"
 ACCENT_DIM="${C_DIM}"
 
+_MQ_DASHBOARD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_MQ_DASHBOARD_ROOT="$(cd "$_MQ_DASHBOARD_DIR/../.." && pwd)"
+_MQ_DASHBOARD_UI="$_MQ_DASHBOARD_ROOT/ui/terminal-ui/mq-ui.sh"
+if [[ -f "$_MQ_DASHBOARD_UI" ]]; then
+  # shellcheck disable=SC1090
+  source "$_MQ_DASHBOARD_UI"
+fi
+
 # Handles mq strip ansi.
 mq_strip_ansi() {
   printf '%s' "$1" | perl -pe 's/\e\[[0-9;]*m//g'
@@ -394,7 +402,7 @@ mqlaunch_dashboard_v71() {
   local width compact
   local mode_color state_color severity severity_color
   local user host now shell_name os_name cwd repo branch dirty counts staged unstaged untracked ahead_behind
-  local total_changes next_action workspace_summary
+  local snapshot total_changes next_action workspace_summary
   local mem_widget batt_widget bar_max
 
   width="$(mq_term_width)"
@@ -409,11 +417,14 @@ mqlaunch_dashboard_v71() {
   cwd="$(mq_cwd)"
   repo="$(mq_git_repo)"
   branch="$(mq_git_branch)"
-  dirty="$(mq_git_dirty_state)"
-  counts="$(mq_git_counts)"
-  staged="$(printf '%s' "$counts" | cut -d'|' -f1)"
-  unstaged="$(printf '%s' "$counts" | cut -d'|' -f2)"
-  untracked="$(printf '%s' "$counts" | cut -d'|' -f3)"
+  snapshot="$(mq_git_status_snapshot "$cwd")"
+  staged="$(printf '%s' "$snapshot" | cut -d'|' -f1)"
+  unstaged="$(printf '%s' "$snapshot" | cut -d'|' -f2)"
+  untracked="$(printf '%s' "$snapshot" | cut -d'|' -f3)"
+  total_changes="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+  dirty="$(printf '%s' "$snapshot" | cut -d'|' -f5)"
+  severity="$(printf '%s' "$snapshot" | cut -d'|' -f6)"
+  next_action="$(printf '%s' "$snapshot" | cut -d'|' -f7)"
   ahead_behind="$(mq_git_ahead_behind)"
   mem_widget="$(mq_memory_widget)"
   batt_widget="$(mq_battery_widget)"
@@ -424,11 +435,11 @@ mqlaunch_dashboard_v71() {
 
   bar_max=$(( staged + unstaged + untracked ))
   (( bar_max < 5 )) && bar_max=5
-  total_changes=$(( staged + unstaged + untracked ))
 
-  severity="$(mq_dirty_severity "$staged" "$unstaged" "$untracked")"
   severity_color="$(mq_dirty_severity_color "$severity")"
-  next_action="$(mq_git_next_action "$staged" "$unstaged" "$untracked" "$ahead_behind")"
+  if (( total_changes == 0 )); then
+    next_action="$(mq_git_next_action "$staged" "$unstaged" "$untracked" "$ahead_behind")"
+  fi
 
   mode_color="$(mq_mode_color "$mode")"
   state_color="$(mq_state_color "$dirty")"

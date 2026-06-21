@@ -243,11 +243,19 @@ show_release_status() {
   row_bold "RELEASE STATUS"
   empty_row
 
+  local snapshot change_count state severity next_action
+  snapshot="$(mq_git_status_snapshot "$RELEASE_REPO")"
+  change_count="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+  state="$(printf '%s' "$snapshot" | cut -d'|' -f5)"
+  severity="$(printf '%s' "$snapshot" | cut -d'|' -f6)"
+  next_action="$(printf '%s' "$snapshot" | cut -d'|' -f7)"
+
   row "Repo:            $RELEASE_REPO"
   row "Current version: $(current_version)"
   row "Latest tag:      $(latest_tag || true)"
-  row "Release script:  $RELEASE_SCRIPT"
-  row "Changelog:       $CHANGELOG_FILE"
+  row "Working tree:    $state ($change_count changes)"
+  row "Severity:        $severity"
+  row "Next action:     $next_action"
 
   print_footer
   pause_enter
@@ -697,19 +705,72 @@ auto_release() {
   pause_enter
 }
 
-# Returns a one-line status string for the menu footer.
+# Returns a compact status string for the menu footer.
 release_status_line() {
-  local files_status
+  local files_status snapshot change_count
   files_status="$(_release_files_status)"
   case "$files_status" in
     missing:*)
-      printf 'not initialized — missing: %s  →  run option 3' "${files_status#missing:}"
+      printf 'not initialized'
       ;;
     not_executable)
-      printf 'release.sh not executable  →  run option 3'
+      printf 'release.sh not executable'
       ;;
     *)
-      printf 'ready  (v%s)' "$(current_version)"
+      snapshot="$(mq_git_status_snapshot "$RELEASE_REPO")"
+      change_count="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+      if (( change_count > 0 )); then
+        printf 'blocked — dirty (%s)' "$change_count"
+      else
+        printf 'ready (v%s)' "$(current_version)"
+      fi
+      ;;
+  esac
+}
+
+# Returns release status detail for the menu footer.
+release_status_detail() {
+  local files_status missing_files snapshot change_count severity
+  files_status="$(_release_files_status)"
+  case "$files_status" in
+    missing:*)
+      missing_files="${files_status#missing:}"
+      missing_files="${missing_files//,/ , }"
+      missing_files="${missing_files// ,/,}"
+      printf 'Missing: %s' "$missing_files"
+      ;;
+    not_executable)
+      printf 'Script: %s' "$RELEASE_SCRIPT"
+      ;;
+    *)
+      snapshot="$(mq_git_status_snapshot "$RELEASE_REPO")"
+      change_count="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+      severity="$(printf '%s' "$snapshot" | cut -d'|' -f6)"
+      if (( change_count > 0 )); then
+        printf 'Severity: %s — review or stash changes before release' "$severity"
+      else
+        printf 'Latest tag: %s' "$(latest_tag || true)"
+      fi
+      ;;
+  esac
+}
+
+# Returns the next recommended release menu action.
+release_status_next() {
+  local files_status snapshot change_count
+  files_status="$(_release_files_status)"
+  case "$files_status" in
+    missing:*|not_executable)
+      printf 'Next: 3. Initialize files'
+      ;;
+    *)
+      snapshot="$(mq_git_status_snapshot "$RELEASE_REPO")"
+      change_count="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+      if (( change_count > 0 )); then
+        printf 'Next: 1. Review status'
+      else
+        printf 'Next: 4. Dry run release'
+      fi
       ;;
   esac
 }
@@ -757,7 +818,9 @@ print_release_menu() {
   surface_split_row "7. View changelog" "8. Show latest tags" "$width" "$panel_color"
   surface_split_row "9. Open changelog" "10. Open release script" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "Status: $(release_status_line)" "$width" "$panel_color"
+  surface_row "STATUS" "$width" "$panel_color"
+  surface_split_row "Status: $(release_status_line)" "$(release_status_next)" "$width" "$panel_color"
+  surface_row "$(release_status_detail)" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }

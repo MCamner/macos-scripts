@@ -125,13 +125,64 @@ surface_split_row() {
     "$C_RESET"
 }
 
+# Returns the canonical Git status snapshot used by mqlaunch surfaces.
+# Format: staged|unstaged|untracked|changes|state|severity|next_action
+mq_git_status_snapshot() {
+  local repo="${1:-.}"
+  local porcelain staged unstaged untracked changes state severity next_action
+
+  if ! git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf '0|0|0|0|NO_REPO|UNKNOWN|Open a Git repository'
+    return 0
+  fi
+
+  porcelain="$(git -C "$repo" status --porcelain=v1 --untracked-files=normal 2>/dev/null || true)"
+  staged="$(printf '%s\n' "$porcelain" | awk 'length($0) >= 2 && substr($0, 1, 1) != " " && substr($0, 1, 1) != "?" {count++} END {print count + 0}')"
+  unstaged="$(printf '%s\n' "$porcelain" | awk 'length($0) >= 2 && substr($0, 1, 2) != "??" && substr($0, 2, 1) != " " {count++} END {print count + 0}')"
+  untracked="$(printf '%s\n' "$porcelain" | awk 'substr($0, 1, 2) == "??" {count++} END {print count + 0}')"
+  changes="$(printf '%s\n' "$porcelain" | awk 'length($0) >= 2 {count++} END {print count + 0}')"
+
+  if (( changes == 0 )); then
+    state="CLEAN"
+    severity="STABLE"
+    next_action="Nothing to commit"
+  else
+    state="DIRTY"
+    if (( changes <= 2 )); then
+      severity="LOW"
+    elif (( changes <= 6 )); then
+      severity="MEDIUM"
+    elif (( changes <= 12 )); then
+      severity="HIGH"
+    else
+      severity="CRITICAL"
+    fi
+
+    if (( unstaged > 0 || untracked > 0 )); then
+      next_action="Review diff, then stage selected files"
+    elif (( staged > 0 )); then
+      next_action="Commit staged changes"
+    else
+      next_action="Review git status"
+    fi
+  fi
+
+  printf '%s|%s|%s|%s|%s|%s|%s' \
+    "$staged" "$unstaged" "$untracked" "$changes" "$state" "$severity" "$next_action"
+}
+
 # Handles surface git state.
 surface_git_state() {
-  local count
-  count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+  local repo="${1:-.}"
+  local snapshot count state
+  snapshot="$(mq_git_status_snapshot "$repo")"
+  count="$(printf '%s' "$snapshot" | cut -d'|' -f4)"
+  state="$(printf '%s' "$snapshot" | cut -d'|' -f5)"
 
-  if [[ -z "$count" || "$count" == "0" ]]; then
+  if [[ "$state" == "CLEAN" ]]; then
     printf "Clean"
+  elif [[ "$state" == "NO_REPO" ]]; then
+    printf "No Git"
   else
     printf "Dirty (%s)" "$count"
   fi
