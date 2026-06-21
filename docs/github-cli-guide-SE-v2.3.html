@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GitHub CLI Guide v2.3 — svensk kommandoreferens</title>
+<meta name="description" content="Svensk sökbar kommandoreferens för GitHub CLI v2.3 med tyngd på Actions/CI och PR/review, plus preset-spår och workflow-recept." />
+<style>
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-2: #1f2937;
+  --panel-3: #0f141b;
+  --line: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --green: #3fb950;
+  --green-soft: rgba(63,185,80,.12);
+  --blue: #2f81f7;
+  --blue-soft: rgba(47,129,247,.12);
+  --red: #f85149;
+  --yellow: #d29922;
+  --shadow: 0 12px 30px rgba(0,0,0,.28);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ui: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(47,129,247,.12), transparent 24%),
+    radial-gradient(circle at top right, rgba(63,185,80,.08), transparent 20%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+}
+.topbar {
+  background: rgba(13,17,23,.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+.brand-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font: 700 12px var(--mono);
+  border: 1px solid rgba(63,185,80,.24);
+}
+.network {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.hero {
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 28px 22px 18px;
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  gap: 22px;
+}
+.hero-main {
+  background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: #cfe1ff;
+  border: 1px solid rgba(47,129,247,.24);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+h1 {
+  margin: 0 0 12px;
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+}
+.hero p {
+  margin: 0;
+  color: #c9d1d9;
+  line-height: 1.75;
+  max-width: 72ch;
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: var(--green);
+  color: #08120b;
+}
+.btn-secondary {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--line);
+}
+.hero-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.hero-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.hero-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.hero-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.wrap {
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 0 22px 22px;
+}
+.section-block {
+  margin-bottom: 22px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.section-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.section-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.recipe-grid, .track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+.recipe-card, .track-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.recipe-head, .track-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.recipe-card h3, .track-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.recipe-card p, .track-card p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.recipe-card pre {
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-3);
+  color: var(--text);
+  font: 13px/1.65 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+.track-meta {
+  color: #cfe1ff;
+  background: rgba(47,129,247,.08);
+  border: 1px solid rgba(47,129,247,.16);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: 12px/1.5 var(--mono);
+}
+.track-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.apply-btn, .copy-btn {
+  border-radius: 10px;
+  border: 1px solid rgba(47,129,247,.18);
+  background: rgba(47,129,247,.08);
+  color: #cfe1ff;
+  padding: 7px 10px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.apply-btn {
+  background: rgba(63,185,80,.12);
+  border-color: rgba(63,185,80,.22);
+  color: #7ee787;
+}
+.app {
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 0 22px 22px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+}
+.sidebar {
+  align-self: start;
+  position: sticky;
+  top: 14px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.panel.pad { padding: 18px; }
+.search {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  font-size: 15px;
+  outline: none;
+  background: var(--panel-3);
+  color: var(--text);
+}
+.search:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(47,129,247,.16);
+}
+.search-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+.sidebar-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.cat-btn, .quick-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.cat-btn:hover, .cat-btn.active, .quick-btn:hover, .quick-btn.active {
+  background: rgba(47,129,247,.08);
+  border-color: rgba(47,129,247,.18);
+}
+.count {
+  min-width: 28px;
+  text-align: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(210,153,34,.18);
+  color: #f2cc60;
+  font: 700 12px var(--mono);
+}
+.sidebar-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.sidebar-link {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.sidebar-link:hover {
+  color: var(--text);
+  border-color: rgba(47,129,247,.18);
+}
+.main {
+  min-width: 0;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.stat .num {
+  font: 700 28px var(--mono);
+  color: var(--green);
+}
+.stat .label {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 13px;
+}
+.note {
+  background: rgba(47,129,247,.08);
+  border: 1px solid rgba(47,129,247,.18);
+  color: #d7e6ff;
+  border-radius: 18px;
+  padding: 16px 18px;
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+.statusbar {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  margin-bottom: 16px;
+  background: rgba(22,27,34,.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.status-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--panel-3);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font: 700 12px var(--mono);
+}
+.status-badge strong { color: var(--green); }
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(47,129,247,.08);
+  border: 1px solid rgba(47,129,247,.18);
+  color: #cfe1ff;
+  font: 700 12px var(--mono);
+}
+.clear-btn {
+  border-radius: 12px;
+  border: 1px solid rgba(47,129,247,.18);
+  background: rgba(47,129,247,.08);
+  color: #cfe1ff;
+  padding: 9px 12px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.toolbar-chip {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 12px;
+  cursor: pointer;
+  font: 700 12px var(--mono);
+  color: var(--muted);
+}
+.toolbar-chip.active, .toolbar-chip:hover {
+  border-color: rgba(47,129,247,.22);
+  background: rgba(47,129,247,.08);
+  color: #cfe1ff;
+}
+.section-title {
+  margin: 4px 0 16px;
+  font-size: 28px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-head {
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cmd {
+  margin: 0 0 8px;
+  font: 700 16px var(--mono);
+  color: #d2e9ff;
+}
+.cat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.short {
+  color: var(--muted);
+  line-height: 1.6;
+  min-height: 48px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font: 700 11px var(--mono);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-3);
+}
+.tag.core { background: rgba(47,129,247,.08); color: #cfe1ff; border-color: rgba(47,129,247,.18); }
+.tag.actions, .tag.workflow, .tag.run, .tag.cache { background: rgba(210,153,34,.12); color: #f2cc60; border-color: rgba(210,153,34,.2); }
+.tag.api, .tag.search, .tag.attestation, .tag.security { background: rgba(63,185,80,.12); color: #7ee787; border-color: rgba(63,185,80,.18); }
+.tag.admin, .tag.ruleset { background: rgba(188,140,255,.12); color: #d2a8ff; border-color: rgba(188,140,255,.2); }
+.tag.productivity, .tag.extension, .tag.config { background: rgba(255,166,87,.12); color: #ffa657; border-color: rgba(255,166,87,.2); }
+.tag.danger { background: rgba(248,81,73,.12); color: #ff938b; border-color: rgba(248,81,73,.2); }
+.tag.auth, .tag.repo, .tag.pr, .tag.issues, .tag.release, .tag.gist, .tag.project, .tag.org, .tag.discussion, .tag.codespace, .tag.preview, .tag.skill { background: rgba(110,118,129,.14); color: #c9d1d9; border-color: rgba(110,118,129,.2); }
+.examples {
+  padding: 14px 18px 18px;
+}
+.examples-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.examples-title {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.copy-all-btn, .copy-btn {
+  border-radius: 10px;
+  border: 1px solid rgba(47,129,247,.18);
+  background: rgba(47,129,247,.08);
+  color: #cfe1ff;
+  padding: 7px 10px;
+  font: 700 12px var(--mono);
+  cursor: pointer;
+}
+.example {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.example:last-child { margin-bottom: 0; }
+.example-top {
+  background: var(--panel-3);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.example-top span {
+  color: var(--muted);
+  font-size: 13px;
+}
+pre {
+  margin: 0;
+  padding: 14px;
+  font: 13px/1.65 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  color: var(--text);
+  background: var(--bg);
+}
+.footer {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty {
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  padding: 40px 18px;
+  text-align: center;
+  color: var(--muted);
+}
+.small-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+@media (max-width: 1100px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-side { grid-template-columns: 1fr 1fr; }
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .statusbar { position: static; }
+}
+@media (max-width: 700px) {
+  h1 { font-size: 31px; }
+  .grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .hero-side { grid-template-columns: 1fr; }
+  .recipe-grid, .track-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span>GitHub CLI Guide</span>
+        <span class="brand-badge">v2.3</span>
+      </div>
+      <div class="network">
+        <span>PR review</span>
+        <span>Checks</span>
+        <span>Merge queue</span>
+        <span>Workflow runs</span>
+        <span>CI triage</span>
+        <span>Release verify</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <section class="hero-main">
+        <div class="badge">svensk referens • GitHub CLI • PR/review + Actions/CI fokus</div>
+        <h1>GitHub-kommandon för terminalen</h1>
+        <p>Version 2.3 är specialiserad mot två saker: <strong>PR/review</strong> och <strong>Actions/CI</strong>. Den stora kommandobasen är kvar, men preset-spår, nya kort och nya workflow-recept är nu tydligt byggda för review-flöden, CI-triage, reruns, workflow dispatch, release-verifiering och merge queue-arbete.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#tracks">Öppna fokusspår</a>
+          <a class="btn btn-secondary" href="#guide">Hoppa till guiden</a>
+        </div>
+      </section>
+
+      <aside class="hero-side">
+        <section class="hero-card"><h3>Fokusspår</h3><p>v2.2 lägger till presets för onboarding, repo/PR, issues, CI/release, admin/security och Codespaces.</p></section><section class="hero-card"><h3>Snabbare till rätt kort</h3><p>Preset-knapparna applicerar sökning och filter åt dig istället för att du klickar runt manuellt.</p></section><section class="hero-card"><h3>101 kommandokort</h3><p>Samma kommandobas som v2.1, men bättre användbarhet över 14 kategorier.</p></section><section class="hero-card"><h3>Mer operativ guide</h3><p>Workflow-recept, preset packs och filterstatus gör v2.2 mer användbar under faktiskt terminalarbete.</p></section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="section-block" id="tracks">
+      <div class="section-header">
+        <div>
+          <h2>Fokusspår</h2>
+          <p>Preset-knappar som tar dig direkt till rätt PR/review- eller CI-vy.</p>
+        </div>
+      </div>
+      <div class="track-grid">
+        
+    <article class="track-card">
+      <div class="track-head">
+        <h3>Review inbox</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh pr list --search \"review-requested:@me is:open\"\ngh pr view 123 --comments\ngh pr diff 123\ngh pr checks 123 --watch\ngh pr review 123 --approve", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('review-inbox')">aktivera</button>
+        </div>
+      </div>
+      <p>Visa review-relaterade PR-kort och sätt sökning för review-flödet.</p>
+      <div class="track-meta">review requested checks diff comment approve changes status</div>
+    </article>
+    
+    <article class="track-card">
+      <div class="track-head">
+        <h3>PR author flow</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh pr create --fill\ngh pr edit 123 --add-reviewer alice\ngh pr ready 123\ngh pr checks 123 --watch\ngh pr merge 123 --auto", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('pr-author')">aktivera</button>
+        </div>
+      </div>
+      <p>Fokusera på skapa, editera, ready, checks och merge som författare.</p>
+      <div class="track-meta">create edit ready checks merge update-branch reviewer assignee</div>
+    </article>
+    
+    <article class="track-card">
+      <div class="track-head">
+        <h3>CI triage</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh run list --status failure\ngh run view 12345 --log-failed\ngh run watch 12345 --compact\ngh run rerun 12345 --failed\ngh run cancel 12345 --force", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('ci-triage')">aktivera</button>
+        </div>
+      </div>
+      <p>Hitta failure, läs rätt logg och rerun det som behövs.</p>
+      <div class="track-meta">run list failure view log failed watch rerun cancel</div>
+    </article>
+    
+    <article class="track-card">
+      <div class="track-head">
+        <h3>Workflow authoring</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh workflow list --all\ngh workflow view ci.yml --yaml\ngh workflow run deploy.yml -f env=prod\nprintf '{\"env\":\"prod\"}' | gh workflow run deploy.yml --json", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('workflow-authoring')">aktivera</button>
+        </div>
+      </div>
+      <p>Se workflows, YAML och manuella dispatch-inputs.</p>
+      <div class="track-meta">workflow list view yaml ref run json raw field input</div>
+    </article>
+    
+    <article class="track-card">
+      <div class="track-head">
+        <h3>Release ops</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh run download 12345 -n build-linux\ngh release create v1.2.3 dist/* --generate-notes\ngh release verify v1.2.3\ngh release verify-asset v1.2.3 ./dist/build.zip", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('release-ops')">aktivera</button>
+        </div>
+      </div>
+      <p>Actions + artifacts + release-verifiering i samma spår.</p>
+      <div class="track-meta">release verify asset run download artifact create notes</div>
+    </article>
+    
+    <article class="track-card">
+      <div class="track-head">
+        <h3>Admin + guardrails</h3>
+        <div class="track-actions">
+          <button class="copy-btn" onclick="copyInline("gh ruleset list\ngh ruleset check main\ngh pr checks 123 --required\ngh pr merge 123 --admin", this)">kopiera pack</button>
+          <button class="apply-btn" onclick="applyPreset('admin-review-guardrails')">aktivera</button>
+        </div>
+      </div>
+      <p>Review/merge i repo med rulesets, queue och skyddade brancher.</p>
+      <div class="track-meta">ruleset check merge admin required checks queue security</div>
+    </article>
+    
+      </div>
+    </section>
+
+    <section class="section-block" id="recipes">
+      <div class="section-header">
+        <div>
+          <h2>Workflow-recept</h2>
+          <p>Mer Actions/CI och mer PR/review än i tidigare versioner.</p>
+        </div>
+      </div>
+      <div class="recipe-grid">
+        
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>PR review inbox</h3>
+        <button class="copy-btn" onclick="copyInline("gh pr list --search \"review-requested:@me is:open\"\ngh pr view 123 --comments\ngh pr diff 123\ngh pr checks 123 --watch", this)">kopiera</button>
+      </div>
+      <p>Hitta PR:er som väntar på dig och öppna diff/checks direkt.</p>
+      <pre>gh pr list --search &quot;review-requested:@me is:open&quot;
+gh pr view 123 --comments
+gh pr diff 123
+gh pr checks 123 --watch</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>Approve med kommentar</h3>
+        <button class="copy-btn" onclick="copyInline("gh pr review 123 --comment --body \"Ser bra ut, k\u00f6r p\u00e5.\"\ngh pr review 123 --approve", this)">kopiera</button>
+      </div>
+      <p>Reviewa, kommentera och approve från CLI.</p>
+      <pre>gh pr review 123 --comment --body &quot;Ser bra ut, kör på.&quot;
+gh pr review 123 --approve</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>Request changes</h3>
+        <button class="copy-btn" onclick="copyInline("gh pr review 123 --request-changes --body \"Beh\u00f6ver test, docs och cleanup innan merge.\"", this)">kopiera</button>
+      </div>
+      <p>Begär ändringar med tydlig review-text.</p>
+      <pre>gh pr review 123 --request-changes --body &quot;Behöver test, docs och cleanup innan merge.&quot;</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>PR merge queue</h3>
+        <button class="copy-btn" onclick="copyInline("gh pr merge 123 --auto\n# eller\n gh pr merge 123 --admin", this)">kopiera</button>
+      </div>
+      <p>Låt queue eller auto-merge sköta slutsteget.</p>
+      <pre>gh pr merge 123 --auto
+# eller
+ gh pr merge 123 --admin</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>CI triage snabbt</h3>
+        <button class="copy-btn" onclick="copyInline("gh run list --status failure\ngh run watch 12345 --compact\ngh run view 12345 --log-failed", this)">kopiera</button>
+      </div>
+      <p>Hitta failure, följ run och titta bara på det som gått fel.</p>
+      <pre>gh run list --status failure
+gh run watch 12345 --compact
+gh run view 12345 --log-failed</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>Rerun misslyckade jobb</h3>
+        <button class="copy-btn" onclick="copyInline("gh run rerun 12345 --failed\n# eller\n gh run rerun 12345 --job 67890", this)">kopiera</button>
+      </div>
+      <p>Kör inte om allt i onödan när bara en del failat.</p>
+      <pre>gh run rerun 12345 --failed
+# eller
+ gh run rerun 12345 --job 67890</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>Workflow dispatch med input</h3>
+        <button class="copy-btn" onclick="copyInline("gh workflow run deploy.yml -f env=prod -f version=1.2.3", this)">kopiera</button>
+      </div>
+      <p>Kicka manuella workflows med parametrar.</p>
+      <pre>gh workflow run deploy.yml -f env=prod -f version=1.2.3</pre>
+    </article>
+    
+    <article class="recipe-card">
+      <div class="recipe-head">
+        <h3>Artifacts och verifiering</h3>
+        <button class="copy-btn" onclick="copyInline("gh run download 12345 -n build-linux\ngh release verify v1.2.3\ngh release verify-asset v1.2.3 ./dist/build.zip", this)">kopiera</button>
+      </div>
+      <p>Ladda ner artifacts och verifiera release-asset efter CI.</p>
+      <pre>gh run download 12345 -n build-linux
+gh release verify v1.2.3
+gh release verify-asset v1.2.3 ./dist/build.zip</pre>
+    </article>
+    
+      </div>
+    </section>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="panel pad">
+        <h2 class="sidebar-title">Sök</h2>
+        <input id="search" class="search" type="search" placeholder="Sök kommando, kategori, flagga eller beskrivning…" />
+        <div class="search-hint">Tryck <strong>/</strong> för att fokusera sökrutan och <strong>Esc</strong> för att rensa.</div>
+      </div>
+
+      <div class="panel pad" style="margin-top:14px;">
+        <h2 class="sidebar-title">Snabbfilter</h2>
+        <button class="quick-btn" data-tag="auth"><span>Auth</span><span class="count">6</span></button><button class="quick-btn" data-tag="repo"><span>Repo</span><span class="count">10</span></button><button class="quick-btn" data-tag="pr"><span>PR</span><span class="count">15</span></button><button class="quick-btn" data-tag="issues"><span>Issues</span><span class="count">9</span></button><button class="quick-btn" data-tag="actions"><span>Actions</span><span class="count">20</span></button><button class="quick-btn" data-tag="release"><span>Release</span><span class="count">6</span></button><button class="quick-btn" data-tag="codespace"><span>Codespaces</span><span class="count">10</span></button><button class="quick-btn" data-tag="extension"><span>Extensions</span><span class="count">6</span></button><button class="quick-btn" data-tag="api"><span>API</span><span class="count">7</span></button><button class="quick-btn" data-tag="danger"><span>Försiktighet</span><span class="count">18</span></button>
+      </div>
+
+      <div class="panel pad" style="margin-top:14px;">
+        <h2 class="sidebar-title">Kategorier</h2>
+        <button class="cat-btn active" data-cat="Alla"><span>Alla kategorier</span><span class="count">113</span></button>
+        <button class="cat-btn" data-cat="Auth"><span>Auth</span><span class="count">6</span></button><button class="cat-btn" data-cat="Repo"><span>Repo</span><span class="count">10</span></button><button class="cat-btn" data-cat="Pull Requests"><span>Pull Requests</span><span class="count">15</span></button><button class="cat-btn" data-cat="Issues"><span>Issues</span><span class="count">9</span></button><button class="cat-btn" data-cat="Actions"><span>Actions</span><span class="count">15</span></button><button class="cat-btn" data-cat="Releases"><span>Releases</span><span class="count">5</span></button><button class="cat-btn" data-cat="Gists"><span>Gists</span><span class="count">4</span></button><button class="cat-btn" data-cat="Projects"><span>Projects</span><span class="count">5</span></button><button class="cat-btn" data-cat="Search &amp; API"><span>Search &amp; API</span><span class="count">12</span></button><button class="cat-btn" data-cat="Codespaces"><span>Codespaces</span><span class="count">10</span></button><button class="cat-btn" data-cat="Discussions &amp; Orgs"><span>Discussions &amp; Orgs</span><span class="count">5</span></button><button class="cat-btn" data-cat="Extensions"><span>Extensions</span><span class="count">6</span></button><button class="cat-btn" data-cat="Rules, Cache &amp; Provenance"><span>Rules, Cache &amp; Provenance</span><span class="count">10</span></button><button class="cat-btn" data-cat="Preview &amp; New"><span>Preview &amp; New</span><span class="count">1</span></button>
+        <div class="sidebar-actions">
+          <button class="sidebar-link" id="clearFiltersTop">rensa filter</button>
+          <button class="sidebar-link" id="scrollTopBtn">till toppen</button>
+        </div>
+      </div>
+
+      <div class="panel pad" style="margin-top:14px;">
+        <h2 class="sidebar-title">v2.3-fokus</h2>
+        <div class="small-note">
+          <div>Fler kort för review, checks, merge queue, reruns och workflow dispatch.</div>
+          <div style="margin-top:8px;">Preset-spår byggda för PR-författare, reviewers och CI-triage.</div>
+          <div style="margin-top:8px;"><code>gh help &lt;command&gt;</code> är fortfarande sista verifieringssteget i din lokala CLI-version.</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" id="guide">
+      <div class="info-grid">
+        <div class="stat"><div class="num">113</div><div class="label">kommandokort</div></div>
+        <div class="stat"><div class="num">14</div><div class="label">kategorier</div></div>
+        <div class="stat"><div class="num">8</div><div class="label">workflow-recept</div></div>
+        <div class="stat"><div class="num">6</div><div class="label">preset-spår</div></div>
+      </div>
+
+      <div class="note">v2.3 prioriterar verkligt terminalarbete i pull requests och CI. Den är byggd för att du snabbt ska kunna gå från “vad behöver jag göra nu?” till rätt <code>gh</code>-kommando för review, checks, rerun, workflow dispatch eller release-verifiering.</div>
+
+      <div class="statusbar">
+        <div class="status-left">
+          <div class="status-badge">träffar <strong id="resultCount">0</strong></div>
+          <div class="status-badge">kort totalt <strong>113</strong></div>
+          <div class="status-badge">kategorier <strong>14</strong></div>
+          <div class="status-badge">preset <strong id="presetName">ingen</strong></div>
+        </div>
+        <div class="active-filters" id="activeFilters"></div>
+        <button class="clear-btn" id="clearFilters">nollställ allt</button>
+      </div>
+
+      <div class="toolbar" id="toolbar">
+        <button class="toolbar-chip active" data-filter="all">Alla</button><button class="toolbar-chip" data-filter="core">Core</button><button class="toolbar-chip" data-filter="actions">Actions</button><button class="toolbar-chip" data-filter="admin">Admin</button><button class="toolbar-chip" data-filter="api">API</button><button class="toolbar-chip" data-filter="productivity">Produktivitet</button><button class="toolbar-chip" data-filter="security">Security</button><button class="toolbar-chip" data-filter="preview">Preview</button><button class="toolbar-chip" data-filter="danger">Försiktighet</button>
+      </div>
+
+      <h2 class="section-title">Kommandoguide</h2>
+      <div id="grid" class="grid"></div>
+      <div class="footer">Korten är avsedda som snabbreferens. Kontrollera alltid <strong>gh help &lt;command&gt;</strong> om du vill verifiera flaggor i din installerade version.</div>
+    </main>
+  </div>
+
+<script>
+const COMMANDS = [{"cat": "Auth", "cmd": "gh auth login", "short": "Logga in mot GitHub från terminalen.", "tags": ["core", "auth"], "examples": [{"code": "gh auth login", "desc": "Starta den vanliga interaktiva inloggningen."}, {"code": "gh auth login --hostname github.com", "desc": "Logga in uttryckligen mot github.com."}, {"code": "gh auth login --git-protocol ssh", "desc": "Välj SSH som git-protokoll under inloggning."}]}, {"cat": "Auth", "cmd": "gh auth status", "short": "Visa vilken användare och host som är aktiv.", "tags": ["core", "auth"], "examples": [{"code": "gh auth status", "desc": "Visa aktuell auth-status."}, {"code": "gh auth status --hostname github.com", "desc": "Visa status för specifik host."}, {"code": "gh auth status --show-token", "desc": "Visa token-info där det stöds."}]}, {"cat": "Auth", "cmd": "gh auth setup-git", "short": "Koppla Git till GitHub CLI-credential helper.", "tags": ["core", "auth"], "examples": [{"code": "gh auth setup-git", "desc": "Konfigurera git att använda GitHub CLI."}, {"code": "gh auth setup-git --hostname github.com", "desc": "Ställ in git för en viss host."}, {"code": "gh auth setup-git --force --hostname github.com", "desc": "Tvinga omkonfiguration för host."}]}, {"cat": "Auth", "cmd": "gh auth switch", "short": "Byt aktivt konto på en host.", "tags": ["core", "auth"], "examples": [{"code": "gh auth switch", "desc": "Byt konto interaktivt."}, {"code": "gh auth switch --hostname github.com", "desc": "Byt konto för github.com."}, {"code": "gh auth switch --user octocat", "desc": "Byt till specifik användare där det finns flera."}]}, {"cat": "Auth", "cmd": "gh auth refresh", "short": "Förnya scopes eller auth-token.", "tags": ["core", "auth"], "examples": [{"code": "gh auth refresh", "desc": "Förnya nuvarande auth."}, {"code": "gh auth refresh -s project", "desc": "Begär projects-scope när det behövs."}, {"code": "gh auth refresh -h github.com -s repo", "desc": "Förnya auth mot host med extra scope."}]}, {"cat": "Auth", "cmd": "gh auth token / logout", "short": "Hämta token eller logga ut.", "tags": ["core", "auth"], "examples": [{"code": "gh auth token", "desc": "Skriv ut aktiv token till stdout."}, {"code": "gh auth logout", "desc": "Logga ut interaktivt."}, {"code": "gh auth logout --hostname github.com", "desc": "Logga ut från specifik host."}]}, {"cat": "Repo", "cmd": "gh repo create", "short": "Skapa nya repositories från terminalen.", "tags": ["core", "repo"], "examples": [{"code": "gh repo create", "desc": "Interaktiv skapandeprocess."}, {"code": "gh repo create OWNER/REPO --public", "desc": "Skapa publik repo utan frågor."}, {"code": "gh repo create OWNER/REPO --private --clone", "desc": "Skapa privat repo och klona direkt."}]}, {"cat": "Repo", "cmd": "gh repo clone", "short": "Klona repositories via gh.", "tags": ["core", "repo"], "examples": [{"code": "gh repo clone cli/cli", "desc": "Klona repo till aktuell katalog."}, {"code": "gh repo clone OWNER/REPO my-folder", "desc": "Klona till egen målkatalog."}, {"code": "gh repo clone OWNER/REPO -- --depth=1", "desc": "Skicka vidare git clone-argument efter --."}]}, {"cat": "Repo", "cmd": "gh repo view", "short": "Visa repo-information eller öppna i webben.", "tags": ["core", "repo"], "examples": [{"code": "gh repo view", "desc": "Visa default-repot i aktuell katalog."}, {"code": "gh repo view OWNER/REPO", "desc": "Visa ett specifikt repo."}, {"code": "gh repo view OWNER/REPO --web", "desc": "Öppna repot i webbläsaren."}]}, {"cat": "Repo", "cmd": "gh repo fork", "short": "Forka ett repo från kommandoraden.", "tags": ["core", "repo"], "examples": [{"code": "gh repo fork OWNER/REPO", "desc": "Forka interaktivt."}, {"code": "gh repo fork OWNER/REPO --clone", "desc": "Forka och klona direkt."}, {"code": "gh repo fork OWNER/REPO --remote-name upstream", "desc": "Sätt eget remote-namn."}]}, {"cat": "Repo", "cmd": "gh repo sync", "short": "Synka fork med upstream.", "tags": ["core", "repo"], "examples": [{"code": "gh repo sync", "desc": "Synka aktuellt repo."}, {"code": "gh repo sync OWNER/REPO", "desc": "Synka specifikt repo."}, {"code": "gh repo sync OWNER/REPO --force", "desc": "Tvinga sync där det behövs."}]}, {"cat": "Repo", "cmd": "gh repo edit", "short": "Ändra repo-inställningar.", "tags": ["core", "repo"], "examples": [{"code": "gh repo edit --description \"CLI tools\"", "desc": "Sätt ny beskrivning."}, {"code": "gh repo edit --homepage https://example.com", "desc": "Sätt homepage-URL."}, {"code": "gh repo edit --enable-issues=false", "desc": "Stäng av issues i repot."}]}, {"cat": "Repo", "cmd": "gh repo set-default / rename", "short": "Sätt default-repo eller byt namn.", "tags": ["core", "repo"], "examples": [{"code": "gh repo set-default OWNER/REPO", "desc": "Välj default-repo för katalogen."}, {"code": "gh repo rename new-name", "desc": "Byt namn på repo."}, {"code": "gh repo set-default", "desc": "Välj default-repo interaktivt."}]}, {"cat": "Repo", "cmd": "gh repo delete / archive", "short": "Ta bort eller arkivera ett repo.", "tags": ["core", "repo", "danger"], "examples": [{"code": "gh repo archive OWNER/REPO", "desc": "Arkivera repo."}, {"code": "gh repo unarchive OWNER/REPO", "desc": "Ta bort arkivering."}, {"code": "gh repo delete OWNER/REPO --yes", "desc": "Radera repo utan extra prompt."}]}, {"cat": "Repo", "cmd": "gh repo read-file / read-dir", "short": "Läs filer och kataloginnehåll direkt från GitHub.", "tags": ["core", "repo"], "examples": [{"code": "gh repo read-file OWNER/REPO path/to/file.txt", "desc": "Visa filinnehåll från repo."}, {"code": "gh repo read-file OWNER/REPO README.md --ref main", "desc": "Läs fil från viss ref."}, {"code": "gh repo read-dir OWNER/REPO docs/", "desc": "Lista innehåll i katalog."}]}, {"cat": "Repo", "cmd": "gh browse", "short": "Öppna repo, issue, PR eller branch i webbläsaren.", "tags": ["core", "repo"], "examples": [{"code": "gh browse", "desc": "Öppna aktuellt repo i webben."}, {"code": "gh browse --repo OWNER/REPO", "desc": "Öppna specifikt repo."}, {"code": "gh browse --branch feature/login", "desc": "Öppna aktuell repo-branch i webben."}]}, {"cat": "Pull Requests", "cmd": "gh pr create", "short": "Skapa pull requests snabbt från CLI.", "tags": ["core", "pr"], "examples": [{"code": "gh pr create", "desc": "Interaktiv PR-skapning."}, {"code": "gh pr create --fill", "desc": "Fyll titel och body från commits/branch."}, {"code": "gh pr create --base main --head feature/login", "desc": "Skapa PR med explicit base/head."}]}, {"cat": "Pull Requests", "cmd": "gh pr list", "short": "Lista pull requests i ett repo.", "tags": ["core", "pr"], "examples": [{"code": "gh pr list", "desc": "Visa öppna PR:er."}, {"code": "gh pr list --author @me", "desc": "Visa dina PR:er."}, {"code": "gh pr list --state merged", "desc": "Visa mergade PR:er."}]}, {"cat": "Pull Requests", "cmd": "gh pr view", "short": "Visa detaljer eller öppna PR i webben.", "tags": ["core", "pr"], "examples": [{"code": "gh pr view 123", "desc": "Visa PR #123."}, {"code": "gh pr view --web", "desc": "Öppna aktuell PR i webbläsaren."}, {"code": "gh pr view 123 --comments", "desc": "Visa kommentarer också."}]}, {"cat": "Pull Requests", "cmd": "gh pr checkout", "short": "Checka ut en pull request lokalt.", "tags": ["core", "pr"], "examples": [{"code": "gh pr checkout 123", "desc": "Checka ut PR #123 lokalt."}, {"code": "gh pr checkout https://github.com/OWNER/REPO/pull/123", "desc": "Checka ut via URL."}, {"code": "gh pr checkout 123 --detach", "desc": "Checka ut PR i detached state."}]}, {"cat": "Pull Requests", "cmd": "gh pr diff / checks", "short": "Visa diff och CI-status för PR.", "tags": ["core", "pr"], "examples": [{"code": "gh pr diff 123", "desc": "Visa diff för PR #123."}, {"code": "gh pr checks 123", "desc": "Visa checks för PR #123."}, {"code": "gh pr checks 123 --watch", "desc": "Följ check-status live."}]}, {"cat": "Pull Requests", "cmd": "gh pr review", "short": "Godkänn, begär ändringar eller kommentera.", "tags": ["core", "pr"], "examples": [{"code": "gh pr review 123 --approve", "desc": "Godkänn PR."}, {"code": "gh pr review 123 --comment --body \"Ser bra ut\"", "desc": "Lämna review-kommentar."}, {"code": "gh pr review 123 --request-changes --body \"Behöver test\"", "desc": "Begär ändringar."}]}, {"cat": "Pull Requests", "cmd": "gh pr merge", "short": "Merga pull requests från CLI.", "tags": ["core", "pr", "danger"], "examples": [{"code": "gh pr merge 123 --merge", "desc": "Vanlig merge."}, {"code": "gh pr merge 123 --squash --delete-branch", "desc": "Squash-merge och ta bort branch."}, {"code": "gh pr merge 123 --rebase", "desc": "Rebase-merge när det stöds."}]}, {"cat": "Pull Requests", "cmd": "gh pr ready / update-branch", "short": "Markera redo för review eller uppdatera branch.", "tags": ["core", "pr"], "examples": [{"code": "gh pr ready 123", "desc": "Markera draft-PR som redo."}, {"code": "gh pr ready 123 --undo", "desc": "Gör om PR till draft igen."}, {"code": "gh pr update-branch 123", "desc": "Uppdatera PR-branch mot base."}]}, {"cat": "Pull Requests", "cmd": "gh pr comment / close / reopen", "short": "Kommentera eller ändra PR-status.", "tags": ["core", "pr"], "examples": [{"code": "gh pr comment 123 --body \"Kollar på detta nu\"", "desc": "Kommentera PR."}, {"code": "gh pr close 123", "desc": "Stäng PR."}, {"code": "gh pr reopen 123", "desc": "Öppna PR igen."}]}, {"cat": "Pull Requests", "cmd": "gh pr status", "short": "Se dina PR-relaterade uppgifter.", "tags": ["core", "pr"], "examples": [{"code": "gh pr status", "desc": "Visa PR-status för dig och aktuellt repo."}, {"code": "gh pr status --conflict-status", "desc": "Visa konfliktstatus där det stöds."}, {"code": "gh pr status --json currentBranch,state", "desc": "Hämta JSON-output."}]}, {"cat": "Issues", "cmd": "gh issue create", "short": "Skapa issues direkt från terminalen.", "tags": ["core", "issues"], "examples": [{"code": "gh issue create", "desc": "Interaktiv issue-skapning."}, {"code": "gh issue create --title \"Bug i login\" --body \"Steg för att återskapa\"", "desc": "Skapa issue utan editor."}, {"code": "gh issue create --label bug --assignee @me", "desc": "Sätt label och assignee direkt."}]}, {"cat": "Issues", "cmd": "gh issue list", "short": "Lista issues med filter.", "tags": ["core", "issues"], "examples": [{"code": "gh issue list", "desc": "Visa öppna issues."}, {"code": "gh issue list --label bug", "desc": "Filtrera på label."}, {"code": "gh issue list --state all --search \"is:open sort:updated-desc\"", "desc": "Använd GitHub search-syntax."}]}, {"cat": "Issues", "cmd": "gh issue view", "short": "Visa issue-detaljer eller öppna i webben.", "tags": ["core", "issues"], "examples": [{"code": "gh issue view 42", "desc": "Visa issue #42."}, {"code": "gh issue view 42 --comments", "desc": "Visa issue med kommentarer."}, {"code": "gh issue view 42 --web", "desc": "Öppna issue i webbläsaren."}]}, {"cat": "Issues", "cmd": "gh issue comment", "short": "Kommentera en issue från CLI.", "tags": ["core", "issues"], "examples": [{"code": "gh issue comment 42 --body \"Jag tar den här\"", "desc": "Lägg till kommentar."}, {"code": "gh issue comment 42 --editor", "desc": "Skriv kommentar i editor."}, {"code": "gh issue comment 42 --body-file note.md", "desc": "Använd text från fil."}]}, {"cat": "Issues", "cmd": "gh issue edit", "short": "Redigera labels, assignees, titel och body.", "tags": ["core", "issues"], "examples": [{"code": "gh issue edit 42 --add-label bug", "desc": "Lägg till label."}, {"code": "gh issue edit 42 --remove-label bug", "desc": "Ta bort label."}, {"code": "gh issue edit 42 --title \"Ny titel\"", "desc": "Byt titel."}]}, {"cat": "Issues", "cmd": "gh issue close / reopen", "short": "Stäng eller öppna en issue igen.", "tags": ["core", "issues"], "examples": [{"code": "gh issue close 42", "desc": "Stäng issue #42."}, {"code": "gh issue close 42 --reason completed", "desc": "Stäng med reason."}, {"code": "gh issue reopen 42 --comment \"Öppnar igen\"", "desc": "Öppna issue igen med kommentar."}]}, {"cat": "Issues", "cmd": "gh issue pin / lock", "short": "Pinna eller lås en issue.", "tags": ["core", "issues"], "examples": [{"code": "gh issue pin 42", "desc": "Pinna issue."}, {"code": "gh issue unpin 42", "desc": "Ta bort pin."}, {"code": "gh issue lock 42", "desc": "Lås issue för nya kommentarer."}]}, {"cat": "Issues", "cmd": "gh issue transfer / delete", "short": "Flytta eller ta bort issue.", "tags": ["core", "issues", "danger"], "examples": [{"code": "gh issue transfer 42 OWNER/OTHER-REPO", "desc": "Flytta issue till annat repo."}, {"code": "gh issue delete 42", "desc": "Radera issue interaktivt."}, {"code": "gh issue delete 42 --yes", "desc": "Radera issue utan prompt."}]}, {"cat": "Issues", "cmd": "gh issue status", "short": "Se vad som är tilldelat eller skapat av dig.", "tags": ["core", "issues"], "examples": [{"code": "gh issue status", "desc": "Visa din issue-status."}, {"code": "gh issue status --json assigned,createdByMe", "desc": "Hämta status i JSON-format."}, {"code": "gh issue status --repo OWNER/REPO", "desc": "Visa status för specifikt repo."}]}, {"cat": "Actions", "cmd": "gh workflow list / view", "short": "Lista och inspektera workflows.", "tags": ["actions", "workflow"], "examples": [{"code": "gh workflow list", "desc": "Visa workflows i repo."}, {"code": "gh workflow view ci.yml", "desc": "Visa detaljer om en workflow."}, {"code": "gh workflow view ci.yml --web", "desc": "Öppna workflow i webben."}]}, {"cat": "Actions", "cmd": "gh workflow run", "short": "Trigga workflow_dispatch från terminalen.", "tags": ["actions", "workflow"], "examples": [{"code": "gh workflow run ci.yml", "desc": "Kör workflow som stödjer workflow_dispatch."}, {"code": "gh workflow run ci.yml -f env=prod", "desc": "Skicka input-fält."}, {"code": "echo '{\"env\":\"prod\"}' | gh workflow run deploy.yml --json", "desc": "Skicka JSON-input via stdin."}]}, {"cat": "Actions", "cmd": "gh workflow enable / disable", "short": "Slå på eller av workflows.", "tags": ["actions", "workflow"], "examples": [{"code": "gh workflow disable stale.yml", "desc": "Stäng av workflow."}, {"code": "gh workflow enable stale.yml", "desc": "Aktivera workflow igen."}, {"code": "gh workflow list --all", "desc": "Visa även disabled workflows."}]}, {"cat": "Actions", "cmd": "gh run list", "short": "Lista workflow-runs.", "tags": ["actions", "run"], "examples": [{"code": "gh run list", "desc": "Visa senaste runs."}, {"code": "gh run list -w ci.yml", "desc": "Visa runs för viss workflow."}, {"code": "gh run list --branch main", "desc": "Visa runs för branch."}]}, {"cat": "Actions", "cmd": "gh run view", "short": "Visa sammanfattning eller logg för run.", "tags": ["actions", "run"], "examples": [{"code": "gh run view 12345", "desc": "Visa detaljer om run."}, {"code": "gh run view 12345 --log", "desc": "Visa full logg."}, {"code": "gh run view 12345 --exit-status", "desc": "Returnera icke-noll om run misslyckats."}]}, {"cat": "Actions", "cmd": "gh run watch", "short": "Följ en run tills den är klar.", "tags": ["actions", "run"], "examples": [{"code": "gh run watch 12345", "desc": "Följ run live."}, {"code": "gh run watch 12345 --compact", "desc": "Visa kompakt vy."}, {"code": "gh run watch 12345 --interval 5", "desc": "Polla med visst intervall när det stöds."}]}, {"cat": "Actions", "cmd": "gh run rerun / cancel", "short": "Kör om eller avbryt workflow-runs.", "tags": ["actions", "run", "danger"], "examples": [{"code": "gh run rerun 12345", "desc": "Kör om en run."}, {"code": "gh run rerun 12345 --failed", "desc": "Kör bara om misslyckade jobb."}, {"code": "gh run cancel 12345", "desc": "Avbryt pågående run."}]}, {"cat": "Actions", "cmd": "gh run download / delete", "short": "Hämta artifacts eller rensa gamla runs.", "tags": ["actions", "run", "danger"], "examples": [{"code": "gh run download 12345", "desc": "Ladda ner artifacts från run."}, {"code": "gh run download 12345 -n build", "desc": "Ladda ner specifikt artifact-namn."}, {"code": "gh run delete 12345", "desc": "Radera en workflow-run."}]}, {"cat": "Releases", "cmd": "gh release create", "short": "Skapa releases och ladda upp assets.", "tags": ["core", "release"], "examples": [{"code": "gh release create v1.0.0", "desc": "Skapa release från tag."}, {"code": "gh release create v1.0.0 dist/* --title \"v1.0.0\" --notes \"Första release\"", "desc": "Skapa release med assets och notes."}, {"code": "gh release create v1.0.0 --generate-notes", "desc": "Låt GitHub generera release notes."}]}, {"cat": "Releases", "cmd": "gh release list / view", "short": "Visa releases i ett repo.", "tags": ["core", "release"], "examples": [{"code": "gh release list", "desc": "Lista releases."}, {"code": "gh release view v1.0.0", "desc": "Visa release för viss tag."}, {"code": "gh release view --web", "desc": "Öppna senaste release i webben."}]}, {"cat": "Releases", "cmd": "gh release download", "short": "Ladda ner release-assets eller arkiv.", "tags": ["core", "release"], "examples": [{"code": "gh release download v1.0.0", "desc": "Ladda ner assets för release."}, {"code": "gh release download v1.0.0 --pattern \"*.zip\"", "desc": "Ladda ner matchande assets."}, {"code": "gh release download --archive zip", "desc": "Ladda ner senaste release som zip-arkiv."}]}, {"cat": "Releases", "cmd": "gh release upload / delete-asset", "short": "Lägg till eller ta bort assets.", "tags": ["core", "release", "danger"], "examples": [{"code": "gh release upload v1.0.0 build.zip", "desc": "Ladda upp asset till release."}, {"code": "gh release upload v1.0.0 build.zip#linux-amd64", "desc": "Sätt display-label på asset."}, {"code": "gh release delete-asset v1.0.0 build.zip --yes", "desc": "Radera asset från release."}]}, {"cat": "Releases", "cmd": "gh release edit / delete", "short": "Uppdatera eller radera releases.", "tags": ["core", "release", "danger"], "examples": [{"code": "gh release edit v1.0.0 --title \"v1.0.0 stable\"", "desc": "Byt titel på release."}, {"code": "gh release edit v1.0.0 --notes-file NOTES.md", "desc": "Uppdatera notes från fil."}, {"code": "gh release delete v1.0.0 --yes", "desc": "Radera release utan prompt."}]}, {"cat": "Gists", "cmd": "gh gist create", "short": "Skapa gists från filer eller stdin.", "tags": ["core", "gist"], "examples": [{"code": "gh gist create hello.py", "desc": "Skapa secret gist från fil."}, {"code": "gh gist create --public hello.py -d \"demo\"", "desc": "Skapa publik gist med beskrivning."}, {"code": "cat notes.txt | gh gist create -f notes.txt", "desc": "Skapa gist från stdin."}]}, {"cat": "Gists", "cmd": "gh gist list", "short": "Lista dina gists.", "tags": ["core", "gist"], "examples": [{"code": "gh gist list", "desc": "Visa senaste gists."}, {"code": "gh gist list --secret", "desc": "Visa bara secret gists."}, {"code": "gh gist list --filter octo --include-content", "desc": "Filtrera med regex och innehåll."}]}, {"cat": "Gists", "cmd": "gh gist view / edit", "short": "Visa eller redigera gist.", "tags": ["core", "gist"], "examples": [{"code": "gh gist view abc123", "desc": "Visa gist."}, {"code": "gh gist view abc123 --files", "desc": "Visa bara filnamn."}, {"code": "gh gist edit abc123", "desc": "Redigera gist interaktivt."}]}, {"cat": "Gists", "cmd": "gh gist clone / rename / delete", "short": "Kloning och livscykel för gists.", "tags": ["core", "gist", "danger"], "examples": [{"code": "gh gist clone abc123", "desc": "Klona gist lokalt."}, {"code": "gh gist rename abc123 new-name.txt", "desc": "Byt namn på gist-fil där det stöds."}, {"code": "gh gist delete abc123 --yes", "desc": "Radera gist."}]}, {"cat": "Projects", "cmd": "gh project list / view", "short": "Visa GitHub Projects för användare eller org.", "tags": ["project"], "examples": [{"code": "gh project list --owner @me", "desc": "Lista dina projekt."}, {"code": "gh project list --owner MYORG", "desc": "Lista projekt för organisation."}, {"code": "gh project view 1 --owner @me", "desc": "Visa projekt #1."}]}, {"cat": "Projects", "cmd": "gh project create / edit / close", "short": "Skapa och ändra projects.", "tags": ["project"], "examples": [{"code": "gh project create --owner @me --title \"Roadmap\"", "desc": "Skapa nytt projekt."}, {"code": "gh project edit 1 --owner @me --title \"Roadmap 2026\"", "desc": "Byt projekttitel."}, {"code": "gh project close 1 --owner @me", "desc": "Stäng projekt."}]}, {"cat": "Projects", "cmd": "gh project field-list", "short": "Visa project fields för automation och scripting.", "tags": ["project"], "examples": [{"code": "gh project field-list 1 --owner @me", "desc": "Lista fields i projekt."}, {"code": "gh project field-list 1 --owner MYORG --format json", "desc": "Hämta fields som JSON."}, {"code": "gh project field-list 1 --owner @me --jq '.[].name'", "desc": "Plocka ut bara field-namn."}]}, {"cat": "Projects", "cmd": "gh project item-add / item-list", "short": "Lägg till issues/PRs och lista items.", "tags": ["project"], "examples": [{"code": "gh project item-add 1 --owner @me --url https://github.com/OWNER/REPO/issues/42", "desc": "Lägg till issue i projekt."}, {"code": "gh project item-add 1 --owner @me --url https://github.com/OWNER/REPO/pull/123", "desc": "Lägg till PR i projekt."}, {"code": "gh project item-list 1 --owner @me", "desc": "Lista items i projekt."}]}, {"cat": "Projects", "cmd": "gh project item-archive", "short": "Arkivera eller återställ items i ett project.", "tags": ["project", "danger"], "examples": [{"code": "gh project item-archive 1 --owner @me --id ITEM_ID", "desc": "Arkivera item via ID."}, {"code": "gh project item-archive 1 --owner @me --id ITEM_ID --undo", "desc": "Ångra arkivering."}, {"code": "gh project item-list 1 --owner @me --format json", "desc": "Hämta items först som JSON."}]}, {"cat": "Search & API", "cmd": "gh search repos", "short": "Sök repositories med GitHub search-syntax.", "tags": ["search", "api"], "examples": [{"code": "gh search repos \"language:go stars:>5000\"", "desc": "Sök repositories."}, {"code": "gh search repos \"topic:cli org:cli\"", "desc": "Sök repo efter topic/org."}, {"code": "gh search repos \"fastapi in:name\" --limit 20", "desc": "Begränsa antal träffar."}]}, {"cat": "Search & API", "cmd": "gh search issues / prs", "short": "Sök issues och pull requests från terminalen.", "tags": ["search", "api"], "examples": [{"code": "gh search issues \"repo:OWNER/REPO label:bug is:open\"", "desc": "Sök issues i repo."}, {"code": "gh search prs \"review:required org:MYORG\"", "desc": "Sök PR:er med review-krav."}, {"code": "gh search issues -- \"my query -label:bug\"", "desc": "Exkludera qualifier med --."}]}, {"cat": "Search & API", "cmd": "gh api REST", "short": "Anropa GitHub REST API med din auth.", "tags": ["api"], "examples": [{"code": "gh api repos/OWNER/REPO", "desc": "Hämta repo-data från REST API."}, {"code": "gh api user", "desc": "Visa info om inloggad användare."}, {"code": "gh api repos/OWNER/REPO/issues -f title='Ny issue' -f body='Skapad via API'", "desc": "Skapa data med field-parametrar."}]}, {"cat": "Search & API", "cmd": "gh api GraphQL", "short": "Kör GraphQL-frågor via gh api.", "tags": ["api"], "examples": [{"code": "gh api graphql -f query='query {{ viewer {{ login }} }}'", "desc": "Minsta GraphQL-fråga."}, {"code": "gh api graphql -f query='query($owner:String!, $repo:String!) {{ repository(owner:$owner, name:$repo) {{ name stargazerCount }} }}' -F owner=cli -F repo=cli", "desc": "GraphQL med variabler."}, {"code": "gh api graphql --jq '.data.viewer.login' -f query='query {{ viewer {{ login }} }}'", "desc": "Filtrera GraphQL-svar med jq."}]}, {"cat": "Search & API", "cmd": "gh label list / create", "short": "Hantera labels i repo.", "tags": ["admin"], "examples": [{"code": "gh label list", "desc": "Visa labels i repo."}, {"code": "gh label list --search bug", "desc": "Sök labels."}, {"code": "gh label create bug --color FF0000 --description \"Something is broken\"", "desc": "Skapa label."}]}, {"cat": "Search & API", "cmd": "gh label edit / delete / clone", "short": "Uppdatera eller kopiera label-set.", "tags": ["admin", "danger"], "examples": [{"code": "gh label edit bug --color 0E8A16", "desc": "Ändra label-färg."}, {"code": "gh label clone OWNER/SOURCE-REPO", "desc": "Kopiera labels från annat repo."}, {"code": "gh label delete bug --yes", "desc": "Radera label utan prompt."}]}, {"cat": "Search & API", "cmd": "gh secret list / set / delete", "short": "Hantera GitHub Actions secrets.", "tags": ["admin", "actions", "danger"], "examples": [{"code": "gh secret list", "desc": "Lista repo-secrets."}, {"code": "gh secret set API_KEY < secret.txt", "desc": "Sätt secret från stdin/fil."}, {"code": "gh secret delete API_KEY", "desc": "Ta bort secret."}]}, {"cat": "Search & API", "cmd": "gh variable list / set / get / delete", "short": "Hantera Actions-variabler.", "tags": ["admin", "actions", "danger"], "examples": [{"code": "gh variable list", "desc": "Lista variabler."}, {"code": "gh variable set APP_ENV --body prod", "desc": "Sätt variabel."}, {"code": "gh variable get APP_ENV", "desc": "Hämta variabelvärde."}]}, {"cat": "Search & API", "cmd": "gh alias set / list / delete", "short": "Skapa egna kortkommandon i gh.", "tags": ["productivity"], "examples": [{"code": "gh alias set pv 'pr view --web'", "desc": "Skapa enkel alias."}, {"code": "gh alias list", "desc": "Visa alla aliases."}, {"code": "gh alias delete pv", "desc": "Ta bort alias."}]}, {"cat": "Search & API", "cmd": "gh alias import", "short": "Importera alias från YAML-fil.", "tags": ["productivity"], "examples": [{"code": "gh alias import aliases.yml", "desc": "Importera från YAML-fil."}, {"code": "cat aliases.yml | gh alias import -", "desc": "Importera från stdin."}, {"code": "gh alias import aliases.yml --clobber", "desc": "Skriv över befintliga alias."}]}, {"cat": "Search & API", "cmd": "gh config set / list", "short": "Styr gh-konfigurationen.", "tags": ["productivity"], "examples": [{"code": "gh config list", "desc": "Visa nuvarande config."}, {"code": "gh config set editor code", "desc": "Sätt editor."}, {"code": "gh config set browser firefox", "desc": "Sätt föredragen webbläsare."}]}, {"cat": "Search & API", "cmd": "gh status / version", "short": "Snabb status och versionskontroll.", "tags": ["productivity"], "examples": [{"code": "gh status", "desc": "Visa översikt över notiser och arbete."}, {"code": "gh --version", "desc": "Visa gh-version."}, {"code": "gh help reference", "desc": "Visa full kommandoreferens lokalt."}]}, {"cat": "Codespaces", "cmd": "gh codespace list", "short": "Lista dina Codespaces eller org-betalda Codespaces.", "tags": ["core", "codespace"], "examples": [{"code": "gh codespace list", "desc": "Visa dina Codespaces."}, {"code": "gh cs list", "desc": "Använd aliaset gh cs."}, {"code": "gh codespace list --repo OWNER/REPO", "desc": "Filtrera på repository där det stöds."}]}, {"cat": "Codespaces", "cmd": "gh codespace view", "short": "Visa detaljer om en specifik Codespace.", "tags": ["core", "codespace"], "examples": [{"code": "gh codespace view", "desc": "Välj Codespace interaktivt."}, {"code": "gh cs view -c codespace-name-12345", "desc": "Visa en specifik Codespace."}, {"code": "gh cs view --json", "desc": "Visa tillgängliga JSON-fält."}]}, {"cat": "Codespaces", "cmd": "gh codespace create", "short": "Skapa en ny Codespace från terminalen.", "tags": ["core", "codespace"], "examples": [{"code": "gh codespace create", "desc": "Starta interaktiv skapning."}, {"code": "gh cs create --repo OWNER/REPO", "desc": "Skapa från specifikt repository."}, {"code": "gh codespace create --branch main", "desc": "Skapa Codespace från viss branch."}]}, {"cat": "Codespaces", "cmd": "gh codespace code", "short": "Öppna en Codespace i Visual Studio Code.", "tags": ["core", "codespace"], "examples": [{"code": "gh codespace code", "desc": "Välj Codespace interaktivt och öppna i VS Code."}, {"code": "gh cs code -c codespace-name-12345", "desc": "Öppna specifik Codespace i VS Code."}, {"code": "gh codespace code --repo OWNER/REPO", "desc": "Välj Codespace kopplad till repository."}]}, {"cat": "Codespaces", "cmd": "gh codespace ssh", "short": "SSH:a in i en Codespace från terminalen.", "tags": ["core", "codespace"], "examples": [{"code": "gh cs ssh", "desc": "Välj Codespace interaktivt och anslut via SSH."}, {"code": "gh cs ssh -c codespace-name-12345", "desc": "Anslut till specifik Codespace."}, {"code": "gh cs ssh -c codespace-name-12345 -- pwd", "desc": "Kör ett kommando via SSH."}]}, {"cat": "Codespaces", "cmd": "gh codespace cp", "short": "Kopiera filer mellan lokal dator och Codespace.", "tags": ["core", "codespace"], "examples": [{"code": "gh cs cp local.txt cs:/workspaces/project/local.txt", "desc": "Kopiera lokal fil till Codespace."}, {"code": "gh cs cp cs:/workspaces/project/notes.md ./notes.md", "desc": "Kopiera fil från Codespace till lokalt."}, {"code": "gh cs cp -r ./docs cs:/workspaces/project/docs", "desc": "Kopiera katalog rekursivt."}]}, {"cat": "Codespaces", "cmd": "gh codespace logs", "short": "Visa eller följ Codespace-loggar.", "tags": ["core", "codespace"], "examples": [{"code": "gh cs logs", "desc": "Visa loggar interaktivt vald Codespace."}, {"code": "gh cs logs -c codespace-name-12345", "desc": "Visa loggar för specifik Codespace."}, {"code": "gh cs logs -c codespace-name-12345 -f", "desc": "Följ loggar live."}]}, {"cat": "Codespaces", "cmd": "gh codespace ports", "short": "Lista vidarebefordrade portar och ändra synlighet.", "tags": ["core", "codespace"], "examples": [{"code": "gh cs ports", "desc": "Lista portar i Codespace."}, {"code": "gh cs ports -c codespace-name-12345", "desc": "Visa portar för specifik Codespace."}, {"code": "gh cs ports visibility 80:org 3000:private 8000:public", "desc": "Ändra synlighet för flera portar."}]}, {"cat": "Codespaces", "cmd": "gh codespace rebuild", "short": "Bygg om en Codespace med bevarade ändringar.", "tags": ["core", "codespace"], "examples": [{"code": "gh cs rebuild", "desc": "Bygg om interaktivt vald Codespace."}, {"code": "gh cs rebuild -c codespace-name-12345", "desc": "Bygg om specifik Codespace."}, {"code": "gh cs rebuild --full", "desc": "Gör full rebuild när det behövs."}]}, {"cat": "Codespaces", "cmd": "gh codespace stop / delete", "short": "Stoppa eller radera Codespaces.", "tags": ["core", "codespace", "danger"], "examples": [{"code": "gh cs stop -c codespace-name-12345", "desc": "Stoppa specifik Codespace."}, {"code": "gh cs delete -c codespace-name-12345", "desc": "Radera specifik Codespace."}, {"code": "gh cs delete --all", "desc": "Radera flera där det stöds – använd försiktigt."}]}, {"cat": "Discussions & Orgs", "cmd": "gh discussion create", "short": "Skapa GitHub Discussions från CLI.", "tags": ["core", "discussion"], "examples": [{"code": "gh discussion create", "desc": "Starta interaktiv Discussion-skapning."}, {"code": "gh discussion create --title \"Fråga om roadmap\" --body \"Vad är nästa steg?\" --category \"General\"", "desc": "Skapa discussion utan prompts."}, {"code": "gh discussion create --body-file note.md --title \"Designfråga\" --category \"Ideas\"", "desc": "Läs body från fil."}]}, {"cat": "Discussions & Orgs", "cmd": "gh discussion list", "short": "Lista discussions i repositoryt.", "tags": ["core", "discussion"], "examples": [{"code": "gh discussion list", "desc": "Visa discussions."}, {"code": "gh discussion list --search roadmap", "desc": "Sök bland discussions."}, {"code": "gh discussion list --web", "desc": "Öppna listan i webbläsaren."}]}, {"cat": "Discussions & Orgs", "cmd": "gh discussion view", "short": "Visa en discussion och dess kommentarer.", "tags": ["core", "discussion"], "examples": [{"code": "gh discussion view 12", "desc": "Visa discussion #12."}, {"code": "gh discussion view 12 --comments", "desc": "Visa också kommentarer."}, {"code": "gh discussion view 12 --json", "desc": "Hämta discussion som JSON."}]}, {"cat": "Discussions & Orgs", "cmd": "gh discussion comment / edit", "short": "Kommentera eller redigera en discussion.", "tags": ["core", "discussion"], "examples": [{"code": "gh discussion comment 12 --body \"Bra idé\"", "desc": "Lägg till kommentar."}, {"code": "gh discussion edit 12 --title \"Ny titel\"", "desc": "Ändra diskussionens titel."}, {"code": "gh discussion edit 12 --add-label roadmap", "desc": "Lägg till label på discussion."}]}, {"cat": "Discussions & Orgs", "cmd": "gh org list", "short": "Lista organisationer för inloggad användare.", "tags": ["core", "org"], "examples": [{"code": "gh org list", "desc": "Visa de första organisationerna."}, {"code": "gh org list --limit 100", "desc": "Visa fler organisationer."}, {"code": "gh org ls", "desc": "Använd aliaset gh org ls."}]}, {"cat": "Extensions", "cmd": "gh extension search", "short": "Sök efter tillgängliga GitHub CLI-extensions.", "tags": ["core", "extension", "productivity"], "examples": [{"code": "gh extension search", "desc": "Visa populära extensions."}, {"code": "gh extension search actions", "desc": "Sök efter extensions på ämne eller namn."}, {"code": "gh extension search actions --limit 50", "desc": "Visa fler träffar."}]}, {"cat": "Extensions", "cmd": "gh extension browse", "short": "Bläddra bland extensions i ett interaktivt terminalgränssnitt.", "tags": ["core", "extension", "productivity"], "examples": [{"code": "gh extension browse", "desc": "Öppna interaktiv extension-browser."}, {"code": "gh extension browse --debug", "desc": "Kör med debug om du felsöker."}, {"code": "gh extension browse", "desc": "Tryck ? för hjälp och q för att avsluta."}]}, {"cat": "Extensions", "cmd": "gh extension install", "short": "Installera en extension från repo eller URL.", "tags": ["core", "extension", "productivity"], "examples": [{"code": "gh extension install owner/gh-extension-name", "desc": "Installera extension från GitHub."}, {"code": "gh extension install https://github.com/owner/gh-extension-name", "desc": "Installera från full URL."}, {"code": "gh extension install ../local-gh-extension", "desc": "Installera lokal extension."}]}, {"cat": "Extensions", "cmd": "gh extension list", "short": "Visa installerade extensions.", "tags": ["core", "extension", "productivity"], "examples": [{"code": "gh extension list", "desc": "Lista installerade extensions."}, {"code": "gh ext ls", "desc": "Använd aliaset gh ext ls."}, {"code": "gh extension list", "desc": "Bra första steg innan upgrade eller remove."}]}, {"cat": "Extensions", "cmd": "gh extension upgrade", "short": "Uppgradera en eller alla extensions.", "tags": ["core", "extension", "productivity"], "examples": [{"code": "gh extension upgrade my-extension", "desc": "Uppgradera en extension."}, {"code": "gh extension upgrade --all", "desc": "Uppgradera alla installerade extensions."}, {"code": "gh extension upgrade --all --dry-run", "desc": "Visa vad som skulle uppgraderas."}]}, {"cat": "Extensions", "cmd": "gh extension remove", "short": "Ta bort en installerad extension.", "tags": ["core", "extension", "productivity", "danger"], "examples": [{"code": "gh extension remove my-extension", "desc": "Ta bort extension."}, {"code": "gh ext uninstall my-extension", "desc": "Alias för remove/uninstall."}, {"code": "gh extension remove my-extension", "desc": "Bra när du vill rensa gamla helper-kommandon."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh cache list", "short": "Lista GitHub Actions-cacher i repo.", "tags": ["actions", "cache"], "examples": [{"code": "gh cache list", "desc": "Visa caches för aktuellt repo."}, {"code": "gh cache list --repo cli/cli", "desc": "Visa caches i specifikt repo."}, {"code": "gh cache list --key build-", "desc": "Filtrera på cache-key-prefix."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh cache delete", "short": "Radera GitHub Actions-cacher.", "tags": ["actions", "cache", "danger"], "examples": [{"code": "gh cache delete 123456", "desc": "Radera cache via ID."}, {"code": "gh cache delete build-cache-key", "desc": "Radera cache via key."}, {"code": "gh cache delete --all", "desc": "Radera alla caches – kräver repo-scope."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh ruleset list", "short": "Lista repository- eller org-rulesets.", "tags": ["admin", "ruleset"], "examples": [{"code": "gh ruleset list", "desc": "Visa rulesets för aktuellt repo."}, {"code": "gh ruleset list --repo OWNER/REPO", "desc": "Visa rulesets i specifikt repo."}, {"code": "gh rs list", "desc": "Använd aliaset gh rs."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh ruleset view", "short": "Visa detaljer om ett ruleset.", "tags": ["admin", "ruleset"], "examples": [{"code": "gh ruleset view", "desc": "Välj ruleset interaktivt."}, {"code": "gh ruleset view 123", "desc": "Visa ruleset med ID."}, {"code": "gh ruleset view 123 --web", "desc": "Öppna ruleset i webbläsaren."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh ruleset check", "short": "Kontrollera hur branch eller tag matchar rulesets.", "tags": ["admin", "ruleset"], "examples": [{"code": "gh ruleset check main", "desc": "Kontrollera branch mot rulesets."}, {"code": "gh ruleset check release/v1", "desc": "Kontrollera annan ref."}, {"code": "gh rs check feature/login --repo OWNER/REPO", "desc": "Kör kontroll i specifikt repo."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh attestation verify", "short": "Verifiera artefakter mot signerade attesteringar.", "tags": ["api", "attestation", "security"], "examples": [{"code": "gh attestation verify build.zip --owner OWNER", "desc": "Verifiera lokal artefakt mot owner."}, {"code": "gh attestation verify oci://ghcr.io/OWNER/IMAGE:TAG --repo OWNER/REPO", "desc": "Verifiera OCI-image mot repo."}, {"code": "gh at verify build.zip --owner OWNER", "desc": "Använd aliaset gh at."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh attestation download", "short": "Ladda ner attesteringar för offline-verifiering.", "tags": ["api", "attestation", "security"], "examples": [{"code": "gh attestation download build.zip --owner OWNER", "desc": "Ladda ner attestering för artefakt."}, {"code": "gh attestation download oci://ghcr.io/OWNER/IMAGE:TAG --repo OWNER/REPO", "desc": "Ladda ner attestering för OCI-image."}, {"code": "gh at download build.zip --owner OWNER", "desc": "Använd aliaset gh at."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh attestation trusted-root", "short": "Hämta trusted root för offline-verifiering.", "tags": ["api", "attestation", "security"], "examples": [{"code": "gh attestation trusted-root", "desc": "Skriv trusted_root.jsonl till stdout."}, {"code": "gh attestation trusted-root --verify-only", "desc": "Verifiera trusted root utan att skriva ut allt."}, {"code": "gh attestation trusted-root > trusted_root.jsonl", "desc": "Spara fil för offline-verifiering."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh release verify / verify-asset", "short": "Verifiera releases och assets med attesteringar.", "tags": ["core", "release", "security"], "examples": [{"code": "gh release verify v1.2.3", "desc": "Verifiera att release har giltig attestation."}, {"code": "gh release verify", "desc": "Verifiera senaste release."}, {"code": "gh release verify-asset v1.2.3 ./dist/build.zip", "desc": "Verifiera ett specifikt asset mot release."}]}, {"cat": "Rules, Cache & Provenance", "cmd": "gh config clear-cache", "short": "Rensa CLI:ts egen cache.", "tags": ["productivity", "config"], "examples": [{"code": "gh config clear-cache", "desc": "Rensa gh:s lokala cache."}, {"code": "gh config list", "desc": "Visa config före eller efter rensning."}, {"code": "gh config set editor code", "desc": "Exempel på annan config-åtgärd."}]}, {"cat": "Preview & New", "cmd": "gh skill", "short": "Arbeta med agent skills i förhandsversion.", "tags": ["preview", "skill"], "examples": [{"code": "gh skill list", "desc": "Lista tillgängliga eller installerade skills."}, {"code": "gh skill search code-review", "desc": "Sök efter skills."}, {"code": "gh skill preview OWNER/REPO", "desc": "Förhandsgranska en skill från repo."}]}, {"cat": "Pull Requests", "cmd": "gh pr checks --watch / --required / --json", "short": "Följ CI-status för en PR, filtrera required checks eller hämta strukturerad output.", "tags": ["core", "pr", "actions"], "examples": [{"code": "gh pr checks 123", "desc": "Visa CI-status för PR #123."}, {"code": "gh pr checks 123 --watch --fail-fast", "desc": "Följ checks live och avbryt vid första failure."}, {"code": "gh pr checks 123 --required --json name,state,startedAt,completedAt", "desc": "Visa bara required checks som JSON."}]}, {"cat": "Pull Requests", "cmd": "gh pr edit reviewers / assignees", "short": "Lägg till reviewers, assignees och labels direkt från terminalen.", "tags": ["core", "pr", "admin"], "examples": [{"code": "gh pr edit 123 --add-reviewer alice", "desc": "Lägg till reviewer."}, {"code": "gh pr edit 123 --add-reviewer @copilot", "desc": "Begär review från Copilot där det stöds."}, {"code": "gh pr edit 123 --add-assignee @me --add-label ready-for-review", "desc": "Sätt dig själv och lägg till label."}]}, {"cat": "Pull Requests", "cmd": "gh pr merge queue / auto / admin", "short": "Arbeta bättre med merge queue, auto-merge och admin-flöden.", "tags": ["core", "pr", "danger"], "examples": [{"code": "gh pr merge 123", "desc": "Låt gh välja rätt merge-flöde där merge queue används."}, {"code": "gh pr merge 123 --auto", "desc": "Slå på auto-merge när krav fortfarande väntar."}, {"code": "gh pr merge 123 --admin", "desc": "Bypassa merge queue direkt med admin-rättigheter."}]}, {"cat": "Pull Requests", "cmd": "gh pr lock / unlock / revert", "short": "Lås diskussion, lås upp eller revert:a en mergad PR.", "tags": ["core", "pr", "danger"], "examples": [{"code": "gh pr lock 123", "desc": "Lås PR-diskussionen."}, {"code": "gh pr unlock 123", "desc": "Lås upp PR igen."}, {"code": "gh pr revert 123", "desc": "Skapa revert-PR för en mergad pull request."}]}, {"cat": "Pull Requests", "cmd": "gh pr list review filters", "short": "Filtrera pull requests efter review-behov, author, base eller draft-status.", "tags": ["core", "pr", "productivity"], "examples": [{"code": "gh pr list --search \"review-requested:@me is:open\"", "desc": "Visa öppna PR:er som väntar på din review."}, {"code": "gh pr list --author @me --base main", "desc": "Visa dina PR:er mot main."}, {"code": "gh pr list --draft", "desc": "Visa draft PR:er."}]}, {"cat": "Actions", "cmd": "gh run view --log / --job / --exit-status", "short": "Triage av körningar med loggar, jobbfilter och exit-status.", "tags": ["actions", "run", "core"], "examples": [{"code": "gh run view 12345", "desc": "Visa sammanfattning för en run."}, {"code": "gh run view 12345 --log-failed", "desc": "Visa bara loggar för misslyckade steg där det stöds."}, {"code": "gh run view 12345 --exit-status", "desc": "Returnera felkod om runen inte är grön."}]}, {"cat": "Actions", "cmd": "gh run rerun failed / job", "short": "Kör om bara misslyckade jobb eller ett specifikt jobb i en run.", "tags": ["actions", "run", "core"], "examples": [{"code": "gh run rerun 12345", "desc": "Kör om hela runen."}, {"code": "gh run rerun 12345 --failed", "desc": "Kör bara om misslyckade jobb."}, {"code": "gh run rerun 12345 --job 67890", "desc": "Kör om ett specifikt jobb via jobb-ID."}]}, {"cat": "Actions", "cmd": "gh run list failure triage", "short": "Filtrera workflow-runs för att snabbare hitta misslyckade eller relevanta körningar.", "tags": ["actions", "run", "productivity"], "examples": [{"code": "gh run list --status failure", "desc": "Visa misslyckade runs."}, {"code": "gh run list --event pull_request --branch main", "desc": "Visa PR-runs mot branch."}, {"code": "gh run list -w ci.yml -L 20", "desc": "Visa senaste 20 runs för en workflow."}]}, {"cat": "Actions", "cmd": "gh workflow list / view --yaml", "short": "Inspektera workflows snabbare, inklusive YAML-visning från CLI.", "tags": ["actions", "workflow", "core"], "examples": [{"code": "gh workflow list --all", "desc": "Visa även disabled workflows."}, {"code": "gh workflow view ci.yml --yaml", "desc": "Visa workflow-filen som YAML."}, {"code": "gh workflow view ci.yml --ref main", "desc": "Visa workflow från specifik ref."}]}, {"cat": "Actions", "cmd": "gh workflow run inputs", "short": "Triggera workflow_dispatch med raw fields, typed fields eller JSON-input.", "tags": ["actions", "workflow", "core"], "examples": [{"code": "gh workflow run deploy.yml -f env=prod", "desc": "Skicka enkel raw input."}, {"code": "gh workflow run deploy.yml -F version=1.2.3", "desc": "Skicka field med @-expansion där det passar."}, {"code": "printf '{\"env\":\"prod\",\"version\":\"1.2.3\"}' | gh workflow run deploy.yml --json", "desc": "Skicka hela input-payloaden som JSON via stdin."}]}, {"cat": "Actions", "cmd": "gh cache list / delete CI cleanup", "short": "Håll nere CI-problem genom att inspektera och rensa caches mer medvetet.", "tags": ["actions", "cache", "danger"], "examples": [{"code": "gh cache list --sort last_accessed_at --order desc", "desc": "Visa senast använda caches först."}, {"code": "gh cache list --key npm-", "desc": "Filtrera cache keys med prefix."}, {"code": "gh cache delete --all", "desc": "Rensa alla caches i repot – använd försiktigt."}]}, {"cat": "Actions", "cmd": "gh run download named artifacts", "short": "Hämta rätt artifact snabbare när en workflow har många outputs.", "tags": ["actions", "run", "core"], "examples": [{"code": "gh run download 12345 -n build-linux", "desc": "Ladda ner specifikt artifact-namn."}, {"code": "gh run download 12345 -n junit-results", "desc": "Hämta testresultat-artifact."}, {"code": "gh run download 12345", "desc": "Hämta alla artifacts från en run."}]}];
+const PRESETS = [{"id": "review-inbox", "title": "Review inbox", "desc": "Visa review-relaterade PR-kort och sätt sökning för review-flödet.", "query": "review requested checks diff comment approve changes status", "tag": "pr", "toolbar": "core", "cat": "Pull Requests", "pack": "gh pr list --search \"review-requested:@me is:open\"\ngh pr view 123 --comments\ngh pr diff 123\ngh pr checks 123 --watch\ngh pr review 123 --approve"}, {"id": "pr-author", "title": "PR author flow", "desc": "Fokusera på skapa, editera, ready, checks och merge som författare.", "query": "create edit ready checks merge update-branch reviewer assignee", "tag": "pr", "toolbar": "core", "cat": "Pull Requests", "pack": "gh pr create --fill\ngh pr edit 123 --add-reviewer alice\ngh pr ready 123\ngh pr checks 123 --watch\ngh pr merge 123 --auto"}, {"id": "ci-triage", "title": "CI triage", "desc": "Hitta failure, läs rätt logg och rerun det som behövs.", "query": "run list failure view log failed watch rerun cancel", "tag": "actions", "toolbar": "actions", "cat": "Actions", "pack": "gh run list --status failure\ngh run view 12345 --log-failed\ngh run watch 12345 --compact\ngh run rerun 12345 --failed\ngh run cancel 12345 --force"}, {"id": "workflow-authoring", "title": "Workflow authoring", "desc": "Se workflows, YAML och manuella dispatch-inputs.", "query": "workflow list view yaml ref run json raw field input", "tag": "actions", "toolbar": "actions", "cat": "Actions", "pack": "gh workflow list --all\ngh workflow view ci.yml --yaml\ngh workflow run deploy.yml -f env=prod\nprintf '{\"env\":\"prod\"}' | gh workflow run deploy.yml --json"}, {"id": "release-ops", "title": "Release ops", "desc": "Actions + artifacts + release-verifiering i samma spår.", "query": "release verify asset run download artifact create notes", "tag": "release", "toolbar": "security", "cat": "Alla", "pack": "gh run download 12345 -n build-linux\ngh release create v1.2.3 dist/* --generate-notes\ngh release verify v1.2.3\ngh release verify-asset v1.2.3 ./dist/build.zip"}, {"id": "admin-review-guardrails", "title": "Admin + guardrails", "desc": "Review/merge i repo med rulesets, queue och skyddade brancher.", "query": "ruleset check merge admin required checks queue security", "tag": "danger", "toolbar": "security", "cat": "Alla", "pack": "gh ruleset list\ngh ruleset check main\ngh pr checks 123 --required\ngh pr merge 123 --admin"}];
+let activeCat = "Alla";
+let query = "";
+let activeTag = "";
+let toolbarFilter = "all";
+let activePreset = "";
+
+const searchInput = document.getElementById("search");
+const resultCountEl = document.getElementById("resultCount");
+const activeFiltersEl = document.getElementById("activeFilters");
+const presetNameEl = document.getElementById("presetName");
+
+function esc(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function tagMatch(card) {
+  const tags = card.tags || [];
+  if (activeTag && !tags.includes(activeTag)) return false;
+  if (toolbarFilter !== "all" && !tags.includes(toolbarFilter)) return false;
+  return true;
+}
+
+function matches(card) {
+  const haystack = [
+    card.cat,
+    card.cmd,
+    card.short,
+    ...(card.tags || []),
+    ...(card.examples || []).flatMap(e => [e.desc, e.code])
+  ].join("\n").toLowerCase();
+  return haystack.includes(query.toLowerCase());
+}
+
+function filtered() {
+  return COMMANDS.filter(card =>
+    (activeCat === "Alla" || card.cat === activeCat) &&
+    tagMatch(card) &&
+    matches(card)
+  );
+}
+
+function renderActiveFilters() {
+  const chips = [];
+  if (query) chips.push(`<span class="active-chip">sök: ${esc(query)}</span>`);
+  if (activeCat !== "Alla") chips.push(`<span class="active-chip">kategori: ${esc(activeCat)}</span>`);
+  if (activeTag) chips.push(`<span class="active-chip">snabbfilter: ${esc(activeTag)}</span>`);
+  if (toolbarFilter !== "all") chips.push(`<span class="active-chip">toolbar: ${esc(toolbarFilter)}</span>`);
+  if (activePreset) chips.push(`<span class="active-chip">preset: ${esc(activePreset)}</span>`);
+  activeFiltersEl.innerHTML = chips.join("");
+}
+
+function render() {
+  const root = document.getElementById("grid");
+  const items = filtered();
+  resultCountEl.textContent = items.length;
+  presetNameEl.textContent = activePreset || "ingen";
+  renderActiveFilters();
+
+  if (!items.length) {
+    root.innerHTML = '<div class="empty">Ingen träff. Testa en annan sökning, snabbfilter eller kategori.</div>';
+    return;
+  }
+
+  root.innerHTML = items.map((card, i) => `
+    <article class="card">
+      <div class="card-head">
+        <div class="meta">
+          <div class="cat-label">${esc(card.cat)}</div>
+          <div class="cat-label">${(card.examples || []).length} exempel</div>
+        </div>
+        <h3 class="cmd">${esc(card.cmd)}</h3>
+        <div class="short">${esc(card.short)}</div>
+        <div class="tags">
+          ${(card.tags || []).map(tag => `<span class="tag ${esc(tag)}">${esc(tag)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="examples">
+        <div class="examples-header">
+          <div class="examples-title">Exempel</div>
+          <button class="copy-all-btn" onclick="copyAllExamples($18, this)">kopiera alla</button>
+        </div>
+        ${(card.examples || []).map((e, idx) => `
+          <div class="example">
+            <div class="example-top">
+              <span>${esc(e.desc)}</span>
+              <button class="copy-btn" onclick="copyCode('code-${i}-${idx}', this)">kopiera</button>
+            </div>
+            <pre id="code-${i}-${idx}">${esc(e.code)}</pre>
+          </div>
+        `).join('')}
+      </div>
+    </article>
+  `).join('');
+}
+
+function flashButton(button) {
+  const old = button.textContent;
+  button.textContent = 'kopierat';
+  setTimeout(() => button.textContent = old, 1200);
+}
+
+function copyCode(id, button) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => flashButton(button));
+}
+
+function copyInline(text, button) {
+  navigator.clipboard.writeText(text).then(() => flashButton(button));
+}
+
+function copyAllExamples(cardIndex, button) {
+  const text = (COMMANDS[cardIndex].examples || []).map(e => e.code).join("\n\n# ---\n\n");
+  navigator.clipboard.writeText(text).then(() => flashButton(button));
+}
+
+function applyPreset(id) {
+  const preset = PRESETS.find(p => p.id === id);
+  if (!preset) return;
+  activePreset = preset.title;
+  activeCat = preset.cat;
+  query = preset.query;
+  activeTag = preset.tag;
+  toolbarFilter = preset.toolbar;
+  searchInput.value = query;
+
+  document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+  const catBtn = document.querySelector(`.cat-btn[data-cat="${CSS.escape(activeCat)}"]`);
+  if (catBtn) catBtn.classList.add("active");
+
+  document.querySelectorAll(".quick-btn").forEach(x => {
+    x.classList.toggle("active", x.dataset.tag === activeTag);
+  });
+
+  document.querySelectorAll(".toolbar-chip").forEach(x => {
+    x.classList.toggle("active", x.dataset.filter === toolbarFilter);
+  });
+
+  document.getElementById("guide").scrollIntoView({ behavior: 'smooth', block: 'start' });
+  render();
+}
+
+function clearAllFilters() {
+  activeCat = "Alla";
+  query = "";
+  activeTag = "";
+  toolbarFilter = "all";
+  activePreset = "";
+  searchInput.value = "";
+  document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+  document.querySelector('.cat-btn[data-cat="Alla"]').classList.add("active");
+  document.querySelectorAll(".quick-btn").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".toolbar-chip").forEach(x => x.classList.remove("active"));
+  document.querySelector('.toolbar-chip[data-filter="all"]').classList.add("active");
+  render();
+}
+
+searchInput.addEventListener("input", e => {
+  query = e.target.value || "";
+  activePreset = "";
+  render();
+});
+
+document.querySelectorAll(".cat-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".cat-btn").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    activeCat = btn.dataset.cat;
+    activePreset = "";
+    render();
+  });
+});
+
+document.querySelectorAll(".quick-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const same = activeTag === btn.dataset.tag;
+    document.querySelectorAll(".quick-btn").forEach(x => x.classList.remove("active"));
+    if (same) {
+      activeTag = "";
+    } else {
+      btn.classList.add("active");
+      activeTag = btn.dataset.tag;
+    }
+    activePreset = "";
+    render();
+  });
+});
+
+document.querySelectorAll(".toolbar-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".toolbar-chip").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    toolbarFilter = btn.dataset.filter;
+    activePreset = "";
+    render();
+  });
+});
+
+document.getElementById("clearFilters").addEventListener("click", clearAllFilters);
+document.getElementById("clearFiltersTop").addEventListener("click", clearAllFilters);
+document.getElementById("scrollTopBtn").addEventListener("click", () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  if (e.key === "Escape") {
+    if (document.activeElement === searchInput) searchInput.blur();
+    if (query) {
+      query = "";
+      activePreset = "";
+      searchInput.value = "";
+      render();
+    }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
