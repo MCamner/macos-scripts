@@ -22,6 +22,15 @@ fi
 : "${MQ_OBSIDIAN_DIR:=$HOME/mqobsidian}"
 : "${MQ_OBSIDIAN_TASK_PACK:=$MQ_OBSIDIAN_DIR/.mq/context/task-pack.md}"
 
+# mqobsidian consumer lib — shared resolver/manifest/opener (PR1/PR2). Optional:
+# the menu degrades gracefully if it is absent.
+: "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
+for _mqobs_lib in errors resolve manifest open; do
+  [[ -f "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh" ]] \
+    && source "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
+done
+unset _mqobs_lib
+
 # Pauses safely after MQ Obsidian menu actions.
 _mq_obsidian_pause_enter() {
   if command -v pause_enter >/dev/null 2>&1; then
@@ -67,6 +76,10 @@ render_mq_obsidian_panel() {
   surface_split_row "13. Regenerate memory views" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
+  surface_row "NAVIGATE" "$width" "$panel_color"
+  surface_split_row "14. Open any view (manifest)" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+
   surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf "\n"
@@ -87,11 +100,16 @@ mq_obsidian_missing() {
   _mq_obsidian_pause_enter
 }
 
-# Opens a path with macOS open.
+# Opens a path with macOS open. Routes through the consumer lib's single opener
+# when available (so menu + commands share one opener), else falls back.
 mq_obsidian_open_path() {
   local path="$1"
   if [[ -e "$path" ]]; then
-    open "$path"
+    if command -v open_mqobsidian_path >/dev/null 2>&1; then
+      open_mqobsidian_path "$path"
+    else
+      open "$path"
+    fi
   else
     printf "Path not found: %s\n" "$path"
     _mq_obsidian_pause_enter
@@ -117,6 +135,53 @@ mq_obsidian_open_vault() {
 mq_obsidian_open_file() {
   local rel="$1"
   mq_obsidian_open_path "$MQ_OBSIDIAN_DIR/$rel"
+}
+
+# Opens a manifest-defined view via the consumer lib; falls back to the given
+# repo-relative path when the lib/manifest is unavailable. Keeps view paths in
+# the manifest, not hardcoded in this menu.
+mq_obsidian_open_manifest_view() {
+  local key="$1" fallback_rel="${2:-}"
+  if command -v open_mqobsidian_target >/dev/null 2>&1; then
+    open_mqobsidian_target "$key" || _mq_obsidian_pause_enter
+  elif [[ -n "$fallback_rel" ]]; then
+    mq_obsidian_open_file "$fallback_rel"
+  else
+    printf "Consumer lib unavailable for view: %s\n" "$key"
+    _mq_obsidian_pause_enter
+  fi
+}
+
+# Lists every manifest view and opens the chosen one (by number or key).
+# Exposes views the panel does not list (decisions, execution, repo hot files).
+mq_obsidian_open_view_picker() {
+  if ! command -v list_supported_views >/dev/null 2>&1; then
+    printf "Consumer lib/manifest not available.\n"
+    _mq_obsidian_pause_enter
+    return 1
+  fi
+
+  local keys=() key i=0 sel idx
+  printf "\nManifest views:\n"
+  while IFS= read -r key; do
+    keys+=("$key")
+    i=$((i + 1))
+    printf "  %2d. %s\n" "$i" "$key"
+  done < <(list_supported_views)
+
+  printf "view [number or key]> "
+  read -r sel
+  [[ -z "${sel// }" ]] && return 0
+  if [[ "$sel" =~ ^[0-9]+$ ]]; then
+    idx=$((sel - 1))
+    sel="${keys[$idx]:-}"
+  fi
+  if [[ -z "$sel" ]]; then
+    printf "No such view.\n"
+    _mq_obsidian_pause_enter
+    return 1
+  fi
+  open_mqobsidian_target "$sel" || _mq_obsidian_pause_enter
 }
 
 # Runs a command inside mqobsidian.
@@ -263,8 +328,8 @@ mq_obsidian_menu_main() {
     case "$choice" in
       1|repo|open-repo) mq_obsidian_open_repo ;;
       2|vault|open-vault) mq_obsidian_open_vault ;;
-      3|roadmap) mq_obsidian_open_file "docs/roadmap-token-reduction.md" ;;
-      4|context-docs|context) mq_obsidian_open_file "docs/context-budget.md" ;;
+      3|roadmap) mq_obsidian_open_manifest_view "roadmap-doc" "docs/roadmap-token-reduction.md" ;;
+      4|context-docs|context) mq_obsidian_open_manifest_view "context-budget" "docs/context-budget.md" ;;
       5|checks|public-safe) mq_obsidian_public_safe_checks; _mq_obsidian_pause_enter ;;
       6|budget|token-budget) mq_obsidian_token_budget; _mq_obsidian_pause_enter ;;
       7|doctor) mq_obsidian_doctor; _mq_obsidian_pause_enter ;;
@@ -274,6 +339,7 @@ mq_obsidian_menu_main() {
       11|inbox) mq_obsidian_show_inbox; _mq_obsidian_pause_enter ;;
       12|triage) mq_obsidian_triage_learning_inbox; _mq_obsidian_pause_enter ;;
       13|views|regenerate) mq_obsidian_regenerate_views; _mq_obsidian_pause_enter ;;
+      14|open-view|navigate) mq_obsidian_open_view_picker ;;
       h|help) render_mq_obsidian_panel; _mq_obsidian_pause_enter ;;
       b|B|back) break ;;
       x|X) exit 0 ;;

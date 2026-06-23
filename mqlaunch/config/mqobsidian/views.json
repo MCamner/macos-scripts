@@ -1,0 +1,62 @@
+[
+  {
+    "key": "dashboard",
+    "label": "MQ Obsidian index",
+    "type": "file",
+    "relative_path": "systems/mqobsidian/index.md"
+  },
+  {
+    "key": "roadmaps",
+    "label": "Roadmaps",
+    "type": "folder",
+    "relative_path": "roadmap"
+  },
+  {
+    "key": "reviews",
+    "label": "Reviews",
+    "type": "folder",
+    "relative_path": "reviews"
+  },
+  {
+    "key": "decisions",
+    "label": "Decisions",
+    "type": "folder",
+    "relative_path": "decisions"
+  },
+  {
+    "key": "execution",
+    "label": "Execution",
+    "type": "folder",
+    "relative_path": "execution"
+  },
+  {
+    "key": "mq-agent-hot",
+    "label": "mq-agent hot",
+    "type": "file",
+    "relative_path": "systems/mq-agent/hot.md"
+  },
+  {
+    "key": "mq-mcp-hot",
+    "label": "mq-mcp hot",
+    "type": "file",
+    "relative_path": "systems/mq-mcp/hot.md"
+  },
+  {
+    "key": "mq-hal-hot",
+    "label": "mq-hal hot",
+    "type": "file",
+    "relative_path": "systems/mq-hal/hot.md"
+  },
+  {
+    "key": "roadmap-doc",
+    "label": "Token-reduction roadmap",
+    "type": "file",
+    "relative_path": "docs/roadmap-token-reduction.md"
+  },
+  {
+    "key": "context-budget",
+    "label": "Context budget",
+    "type": "file",
+    "relative_path": "docs/context-budget.md"
+  }
+]
