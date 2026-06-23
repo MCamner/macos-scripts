@@ -46,5 +46,17 @@
     "label": "mq-hal hot",
     "type": "file",
     "relative_path": "systems/mq-hal/hot.md"
+  },
+  {
+    "key": "roadmap-doc",
+    "label": "Token-reduction roadmap",
+    "type": "file",
+    "relative_path": "docs/roadmap-token-reduction.md"
+  },
+  {
+    "key": "context-budget",
+    "label": "Context budget",
+    "type": "file",
+    "relative_path": "docs/context-budget.md"
   }
 ]

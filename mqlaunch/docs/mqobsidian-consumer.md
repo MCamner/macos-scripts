@@ -39,6 +39,14 @@ The existing `terminal/menus/mq-obsidian-menu.sh` (main menu → option 9 /
 menu and the commands share **one** opener (`open_mqobsidian_path`), degrading
 gracefully if the lib is absent.
 
+PR3 finished the reconciliation: the menu's open actions are now manifest-driven
+(no hardcoded view paths — the formerly-inline `docs/roadmap-token-reduction.md`
+and `docs/context-budget.md` moved into `views.json` as `roadmap-doc` /
+`context-budget`), and a new menu entry **14. Open any view (manifest)** lists
+every manifest view (including `decisions`, `execution`, repo hot files) and
+opens by number or key. Each refactored action keeps a repo-relative fallback so
+it still works if the lib is missing.
+
 ## Failure modes (clear errors)
 
 * `MQ_OBSIDIAN_DIR` unset → warn, fall back; if fallback missing → error + exit 1.
@@ -56,10 +64,11 @@ manifest has no entry.
 
 * **PR 1:** resolver, manifest, open, doctor + 4 commands, grounded `views.json`
   (8 real views). All 8 test-plan cases green; read-only verified.
-* **PR 2 (this):** `mqobsidian-open-repo-context.sh` + wired the existing
+* **PR 2:** `mqobsidian-open-repo-context.sh` + wired the existing
   `mq-obsidian-menu.sh` to the lib's shared opener. (Note: the menu already
   existed and is richer than the original spec — no parallel menu was created.)
-* **Open reconciliation:** the existing menu still hardcodes a few view paths
-  inline (e.g. `docs/roadmap-token-reduction.md`). Migrating those onto the
-  manifest is a deliberate design step, left for a follow-up so the working
-  menu UI is not changed unilaterally.
+* **PR 3 (this):** reconciliation — menu open actions are now manifest-driven
+  (no hardcoded view paths), plus a manifest "Open any view" picker (entry 14)
+  exposing `decisions`/`execution`/repo hot files. Verified non-interactively
+  (syntax, doctor, routing, picker by number+key); **final panel rendering should
+  be eyeballed once in a real terminal** (`mqlaunch` → 9).
