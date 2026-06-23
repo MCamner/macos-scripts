@@ -27,9 +27,17 @@ from the manifest, not hardcoded — change the manifest, not the logic.
 | `mqobsidian-open-dashboard.sh` | open the index |
 | `mqobsidian-open-view.sh <key>` | open any manifest view |
 | `mqobsidian-open-vault-root.sh` | open the vault root (works even if views are missing) |
+| `mqobsidian-open-repo-context.sh <repo-key>` | open a repo's context (mq-agent/mq-mcp/mq-hal/mqobsidian) |
 
 All live in `mqlaunch/commands/mqobsidian/`; shared logic in
 `mqlaunch/lib/mqobsidian/` (`resolve`, `manifest`, `open`, `doctor`, `errors`).
+
+## Menu
+
+The existing `terminal/menus/mq-obsidian-menu.sh` (main menu → option 9 /
+`obsidian`) is the user-facing surface. PR2 wired it to source this lib so the
+menu and the commands share **one** opener (`open_mqobsidian_path`), degrading
+gracefully if the lib is absent.
 
 ## Failure modes (clear errors)
 
@@ -46,8 +54,12 @@ manifest has no entry.
 
 ## Status
 
-* **PR 1 (this):** resolver, manifest, open, doctor + 4 commands, grounded
-  `views.json` (8 real views). All 8 test-plan cases green; read-only verified.
-* **PR 2 (next):** wire `mqobsidian-menu.sh` into `terminal/menus/` (deferred
-  here to avoid a blind edit of the 2043-line launcher) + repo-context command.
-* **PR 3:** polish + finalize this page.
+* **PR 1:** resolver, manifest, open, doctor + 4 commands, grounded `views.json`
+  (8 real views). All 8 test-plan cases green; read-only verified.
+* **PR 2 (this):** `mqobsidian-open-repo-context.sh` + wired the existing
+  `mq-obsidian-menu.sh` to the lib's shared opener. (Note: the menu already
+  existed and is richer than the original spec — no parallel menu was created.)
+* **Open reconciliation:** the existing menu still hardcodes a few view paths
+  inline (e.g. `docs/roadmap-token-reduction.md`). Migrating those onto the
+  manifest is a deliberate design step, left for a follow-up so the working
+  menu UI is not changed unilaterally.

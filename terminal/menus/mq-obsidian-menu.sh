@@ -22,6 +22,15 @@ fi
 : "${MQ_OBSIDIAN_DIR:=$HOME/mqobsidian}"
 : "${MQ_OBSIDIAN_TASK_PACK:=$MQ_OBSIDIAN_DIR/.mq/context/task-pack.md}"
 
+# mqobsidian consumer lib — shared resolver/manifest/opener (PR1/PR2). Optional:
+# the menu degrades gracefully if it is absent.
+: "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
+for _mqobs_lib in errors resolve open; do
+  [[ -f "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh" ]] \
+    && source "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
+done
+unset _mqobs_lib
+
 # Pauses safely after MQ Obsidian menu actions.
 _mq_obsidian_pause_enter() {
   if command -v pause_enter >/dev/null 2>&1; then
@@ -87,11 +96,16 @@ mq_obsidian_missing() {
   _mq_obsidian_pause_enter
 }
 
-# Opens a path with macOS open.
+# Opens a path with macOS open. Routes through the consumer lib's single opener
+# when available (so menu + commands share one opener), else falls back.
 mq_obsidian_open_path() {
   local path="$1"
   if [[ -e "$path" ]]; then
-    open "$path"
+    if command -v open_mqobsidian_path >/dev/null 2>&1; then
+      open_mqobsidian_path "$path"
+    else
+      open "$path"
+    fi
   else
     printf "Path not found: %s\n" "$path"
     _mq_obsidian_pause_enter
