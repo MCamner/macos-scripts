@@ -53,6 +53,26 @@ render_recommendation_detail() {
   ' "$path"
 }
 
+# Just the command template for one pattern (the "show" action). Renders the
+# template for show/copy — it is never executed by this consumer. Placeholders
+# such as {repo}/{path}/{system} are shown verbatim for the user to fill in.
+render_pattern_template() {
+  local path="$1" id="$2" text
+  text="$(get_pattern_template_text "$path" "$id")" || return 1
+  printf 'Command template for %s (show / copy only — not executed by mqlaunch):\n' "$id"
+  printf '  %s\n' "$text"
+  printf -- '-------------------------------------------------------------\n'
+  printf 'placeholders ({repo}, {path}, {system}, {store}) are yours to fill in.\n'
+  printf 'copy it with: recommendations-copy.sh %s\n' "$id"
+}
+
+# Confirm a copy landed on the clipboard, and restate the boundary.
+render_copy_success() {
+  local path="$1" id="$2"
+  rec_ok "copied template for $id to the clipboard"
+  rec_info "show/copy only — mqlaunch did not run it; fill placeholders, then you decide"
+}
+
 # Deliberate empty state — distinguishes "no recommendations yet" from "broken".
 render_empty_recommendations_state() {
   local path="$1"

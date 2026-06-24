@@ -46,3 +46,32 @@ rec_allowed_actions() { jq -r '.allowed_actions | join(", ")' "$1"; }
 
 # Echo the contract's default-visible risk classes, comma-joined.
 rec_default_visible_risk() { jq -r '.default_visible_risk | join(", ")' "$1"; }
+
+# Echo a pattern's command_template verbatim (empty if absent). This is the
+# literal template text — placeholders like {repo}/{path} are NOT expanded, and
+# the consumer never executes it (show/copy only).
+rec_template() {
+  local path="$1" id="$2"
+  jq -r --arg id "$id" '
+    .patterns[] | select(.id == $id) | .command_template // empty
+  ' "$path"
+}
+
+# True if an action is permitted by the file's top-level contract. allowed_actions
+# is a FILE-WIDE field (e.g. ["show","copy"]) — there is no per-pattern action
+# list — so this check does not take a pattern id.
+rec_action_allowed() {
+  local path="$1" action="$2"
+  jq -e --arg a "$action" '(.allowed_actions // []) | index($a) != null' "$path" >/dev/null 2>&1
+}
+
+# True if a pattern's risk_class is in .default_visible_risk (i.e. it shows in
+# the default list). The per-pattern guard in this consumer is visibility, not
+# actions; mutating patterns exist but are hidden here.
+rec_pattern_visible() {
+  local path="$1" id="$2"
+  jq -e --arg id "$id" '
+    .default_visible_risk as $vr
+    | any(.patterns[]; .id == $id and (.risk_class as $r | $vr | index($r)))
+  ' "$path" >/dev/null 2>&1
+}
