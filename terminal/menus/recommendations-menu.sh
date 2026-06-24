@@ -147,6 +147,13 @@ recommendations_menu_main() {
     return 127
   fi
 
+  # Ensure jq once, in this (launcher) process, so every flow below has it even
+  # when mqlaunch was started from a stripped PATH. Repairs PATH for the session.
+  if ! rec_require_jq; then
+    _rec_menu_pause_enter
+    return 1
+  fi
+
   while true; do
     render_recommendations_panel
 

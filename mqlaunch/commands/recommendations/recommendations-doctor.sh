@@ -10,4 +10,5 @@ source "$LIB/resolve.sh"
 source "$LIB/parse.sh"
 source "$LIB/doctor.sh"
 
+rec_require_jq || exit 1
 run_recommendations_doctor

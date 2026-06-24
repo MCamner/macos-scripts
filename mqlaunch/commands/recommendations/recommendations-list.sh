@@ -9,6 +9,7 @@ source "$LIB/resolve.sh"
 source "$LIB/parse.sh"
 source "$LIB/render.sh"
 
+rec_require_jq || exit 1
 path="$(assert_recommended_json)" || exit 1
 
 if [[ "$(rec_visible_count "$path")" -eq 0 ]]; then

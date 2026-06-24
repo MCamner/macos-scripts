@@ -15,6 +15,7 @@ if [[ $# -ne 1 ]]; then
   exit 2
 fi
 
+rec_require_jq || exit 1
 path="$(assert_recommended_json)" || exit 1
 
 if ! rec_pattern_exists "$path" "$1"; then

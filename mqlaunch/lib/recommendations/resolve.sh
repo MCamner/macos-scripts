@@ -33,13 +33,42 @@ resolve_recommended_json_path() {
   printf '%s\n' "$dir/$REC_RELATIVE_PATH"
 }
 
+# Guarantee a usable jq, independent of how mqlaunch was launched. Prefer one on
+# PATH; otherwise adopt jq from a known absolute location and prepend its dir to
+# PATH so every downstream bare `jq` call in this consumer works. This makes the
+# feature immune to a stripped launch environment (GUI, non-login shell, a
+# wrapper that sanitizes PATH) without relying on the launcher's PATH bootstrap.
+# Returns non-zero only if no jq exists in any location we know to look.
+rec_ensure_jq() {
+  command -v jq >/dev/null 2>&1 && return 0
+  local d
+  for d in /opt/homebrew/bin /usr/local/bin /usr/bin /bin; do
+    if [[ -x "$d/jq" ]]; then
+      PATH="$d:$PATH"
+      export PATH
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Ensure jq, or emit the precise error. Call this in an entry point's MAIN shell
+# (a command wrapper or the menu) BEFORE any jq use — not inside $(...), or the
+# PATH repair dies with the subshell and downstream jq calls still fail.
+rec_require_jq() {
+  rec_ensure_jq && return 0
+  rec_error "jq is required to read recommended.json but was not found"
+  rec_info "looked on PATH and in /opt/homebrew/bin, /usr/local/bin, /usr/bin, /bin"
+  rec_info "current PATH: ${PATH}"
+  return 1
+}
+
 # Validate source presence, readability, JSON validity, and schema. Echoes the
-# resolved path on success; non-zero with a precise error on any failure.
+# resolved path on success; non-zero with a precise error on any failure. Calls
+# rec_require_jq as a self-heal for direct callers, but entry points should call
+# rec_require_jq themselves first (in the main shell) so the PATH repair survives.
 assert_recommended_json() {
-  if ! command -v jq >/dev/null 2>&1; then
-    rec_error "jq is required to read recommended.json but was not found on PATH"
-    return 1
-  fi
+  rec_require_jq || return 1
   local path
   path="$(resolve_recommended_json_path)"
   if [[ ! -f "$path" ]]; then

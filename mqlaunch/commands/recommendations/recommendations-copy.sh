@@ -18,6 +18,7 @@ if [[ $# -ne 1 ]]; then
   exit 2
 fi
 
+rec_require_jq || exit 1
 path="$(assert_recommended_json)" || exit 1
 assert_action_allowed "$path" copy || exit 1
 assert_clipboard_available || exit 1
