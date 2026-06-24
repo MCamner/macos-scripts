@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Presentation for the recommendations consumer. Read-only — renders to stdout,
-# opens/executes nothing. Depends on: errors.sh, parse.sh.
+# opens/executes nothing. Depends on: errors.sh, parse.sh, resolve.sh (REC_JQ).
+: "${REC_JQ:=jq}"
 
 # Compact, rank-ordered list of default-visible patterns.
 render_recommendations_list() {
   local path="$1"
   printf 'Recommended command patterns — %s, by rank (read-only)\n' "$(rec_default_visible_risk "$path")"
   printf -- '-------------------------------------------------------------\n'
-  jq -r '
+  "$REC_JQ" -r '
     .default_visible_risk as $vr
     | [ .patterns[] | select(.risk_class as $r | $vr | index($r)) ]
     | sort_by(.rank)
@@ -32,7 +33,7 @@ render_recommendations_list() {
 # it is never executed by this consumer.
 render_recommendation_detail() {
   local path="$1" id="$2"
-  jq -r --arg id "$id" '
+  "$REC_JQ" -r --arg id "$id" '
     .patterns[] | select(.id == $id) |
     "Pattern:    \(.id)",
     "Name:       \(.name)",

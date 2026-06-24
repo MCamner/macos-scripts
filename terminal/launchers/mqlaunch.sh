@@ -17,6 +17,17 @@ done
 export PATH
 unset _mq_path_dir
 
+# --- UTF-8 locale -------------------------------------------
+# The panels draw with multi-byte box glyphs (─│┌┐└┘) and em dashes. A stripped
+# launch env (no LANG/LC_*) defaults to the C locale, which byte-mangles those
+# glyphs and byte-counts padding — so the panel borders misalign (ragged right
+# verticals). Set a UTF-8 locale only when none is active; never override a
+# UTF-8 locale the user already has.
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+  *UTF-8*|*utf8*|*UTF8*) ;;
+  *) export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8 ;;
+esac
+
 # ============================================================
 # MQLAUNCH — Branded Neon Command Surface
 # Adds:

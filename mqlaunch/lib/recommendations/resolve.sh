@@ -23,6 +23,13 @@ source "$_REC_LIB/../mqobsidian/resolve.sh"   # provides resolve_mqobsidian_dir
 REC_RELATIVE_PATH="memory/commands/mqlaunch/recommended.json"
 REC_SCHEMA="command-recommendations.v1"
 
+# Absolute path to jq, resolved once by rec_ensure_jq. Every jq call in this
+# consumer goes through "$REC_JQ" rather than a bare `jq`, so it works even if
+# the launcher strips/resets PATH between calls (observed in the live TTY: PATH
+# went empty mid-session, so a PATH-prepend was wiped before the jq call ran).
+# Defaults to the bare name so an un-bootstrapped call still works on a sane PATH.
+: "${REC_JQ:=jq}"
+
 resolve_recommended_json_path() {
   if [[ -n "${MQ_RECOMMENDED_JSON:-}" ]]; then
     printf '%s\n' "$MQ_RECOMMENDED_JSON"
@@ -33,20 +40,22 @@ resolve_recommended_json_path() {
   printf '%s\n' "$dir/$REC_RELATIVE_PATH"
 }
 
-# Guarantee a usable jq, independent of how mqlaunch was launched. Prefer one on
-# PATH; otherwise adopt jq from a known absolute location and prepend its dir to
-# PATH so every downstream bare `jq` call in this consumer works. This makes the
-# feature immune to a stripped launch environment (GUI, non-login shell, a
-# wrapper that sanitizes PATH) without relying on the launcher's PATH bootstrap.
-# Returns non-zero only if no jq exists in any location we know to look.
+# Resolve jq to an ABSOLUTE path held in REC_JQ, independent of how mqlaunch was
+# launched. Prefer one on PATH (resolved to its absolute location), otherwise a
+# known install location. Storing the absolute path — rather than mutating PATH —
+# is what makes this survive a launcher that empties PATH between calls. Returns
+# non-zero only if no jq exists in any location we know to look.
 rec_ensure_jq() {
-  command -v jq >/dev/null 2>&1 && return 0
+  [[ -n "${REC_JQ:-}" && "$REC_JQ" != jq && -x "$REC_JQ" ]] && return 0
+  local cand
+  cand="$(command -v jq 2>/dev/null || true)"
+  if [[ -n "$cand" && -x "$cand" ]]; then
+    REC_JQ="$cand"; export REC_JQ; return 0
+  fi
   local d
   for d in /opt/homebrew/bin /usr/local/bin /usr/bin /bin; do
     if [[ -x "$d/jq" ]]; then
-      PATH="$d:$PATH"
-      export PATH
-      return 0
+      REC_JQ="$d/jq"; export REC_JQ; return 0
     fi
   done
   return 1
@@ -80,12 +89,15 @@ assert_recommended_json() {
     rec_error "recommended.json is not readable: $path"
     return 1
   fi
-  if ! jq -e . "$path" >/dev/null 2>&1; then
+  local jq_err
+  if ! jq_err="$("$REC_JQ" -e . "$path" 2>&1 >/dev/null)"; then
     rec_error "recommended.json is not valid JSON: $path"
+    rec_info "jq: $REC_JQ ($("$REC_JQ" --version 2>/dev/null))  ·  size: $(wc -c <"$path" 2>/dev/null) bytes"
+    [[ -n "$jq_err" ]] && rec_info "jq said: $jq_err"
     return 1
   fi
   local schema
-  schema="$(jq -r '.schema // empty' "$path")"
+  schema="$("$REC_JQ" -r '.schema // empty' "$path")"
   if [[ "$schema" != "$REC_SCHEMA" ]]; then
     rec_error "unexpected schema: ${schema:-<missing>} (expected $REC_SCHEMA): $path"
     return 1
