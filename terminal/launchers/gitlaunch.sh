@@ -520,7 +520,8 @@ function render_menu() {
   frame_two_col "3. Commit with suggested message" "4. Safe push"
   frame_two_col "5. Open repo" "6. Dev mode"
   frame_two_col "7. Switch repo" "8. Auto commit + push"
-  frame_two_col "9. Recent log" "b. Back"
+  frame_two_col "9. Recent log" "m. Safe merge"
+  frame_two_col "b. Back" ""
   frame_bottom
 }
 
@@ -825,6 +826,22 @@ function safe_push() {
 }
 
 # ------------------------
+# SAFE MERGE
+# ------------------------
+# Runs the standalone safe-merge helper against the active repo.
+function safe_merge() {
+  local merge_script="${MQ_GITMERGE_SCRIPT:-$HOME/mqlaunch/scripts/gitmerge-safe.sh}"
+
+  if [[ ! -x "$merge_script" ]]; then
+    echo "Safe-merge script not found or not executable:"
+    echo "  $merge_script"
+    return 1
+  fi
+
+  ( cd "${WORK_DIR:-$REPO}" && "$merge_script" )
+}
+
+# ------------------------
 # COMMIT SUGGESTION
 # ------------------------
 function suggest_commit() {
@@ -968,6 +985,10 @@ while true; do
       ;;
     9)
       show_recent_log
+      ;;
+    m|M)
+      safe_merge
+      pause_git_menu
       ;;
     b|B)
       mark_gitlaunch_back
