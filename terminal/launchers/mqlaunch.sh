@@ -2,6 +2,21 @@
 
 set -u
 
+# --- PATH bootstrap -----------------------------------------
+# Ensure the standard system + Homebrew bins are on PATH even when mqlaunch is
+# started from a stripped environment (GUI launch, non-login shell, a nested
+# launcher). Some menu actions need CLI tools that live there — e.g. jq for the
+# recommendations consumer. Appends only what is missing, so an inherited PATH
+# and its tool precedence are never clobbered.
+for _mq_path_dir in /opt/homebrew/bin /opt/homebrew/sbin /usr/local/bin /usr/bin /bin /usr/sbin /sbin; do
+  case ":${PATH}:" in
+    *":${_mq_path_dir}:"*) ;;
+    *) [[ -d "$_mq_path_dir" ]] && PATH="${PATH:+$PATH:}${_mq_path_dir}" ;;
+  esac
+done
+export PATH
+unset _mq_path_dir
+
 # ============================================================
 # MQLAUNCH — Branded Neon Command Surface
 # Adds:
