@@ -96,7 +96,7 @@ render_main_menu_panel() {
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Repos" "$width" "$panel_color"
   surface_split_row "7. MQ HAL" "8. Agent" "$width" "$panel_color"
-  surface_split_row "9. MQ Obsidian" "" "$width" "$panel_color"
+  surface_split_row "9. MQ Obsidian" "10. Recommendations" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "QUICK ACCESS" "$width" "$panel_color"
@@ -259,6 +259,7 @@ handle_main_menu_choice() {
       ;;
     8) open_agent_menu ;;
     9) mq_obsidian_menu_main ;;
+    10) recommendations_menu_main ;;
 
     # QUICK ACCESS
     p|P) open_performance_menu ;;
@@ -335,6 +336,7 @@ handle_main_prompt_command() {
     restart|reload|relaunch|z) restart_mqlaunch; return 0 ;;
     agent|mq-agent|g) open_agent_menu; return 0 ;;
     obsidian|mqobsidian|memory-menu|mq-memory) mq_obsidian_menu_main; return 0 ;;
+    recommendations|recommend|rec) recommendations_menu_main; return 0 ;;
     agent\ score|score) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent score .); pause_enter; return 0 ;;
     agent\ signal|signal) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent signal .); pause_enter; return 0 ;;
     agent\ audit|audit) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent audit .); pause_enter; return 0 ;;

@@ -188,6 +188,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh"
 fi
 
+# recommendations menu module (read-only recommended.json consumer)
+if [[ -f "$BASE_DIR/terminal/menus/recommendations-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/recommendations-menu.sh"
+fi
+
 # Prints header.
 print_header() {
   clear
