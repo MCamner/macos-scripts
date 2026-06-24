@@ -2,6 +2,32 @@
 
 set -u
 
+# --- PATH bootstrap -----------------------------------------
+# Ensure the standard system + Homebrew bins are on PATH even when mqlaunch is
+# started from a stripped environment (GUI launch, non-login shell, a nested
+# launcher). Some menu actions need CLI tools that live there — e.g. jq for the
+# recommendations consumer. Appends only what is missing, so an inherited PATH
+# and its tool precedence are never clobbered.
+for _mq_path_dir in /opt/homebrew/bin /opt/homebrew/sbin /usr/local/bin /usr/bin /bin /usr/sbin /sbin; do
+  case ":${PATH}:" in
+    *":${_mq_path_dir}:"*) ;;
+    *) [[ -d "$_mq_path_dir" ]] && PATH="${PATH:+$PATH:}${_mq_path_dir}" ;;
+  esac
+done
+export PATH
+unset _mq_path_dir
+
+# --- UTF-8 locale -------------------------------------------
+# The panels draw with multi-byte box glyphs (─│┌┐└┘) and em dashes. A stripped
+# launch env (no LANG/LC_*) defaults to the C locale, which byte-mangles those
+# glyphs and byte-counts padding — so the panel borders misalign (ragged right
+# verticals). Set a UTF-8 locale only when none is active; never override a
+# UTF-8 locale the user already has.
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+  *UTF-8*|*utf8*|*UTF8*) ;;
+  *) export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8 ;;
+esac
+
 # ============================================================
 # MQLAUNCH — Branded Neon Command Surface
 # Adds:
@@ -186,6 +212,12 @@ fi
 if [[ -f "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh" ]]; then
   # shellcheck disable=SC1091
   source "$BASE_DIR/terminal/menus/mq-obsidian-menu.sh"
+fi
+
+# recommendations menu module (read-only recommended.json consumer)
+if [[ -f "$BASE_DIR/terminal/menus/recommendations-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/recommendations-menu.sh"
 fi
 
 # Prints header.

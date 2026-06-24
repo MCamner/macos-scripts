@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Presentation for the recommendations consumer. Read-only — renders to stdout,
-# opens/executes nothing. Depends on: errors.sh, parse.sh.
+# opens/executes nothing. Depends on: errors.sh, parse.sh, resolve.sh (REC_JQ).
+: "${REC_JQ:=jq}"
 
 # Compact, rank-ordered list of default-visible patterns.
 render_recommendations_list() {
   local path="$1"
   printf 'Recommended command patterns — %s, by rank (read-only)\n' "$(rec_default_visible_risk "$path")"
   printf -- '-------------------------------------------------------------\n'
-  jq -r '
+  "$REC_JQ" -r '
     .default_visible_risk as $vr
     | [ .patterns[] | select(.risk_class as $r | $vr | index($r)) ]
     | sort_by(.rank)
@@ -32,7 +33,7 @@ render_recommendations_list() {
 # it is never executed by this consumer.
 render_recommendation_detail() {
   local path="$1" id="$2"
-  jq -r --arg id "$id" '
+  "$REC_JQ" -r --arg id "$id" '
     .patterns[] | select(.id == $id) |
     "Pattern:    \(.id)",
     "Name:       \(.name)",
@@ -51,6 +52,26 @@ render_recommendation_detail() {
     "",
     "Signals: frequency=\(.signals.frequency)  success=\(.signals.success // "n/a")  reuse=\(.signals.reuse)  prior_n=\(.signals.prior_n)"
   ' "$path"
+}
+
+# Just the command template for one pattern (the "show" action). Renders the
+# template for show/copy — it is never executed by this consumer. Placeholders
+# such as {repo}/{path}/{system} are shown verbatim for the user to fill in.
+render_pattern_template() {
+  local path="$1" id="$2" text
+  text="$(get_pattern_template_text "$path" "$id")" || return 1
+  printf 'Command template for %s (show / copy only — not executed by mqlaunch):\n' "$id"
+  printf '  %s\n' "$text"
+  printf -- '-------------------------------------------------------------\n'
+  printf 'placeholders ({repo}, {path}, {system}, {store}) are yours to fill in.\n'
+  printf 'copy it with: recommendations-copy.sh %s\n' "$id"
+}
+
+# Confirm a copy landed on the clipboard, and restate the boundary.
+render_copy_success() {
+  local path="$1" id="$2"
+  rec_ok "copied template for $id to the clipboard"
+  rec_info "show/copy only — mqlaunch did not run it; fill placeholders, then you decide"
 }
 
 # Deliberate empty state — distinguishes "no recommendations yet" from "broken".

@@ -2,6 +2,7 @@
 # Health check for the recommendations consumer. Read-only — opens/executes
 # nothing, never writes. Non-zero exit on any hard problem (missing/unreadable/
 # invalid/wrong-schema source). Depends on: errors.sh, resolve.sh, parse.sh.
+: "${REC_JQ:=jq}"
 
 run_recommendations_doctor() {
   local path
@@ -9,7 +10,7 @@ run_recommendations_doctor() {
     return 1   # assert_* already emitted the precise reason
   fi
   rec_ok "recommended.json found: $path"
-  rec_ok "schema: $(jq -r '.schema' "$path")  (generated_at: $(jq -r '.generated_at // "?"' "$path"))"
+  rec_ok "schema: $("$REC_JQ" -r '.schema' "$path")  (generated_at: $("$REC_JQ" -r '.generated_at // "?"' "$path"))"
   rec_ok "allowed actions: $(rec_allowed_actions "$path")"
 
   local total visible hidden
