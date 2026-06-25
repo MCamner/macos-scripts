@@ -41,7 +41,12 @@ else
   yellow "No origin remote found. Continuing with local refs only."
 fi
 
-mapfile -t branches < <(
+[[ -t 0 ]] || die "This script needs an interactive terminal (stdin is not a TTY)."
+
+branches=()
+while IFS= read -r branch; do
+  branches+=("$branch")
+done < <(
   {
     git for-each-ref --format='%(refname:short)' refs/heads
     git for-each-ref --format='%(refname:short)' refs/remotes/origin 2>/dev/null || true
@@ -53,8 +58,6 @@ mapfile -t branches < <(
 )
 
 ((${#branches[@]} > 0)) || die "No candidate branches found to merge."
-
-[[ -t 0 ]] || die "This script needs an interactive terminal (stdin is not a TTY)."
 
 echo "Select source branch to merge INTO $current_branch:"
 for i in "${!branches[@]}"; do

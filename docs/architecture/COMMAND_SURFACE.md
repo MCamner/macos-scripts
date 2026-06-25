@@ -19,5 +19,9 @@
 | C | Local mutating action | Explicit confirmation and no automatic push |
 | D | Remote or irreversible action | Keep outside `mqlaunch` unless separately approved |
 
+`mqlaunch git` safe merge is Class C. It is documented in
+[`docs/safety/gitmerge-safe.md`](../safety/gitmerge-safe.md) and must remain
+local-only: clean-tree gate, commit preview, explicit confirmation, no push.
+
 The command surface should stay small enough to scan. Add commands only when
 they improve operator clarity, safety, or delegation into the correct MQ owner.
