@@ -1,0 +1,43 @@
+{
+  "schema": "mq-stack-repo-contract.v1",
+  "repo": "macos-scripts",
+  "role": "human-terminal-entrypoint",
+  "owns": [
+    "mqlaunch menus",
+    "local launcher UX",
+    "safe local workflow shortcuts",
+    "operator-facing command surface"
+  ],
+  "delegates_to": {
+    "mq-agent": [
+      "workflow orchestration",
+      "review routing",
+      "stack commands"
+    ],
+    "mq-mcp": [
+      "review execution",
+      "architecture memory",
+      "decision and learning writers"
+    ],
+    "repo-signal": [
+      "publish readiness",
+      "repo quality scoring"
+    ],
+    "mqobsidian": [
+      "durable memory",
+      "context packs",
+      "recommendation producer"
+    ],
+    "mq-hal": [
+      "operator summaries",
+      "local status and briefings"
+    ]
+  },
+  "must_not": [
+    "implement review cognition",
+    "execute recommended command templates",
+    "auto-promote memory",
+    "write to GitHub without explicit approval",
+    "embed private machine paths in public docs"
+  ]
+}

@@ -8,6 +8,11 @@ echo "REPO SIGNAL"
 echo "────────────────────────────────────────────────────────────"
 
 if ! command -v repo-signal >/dev/null 2>&1; then
+  if [[ "${MQ_STRICT_RELEASE:-0}" == "1" ]]; then
+    echo "✖ repo-signal not found"
+    echo "Install or expose repo-signal in PATH to pass strict release mode."
+    exit 1
+  fi
   echo "⚠ repo-signal not found; skipping publish checklist"
   echo "Install or expose repo-signal in PATH to enable this release gate."
   exit 0

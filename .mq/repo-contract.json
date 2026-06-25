@@ -1,11 +1,13 @@
 {
-  "repo": "mqlaunch",
-  "role": "terminal-entrypoint",
+  "schema": "mq-stack-repo-contract.pointer.v1",
+  "repo": "macos-scripts",
+  "role": "human-terminal-entrypoint",
   "version": "1.0.0",
   "status": "active",
+  "canonical_contract": ".mq/context/repo-contract.json",
   "contracts": [
+    "mq-stack-repo-contract.v1",
     "mqlaunch.v1",
-    "stack_cockpit.v1"
-  ],
-  "next_focus": ""
+    "stack-cockpit.v1"
+  ]
 }

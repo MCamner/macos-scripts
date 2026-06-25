@@ -2,6 +2,7 @@
 set -u
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+STRICT_RELEASE="${MQ_STRICT_RELEASE:-0}"
 
 BRAIN=0
 for arg in "${@:-}"; do
@@ -47,12 +48,27 @@ warn()          { status_warn "$1"; }
 # Prints a blocking validation failure line.
 fail()          { echo "  ✘ $1"; }
 
+# Warns by default, but fails when MQ_STRICT_RELEASE=1.
+warn_or_fail() {
+  local message="$1"
+  if [[ "$STRICT_RELEASE" == "1" ]]; then
+    fail "$message"
+    return 1
+  fi
+  warn "$message"
+  return 0
+}
+
 # Prints release-check context before running checks.
 title() {
   echo "MQ RELEASE CHECK"
   rule 72
   echo "Host: $(hostname -s 2>/dev/null || echo unknown)   User: ${USER:-unknown}   Repo: $BASE_DIR"
-  echo "Mode: release-check"
+  if [[ "$STRICT_RELEASE" == "1" ]]; then
+    echo "Mode: release-check strict"
+  else
+    echo "Mode: release-check"
+  fi
   rule 72
 }
 
@@ -73,7 +89,14 @@ if command -v gitleaks >/dev/null 2>&1; then
     status_warn "Secrets scan found issues"
   fi
 else
-  status_warn "gitleaks not installed"
+  warn_or_fail "gitleaks not installed" || exit 1
+fi
+
+section "MQ STACK CONTRACT"
+if [[ -x "$BASE_DIR/tests/mq-stack-contract-smoke.sh" ]]; then
+  "$BASE_DIR/tests/mq-stack-contract-smoke.sh" || exit 1
+else
+  warn_or_fail "tests/mq-stack-contract-smoke.sh not found or not executable" || exit 1
 fi
 
 section "SYSTEM CHECK"

@@ -252,16 +252,16 @@ Samla alla lokala sökvägar på ett ställe.
 
 ```text
 B2 source:
-~/mqobsidian/Prompt-OS/B2-Atlas-Prompt-OS
+$MQ_OBSIDIAN_DIR/Prompt-OS/B2-Atlas-Prompt-OS
 
 Obsidian stack:
-~/mqobsidian/mq-stack
+$MQ_OBSIDIAN_DIR/mq-stack
 
 Runs:
-~/mqobsidian/mq-stack/runs
+$MQ_OBSIDIAN_DIR/mq-stack/runs
 
 Roadmaps:
-~/mqobsidian/mq-stack/roadmaps
+$MQ_OBSIDIAN_DIR/mq-stack/roadmaps
 ```
 
 ### Tasks
@@ -584,7 +584,7 @@ Börja med JSONL:
   "command": "compose",
   "task": "ta fram blueprint för terminal TUI",
   "projects": ["02.11"],
-  "output_file": "/Users/mansys/mqobsidian/mq-stack/runs/2026-06-09-b2-run.md",
+  "output_file": "$MQ_OBSIDIAN_DIR/mq-stack/runs/2026-06-09-b2-run.md",
   "status": "completed"
 }
 ```
@@ -616,9 +616,9 @@ B2 TUI ska kunna skriva utdata till `mq-stack`.
 ### Output locations
 
 ```text
-~/mqobsidian/mq-stack/runs/
-~/mqobsidian/mq-stack/logs/
-~/mqobsidian/mq-stack/roadmaps/
+$MQ_OBSIDIAN_DIR/mq-stack/runs/
+$MQ_OBSIDIAN_DIR/mq-stack/logs/
+$MQ_OBSIDIAN_DIR/mq-stack/roadmaps/
 ```
 
 ### Tasks

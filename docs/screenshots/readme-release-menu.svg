@@ -6,7 +6,7 @@
     <text x="78" y="60" font-size="38">Release</text>
 
     <text x="56" y="106">Host: Zephyr   User: mansys   Mode: Release   Git: Clean</text>
-    <text x="56" y="198">Repo: /Users/mansys/macos-scripts</text>
+    <text x="56" y="198">Repo: &lt;repo&gt;/macos-scripts</text>
 
     <text x="56" y="290">CHECKS</text>
     <text x="56" y="336">1. Release status</text>
