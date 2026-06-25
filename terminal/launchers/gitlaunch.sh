@@ -6,6 +6,7 @@ export LC_MESSAGES=C.UTF-8
 
 STATE_FILE=~/.gitlaunch_state
 DEFAULT_REPO=~/macos-scripts
+GITLAUNCH_DIR="${0:A:h}"
 REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
 _BANNER_SHOWN=0
@@ -829,8 +830,18 @@ function safe_push() {
 # SAFE MERGE
 # ------------------------
 # Runs the standalone safe-merge helper against the active repo.
+# Resolution order: explicit override, repo copy next to this launcher,
+# then the legacy ~/mqlaunch/scripts location.
 function safe_merge() {
-  local merge_script="${MQ_GITMERGE_SCRIPT:-$HOME/mqlaunch/scripts/gitmerge-safe.sh}"
+  local merge_script="${MQ_GITMERGE_SCRIPT:-}"
+
+  if [[ -z "$merge_script" ]]; then
+    if [[ -x "$GITLAUNCH_DIR/gitmerge-safe.sh" ]]; then
+      merge_script="$GITLAUNCH_DIR/gitmerge-safe.sh"
+    else
+      merge_script="$HOME/mqlaunch/scripts/gitmerge-safe.sh"
+    fi
+  fi
 
   if [[ ! -x "$merge_script" ]]; then
     echo "Safe-merge script not found or not executable:"

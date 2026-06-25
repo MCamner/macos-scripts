@@ -207,6 +207,9 @@ mqlaunch demo                    # guided demo
 
 👉 **Full command reference:** [docs/COMMANDS.md](docs/COMMANDS.md)
 
+Git safe merge is a Class C local mutating action: explicit confirmation
+required, no push. See [docs/safety/gitmerge-safe.md](docs/safety/gitmerge-safe.md).
+
 HAL command surface: [docs/hal-command-surface.md](docs/hal-command-surface.md)
 
 HAL gallery: [docs/hal-gallery.md](docs/hal-gallery.md)
