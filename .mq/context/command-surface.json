@@ -1,0 +1,56 @@
+{
+  "schema": "mq-command-surface.v1",
+  "repo": "macos-scripts",
+  "tiers": [
+    {
+      "name": "core",
+      "commands": [
+        "mqlaunch",
+        "mqlaunch doctor",
+        "mqlaunch selftest",
+        "mqlaunch release-check"
+      ],
+      "purpose": "stable repo and launcher baseline"
+    },
+    {
+      "name": "mq_bridge",
+      "commands": [
+        "mqlaunch review",
+        "mqlaunch risk-review",
+        "mqlaunch repo-health",
+        "mqlaunch mcp-status"
+      ],
+      "purpose": "thin delegation into mq-agent and mq-mcp"
+    },
+    {
+      "name": "hal_operator",
+      "commands": [
+        "mqlaunch hal",
+        "mqlaunch hal brief",
+        "mqlaunch hal audit",
+        "mqlaunch hal ci"
+      ],
+      "purpose": "operator summaries, local status, and briefings"
+    },
+    {
+      "name": "b2_prompt_os",
+      "commands": [
+        "mq b2",
+        "mq b2 compose",
+        "mq b2 route",
+        "mq b2 repo-status"
+      ],
+      "purpose": "prompt cockpit and read-only source consumption"
+    },
+    {
+      "name": "local_utilities",
+      "commands": [
+        "mqlaunch perf",
+        "mqlaunch network",
+        "mqlaunch scan",
+        "mqlaunch workspace"
+      ],
+      "purpose": "local macOS workflows and diagnostics"
+    }
+  ]
+}
