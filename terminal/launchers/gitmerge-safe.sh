@@ -34,14 +34,16 @@ blue "Repo: $(basename "$repo_root")"
 blue "Current branch (merge target): $current_branch"
 echo
 
+# Safe merge is a Class C interactive action: refuse before any network
+# operation if there is no TTY to confirm against.
+[[ -t 0 ]] || die "This script needs an interactive terminal (stdin is not a TTY)."
+
 if git remote get-url origin >/dev/null 2>&1; then
   yellow "Fetching latest refs from origin..."
   git fetch --prune origin
 else
   yellow "No origin remote found. Continuing with local refs only."
 fi
-
-[[ -t 0 ]] || die "This script needs an interactive terminal (stdin is not a TTY)."
 
 branches=()
 while IFS= read -r branch; do
