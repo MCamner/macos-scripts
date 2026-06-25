@@ -551,7 +551,7 @@ function prompt_choice() {
   printf "\n%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
   printf "%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
-  printf "%b>> press 1-9 or b%b\n" "$C_DIM" "$C_RESET"
+  printf "%b>> press 1-9, m or b%b\n" "$C_DIM" "$C_RESET"
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[3A\r"
     printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
