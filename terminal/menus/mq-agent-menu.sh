@@ -227,6 +227,79 @@ _brain_pick_and_promote() {
   pause_enter
 }
 
+# Prints the `mqlaunch flow` usage. Kept here so the surface is documented in
+# one place next to the delegate that owns it.
+_print_flow_help() {
+  cat <<'HELP'
+mqlaunch flow                          list available workflow templates
+mqlaunch flow list                     list available workflow templates
+mqlaunch flow run <template> [repo]    plan, gate and run a workflow (read-only)
+mqlaunch flow plan <template> [repo]   build and print a plan; do not run it
+mqlaunch flow status <run-id>          show a run's current state
+mqlaunch flow show <template>          show a template definition
+mqlaunch flow resume <run-id>          resume a paused or failed run
+mqlaunch flow cancel <run-id>          cancel a run
+
+repo defaults to the current directory; pass --repo to override.
+All planning, policy gating and execution happen in mq-agent / mq-mcp.
+HELP
+}
+
+# True when the given args already carry an explicit --repo option.
+_flow_has_repo_flag() {
+  local arg
+  for arg in "$@"; do
+    [[ "$arg" == "--repo" || "$arg" == --repo=* ]] && return 0
+  done
+  return 1
+}
+
+# Runs a workflow-orchestration command through `mq-agent workflow` (Phase 7).
+#
+# mqlaunch owns no orchestration logic: it only forwards to mq-agent, which
+# plans, applies the tool-policy + approval gates, and executes. The single
+# local convenience is accepting REPO positionally (defaulting to $PWD) and
+# translating it to the `--repo` option mq-agent expects.
+_run_agent_flow() {
+  local sub="${1:-list}"
+  case "$sub" in
+    ""|list)
+      shift || true
+      _run_agent workflow list "$@"
+      ;;
+    run|plan)
+      shift || true
+      local template="${1:-}"
+      if [[ -z "$template" || "$template" == -* ]]; then
+        printf "Usage: mqlaunch flow %s <template> [repo] [-- mq-agent flags]\n" "$sub" >&2
+        return 1
+      fi
+      shift
+      local repo=""
+      if [[ $# -gt 0 && "$1" != -* ]]; then
+        repo="$1"
+        shift
+      fi
+      if _flow_has_repo_flag "$@"; then
+        _run_agent workflow "$sub" "$template" "$@"
+      else
+        _run_agent workflow "$sub" "$template" --repo "${repo:-$PWD}" "$@"
+      fi
+      ;;
+    show|status|resume|cancel)
+      _run_agent workflow "$@"
+      ;;
+    -h|--help|help)
+      _print_flow_help
+      ;;
+    *)
+      # Forward unknown verbs verbatim so new mq-agent workflow subcommands work
+      # without requiring a mqlaunch change.
+      _run_agent workflow "$@"
+      ;;
+  esac
+}
+
 # Handles direct mqlaunch agent commands.
 run_agent_command() {
   local subcmd="${1:-menu}"
@@ -269,6 +342,10 @@ run_agent_command() {
     mcp-status)
       shift || true
       _run_agent mcp status "$@"
+      ;;
+    flow)
+      shift || true
+      _run_agent_flow "$@"
       ;;
     mcp-tools)
       shift || true

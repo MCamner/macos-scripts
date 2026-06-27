@@ -178,6 +178,22 @@ mqlaunch ui                                     # copy UI prompt to clipboard
 logic, severity labels, semantic memory, and risk routing stay in `mq-mcp`;
 `mq-agent` is the orchestration layer between mqlaunch and mq-mcp.
 
+### Workflow orchestration (flow)
+
+```bash
+mqlaunch flow                                   # list available workflow templates
+mqlaunch flow run repo-preflight ~/macos-scripts   # plan, gate and run (read-only) via mq-agent
+mqlaunch flow plan repo-preflight               # build and print a plan; do not run it
+mqlaunch flow status run_20260626_001           # show a run's current state
+mqlaunch flow resume run_20260626_001           # resume a paused or failed run
+mqlaunch flow cancel run_20260626_001           # cancel a run
+```
+
+`mqlaunch flow` only delegates to `mq-agent workflow`. Planning, tool-policy
+gating, plan approval, step execution and run state all live in `mq-agent` /
+`mq-mcp`; mqlaunch adds no orchestration logic. `repo` defaults to the current
+directory and may be overridden with `--repo`.
+
 ### Semantic Repository Memory (SRM)
 
 ```bash
