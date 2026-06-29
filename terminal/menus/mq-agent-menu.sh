@@ -301,6 +301,38 @@ _run_agent_flow() {
 }
 
 # Handles direct mqlaunch agent commands.
+_print_memory_cochange_help() {
+  cat <<'HELP'
+mqlaunch memory cochange <repo> <file>          emit co-change evidence, score, writeback, status
+  --dry-run                                     write nothing; show what would happen
+  --no-writeback                                score but do not write learn files
+  --vault DIR                                   mqobsidian vault (or $MQ_OBSIDIAN_DIR)
+  --window N / --min-confidence F / --min-support N   co-change passthrough
+
+Operator-triggered one-command intake (NOT auto-after-workflow). Bridget/CG-2 is
+the evidence source; mq-agent is the producer/orchestrator; mqobsidian owns
+scoring, quarantine, promotion-event and learn-writeback.
+HELP
+}
+
+# Thin delegate: `mqlaunch memory cochange` -> `mq-agent memory inbox-cochange`.
+#
+# mqlaunch owns NO memory logic: emission, scoring, quarantine, promotion and
+# learn-writeback all live in mq-agent / mqobsidian. This forwards verbatim.
+_run_agent_memory_cochange() {
+  case "${1:-}" in
+    -h|--help|help)
+      _print_memory_cochange_help
+      return 0
+      ;;
+  esac
+  if [[ -z "${1:-}" || -z "${2:-}" || "${1}" == -* || "${2}" == -* ]]; then
+    printf "Usage: mqlaunch memory cochange <repo> <file> [--dry-run] [--no-writeback] [--vault DIR]\n" >&2
+    return 1
+  fi
+  _run_agent memory inbox-cochange "$@"
+}
+
 run_agent_command() {
   local subcmd="${1:-menu}"
   case "$subcmd" in
@@ -346,6 +378,10 @@ run_agent_command() {
     flow)
       shift || true
       _run_agent_flow "$@"
+      ;;
+    memory-cochange)
+      shift || true
+      _run_agent_memory_cochange "$@"
       ;;
     mcp-tools)
       shift || true

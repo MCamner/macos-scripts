@@ -296,6 +296,18 @@ dispatch_cli_command() {
 
     srm|memory|repo-memory)
       shift
+      # `memory cochange` is the operator-triggered co-change intake — a thin
+      # delegate to mq-agent. Everything else stays the local SRM surface.
+      if [[ "${1:-}" == "cochange" ]]; then
+        shift
+        if declare -f run_agent_command >/dev/null; then
+          run_agent_command memory-cochange "$@"
+        else
+          echo "ERROR: mq-agent bridge not loaded" >&2
+          return 1
+        fi
+        return 0
+      fi
       "$BASE_DIR/tools/scripts/srm.sh" "$@"
       return 0
       ;;
