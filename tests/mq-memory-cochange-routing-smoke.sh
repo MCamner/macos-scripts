@@ -30,6 +30,11 @@ grep -q "_run_agent memory inbox-cochange" "$AGENT_MENU"
 # Boundary guard: the delegate must not embed scoring/writeback/emission logic.
 ! grep -qiE "memory-score|promotion-event|learn-writeback|emit_observation|derive_observation|build_observation" "$AGENT_MENU"
 
+echo "[5b] interactive menu row exposes co-change intake and routes via the delegate"
+grep -q "Co-change intake" "$AGENT_MENU"
+grep -q "_agent_menu_cochange" "$AGENT_MENU"
+grep -Eq "^\s*20\) _agent_menu_cochange" "$AGENT_MENU"
+
 echo "[6/7] the local SRM surface is preserved for non-cochange memory commands"
 grep -q "srm|memory|repo-memory)" "$COMMAND_MODE"
 grep -q 'tools/scripts/srm.sh' "$COMMAND_MODE"
