@@ -194,6 +194,22 @@ gating, plan approval, step execution and run state all live in `mq-agent` /
 `mq-mcp`; mqlaunch adds no orchestration logic. `repo` defaults to the current
 directory and may be overridden with `--repo`.
 
+### Co-change memory intake (cochange)
+
+```bash
+mqlaunch memory cochange ~/macos-scripts terminal/launchers/mqlaunch.sh   # emit → score → writeback → status
+mqlaunch memory cochange ~/mq-mcp mq-mcp/bridge.py --dry-run              # write nothing; preview the loop
+mqlaunch memory cochange ~/mq-mcp mq-mcp/bridge.py --no-writeback         # score but write no learn files
+```
+
+Operator-triggered, one-command run of the autonomous learning loop for a single
+file — **not** auto-after-workflow emission (it runs only when you ask).
+`mqlaunch memory cochange` only delegates to `mq-agent memory inbox-cochange`;
+mqlaunch owns no memory logic. Bridget/CG-2 is the evidence source, `mq-agent` is
+the producer/orchestrator, and `mqobsidian` owns the observation inbox, scoring,
+quarantine, promotion events and learn-writeback. Set `MQ_OBSIDIAN_DIR` (vault)
+and `MQ_MCP_DIR` (Bridget), or pass `--vault`.
+
 ### Semantic Repository Memory (SRM)
 
 ```bash

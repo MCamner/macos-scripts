@@ -24,7 +24,7 @@ print_agent_menu() {
   surface_row "SECOND BRAIN  (writes to mqobsidian)" "$width" "$panel_color"
   surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
   surface_split_row "${C_WARN}17. Demo flow (full stack)${C_RESET}" "${C_WARN}18. Stack health sweep${C_RESET}" "$width" "$panel_color"
-  surface_split_row "${C_WARN}19. Stack loop plan${C_RESET}" "" "$width" "$panel_color"
+  surface_split_row "${C_WARN}19. Stack loop plan${C_RESET}" "20. Co-change intake → memory" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
@@ -301,6 +301,54 @@ _run_agent_flow() {
 }
 
 # Handles direct mqlaunch agent commands.
+_print_memory_cochange_help() {
+  cat <<'HELP'
+mqlaunch memory cochange <repo> <file>          emit co-change evidence, score, writeback, status
+  --dry-run                                     write nothing; show what would happen
+  --no-writeback                                score but do not write learn files
+  --vault DIR                                   mqobsidian vault (or $MQ_OBSIDIAN_DIR)
+  --window N / --min-confidence F / --min-support N   co-change passthrough
+
+Operator-triggered one-command intake (NOT auto-after-workflow). Bridget/CG-2 is
+the evidence source; mq-agent is the producer/orchestrator; mqobsidian owns
+scoring, quarantine, promotion-event and learn-writeback.
+HELP
+}
+
+# Thin delegate: `mqlaunch memory cochange` -> `mq-agent memory inbox-cochange`.
+#
+# mqlaunch owns NO memory logic: emission, scoring, quarantine, promotion and
+# learn-writeback all live in mq-agent / mqobsidian. This forwards verbatim.
+_run_agent_memory_cochange() {
+  case "${1:-}" in
+    -h|--help|help)
+      _print_memory_cochange_help
+      return 0
+      ;;
+  esac
+  if [[ -z "${1:-}" || -z "${2:-}" || "${1}" == -* || "${2}" == -* ]]; then
+    printf "Usage: mqlaunch memory cochange <repo> <file> [--dry-run] [--no-writeback] [--vault DIR]\n" >&2
+    return 1
+  fi
+  _run_agent memory inbox-cochange "$@"
+}
+
+# Interactive prompt for the "Co-change intake" menu row. Collects repo + file,
+# then forwards to the same thin delegate the CLI uses (no local memory logic).
+_agent_menu_cochange() {
+  local repo file
+  printf "Repo path [%s]: " "$PWD"
+  read -r repo
+  repo="${repo:-$PWD}"
+  printf "File (repo-relative): "
+  read -r file
+  if [[ -z "$file" ]]; then
+    printf "%b No file given — cancelled.%b\n" "${C_WARN:-}" "${C_RESET:-}"
+    return 0
+  fi
+  _run_agent_memory_cochange "$repo" "$file"
+}
+
 run_agent_command() {
   local subcmd="${1:-menu}"
   case "$subcmd" in
@@ -347,6 +395,10 @@ run_agent_command() {
       shift || true
       _run_agent_flow "$@"
       ;;
+    memory-cochange)
+      shift || true
+      _run_agent_memory_cochange "$@"
+      ;;
     mcp-tools)
       shift || true
       _run_agent mcp tools "$@"
@@ -386,6 +438,7 @@ handle_agent_menu_choice() {
     17) _run_demo_flow; pause_enter ;;
     18) _run_agent stack sweep --brain; pause_enter ;;
     19) _run_agent stack loop; pause_enter ;;
+    20) _agent_menu_cochange; pause_enter ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
