@@ -296,12 +296,21 @@ dispatch_cli_command() {
 
     srm|memory|repo-memory)
       shift
-      # `memory cochange` is the operator-triggered co-change intake — a thin
-      # delegate to mq-agent. Everything else stays the local SRM surface.
-      if [[ "${1:-}" == "cochange" ]]; then
+      # The co-change memory loop is delegated to mq-agent (the orchestrator); mqlaunch
+      # owns no memory logic and never reaches mqobsidian directly. `cochange` is intake;
+      # review-status / promote-from-review / resolve-supersede action the review queues.
+      # Everything else stays the local SRM surface.
+      local _mem_verb=""
+      case "${1:-}" in
+        cochange)            _mem_verb="memory-cochange" ;;
+        review-status)       _mem_verb="memory-review-status" ;;
+        promote-from-review) _mem_verb="memory-promote-from-review" ;;
+        resolve-supersede)   _mem_verb="memory-resolve-supersede" ;;
+      esac
+      if [[ -n "$_mem_verb" ]]; then
         shift
         if declare -f run_agent_command >/dev/null; then
-          run_agent_command memory-cochange "$@"
+          run_agent_command "$_mem_verb" "$@"
         else
           echo "ERROR: mq-agent bridge not loaded" >&2
           return 1

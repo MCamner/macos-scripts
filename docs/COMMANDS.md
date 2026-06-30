@@ -210,6 +210,23 @@ the producer/orchestrator, and `mqobsidian` owns the observation inbox, scoring,
 quarantine, promotion events and learn-writeback. Set `MQ_OBSIDIAN_DIR` (vault)
 and `MQ_MCP_DIR` (Bridget), or pass `--vault`.
 
+### Co-change memory review (review-status / promote-from-review / resolve-supersede)
+
+```bash
+mqlaunch memory review-status                                  # tier tally + held review queues
+mqlaunch memory promote-from-review cochange-bridge-py --apply # approve a held promotion proposal
+mqlaunch memory resolve-supersede cochange-bridge-py --accept --apply  # adopt new evidence
+mqlaunch memory resolve-supersede cochange-bridge-py --reject --apply  # keep promoted; dismiss
+```
+
+Action the autonomous loop's two human-review queues. Co-change never auto-promotes,
+so `promote-from-review` is how a held strong cluster is landed; `resolve-supersede`
+accepts (adopts the new directive) or rejects (keeps the promoted one) a deep-conflict
+proposal. The mutating verbs are dry-run unless `--apply`. Like intake, these only
+delegate to `mq-agent` (`memory review-status` / `promote-from-review` /
+`resolve-supersede`); mqlaunch owns no memory logic and never reaches `mqobsidian`
+directly. Also reachable from the mq-agent menu row **21. Co-change review → memory**.
+
 ### Semantic Repository Memory (SRM)
 
 ```bash
