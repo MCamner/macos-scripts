@@ -25,6 +25,7 @@ print_agent_menu() {
   surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
   surface_split_row "${C_WARN}17. Demo flow (full stack)${C_RESET}" "${C_WARN}18. Stack health sweep${C_RESET}" "$width" "$panel_color"
   surface_split_row "${C_WARN}19. Stack loop plan${C_RESET}" "20. Co-change intake → memory" "$width" "$panel_color"
+  surface_split_row "21. Co-change review → memory" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
   surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
@@ -349,6 +350,47 @@ _agent_menu_cochange() {
   _run_agent_memory_cochange "$repo" "$file"
 }
 
+# Interactive submenu for the "Co-change review" menu row. Surfaces the autonomous-loop
+# review/resolution actions — all delegated through mq-agent (mqlaunch owns no memory
+# logic; mq-agent is the orchestrator; mqobsidian stays the decision engine).
+_agent_menu_cochange_review() {
+  local choice mid ar
+  while true; do
+    printf "\n%b Co-change review %b\n" "${C_WARN:-}" "${C_RESET:-}"
+    printf "  1) Status (tiers + held review queues)\n"
+    printf "  2) Promote from review (land a held proposal)\n"
+    printf "  3) Resolve supersede (accept/reject a conflict)\n"
+    printf "  b) Back\n"
+    printf "  review > "
+    read -r choice
+    case "$choice" in
+      1) _run_agent memory review-status; pause_enter ;;
+      2)
+        printf "  memory_id to promote: "
+        read -r mid
+        if [[ -z "$mid" ]]; then printf "  cancelled\n"; continue; fi
+        _run_agent memory promote-from-review "$mid" --apply
+        pause_enter
+        ;;
+      3)
+        printf "  memory_id to resolve: "
+        read -r mid
+        if [[ -z "$mid" ]]; then printf "  cancelled\n"; continue; fi
+        printf "  (a)ccept new evidence or (r)eject and keep promoted? "
+        read -r ar
+        case "$ar" in
+          a|A|accept) _run_agent memory resolve-supersede "$mid" --accept --apply ;;
+          r|R|reject) _run_agent memory resolve-supersede "$mid" --reject --apply ;;
+          *) printf "  cancelled\n"; continue ;;
+        esac
+        pause_enter
+        ;;
+      b|B|x|X|"") return 0 ;;
+      *) printf "  Invalid selection: %s\n" "$choice" ;;
+    esac
+  done
+}
+
 run_agent_command() {
   local subcmd="${1:-menu}"
   case "$subcmd" in
@@ -399,6 +441,18 @@ run_agent_command() {
       shift || true
       _run_agent_memory_cochange "$@"
       ;;
+    memory-review-status)
+      shift || true
+      _run_agent memory review-status "$@"
+      ;;
+    memory-promote-from-review)
+      shift || true
+      _run_agent memory promote-from-review "$@"
+      ;;
+    memory-resolve-supersede)
+      shift || true
+      _run_agent memory resolve-supersede "$@"
+      ;;
     mcp-tools)
       shift || true
       _run_agent mcp tools "$@"
@@ -439,6 +493,7 @@ handle_agent_menu_choice() {
     18) _run_agent stack sweep --brain; pause_enter ;;
     19) _run_agent stack loop; pause_enter ;;
     20) _agent_menu_cochange; pause_enter ;;
+    21) _agent_menu_cochange_review ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
