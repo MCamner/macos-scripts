@@ -13,7 +13,8 @@
 #
 # Depends on: errors.sh (rec_*), lib/mqobsidian/{errors,resolve}.sh.
 
-_REC_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_REC_SOURCE="${BASH_SOURCE[0]:-$0}"
+_REC_LIB="$(cd "$(dirname "$_REC_SOURCE")" && pwd)"
 # shellcheck source=../mqobsidian/errors.sh
 source "$_REC_LIB/../mqobsidian/errors.sh"
 # shellcheck source=../mqobsidian/resolve.sh

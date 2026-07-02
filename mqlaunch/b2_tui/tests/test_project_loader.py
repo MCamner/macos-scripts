@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
+from mqlaunch.b2_tui.config import PROJECT_INDEX
 from mqlaunch.b2_tui.core.project_loader import (
     _category_to_dir,
     find_prompt,
@@ -71,6 +74,9 @@ def test_load_prompts_parses_index(tmp_path):
 
 
 def test_load_prompts_real_index():
+    if not PROJECT_INDEX.exists():
+        pytest.skip(f"local B2 PROJECT_INDEX.md not found: {PROJECT_INDEX}")
+
     prompts = load_prompts()
     assert len(prompts) == 43
     ids = {p.id for p in prompts}

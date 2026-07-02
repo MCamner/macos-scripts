@@ -2,1021 +2,214 @@
 
 Current version: 1.0.0
 
-## Design boundary
+## Purpose
 
-mqlaunch and macos-scripts own the **human terminal entrypoint** — menus,
-shortcuts, and launchers. They do not own cognition, review logic, or
-semantic memory. Those belong to mq-mcp (central AI cognition runtime).
+`macos-scripts` owns the local terminal entrypoint for the MQ stack.
+`mqlaunch` should make the right workflow easy to find and run, while deeper
+planning, review, memory, and execution logic stay in the repos that own them.
+
+Current focus: `v1.0.1` release readiness hardening, roadmap freshness, and
+stack-surface verification.
+
+## Design Boundary
 
 ```text
-mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
+mqlaunch shows menu -> delegates -> mq-agent orchestrates -> mq-mcp executes
+                                      mqobsidian stores truth and memory
 ```
 
-mqlaunch must not:
+`mqlaunch` may:
 
-* implement its own review logic
-* duplicate mq-mcp tool calls directly
-* embed semantic memory logic in shell scripts
+* show menus, command shortcuts, and local status
+* open documented Obsidian views through the mqobsidian manifest/consumer lib
+* run read-only checks and status commands
+* delegate orchestration to `mq-agent`, `mq-hal`, `repo-signal`, and `mq-mcp`
 
----
+`mqlaunch` must not:
 
-## v0.5.0 — mq-mcp review routing
+* implement review, risk, or architecture logic itself
+* call mq-mcp tools directly when `mq-agent` owns the workflow
+* parse, score, or promote semantic memory in shell scripts
+* make Obsidian truth-schema decisions locally
 
-Goal: make mq-mcp review and architecture workflows reachable from
-mqlaunch without embedding any cognition in the shell layer.
+## Repo Ownership
 
-* [x] `mqlaunch review` — delegates to `mq-agent review` (calls
-  `review_file` / `review_diff` via MCPBridge)
-* [x] `mqlaunch architecture` — calls `mq-agent` → `list_architecture_decisions`
-  or `detect_architecture_drift`
-* [x] `mqlaunch risk-review` — delegates to `mq-agent review --risk` when
-  mq-mcp ≥ v1.5.0 (risk layer)
-* [x] `mqlaunch repo-health` — delegates to `mq-agent` → `repo_signal_analyze`
-  and `validate_orchestration_contract`
-* [x] `mqlaunch mcp-status` — shows mq-mcp version, tool count, contract
-  freshness via `mq-agent mcp status`
-* [x] Update docs: all new commands documented in `docs/COMMANDS.md`
-* [x] Boundary test: verify none of the new commands embed review or
-  semantic logic — they must only forward to mq-agent
+| Repo/layer | Owns | `mqlaunch` relationship |
+| --- | --- | --- |
+| `mqlaunch` / `macos-scripts` | Terminal entrypoint, menus, shortcuts, operator UX | Show and delegate |
+| `mq-agent` | Orchestration, planning, promotion flow, cross-tool workflows | Primary target for mutating/intelligent commands |
+| `mq-mcp` | Runtime tools, review, safety, cognition, memory APIs | Reached through `mq-agent` |
+| `mqobsidian` | Single source of truth, schemas, canonical paths, dashboards | Open/read exported views; do not own schemas |
+| `repo-signal` | Readiness, publishability, quality signals | Read status and release gates |
+| `mq-hal` | Operator brief, local cockpit, read-only status summaries | Delegate HAL surface |
+| `mq-ums` | External infrastructure signals | Future read-only signal source |
 
----
+## Priority Model
 
-## v0.5.1 — workflow validation release gate — Done
+1. Keep `mqlaunch` thin and predictable.
+2. Make Obsidian truth visible without moving ownership into shell.
+3. Prefer read-only proof commands before mutating workflows.
+4. Promote repeated learnings only through a review-gated `mq-agent` flow.
+5. Keep B2/Atlas as a useful prompt surface, not the owner of stack truth.
 
-Goal: make workflow command-surface validation part of the release gate, so
-mqlaunch docs, routing and workflow scripts stay aligned before release.
+## 0-30 Days: Roadmap Sanity And SSOT Read-Only Surface
 
-* [x] `mqlaunch workflows validate` documented in README and `docs/COMMANDS.md`
-* [x] workflow validation smoke coverage verifies docs, menu and launcher routing
-* [x] `mqlaunch release-check` runs `automation/workflows/validate.sh`
-* [x] release metadata synced to `0.5.1`
+Goal: make the Obsidian SSOT plan explicit and buildable without expanding
+`mqlaunch` beyond its boundary.
 
----
+| Status | Deliverable |
+| --- | --- |
+| Done | `ROADMAP.md` reflects current `1.0.0` release state |
+| Done | Historical v0.5-v1.0 work summarized under completed work |
+| Done | Repo ownership map documented |
+| Done | `mqlaunch` boundary against direct cognition/memory logic documented |
+| Done | Existing MQ Obsidian menu kept as read-only/presentation-first surface |
+| Todo | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
+| Todo | Add/verify tests that MQ Obsidian menu actions do not promote memory |
+| Todo | Add/verify tests that review commands delegate through `mq-agent` |
+| Todo | Add `mqlaunch obsidian status` or documented alias for current menu/status |
 
-## Near-term (unscheduled)
+Expected commands:
 
-* plugin-style extensions
-* remote execution support
-* improved onboarding
+```bash
+mqlaunch hal context
+mqlaunch obsidian status
+mqlaunch obsidian inbox
+mqlaunch obsidian views
+```
 
-## Completed
+Definition of done:
+
+```text
+mqlaunch can show Obsidian readiness and open canonical views,
+but all scoring, promotion, schema, and cognition logic is owned elsewhere.
+```
+
+## 31-60 Days: Inbox Ranking And Promotion Loop
+
+Goal: make repeated Codex/Claude/mqlaunch patterns visible as candidates
+without making the user manually moderate everything.
+
+Ownership:
+
+```text
+mqlaunch -> mq-agent obsidian ... -> mqobsidian schemas/files
+```
+
+Candidate lifecycle:
+
+```text
+observed -> candidate -> promoted -> canonical -> deprecated
+```
+
+Suggested scoring model:
+
+```text
+promotion_score =
+  frequency
++ successful_reuse
++ cross_tool_reuse
++ manual_confirmation
+- risk
+- duplication
+- staleness
+```
+
+| Status | Deliverable |
+| --- | --- |
+| Todo | Define inbox record schema in `mqobsidian` |
+| Todo | Define promotion score schema in `mqobsidian` |
+| Todo | `mq-agent obsidian inbox list` |
+| Todo | `mq-agent obsidian inbox score` |
+| Todo | `mq-agent obsidian promote --dry-run` |
+| Todo | `mq-agent obsidian promote --confirm` |
+| Todo | `mqlaunch obsidian inbox` delegates to `mq-agent` or read-only export |
+| Todo | `mqlaunch obsidian promote` stays a thin confirm/delegate surface |
+| Todo | Release gate detects schema drift before release |
+
+Threshold guidance:
+
+```text
+score >= 15       -> candidate
+score >= 25       -> promotion recommended
+score >= 40       -> canonical candidate
+manual reject     -> suppressed
+risk >= high      -> never auto-promote
+```
+
+Definition of done:
+
+```text
+Recurring workflow patterns become ranked candidates.
+Only reviewed, high-value candidates become durable memory.
+```
+
+## 61-90 Days: Stack Truth Cockpit
+
+Goal: make Obsidian the visible single source of truth across the MQ stack.
+
+| Status | Deliverable |
+| --- | --- |
+| Todo | `mq-agent stack truth-export` writes canonical status |
+| Todo | `mq-agent stack contract-check` compares repo contracts to Obsidian truth |
+| Todo | `repo-signal` feeds readiness/publishability into truth exports |
+| Todo | `mq-mcp` review and memory results can be saved as learn/review records |
+| Todo | `mqlaunch stack status` reads/delegates canonical truth status |
+| Todo | `mqlaunch hal brief` includes Obsidian truth freshness |
+| Todo | `mq-ums` contributes first read-only infrastructure signal |
+| Todo | Obsidian dashboards show stack map, integration gaps, and promotion queue |
+| Todo | Release gate blocks on stale truth or broken contracts |
+
+Definition of done:
+
+```text
+The operator can answer "what is true about the MQ stack right now?"
+from one terminal surface backed by Obsidian truth exports.
+```
+
+## B2 / Atlas Prompt OS Track
+
+B2 remains useful, but it is not the owner of stack truth. Its job is prompt
+discovery, routing, composition, history, and optional review delegation.
+
+Current state:
+
+* `mq b2` opens the interactive prompt TUI.
+* `mq b2 list`, `show`, `route`, `compose`, `history`, and `validate` exist.
+* B2 review flows delegate to `mq-agent` / `mq-mcp`.
+* `mq b2 repo-status`, `roadmap-drift`, and `stack` integrate repo-signal and
+  Obsidian export/status surfaces.
+
+Next B2 priorities:
+
+| Status | Deliverable |
+| --- | --- |
+| Todo | Keep B2 exports aligned with mqobsidian canonical paths |
+| Todo | Make B2 stack output consume SSOT truth exports when available |
+| Todo | Keep B2 review and risk logic delegated through `mq-agent` |
+| Todo | Avoid making B2 the promotion engine for durable memory |
+
+## Completed Work
+
+Completed work is intentionally summarized here so this file stays useful as a
+forward-looking roadmap.
 
 * mqlaunch command surface
-* terminal release check workflow
 * doctor / system check
+* release-check gate with repo-signal publish readiness
 * workflow validation / health checks
-* secrets scan via gitleaks
-
----
-
-## B2 TUI / mqlaunch Roadmap
-
-## Current focus
-
-Bygga in **B2 TUI MVP** i `macos-scripts` som en del av `mqlaunch`.
-
-Målet är att `mqlaunch` ska bli terminalingången för B2 / Atlas Prompt OS:
-
-```bash
-mq b2
-mq b2 list
-mq b2 show 02.11
-mq b2 route "ta fram blueprint för terminal TUI"
-mq b2 compose 02.11 "ta fram blueprint för terminal TUI"
-mq b2 validate
-mq b2 history
-```
-
----
-
-## Strategic intent
-
-`macos-scripts` ska vara mitt lokala terminal- och launcher-repo.
-
-B2 TUI ska göra det möjligt att:
-
-* läsa B2 Prompt OS-projekt från lokal källa
-* visa projekt i terminalen
-* söka bland projekt
-* välja rätt B2-projekt för en uppgift
-* komponera färdiga prompts
-* spara körhistorik
-* exportera körningar till Obsidian
-* senare kopplas mot `mq-agent`, `mq-mcp`, `repo-signal` och `mq-hal`
-
----
-
-## Design principle
-
-Bygg **CLI-first, TUI-second**.
-
-Rätt ordning:
-
-```text
-core logic
-→ CLI commands
-→ tests
-→ history
-→ Obsidian export
-→ terminal TUI
-→ mq-agent bridge
-```
-
-TUI:t ska inte bli smart först.
-Det ska bli stabilt först.
-
----
-
-## Repository placement
-
-B2 TUI ska ligga under `mqlaunch`:
-
-```text
-macos-scripts/
-├─ terminal/launchers/mqlaunch.sh
-├─ mqlaunch/
-│  ├─ commands/
-│  │  └─ b2.sh
-│  └─ b2_tui/
-│     ├─ __init__.py
-│     ├─ main.py
-│     ├─ config.py
-│     ├─ models.py
-│     ├─ core/
-│     │  ├─ project_loader.py
-│     │  ├─ router.py
-│     │  ├─ prompt_composer.py
-│     │  ├─ validator.py
-│     │  └─ history.py
-│     ├─ adapters/
-│     │  └─ obsidian_writer.py
-│     ├─ tui/
-│     │  ├─ app.py
-│     │  └─ screens.py
-│     └─ tests/
-│        ├─ test_project_loader.py
-│        ├─ test_router.py
-│        ├─ test_prompt_composer.py
-│        ├─ test_validator.py
-│        ├─ test_history.py
-│        └─ test_obsidian_writer.py
-```
-
----
-
-## B2 TUI MVP
-
-## MVP scope
-
-### In scope
-
-* [x] Load B2 project files
-* [x] Parse `PROJECT_INDEX.md`
-* [x] Parse `B2_ALL_PROMPT_PROJECTS.md` (ersatt av PROJECT_INDEX.md — ingen separat fil i vaulten)
-* [x] Support optional `registry/projects.json` (WARN i validate om saknas)
-* [x] List all B2 projects
-* [x] List all B2 categories
-* [x] Show single project by ID
-* [x] Route a task to best B2 project
-* [x] Compose prompt from selected project + user input
-* [x] Save run history
-* [x] Export prompt runs to Obsidian
-* [x] Expose commands through `mq b2`
-* [x] Add tests
-
-### Out of scope for MVP
-
-* [x] No automatic OpenAI API execution
-* [x] No GitHub write actions
-* [x] No automatic commits
-* [x] No agentic execution
-* [x] No complex memory engine
-* [x] No RAG/vector database
-* [x] No modification of B2 source files
-
-MVP ska vara **read-only mot B2-källor**.
-
----
-
-## Phase 0 — Foundation
-
-### Goal
-
-Skapa stabil grundstruktur i `macos-scripts`.
-
-### Tasks
-
-* [x] Skapa branch:
-
-```bash
-git checkout -b feat/b2-tui-mvp
-```
-
-* [x] Skapa katalogstruktur:
-
-```bash
-mkdir -p mqlaunch/b2_tui/{core,adapters,tui,tests}
-touch mqlaunch/b2_tui/__init__.py
-touch mqlaunch/b2_tui/main.py
-touch mqlaunch/b2_tui/config.py
-touch mqlaunch/b2_tui/models.py
-touch mqlaunch/b2_tui/core/{project_loader.py,router.py,prompt_composer.py,validator.py,history.py}
-touch mqlaunch/b2_tui/adapters/obsidian_writer.py
-touch mqlaunch/b2_tui/tui/{app.py,screens.py}
-touch mqlaunch/b2_tui/tests/{test_project_loader.py,test_router.py,test_prompt_composer.py,test_validator.py,test_history.py,test_obsidian_writer.py}
-```
-
-* [x] Lägg till minimal `main.py`
-* [x] Lägg till `config.py`
-* [x] Lägg till `models.py`
-* [x] Lägg till första unit test
-* [x] Säkerställ att modulen startar utan importfel
-
-### Done when
-
-```bash
-python -m mqlaunch.b2_tui.main --help
-```
-
-fungerar utan crash.
-
----
-
-## Phase 1 — Config
-
-### Goal
-
-Samla alla lokala sökvägar på ett ställe.
-
-### Expected paths
-
-```text
-B2 source:
-$MQ_OBSIDIAN_DIR/Prompt-OS/B2-Atlas-Prompt-OS
-
-Obsidian stack:
-$MQ_OBSIDIAN_DIR/mq-stack
-
-Runs:
-$MQ_OBSIDIAN_DIR/mq-stack/runs
-
-Roadmaps:
-$MQ_OBSIDIAN_DIR/mq-stack/roadmaps
-```
-
-### Tasks
-
-* [x] Skapa `B2Config`
-* [x] Lägg in default paths
-* [ ] Stöd environment overrides senare
-* [x] Validera att paths finns
-* [x] Ge tydliga felmeddelanden om paths saknas
-
-### Done when
-
-```bash
-python -m mqlaunch.b2_tui.main config
-```
-
-visar:
-
-```text
-B2 source path: OK
-Obsidian stack path: OK
-History path: OK
-```
-
----
-
-## Phase 2 — Project Loader
-
-### Goal
-
-Läsa in B2-projekten från markdown och normalisera dem.
-
-### Sources
-
-* `PROJECT_INDEX.md`
-* `B2_ALL_PROMPT_PROJECTS.md`
-* optional: `registry/projects.json`
-
-### Internal model
-
-```python
-@dataclass
-class B2Project:
-    id: str
-    name: str
-    category: str
-    status: str | None
-    role: str | None
-    prompt: str
-    source_file: str
-```
-
-### Tasks
-
-* [x] Läs `PROJECT_INDEX.md`
-* [x] Extrahera kategorier
-* [ ] Läs `B2_ALL_PROMPT_PROJECTS.md` (filen finns ej — ersatt av PROJECT_INDEX.md)
-* [x] Extrahera projekt-ID
-* [x] Extrahera projektnamn
-* [x] Extrahera status (mq_stack-annotation)
-* [ ] Extrahera roll (separat fält)
-* [x] Extrahera prompttext
-* [x] Normalisera till `B2Project`
-* [x] Hantera saknade fält utan crash
-
-### Commands
-
-```bash
-mq b2 list
-mq b2 categories
-mq b2 show 02.11
-```
-
-### Done when
-
-* [x] `mq b2 categories` visar 8 kategorier
-* [x] `mq b2 list` visar alla importerade B2-projekt
-* [x] `mq b2 show 02.11` visar `Integration Architecture Blueprint`
-* [x] Saknad registry-fil ger warning, inte crash
-
----
-
-## Phase 3 — Validator
-
-### Goal
-
-Snabbt kunna kontrollera att B2 TUI kan köras på aktuell maskin.
-
-### Validator checks
-
-* [x] B2 source path exists
-* [x] `PROJECT_INDEX.md` exists
-* [ ] `B2_ALL_PROMPT_PROJECTS.md` exists (filen finns ej)
-* [x] Categories can be parsed
-* [x] Projects can be parsed
-* [ ] Project IDs are unique
-* [x] Prompts are not empty
-* [x] Obsidian stack path exists
-* [x] Runs path exists or can be created
-* [ ] History file is writable
-* [x] mqlaunch wrapper exists
-
-### Command
-
-```bash
-mq b2 validate
-```
-
-### Expected output
-
-```text
-B2 TUI Validation
-
-OK    B2 source path
-OK    PROJECT_INDEX.md
-OK    B2_ALL_PROMPT_PROJECTS.md
-OK    categories found: 8
-OK    projects found: 43
-OK    unique project ids
-OK    Obsidian stack path
-OK    history writable
-WARN  registry/projects.json not found locally
-
-Status: usable
-```
-
-### Done when
-
-* [x] validator ger OK/WARN/FAIL
-* [x] exit code fungerar
-* [x] felmeddelanden är begripliga
-* [x] validator kan köras i test/CI
-
----
-
-## Phase 4 — CLI command surface
-
-### Goal
-
-Göra B2 TUI användbar innan riktig TUI finns.
-
-### Commands
-
-```bash
-mq b2
-mq b2 list
-mq b2 categories
-mq b2 show 02.11
-mq b2 validate
-mq b2 route "..."
-mq b2 compose 02.11 "..."
-mq b2 history
-mq b2 history last
-mq b2 export-last
-```
-
-### Tasks
-
-* [x] Bygg `argparse` eller `typer` command parser
-* [x] Koppla `list`
-* [x] Koppla `categories`
-* [x] Koppla `show`
-* [x] Koppla `validate`
-* [x] Koppla `route`
-* [x] Koppla `compose`
-* [x] Koppla `history`
-* [x] Lägg help-text
-
-### Done when
-
-```bash
-mq b2 --help
-```
-
-visar alla MVP-kommandon.
-
----
-
-## Phase 5 — Rule-Based Router
-
-### Goal
-
-Kunna routa uppgifter till bästa B2-projekt.
-
-### Router rules v0.1
-
-| Trigger | Primary project |
-| --- | --- |
-| `blueprint`, `arkitektur`, `integrera`, `integration` | `02.11` |
-| `HLD`, `high-level`, `målarkitektur` | `02.02` |
-| `LLD`, `low-level`, `implementation`, `kodnära` | `02.03` |
-| `review`, `granska`, `risk`, `kritik` | `02.10` |
-| `TUI`, `verktyg`, `interactive`, `MVP` | `05.03` |
-| `drift`, `support`, `RACI`, `runbook` | `02.09` |
-| `research`, `rapport`, `marknad` | `04.01` |
-| `problem`, `komplext`, `resonera` | `01.07` |
-| `förklara`, `lära`, `förstå` | `06.01` |
-| `karriär`, `jobb`, `roll` | `08.03` |
-
-### Support project logic
-
-Examples:
-
-```text
-roadmap + obsidian + stack
-→ primary: 02.11
-→ support: 02.03, 02.09, 01.07
-
-terminal + TUI + MVP
-→ primary: 05.03
-→ support: 02.03, 02.11
-
-review + architecture
-→ primary: 02.10
-→ support: 02.11
-```
-
-### Command
-
-```bash
-mq b2 route "ta fram blueprint för terminal TUI"
-```
-
-### Expected output
-
-```text
-Primary:
-02.11 Integration Architecture Blueprint
-
-Support:
-02.03 Low-Level Implementation Design
-05.03 Interactive Tool Builder
-
-Reason:
-Task contains blueprint + terminal TUI + implementation signals.
-```
-
-### Done when
-
-* [x] router väljer primary project
-* [x] router kan lägga till support projects
-* [x] router visar kort reason
-* [x] router fungerar utan AI/API
-* [x] router testas med minst 15 cases
-
----
-
-## Phase 6 — Prompt Composer
-
-### Goal
-
-Bygga färdig prompt från B2-projekt + user task.
-
-### Command
-
-```bash
-mq b2 compose 02.11 "ta fram blueprint för terminal TUI"
-```
-
-### Output format
-
-```markdown
-# B2 Prompt Run
-
-## Project
-
-02.11 Integration Architecture Blueprint
-
-## User input
-
-ta fram blueprint för terminal TUI
-
-## Composed prompt
-
-[PROJECT PROMPT TEXT]
-
-## Task
-
-ta fram blueprint för terminal TUI
-```
-
-### Tasks
-
-* [x] Hämta projekt via ID
-* [x] Läs prompttext
-* [x] Kombinera med user input
-* [x] Skapa markdown-output
-* [x] Spara output till `mq-stack/runs`
-* [x] Returnera filepath
-* [ ] Lägg stöd för multi-project compose senare
-
-### Done when
-
-* [x] `mq b2 compose 02.11 "..."` sparar `.md` i Obsidian runs
-* [x] prompttext är komplett
-* [x] task hamnar sist
-* [x] tom user input nekas med tydligt fel
-
----
-
-## Phase 7 — History
-
-### Goal
-
-Spara varje route och compose.
-
-### Storage
-
-Börja med JSONL:
-
-```text
-~/mqobsidian/mq-stack/runs/b2-history.jsonl
-```
-
-### History item
-
-```json
-{
-  "timestamp": "2026-06-09T20:00:00+02:00",
-  "command": "compose",
-  "task": "ta fram blueprint för terminal TUI",
-  "projects": ["02.11"],
-  "output_file": "$MQ_OBSIDIAN_DIR/mq-stack/runs/2026-06-09-b2-run.md",
-  "status": "completed"
-}
-```
-
-### Commands
-
-```bash
-mq b2 history
-mq b2 history last
-mq b2 history show 5
-```
-
-### Done when
-
-* [x] route sparas i history
-* [x] compose sparas i history
-* [x] senaste körning kan visas
-* [x] trasig history-fil kraschar inte appen
-* [x] history kan exporteras som markdown
-
----
-
-## Phase 8 — Obsidian writer
-
-### Goal
-
-B2 TUI ska kunna skriva utdata till `mq-stack`.
-
-### Output locations
-
-```text
-$MQ_OBSIDIAN_DIR/mq-stack/runs/
-$MQ_OBSIDIAN_DIR/mq-stack/logs/
-$MQ_OBSIDIAN_DIR/mq-stack/roadmaps/
-```
-
-### Tasks
-
-* [x] Skapa runs-folder om den saknas
-* [x] Skapa filnamn från timestamp + task slug
-* [x] Skriv composed prompt
-* [x] Skriv route summary
-* [ ] Uppdatera optional `logs/b2-tui-history.md`
-* [x] Säkerställ markdownlint-vänligt format
-
-### Commands
-
-```bash
-mq b2 export-last
-mq b2 open-last
-```
-
-### Done when
-
-* [x] output syns i Obsidian
-* [x] interna länkar fungerar
-* [x] markdown har rena code fences
-* [x] inga trasiga tabeller
-* [x] `open-last` öppnar senaste filen i editor/terminal
-
----
-
-## Phase 9 — mqlaunch integration
-
-### Goal
-
-B2 TUI ska kännas native i `mqlaunch`.
-
-### Wrapper
-
-`mqlaunch/commands/b2.sh`:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-python -m mqlaunch.b2_tui.main "$@"
-```
-
-### Main launcher routing
-
-Lägg till i `mqlaunch`:
-
-```bash
-case "$1" in
-  b2)
-    shift
-    mqlaunch/commands/b2.sh "$@"
-    ;;
-esac
-```
-
-### Commands to verify
-
-```bash
-mq b2 validate
-mq b2 list
-mq b2 show 02.11
-mq b2 route "ta fram blueprint för terminal TUI"
-mq b2 compose 02.11 "ta fram blueprint för terminal TUI"
-mq b2 history
-```
-
-### Done when
-
-* [x] `mq b2` fungerar från vanlig terminal
-* [x] inga relativa path-problem
-* [x] fungerar från annan katalog än repo-roten
-* [x] fel visas snyggt
-* [x] wrapper är dokumenterad
-
----
-
-## Phase 10 — Terminal TUI skeleton
-
-### Goal
-
-Bygga första visuella terminalgränssnittet när CLI fungerar.
-
-### Recommended library
-
-Use `textual`.
-
-### Screens
-
-* Dashboard
-* Project Browser
-* Project Detail
-* Prompt Preview
-* Route Result
-* History
-
-### Keyboard shortcuts
-
-| Key | Action |
-| --- | --- |
-| `j/k` | navigate |
-| `/` | search |
-| `Enter` | open |
-| `r` | route task |
-| `c` | compose |
-| `h` | history |
-| `v` | validate |
-| `q` | quit |
-
-### First layout
-
-```text
-┌──────────────────────────────────────────────┐
-│ B2 TUI MVP                                   │
-├────────────────────┬─────────────────────────┤
-│ Categories          │ Projects                │
-│                    │                         │
-│ 01 Core             │ 02.11 Integration...    │
-│ 02 Architecture     │ 02.10 Architecture...   │
-│ 05 Content          │ 05.03 Interactive...    │
-├────────────────────┴─────────────────────────┤
-│ Preview / Help                               │
-└──────────────────────────────────────────────┘
-```
-
-### Done when
-
-* [x] `mq b2` öppnar TUI
-* [x] projekt visas
-* [x] search fungerar
-* [x] project preview fungerar
-* [x] compose kan triggas från TUI
-* [x] quit fungerar rent
-
----
-
-## Phase 11 — Tests
-
-### Goal
-
-Säkra kärnlogiken innan vidare integration.
-
-### Required tests
-
-```text
-mqlaunch/b2_tui/tests/
-├─ test_config.py
-├─ test_project_loader.py
-├─ test_router.py
-├─ test_prompt_composer.py
-├─ test_validator.py
-├─ test_history.py
-└─ test_obsidian_writer.py
-```
-
-### Minimum test cases
-
-* [x] config loads default paths
-* [x] missing source path returns clear error
-* [x] project loader finds categories
-* [x] project loader finds project IDs
-* [x] show project by ID works
-* [x] router maps blueprint task to `02.11`
-* [x] router maps TUI task to `05.03`
-* [x] composer includes prompt and user input
-* [x] history writes JSONL
-* [x] validator returns OK/WARN/FAIL
-* [x] obsidian writer uses tempdir in tests
-* [x] no test writes to real vault
-
-### Commands
-
-```bash
-pytest mqlaunch/b2_tui/tests
-```
-
-### Done when
-
-* [x] all tests pass
-* [x] tests do not depend on real Obsidian path
-* [x] tests use fixtures/tempdir
-* [x] CI can run tests
-
----
-
-## Phase 12 — Docs
-
-### Goal
-
-Dokumentera så att framtida jag fattar systemet snabbt.
-
-### Files to update
-
-* [x] `README.md`
-* [x] `ROADMAP.md`
-* [x] `CHANGELOG.md`
-* [x] `docs/B2_TUI.md`
-* [x] `docs/MQLAUNCH_COMMANDS.md`
-
-### Docs must include
-
-* [x] What B2 TUI is
-* [x] What B2 TUI is not
-* [x] Local path assumptions
-* [x] Commands
-* [x] Examples
-* [x] Troubleshooting
-* [x] Test commands
-* [x] Roadmap
-
-### Done when
-
-* [x] README has quickstart
-* [x] ROADMAP has B2 TUI section
-* [x] CHANGELOG mentions MVP
-* [x] docs explain `mq b2`
-
----
-
-## Phase 13 — v0.1.0 Release
-
-### Release goal
-
-Första stabila B2 TUI MVP.
-
-### Release checklist
-
-* [x] `mq b2 validate` works
-* [x] `mq b2 list` works
-* [x] `mq b2 categories` works
-* [x] `mq b2 show 02.11` works
-* [x] `mq b2 route "..."` works
-* [x] `mq b2 compose 02.11 "..."` works
-* [x] `mq b2 history` works
-* [x] output exports to Obsidian
-* [x] tests pass
-* [x] README updated
-* [x] ROADMAP updated
-* [x] CHANGELOG updated
-* [x] version updated
-* [x] no dirty debug files
-* [x] branch merged or ready for PR
-
-### Version target
-
-```text
-mqlaunch 0.6.0
-```
-
-### Tag
-
-```bash
-git tag v0.6.0
-```
-
----
-
-## Post-MVP roadmap
-
-## v0.7.0 — mq-agent bridge
-
-Goal: koppla B2 TUI:s compose-output till mq-agent review utan att duplicera
-review-logik i mqlaunch. All review-logik stannar i mq-agent/mq-mcp.
-
-Flöde:
-
-```text
-mq b2 compose → runs/*.md → mq-agent review file → mq-mcp findings
-```
-
-* [x] `mq b2 review-last` — hämtar senaste run-path, kör `mq-agent review file`
-* [x] `mq b2 review-last --architecture` / `--security` — vidarebefordrar mode-flag
-* [x] `mq b2 compose 02.11 "..." --review` — compose + review i ett steg
-* [x] Graceful fallback om mq-agent saknas i PATH
-* [x] 5 tester i `test_review_bridge.py`
-* [x] `docs/COMMANDS.md` uppdaterad
-* [x] `mq b2 route "..." --compose --review` — route + compose + review i ett kommando
-* [x] 5 tester i `test_route_pipeline.py`
-
-## v0.8.0 — mq-mcp review bridge
-
-* [x] `mq-agent review file --json` — capture structured review output
-* [x] `review_contract.py` — parse findings, severity counts, has_blocking, render
-* [x] B2-style severity rendering: `[HIGH] file:line` + summary line
-* [x] Exit gate: rc=1 om BLOCKER/CRITICAL/RISK findings finns
-* [x] `--risk` flag på `review-last`, `compose`, `route`
-* [x] 17 nya tester i `test_review_contract.py`, 67 totalt
-
-## v0.9.0 — repo-signal integration
-
-* [x] `mq b2 repo-status` — visar repo-health via repo-signal (git, readiness score, issues)
-* [x] `mq b2 repo-status --export` — exporterar status till Obsidian runs-dir
-* [x] Route-pipeline visar repo health-varning om issues finns
-* [x] `mq b2 roadmap-drift` — visar unchecked ROADMAP-items per sektion vs VERSION
-* [x] `repo_signal_contract.py` — contract-modul: call_inspect, render, has_issues
-* [x] 16 nya tester i `test_repo_signal_contract.py`, 83 totalt
-
-### v1.0.0 — Stack cockpit
-
-* [x] `mq b2 stack` — aggregerat dashboard: repo + B2 prompts + roadmap + validation + Obsidian sync
-* [x] B2 projects: antal prompts och kategorier
-* [x] Repo status: git-state, readiness-poäng, öppna issues
-* [x] Roadmap status: done/open per version med `←`-markering
-* [x] Last run: senaste Obsidian-run filnamn
-* [x] Validation health: ok/errors per prompt-set + route-check
-* [x] Obsidian sync status: runs-dir, prompts-dir, source-dir
-* [x] 6 tester i `test_stack.py`, 89 totalt
-
----
-
-## Current priority
-
-### Now
-
-* [x] Phase 0 — Foundation
-* [x] Phase 1 — Config
-* [x] Phase 2 — Project Loader
-* [x] Phase 3 — Validator
-* [x] Phase 4 — CLI command surface
-
-### Next
-
-* [x] Phase 5 — Router
-* [x] Phase 6 — Prompt Composer
-* [x] Phase 7 — History
-* [x] Phase 8 — Obsidian writer
-
-### Later
-
-* [x] Phase 10 — Terminal TUI skeleton
-* [x] mq-agent bridge
-* [x] mq-mcp bridge
-* [x] repo-signal integration
-
----
-
-## First sprint
-
-### Sprint 1 — Loader + validate
-
-### Goal
-
-Få första körbara CLI-versionen.
-
-### Tasks
-
-* [x] skapa `mqlaunch/b2_tui`
-* [x] skapa datamodeller
-* [x] skapa config
-* [x] skapa project loader
-* [x] skapa validator
-* [x] skapa argparse CLI
-* [x] koppla `mq b2 validate`
-* [x] koppla `mq b2 list`
-* [x] koppla `mq b2 show 02.11`
-* [x] skriva tester
-
-### Acceptance commands
-
-```bash
-mq b2 validate
-mq b2 list
-mq b2 show 02.11
-pytest mqlaunch/b2_tui/tests
-```
-
----
-
-## Definition of Done for MVP
-
-B2 TUI MVP är klar när detta fungerar:
-
-```bash
-mq b2 validate
-mq b2 list
-mq b2 categories
-mq b2 show 02.11
-mq b2 route "ta fram blueprint för terminal TUI"
-mq b2 compose 02.11 "ta fram blueprint för terminal TUI"
-mq b2 history
-```
-
-Och:
-
-```bash
-pytest mqlaunch/b2_tui/tests
-```
-
-går grönt.
-
-MVP:n ska dessutom:
-
-* [x] inte ändra B2-källfiler
-* [x] inte kräva OpenAI API
-* [x] inte kräva Ollama
-* [x] inte kräva GitHub access
-* [x] fungera från valfri terminalkatalog
-* [x] skriva tydliga felmeddelanden
-* [x] exportera markdown till Obsidian
+* gitleaks secrets scan
+* mq-mcp review routing through `mq-agent`
+* architecture, risk-review, repo-health, and mcp-status commands
+* HAL bridge for brief, audit, release brief, repo status, CI, and context
+* MQ Obsidian menu for opening views, checks, task packs, inbox, and view regen
+* B2/Atlas Prompt OS MVP through v1.0 stack cockpit
+
+## Open Questions
+
+* Should `mqlaunch obsidian ...` be a direct command namespace, or should the
+  current MQ Obsidian menu remain the main surface with only a few aliases?
+* Which mqobsidian manifest keys are canonical for roadmap, context, inbox,
+  stack truth, and promotion queue views?
+* Which release gate should own stale-truth blocking: `mqlaunch release-check`,
+  `repo-signal`, or `mq-agent stack contract-check`?

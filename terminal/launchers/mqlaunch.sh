@@ -1685,6 +1685,13 @@ run_command_palette() {
   local fzf_bin selected selected_cmd
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
 
+  if [[ ! -t 0 || ! -t 1 || -n "${MQ_NO_TUI:-}" ]]; then
+    echo "Command palette requires an interactive terminal. Showing command help instead."
+    echo
+    show_help
+    return 0
+  fi
+
   if [[ -z "$fzf_bin" ]]; then
     print_header
     row_bold "COMMAND PALETTE"

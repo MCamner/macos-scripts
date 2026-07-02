@@ -127,13 +127,39 @@ def roadmap_latest(repo: Path) -> str:
     return "-"
 
 
-def wiki_head(repo_name: str) -> tuple[str, str]:
-    url = f"https://github.com/{GITHUB_OWNER}/{repo_name}.wiki.git"
+def local_wiki_head(repo: Path) -> tuple[str, str]:
+    candidates = [
+        HOME / f"{repo.name}.wiki",
+        HOME / f"{repo.name}.wiki-remote",
+        repo / "docs" / "wiki",
+    ]
+    for candidate in candidates:
+        if not candidate.exists():
+            continue
+        if (candidate / ".git").exists():
+            code, output = git_output(candidate, ["rev-parse", "--short", "HEAD"])
+            return "local", output if code == 0 and output else "-"
+        md_files = sorted(candidate.glob("*.md"))
+        if md_files:
+            return "local-docs", f"{len(md_files)} files"
+    return "missing", "-"
+
+
+def wiki_head(repo: Path) -> tuple[str, str, str]:
+    url = f"https://github.com/{GITHUB_OWNER}/{repo.name}.wiki.git"
     code, output = command_output(["git", "ls-remote", url, "HEAD"])
-    if code != 0:
-        return "missing", "-"
-    sha = output.split()[0] if output else "-"
-    return "yes", sha[:7]
+    if code == 0:
+        sha = output.split()[0] if output else "-"
+        return "remote", sha[:7], ""
+
+    local_state, local_ref = local_wiki_head(repo)
+    if local_state != "missing":
+        return local_state, local_ref, "remote unverified"
+
+    lowered = output.lower()
+    if "could not resolve host" in lowered or "failed to connect" in lowered or "network" in lowered:
+        return "unknown", "-", "remote check unavailable"
+    return "missing", "-", output or "wiki missing"
 
 
 def wiki_status(repo: Path) -> dict[str, str | list[str]]:
@@ -141,9 +167,10 @@ def wiki_status(repo: Path) -> dict[str, str | list[str]]:
     refs = readme_version_refs(repo)
     changelog = changelog_latest(repo)
     roadmap = roadmap_latest(repo)
-    wiki, wiki_commit = wiki_head(repo.name)
+    wiki, wiki_commit, wiki_note = wiki_head(repo)
 
     reasons: list[str] = []
+    notes: list[str] = []
     if version == "-":
         reasons.append("no VERSION")
     if not refs:
@@ -152,10 +179,16 @@ def wiki_status(repo: Path) -> dict[str, str | list[str]]:
         reasons.append("README version mismatch")
     if version != "-" and version not in changelog:
         reasons.append("CHANGELOG version mismatch")
-    if wiki != "yes":
+    if wiki == "missing":
         reasons.append("wiki missing")
+    elif wiki == "unknown":
+        notes.append(wiki_note or "wiki remote not verified")
+    elif wiki_note:
+        notes.append(wiki_note)
 
     status = "OK" if not reasons else "STALE"
+    if status == "OK" and wiki == "unknown":
+        status = "UNKNOWN"
     return {
         "repo": repo.name,
         "version": version,
@@ -166,6 +199,7 @@ def wiki_status(repo: Path) -> dict[str, str | list[str]]:
         "wiki_commit": wiki_commit,
         "status": status,
         "reasons": reasons,
+        "notes": notes,
     }
 
 
@@ -277,6 +311,7 @@ def cmd_wiki_status(args: argparse.Namespace) -> int:
     for repo in repo_paths(args.repo):
         data = wiki_status(repo)
         reasons = data["reasons"]
+        notes = data.get("notes", [])
         if reasons:
             stale += 1
         print(f"{data['repo']}: {data['status']}")
@@ -289,6 +324,10 @@ def cmd_wiki_status(args: argparse.Namespace) -> int:
             print("  Reasons:")
             for reason in reasons:
                 print(f"    - {reason}")
+        if notes:
+            print("  Notes:")
+            for note in notes:
+                print(f"    - {note}")
     return 1 if stale and args.fail_on_stale else 0
 
 
