@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 ROOT="$PROJECT_ROOT/tools/scripts"
 
-: "${PYTHONPYCACHEPREFIX:=/private/tmp/macos-scripts-pycache}"
+: "${PYTHONPYCACHEPREFIX:=${TMPDIR:-/tmp}/macos-scripts-pycache}"
 export PYTHONPYCACHEPREFIX
 mkdir -p "$PYTHONPYCACHEPREFIX"
 
@@ -18,6 +18,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/mq-stack-contract-smoke.sh"
 "$PROJECT_ROOT/tests/gitmerge-safe-smoke.sh"
 "$PROJECT_ROOT/tests/dashboard-header-cache-smoke.sh"
+"$PROJECT_ROOT/tests/command-docs-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="

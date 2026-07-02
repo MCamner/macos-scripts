@@ -33,9 +33,10 @@ grep -q '"implement review cognition"' "$CONTRACT"
 grep -q '"embed private machine paths in public docs"' "$CONTRACT"
 
 echo "[3/9] README and ROADMAP state the MQ delegation boundary"
-grep -q 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$README"
-grep -q 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$ROADMAP"
-grep -q 'do not own cognition, review logic, or' "$ROADMAP"
+grep -Eq 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$README"
+grep -Eq 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$ROADMAP"
+grep -q 'implement review, risk, or architecture logic itself' "$ROADMAP"
+grep -q 'parse, score, or promote semantic memory in shell scripts' "$ROADMAP"
 
 echo "[4/9] AGENTS uses public-safe mqobsidian indirection"
 grep -q '\$MQ_OBSIDIAN_DIR' "$AGENTS"

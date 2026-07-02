@@ -82,6 +82,7 @@ Usage:
 
 Quick commands:
   mqlaunch demo
+  mqlaunch excalidraw
   mqlaunch perf
   mqlaunch network
   mqlaunch check
@@ -209,6 +210,11 @@ dispatch_cli_command() {
     demo)
       run_demo_mode
       return 0
+      ;;
+
+    excalidraw|draw)
+      "$BASE_DIR/tools/scripts/excalidraw.sh"
+      return $?
       ;;
 
     review|/review)
@@ -400,8 +406,9 @@ dispatch_cli_command() {
 
     selftest|/selftest|test-all)
       "$BASE_DIR/tools/scripts/test-all.sh"
-      pause_enter
-      return 0
+      local _selftest_rc=$?
+      [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
+      return "$_selftest_rc"
       ;;
 
     doctor|/doctor)
@@ -559,6 +566,58 @@ dispatch_cli_command() {
 
     net|network)
       show_network_info
+      return 0
+      ;;
+
+    palette|fzf|search)
+      run_command_palette
+      return 0
+      ;;
+
+    ghost)
+      "$BASE_DIR/tools/scripts/network-ghost.sh"
+      return $?
+      ;;
+
+    pulse)
+      "$BASE_DIR/tools/scripts/pulse.sh"
+      return $?
+      ;;
+
+    reap)
+      "$BASE_DIR/tools/scripts/overseer.sh"
+      return $?
+      ;;
+
+    guard)
+      "$BASE_DIR/tools/scripts/blackout.sh"
+      return $?
+      ;;
+
+    mc)
+      "$BASE_DIR/tools/scripts/mission-control.sh"
+      return $?
+      ;;
+
+    nickname-set|nick-set|nick)
+      shift
+      if [[ -n "${1:-}" ]]; then
+        printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"
+        echo "Smeknamn sparat: $*"
+      else
+        echo "Nuvarande smeknamn: $(get_nickname)"
+        echo "Ändra: mqlaunch nickname-set <smeknamn>"
+      fi
+      return 0
+      ;;
+
+    theme-macos)
+      theme_cmd apply macos
+      return 0
+      ;;
+
+    theme-reset)
+      theme_cmd reset
       return 0
       ;;
 

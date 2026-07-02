@@ -30,7 +30,22 @@ echo "[8/9] menu shows Release Brief"
 grep -q "Release Brief" "$ROOT/terminal/menus/mq-hal-menu.sh"
 
 echo "[9/9] hal json commands do not add launcher pause text"
-"$ROOT/terminal/launchers/mqlaunch.sh" hal release-brief --sample --json >/tmp/mqlaunch-hal-release-brief.json
+tmp_hal="$(mktemp -d)"
+trap 'rm -rf "$tmp_hal"' EXIT
+cat > "$tmp_hal/mq-hal" <<'FAKE_HAL'
+#!/usr/bin/env bash
+case "${1:-}" in
+  release-brief)
+    printf '{"status":"ok","source":"fake-mq-hal"}\n'
+    ;;
+  *)
+    printf 'fake mq-hal: unsupported command: %s\n' "${1:-}" >&2
+    exit 2
+    ;;
+esac
+FAKE_HAL
+chmod +x "$tmp_hal/mq-hal"
+MQ_HAL_BIN="$tmp_hal/mq-hal" "$ROOT/terminal/launchers/mqlaunch.sh" hal release-brief --sample --json >/tmp/mqlaunch-hal-release-brief.json
 python3 -m json.tool /tmp/mqlaunch-hal-release-brief.json >/dev/null
 ! grep -q "Press Enter" /tmp/mqlaunch-hal-release-brief.json
 

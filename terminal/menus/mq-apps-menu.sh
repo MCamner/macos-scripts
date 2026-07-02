@@ -19,6 +19,7 @@ render_apps_panel() {
   surface_row "QUICK ACTIONS" "$width" "$panel_color"
   surface_split_row "11. Lock screen" "12. Sleep display" "$width" "$panel_color"
   surface_split_row "13. Restart Finder" "14. Repo in browser" "$width" "$panel_color"
+  surface_split_row "15. Excalidraw" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -57,6 +58,7 @@ open_apps_menu() {
       12) sleep_display ;;
       13) restart_finder ;;
       14) open_repo_browser ;;
+      15) "$BASE_DIR/tools/scripts/excalidraw.sh"; pause_enter ;;
       b|B|x|X|exit) return ;;
       x|X)
         echo "Exiting ${APP_TITLE}..."
