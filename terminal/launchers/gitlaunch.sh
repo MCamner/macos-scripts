@@ -522,7 +522,7 @@ function render_menu() {
   frame_two_col "5. Open repo" "6. Dev mode"
   frame_two_col "7. Switch repo" "8. Auto commit + push"
   frame_two_col "9. Recent log" "m. Safe merge"
-  frame_two_col "b. Back" ""
+  frame_two_col "p. PR merge" "b. Back"
   frame_bottom
 }
 
@@ -551,7 +551,7 @@ function prompt_choice() {
   printf "\n%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
   printf "%bgitlaunch > %b\n" "$C_TITLE" "$C_RESET"
   printf "%b%s%b\n" "$C_BORDER" "$sep" "$C_RESET"
-  printf "%b>> press 1-9, m or b%b\n" "$C_DIM" "$C_RESET"
+  printf "%b>> press 1-9, m, p or b%b\n" "$C_DIM" "$C_RESET"
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[3A\r"
     printf "%bgitlaunch > %b" "$C_TITLE" "$C_RESET"
@@ -869,6 +869,33 @@ function safe_merge() {
 }
 
 # ------------------------
+# PR MERGE (REMOTE)
+# ------------------------
+# Runs the remote PR-merge helper against the active repo. Unlike safe_merge
+# (local merge, no push), this closes a GitHub pull request via gh pr merge.
+# Resolution order: explicit override, repo copy next to this launcher, then the
+# legacy ~/mqlaunch/scripts location.
+function pr_merge() {
+  local merge_script="${MQ_GITPR_MERGE_SCRIPT:-}"
+
+  if [[ -z "$merge_script" ]]; then
+    if [[ -x "$GITLAUNCH_DIR/gitpr-merge-safe.sh" ]]; then
+      merge_script="$GITLAUNCH_DIR/gitpr-merge-safe.sh"
+    else
+      merge_script="$HOME/mqlaunch/scripts/gitpr-merge-safe.sh"
+    fi
+  fi
+
+  if [[ ! -x "$merge_script" ]]; then
+    echo "PR-merge script not found or not executable:"
+    echo "  $merge_script"
+    return 1
+  fi
+
+  ( cd "${WORK_DIR:-$REPO}" && "$merge_script" )
+}
+
+# ------------------------
 # COMMIT SUGGESTION
 # ------------------------
 function suggest_commit() {
@@ -1015,6 +1042,10 @@ while true; do
       ;;
     m|M)
       safe_merge
+      pause_git_menu
+      ;;
+    p|P)
+      pr_merge
       pause_git_menu
       ;;
     b|B)

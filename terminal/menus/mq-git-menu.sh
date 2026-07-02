@@ -544,6 +544,33 @@ pull_rebase() {
   pause_enter
 }
 
+# Merges a remote pull request via gh pr merge.
+# Unlike a local merge, this closes the PR on GitHub (squash + delete branch by
+# default) and syncs the local base branch afterwards. Delegates to the shared
+# gitpr-merge-safe.sh helper so guardrails stay in one place.
+merge_pull_request() {
+  ensure_repo || return 1
+
+  local merge_script="${MQ_GITPR_MERGE_SCRIPT:-}"
+  if [[ -z "$merge_script" ]]; then
+    if [[ -x "$BASE_DIR/terminal/launchers/gitpr-merge-safe.sh" ]]; then
+      merge_script="$BASE_DIR/terminal/launchers/gitpr-merge-safe.sh"
+    else
+      merge_script="$HOME/mqlaunch/scripts/gitpr-merge-safe.sh"
+    fi
+  fi
+
+  if [[ ! -x "$merge_script" ]]; then
+    ui_err "PR-merge script not found or not executable: $merge_script"
+    pause_enter
+    return 1
+  fi
+
+  ( cd "$CURRENT_REPO" && "$merge_script" )
+  echo
+  pause_enter
+}
+
 # Shows log.
 show_log() {
   ensure_repo || return 1
@@ -610,6 +637,7 @@ print_git_menu() {
   surface_split_row "3. Suggest commit message" "4. Next recommended action" "$width" "$panel_color"
   surface_split_row "5. Stage selected files" "6. Commit staged changes" "$width" "$panel_color"
   surface_split_row "7. Safe push" "8. Pull with rebase" "$width" "$panel_color"
+  surface_split_row "p. Merge pull request" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "NAVIGATION" "$width" "$panel_color"
   surface_split_row "10. Open repo on GitHub" "11. Open local repo folder" "$width" "$panel_color"
@@ -639,6 +667,7 @@ git_menu_loop() {
       6) commit_changes ;;
       7) safe_push ;;
       8) pull_rebase ;;
+      p|P) merge_pull_request ;;
       9) show_log ;;
       10) open_repo_github ;;
       11) open_local_repo ;;
