@@ -391,6 +391,7 @@ _agent_menu_cochange_review() {
   done
 }
 
+# Runs agent command.
 run_agent_command() {
   local subcmd="${1:-menu}"
   case "$subcmd" in

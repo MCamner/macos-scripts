@@ -398,6 +398,7 @@ print_dashboard_header() {
   printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"
 }
 
+# Prints header.
 print_header() {
   local dashboard nickname
 

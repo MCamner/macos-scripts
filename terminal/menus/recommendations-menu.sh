@@ -78,6 +78,7 @@ render_recommendations_panel() {
 # Prompts for a visible pattern and stores its id in REC_PICKED. Returns non-zero
 # on cancel / invalid / empty visible set (the prompt itself reports why).
 REC_PICKED=""
+# Coordinates rec menu pick visible behavior.
 _rec_menu_pick_visible() {
   local path="$1" sel
   REC_PICKED=""

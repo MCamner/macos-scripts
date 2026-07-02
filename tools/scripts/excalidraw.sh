@@ -9,20 +9,24 @@ LOG_DIR="${EXCALIDRAW_LOG_DIR:-$HOME/Library/Logs/mqlaunch}"
 
 mkdir -p "$LOG_DIR"
 
+# Coordinates die behavior.
 die() {
   printf 'excalidraw: %s\n' "$*" >&2
   exit 1
 }
 
+# Coordinates need dir behavior.
 need_dir() {
   [[ -d "$1" ]] || die "missing directory: $1"
 }
 
+# Coordinates port listening behavior.
 port_listening() {
   local port="$1"
   lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
 }
 
+# Coordinates wait for url behavior.
 wait_for_url() {
   local url="$1"
   local label="$2"
@@ -39,6 +43,7 @@ wait_for_url() {
   die "$label did not become ready at $url"
 }
 
+# Ensures yarn is ready.
 ensure_yarn() {
   if command -v yarn >/dev/null 2>&1; then
     return 0
@@ -49,6 +54,7 @@ ensure_yarn() {
   corepack prepare yarn@1.22.22 --activate >/dev/null
 }
 
+# Coordinates start proxy behavior.
 start_proxy() {
   need_dir "$PROXY_DIR"
 
@@ -69,6 +75,7 @@ start_proxy() {
   )
 }
 
+# Coordinates start frontend behavior.
 start_frontend() {
   need_dir "$EXCALIDRAW_DIR"
 
@@ -86,6 +93,7 @@ start_frontend() {
   )
 }
 
+# Runs the main entry point.
 main() {
   start_proxy
   wait_for_url "$PROXY_URL/health" "proxy"

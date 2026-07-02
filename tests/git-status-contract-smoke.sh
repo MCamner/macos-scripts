@@ -5,11 +5,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_REPO="$(mktemp -d)"
 trap 'rm -rf "$TMP_REPO"' EXIT
 
+# Marks a failing check.
 fail() {
   printf '[FAIL] %s\n' "$1" >&2
   exit 1
 }
 
+# Marks a passing check.
 pass() {
   printf '[PASS] %s\n' "$1"
 }

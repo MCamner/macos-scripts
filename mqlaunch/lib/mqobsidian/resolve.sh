@@ -2,6 +2,7 @@
 # Single source of truth for locating the mqobsidian vault. Read-only.
 # The ONLY place that knows how mqobsidian is found. Depends on errors.sh.
 
+# Resolves mqobsidian dir.
 resolve_mqobsidian_dir() {
   if [[ -n "${MQ_OBSIDIAN_DIR:-}" ]]; then
     printf '%s\n' "$MQ_OBSIDIAN_DIR"
@@ -10,11 +11,13 @@ resolve_mqobsidian_dir() {
   fi
 }
 
+# Checks whether valid mqobsidian root applies.
 is_valid_mqobsidian_root() {
   local dir="$1"
   [[ -d "$dir/systems" && -d "$dir/memory" ]]
 }
 
+# Coordinates assert mqobsidian dir behavior.
 assert_mqobsidian_dir() {
   local dir
   dir="$(resolve_mqobsidian_dir)"

@@ -5,7 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() { printf '[FAIL] %s\n' "$1" >&2; exit 1; }
+# Marks a passing check.
 pass() { printf '[PASS] %s\n' "$1"; }
 
 # Stub dashboard: appends a line to a counter file every time it runs, and
@@ -21,6 +23,7 @@ STUBEOF
 chmod +x "$STUB"
 export COUNT_FILE
 
+# Coordinates runs behavior.
 runs() { wc -l < "$COUNT_FILE" | tr -d ' '; }
 
 # shellcheck disable=SC1090

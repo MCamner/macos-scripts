@@ -3,18 +3,21 @@
 # read-only. The manifest is the single source for supported views. Depends on
 # errors.sh.
 
+# Gets mqobsidian manifest path.
 get_mqobsidian_manifest_path() {
   local dir
   dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../config/mqobsidian" && pwd)"
   printf '%s\n' "$dir/views.json"
 }
 
+# Coordinates list supported views behavior.
 list_supported_views() {
   local mf
   mf="$(get_mqobsidian_manifest_path)"
   jq -r '.[].key' "$mf"
 }
 
+# Resolves view relative path.
 resolve_view_relative_path() {
   local key="$1" mf out
   mf="$(get_mqobsidian_manifest_path)"
@@ -26,6 +29,7 @@ resolve_view_relative_path() {
   printf '%s\n' "$out"
 }
 
+# Resolves view type.
 resolve_view_type() {
   local key="$1" mf out
   mf="$(get_mqobsidian_manifest_path)"
@@ -37,6 +41,7 @@ resolve_view_type() {
   printf '%s\n' "$out"
 }
 
+# Resolves view label.
 resolve_view_label() {
   local key="$1" mf
   mf="$(get_mqobsidian_manifest_path)"
