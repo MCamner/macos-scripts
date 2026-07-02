@@ -152,9 +152,9 @@ method="${2:-}"
 if [[ -z "$method" ]]; then
   echo
   echo "Merge method:"
-  echo "  1) squash (default)"
-  echo "  2) merge commit"
-  echo "  3) rebase"
+  echo "  1) squash (default) - combine all PR commits into one commit on $base_ref"
+  echo "  2) merge commit     - keep every PR commit and add a merge commit"
+  echo "  3) rebase           - replay PR commits onto $base_ref, no merge commit"
   read -r -p "Choice [1-3, Enter=1]: " m
   case "${m:-1}" in
     1|"") method="squash" ;;
