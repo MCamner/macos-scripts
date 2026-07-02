@@ -759,7 +759,23 @@ function create_pr_branch_for_push() {
 
   if command -v gh >/dev/null 2>&1; then
     echo ""
-    echo "Next: gh pr create --base $base_branch --head $pr_branch --fill"
+    printf "%bCreate the pull request now? [Y/n]: %b" "$C_LABEL" "$C_RESET"
+    read confirm </dev/tty
+    if [[ "$confirm" =~ ^[Nn]$ ]]; then
+      echo "Skipped. Open it later with:"
+      echo "  gh pr create --base $base_branch --head $pr_branch --fill"
+      return 0
+    fi
+    if ! gh pr create --base "$base_branch" --head "$pr_branch" --fill; then
+      echo ""
+      echo "PR creation failed. Open it manually with:"
+      echo "  gh pr create --base $base_branch --head $pr_branch --fill"
+      return 1
+    fi
+  else
+    echo ""
+    echo "Install the GitHub CLI (gh) to open the PR automatically. Then run:"
+    echo "  gh pr create --base $base_branch --head $pr_branch --fill"
   fi
 }
 
