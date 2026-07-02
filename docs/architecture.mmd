@@ -1,0 +1,31 @@
+flowchart TD
+  subgraph ENTRY["Entry"]
+    LAUNCH["terminal/launchers (mqlaunch)"]
+    MAIN["mq-main-menu.sh"]
+  end
+  subgraph MENUS["Sub-menus"]
+    GIT["mq-git-menu (gitlaunch)"]
+    DEV["mq-dev-menu"]
+    AGENT["mq-agent-menu"]
+    HAL["mq-hal-menu"]
+    AI["mq-ai-menu"]
+    APPS["mq-apps-menu"]
+  end
+  subgraph PY["Python"]
+    MQL["mqlaunch/ (b2_tui, commands, lib, config)"]
+  end
+  subgraph EXT["Targets"]
+    SCRIPTS["tools/scripts (excalidraw, env-snap)"]
+    BRIDGE["bridges -> MQ repos (agent/hal)"]
+  end
+  LAUNCH --> MAIN
+  MAIN --> GIT
+  MAIN --> DEV
+  MAIN --> AGENT
+  MAIN --> HAL
+  MAIN --> AI
+  MAIN --> APPS
+  DEV --> SCRIPTS
+  MAIN --> MQL
+  AGENT --> BRIDGE
+  HAL --> BRIDGE
