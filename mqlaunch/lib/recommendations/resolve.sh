@@ -31,6 +31,7 @@ REC_SCHEMA="command-recommendations.v1"
 # Defaults to the bare name so an un-bootstrapped call still works on a sane PATH.
 : "${REC_JQ:=jq}"
 
+# Resolves recommended json path.
 resolve_recommended_json_path() {
   if [[ -n "${MQ_RECOMMENDED_JSON:-}" ]]; then
     printf '%s\n' "$MQ_RECOMMENDED_JSON"

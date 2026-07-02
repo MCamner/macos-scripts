@@ -4,6 +4,7 @@
 # invalid/wrong-schema source). Depends on: errors.sh, resolve.sh, parse.sh.
 : "${REC_JQ:=jq}"
 
+# Runs recommendations doctor.
 run_recommendations_doctor() {
   local path
   if ! path="$(assert_recommended_json)"; then

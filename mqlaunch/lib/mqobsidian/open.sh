@@ -2,6 +2,7 @@
 # Open a manifest-defined target. Read-only navigation only. Depends on
 # resolve.sh, manifest.sh, errors.sh.
 
+# Builds view absolute path for later command execution.
 build_view_absolute_path() {
   local key="$1" root rel
   root="$(assert_mqobsidian_dir)" || return 1
@@ -9,6 +10,7 @@ build_view_absolute_path() {
   printf '%s/%s\n' "$root" "$rel"
 }
 
+# Coordinates assert view target exists behavior.
 assert_view_target_exists() {
   local key="$1" path type
   path="$(build_view_absolute_path "$key")" || return 1
@@ -31,6 +33,7 @@ open_mqobsidian_path() {
   "${MQOBS_OPENER:-open}" "$path"
 }
 
+# Opens mqobsidian target.
 open_mqobsidian_target() {
   local key="$1" path
   path="$(assert_view_target_exists "$key")" || return 1

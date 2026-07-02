@@ -2,16 +2,22 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# Coordinates red behavior.
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
+# Coordinates green behavior.
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
+# Coordinates yellow behavior.
 yellow() { printf '\033[33m%s\033[0m\n' "$*"; }
+# Coordinates blue behavior.
 blue()   { printf '\033[34m%s\033[0m\n' "$*"; }
 
+# Coordinates die behavior.
 die() {
   red "Error: $*"
   exit 1
 }
 
+# Verifies the required cmd helper is available before continuing.
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
 }

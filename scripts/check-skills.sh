@@ -19,9 +19,12 @@ BEGIN_MARK="<!-- BEGIN GENERATED SKILLS TABLE -->"
 END_MARK="<!-- END GENERATED SKILLS TABLE -->"
 
 FAIL=0
+# Marks a failing check.
 fail() { echo "FAIL: $1"; FAIL=1; }
+# Coordinates ok behavior.
 ok()   { echo "PASS: $1"; }
 
+# Coordinates frontmatter field behavior.
 frontmatter_field() {
   awk -v key="$2" -F': ' '$1 == key { sub("^" key ": ", ""); print; exit }' "$1"
 }
@@ -84,6 +87,7 @@ done < <(grep -HoE '`[A-Za-z][A-Za-z0-9._/-]*/[A-Za-z0-9._/*<>-]*`' skills/*/SKI
 
 # --- 5: SKILLS.md table generated from frontmatter ---------------------------
 
+# Generates table for docs or release automation.
 generate_table() {
   echo "$BEGIN_MARK"
   echo "| Skill | Description |"
