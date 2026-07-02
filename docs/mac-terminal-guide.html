@@ -3142,6 +3142,170 @@ const COMMANDS = [
       { code: "ls *.pdf | automator samla_pdfer.workflow", desc: "Skicka lista med filer som indata via pipe", descEn: "Send a list of files as input via pipe" }
     ]
   },
+  { cat: "Filer & Mappar", cmd: "ditto", short: "Kopiera med bevarad macOS-metadata — och skapa Finder-kompatibla zip-arkiv", shortEn: "Copy while preserving macOS metadata, and create Finder-compatible zip archives", tags: ["safe"],
+    examples: [
+      { code: "ditto källa/ mål/", desc: "Kopierar och bevarar extended attributes, resursgafflar och rättigheter", descEn: "Copies while preserving extended attributes, resource forks, and permissions" },
+      { code: "ditto -c -k --sequesterRsrc --keepParent mapp arkiv.zip", desc: "Skapar zip exakt som Finders 'Komprimera'", descEn: "Creates a zip exactly like Finder's 'Compress'" },
+      { code: "ditto -x -k arkiv.zip målmapp/", desc: "Packar upp zip med bevarad metadata", descEn: "Extracts a zip with metadata preserved" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "file", short: "Identifiera vad en fil faktiskt är, oavsett filändelse", shortEn: "Identify what a file actually is, regardless of extension", tags: ["safe"],
+    examples: [
+      { code: "file mysteriefil", desc: "Visar filtyp baserat på innehållet, inte namnet", descEn: "Shows file type based on content, not the name" },
+      { code: "file -I fil.txt", desc: "Visar MIME-typ och teckenkodning (stort I på macOS)", descEn: "Shows MIME type and encoding (capital I on macOS)" },
+      { code: "file *", desc: "Identifierar alla filer i aktuell mapp", descEn: "Identifies every file in the current folder" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "stat", short: "Visa exakta filattribut — storlek, tider och rättigheter i råformat", shortEn: "Show exact file attributes: size, timestamps, and permissions in raw form", tags: ["safe"],
+    examples: [
+      { code: "stat fil.txt", desc: "Visar alla attribut för filen", descEn: "Shows all attributes of the file" },
+      { code: "stat -f \"%z byte\" fil.txt", desc: "Visar bara storleken i byte (BSD-syntax på macOS)", descEn: "Shows only the size in bytes (BSD syntax on macOS)" },
+      { code: "stat -f \"%Sm %N\" *", desc: "Visar ändringstid och namn för alla filer", descEn: "Shows modification time and name for all files" }
+    ]
+  },
+  { cat: "Filer & Mappar", cmd: "mdls", short: "Visa Spotlight-metadata för en fil — komplement till mdfind", shortEn: "Show Spotlight metadata for a file, the companion to mdfind", tags: ["safe"],
+    examples: [
+      { code: "mdls dokument.pdf", desc: "Visar all Spotlight-metadata för filen", descEn: "Shows all Spotlight metadata for the file" },
+      { code: "mdls -name kMDItemContentType fil", desc: "Visar bara filens innehållstyp", descEn: "Shows only the file's content type" },
+      { code: "mdls -name kMDItemWhereFroms nedladdad.dmg", desc: "Visar vilken URL filen laddades ner från", descEn: "Shows which URL the file was downloaded from" }
+    ]
+  },
+  { cat: "Processer", cmd: "pgrep", short: "Hitta process-ID via namn — söksyskonet till pkill", shortEn: "Find process IDs by name, the search sibling of pkill", tags: ["safe"],
+    examples: [
+      { code: "pgrep -l Safari", desc: "Visar PID och namn för matchande processer", descEn: "Shows PID and name for matching processes" },
+      { code: "pgrep -fl python", desc: "Matchar mot hela kommandoraden, inte bara processnamnet", descEn: "Matches the full command line, not just the process name" },
+      { code: "pgrep -x Dock", desc: "Kräver exakt namnmatchning", descEn: "Requires an exact name match" },
+      { code: "kill $(pgrep -x Dock)", desc: "Kombinera med kill för att träffa rätt process", descEn: "Combine with kill to target the right process" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "ipconfig (macOS)", short: "macOS-specifik nätverksinfo — inte Windows-kommandot med samma namn", shortEn: "macOS-specific network info, not the Windows command with the same name", tags: ["net"],
+    examples: [
+      { code: "ipconfig getifaddr en0", desc: "Visar din lokala IP-adress — snabbaste sättet", descEn: "Shows your local IP address, the fastest way" },
+      { code: "ipconfig getsummary en0", desc: "Visar fullständig DHCP- och gränssnittsinfo", descEn: "Shows full DHCP and interface details" },
+      { code: "ipconfig getpacket en0", desc: "Visar hela DHCP-lease-paketet inklusive DNS och router", descEn: "Shows the entire DHCP lease packet including DNS and router" }
+    ]
+  },
+  { cat: "Nätverk", cmd: "wdutil", short: "Modern Wi-Fi-diagnostik — ersätter airport som Apple tagit bort", shortEn: "Modern Wi-Fi diagnostics, replacing the removed airport tool", tags: ["net", "sudo"],
+    examples: [
+      { code: "sudo wdutil info", desc: "Visar SSID, kanal, RSSI, brus och säkerhetsläge", descEn: "Shows SSID, channel, RSSI, noise, and security mode" },
+      { code: "sudo wdutil dump", desc: "Skapar fullständig diagnostikrapport för Wi-Fi", descEn: "Creates a full Wi-Fi diagnostics report" },
+      { code: "sudo wdutil log +wifi", desc: "Aktiverar utökad Wi-Fi-loggning", descEn: "Enables verbose Wi-Fi logging" }
+    ]
+  },
+  { cat: "System", cmd: "softwareupdate", short: "Hantera macOS-uppdateringar helt från terminalen", shortEn: "Manage macOS updates entirely from the terminal", tags: ["sudo"],
+    examples: [
+      { code: "softwareupdate -l", desc: "Listar tillgängliga uppdateringar", descEn: "Lists available updates" },
+      { code: "sudo softwareupdate -i -a", desc: "Installerar alla tillgängliga uppdateringar", descEn: "Installs all available updates" },
+      { code: "sudo softwareupdate -i -a --restart", desc: "Installerar och startar om vid behov", descEn: "Installs and reboots if required" },
+      { code: "softwareupdate --fetch-full-installer", desc: "Laddar ner komplett macOS-installerare till /Applications", descEn: "Downloads a full macOS installer to /Applications" }
+    ]
+  },
+  { cat: "System", cmd: "profiles", short: "Visa MDM-status och konfigurationsprofiler på maskinen", shortEn: "Show MDM enrollment status and configuration profiles on the machine", tags: ["sudo"],
+    examples: [
+      { code: "profiles status -type enrollment", desc: "Visar om maskinen är MDM-enrollad och via DEP/ADE", descEn: "Shows whether the machine is MDM-enrolled and via DEP/ADE" },
+      { code: "sudo profiles show -type enrollment", desc: "Visar detaljer om enrollment-konfigurationen", descEn: "Shows details of the enrollment configuration" },
+      { code: "profiles list", desc: "Listar installerade profiler för aktuell användare", descEn: "Lists installed profiles for the current user" },
+      { code: "sudo profiles list -all", desc: "Listar alla profiler på systemet", descEn: "Lists all profiles on the system" }
+    ]
+  },
+  { cat: "System", cmd: "purge", short: "Töm diskcachen i RAM — simulera minnestrycket efter en omstart", shortEn: "Flush the disk cache in RAM, simulating post-reboot memory pressure", tags: ["sudo"],
+    examples: [
+      { code: "sudo purge", desc: "Tömmer filsystemets cache ur RAM", descEn: "Flushes the file system cache from RAM" },
+      { code: "vm_stat && sudo purge && vm_stat", desc: "Jämför minnesstatistik före och efter", descEn: "Compare memory statistics before and after" }
+    ]
+  },
+  { cat: "System", cmd: "chflags", short: "Sätt BSD-filflaggor — göm filer eller lås dem mot ändring", shortEn: "Set BSD file flags: hide files or lock them against changes", tags: ["safe"],
+    examples: [
+      { code: "chflags hidden fil", desc: "Gömmer filen i Finder (syns fortfarande med ls)", descEn: "Hides the file in Finder (still visible with ls)" },
+      { code: "chflags nohidden fil", desc: "Visar filen i Finder igen", descEn: "Makes the file visible in Finder again" },
+      { code: "chflags uchg viktig.txt", desc: "Låser filen — kan inte ändras eller raderas", descEn: "Locks the file so it can't be changed or deleted" },
+      { code: "chflags nouchg viktig.txt", desc: "Låser upp filen igen", descEn: "Unlocks the file again" },
+      { code: "ls -lO", desc: "Visar filflaggor i fillistan (stort O)", descEn: "Shows file flags in the listing (capital O)" }
+    ]
+  },
+  { cat: "Pakethanterare", cmd: "pkgutil", short: "Inspektera installerade .pkg-paket — vad installerades och var", shortEn: "Inspect installed .pkg packages: what was installed and where", tags: ["safe"],
+    examples: [
+      { code: "pkgutil --pkgs", desc: "Listar alla installerade paket-ID:n", descEn: "Lists all installed package IDs" },
+      { code: "pkgutil --pkgs | grep -i citrix", desc: "Hittar paket från en specifik leverantör", descEn: "Finds packages from a specific vendor" },
+      { code: "pkgutil --files com.exempel.paket", desc: "Listar alla filer som paketet installerade", descEn: "Lists every file the package installed" },
+      { code: "pkgutil --pkg-info com.exempel.paket", desc: "Visar version och installationstid", descEn: "Shows version and install time" },
+      { code: "pkgutil --expand paket.pkg /tmp/utpackat", desc: "Packar upp ett .pkg för inspektion utan att installera", descEn: "Expands a .pkg for inspection without installing" }
+    ]
+  },
+  { cat: "Pakethanterare", cmd: "installer", short: "Installera .pkg-filer från terminalen — grunden för skriptad utrullning", shortEn: "Install .pkg files from the terminal, the basis for scripted deployment", tags: ["sudo"],
+    examples: [
+      { code: "sudo installer -pkg program.pkg -target /", desc: "Installerar paketet på systemvolymen", descEn: "Installs the package on the system volume" },
+      { code: "sudo installer -pkg program.pkg -target / -verbose", desc: "Visar detaljerad utskrift under installationen", descEn: "Shows verbose output during installation" },
+      { code: "installer -pkg program.pkg -showChoices", desc: "Visar valbara komponenter i paketet", descEn: "Shows the selectable components in the package" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "spctl", short: "Fråga Gatekeeper — är appen betrodd och varför", shortEn: "Query Gatekeeper: is the app trusted and why", tags: ["safe"],
+    examples: [
+      { code: "spctl --status", desc: "Visar om Gatekeeper är aktiverat", descEn: "Shows whether Gatekeeper is enabled" },
+      { code: "spctl --assess --verbose /Applications/App.app", desc: "Bedömer om appen godkänns och visar signeringskälla", descEn: "Assesses whether the app passes and shows the signing source" },
+      { code: "spctl --assess --type install paket.pkg", desc: "Bedömer ett installationspaket", descEn: "Assesses an installer package" }
+    ]
+  },
+  { cat: "Säkerhet & Kryptering", cmd: "tccutil", short: "Återställ integritetsbehörigheter — kamera, mikrofon, skärminspelning", shortEn: "Reset privacy permissions: camera, microphone, screen recording", tags: ["safe"],
+    examples: [
+      { code: "tccutil reset Camera", desc: "Återställer kamerabehörighet för alla appar", descEn: "Resets camera permission for all apps" },
+      { code: "tccutil reset Microphone com.exempel.app", desc: "Återställer mikrofonbehörighet för en specifik app", descEn: "Resets microphone permission for a specific app" },
+      { code: "tccutil reset All com.exempel.app", desc: "Återställer alla behörigheter för appen — den frågar om igen", descEn: "Resets all permissions for the app, so it prompts again" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "sysadminctl", short: "Modern användarhantering — Apples ersättare för dscl-rutiner", shortEn: "Modern user management, Apple's replacement for common dscl routines", tags: ["sudo"],
+    examples: [
+      { code: "sudo sysadminctl -addUser anna -fullName \"Anna Andersson\" -password -", desc: "Skapar användare och frågar efter lösenord interaktivt", descEn: "Creates a user and prompts for the password interactively" },
+      { code: "sudo sysadminctl -deleteUser anna", desc: "Tar bort användaren och hemkatalogen", descEn: "Deletes the user and home folder" },
+      { code: "sysadminctl -secureTokenStatus anna", desc: "Visar om användaren har secure token (krävs för FileVault)", descEn: "Shows whether the user has a secure token (required for FileVault)" },
+      { code: "sudo sysadminctl -resetPasswordFor anna -newPassword -", desc: "Återställer användarens lösenord", descEn: "Resets the user's password" }
+    ]
+  },
+  { cat: "Användare & Grupper", cmd: "last", short: "Visa inloggnings- och omstartshistorik", shortEn: "Show login and reboot history", tags: ["safe"],
+    examples: [
+      { code: "last", desc: "Visar senaste inloggningarna på maskinen", descEn: "Shows the most recent logins on the machine" },
+      { code: "last reboot", desc: "Visar när maskinen startats om", descEn: "Shows when the machine was rebooted" },
+      { code: "last shutdown", desc: "Visar när maskinen stängts av", descEn: "Shows when the machine was shut down" },
+      { code: "last -10 anna", desc: "Visar användarens 10 senaste inloggningar", descEn: "Shows the user's 10 most recent logins" }
+    ]
+  },
+  { cat: "Skript & Automatisering", cmd: "shortcuts", short: "Kör macOS Genvägar från terminalen — brygga till hela Kortkommandon-appen", shortEn: "Run macOS Shortcuts from the terminal, a bridge to the whole Shortcuts app", tags: ["safe"],
+    examples: [
+      { code: "shortcuts list", desc: "Listar alla genvägar du har", descEn: "Lists all your shortcuts" },
+      { code: "shortcuts run \"Min genväg\"", desc: "Kör en genväg vid namn", descEn: "Runs a shortcut by name" },
+      { code: "shortcuts run \"Ändra storlek\" -i bild.png", desc: "Skickar in en fil som indata till genvägen", descEn: "Passes a file as input to the shortcut" },
+      { code: "echo 'text' | shortcuts run \"Bearbeta\" -o resultat.txt", desc: "Pipe in data och spara utdata till fil", descEn: "Pipe in data and save the output to a file" }
+    ]
+  },
+  { cat: "Dolda pärlor", cmd: "zmv", short: "zsh:s inbyggda massomdöpning med mönster — ingen loop behövs", shortEn: "zsh's built-in pattern-based bulk rename, no loop needed", tags: ["safe"],
+    examples: [
+      { code: "autoload -U zmv", desc: "Aktivera zmv (lägg i .zshrc för att alltid ha den)", descEn: "Enable zmv (add to .zshrc to always have it)" },
+      { code: "zmv -n '(*).jpeg' '$1.jpg'", desc: "Torrkörning: visa vad som skulle döpas om, utan att göra det", descEn: "Dry run: show what would be renamed without doing it" },
+      { code: "zmv '(*).jpeg' '$1.jpg'", desc: "Döp om alla .jpeg till .jpg", descEn: "Rename all .jpeg files to .jpg" },
+      { code: "zmv '(*) (*).pdf' '$1_$2.pdf'", desc: "Ersätt mellanslag med understreck i pdf-namn", descEn: "Replace spaces with underscores in pdf names" }
+    ]
+  },
+  { cat: "Moderna CLI-verktyg", cmd: "tldr", short: "Praktiska exempel istället för manualsidor — man för otåliga", shortEn: "Practical examples instead of man pages, man for the impatient", tags: ["safe"],
+    examples: [
+      { code: "brew install tldr", desc: "Installera via Homebrew", descEn: "Install via Homebrew" },
+      { code: "tldr tar", desc: "Visar de vanligaste tar-exemplen direkt", descEn: "Shows the most common tar examples right away" },
+      { code: "tldr --update", desc: "Uppdatera den lokala exempelsamlingen", descEn: "Update the local page cache" }
+    ]
+  },
+  { cat: "Moderna CLI-verktyg", cmd: "hyperfine", short: "Riktig benchmarking av kommandon — statistik istället för en ensam time-körning", shortEn: "Proper command benchmarking with statistics instead of a single time run", tags: ["safe"],
+    examples: [
+      { code: "brew install hyperfine", desc: "Installera via Homebrew", descEn: "Install via Homebrew" },
+      { code: "hyperfine 'grep -r TODO .' 'rg TODO'", desc: "Jämför två kommandon med medelvärde och spridning", descEn: "Compare two commands with mean and spread" },
+      { code: "hyperfine --warmup 3 './skript.sh'", desc: "Kör uppvärmningsrundor innan mätning (cache-effekter)", descEn: "Run warmup rounds before measuring (cache effects)" }
+    ]
+  },
+  { cat: "Moderna CLI-verktyg", cmd: "dust", short: "du med instant överblick — trädvyn visar var utrymmet tar vägen", shortEn: "du with instant overview, a tree view of where space goes", tags: ["safe"],
+    examples: [
+      { code: "brew install dust", desc: "Installera via Homebrew", descEn: "Install via Homebrew" },
+      { code: "dust", desc: "Visar största mappar och filer som träd med staplar", descEn: "Shows the largest folders and files as a tree with bars" },
+      { code: "dust -d 2 ~", desc: "Begränsa trädet till 2 nivåer djupt", descEn: "Limit the tree to 2 levels deep" }
+    ]
+  },
 ];
 
 
