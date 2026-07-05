@@ -346,17 +346,17 @@ Done when:
 Objective: make Obsidian truth visible in `mqlaunch` without moving truth
 ownership into shell.
 
-* [ ] document canonical `mqobsidian` manifest/view keys consumed by `mqlaunch`
-* [ ] add or verify `mqlaunch obsidian status`
-* [ ] add or verify `mqlaunch obsidian inbox`
-* [ ] add or verify `mqlaunch obsidian views`
-* [ ] ensure all shell-level Obsidian actions remain read-only, open, or delegate
-* [ ] ensure release checks fail when delegation or SSOT surface contracts drift
+The concrete surfaces — `mqlaunch obsidian status` / `inbox` / `views` and the
+canonical `mqobsidian` manifest/view-key documentation — are owned by the
+[0-30 day track](#0-30-days-roadmap-sanity-and-ssot-read-only-surface). This
+workstream adds only the governance constraints layered on top:
+
+* [ ] all shell-level Obsidian actions stay read-only, open, or delegate — never own schema
+* [ ] release checks fail when delegation or an SSOT surface contract drifts
 
 Done when:
 
 * [ ] `mqlaunch` can show truth readiness without owning truth schema
-* [ ] Obsidian status/inbox/views are stable operator surfaces
 * [ ] release checks catch stale or broken SSOT integration
 
 #### Workstream D — Delegated promotion loop
@@ -364,19 +364,20 @@ Done when:
 Objective: support evidence-based inbox ranking and promotion without making
 shell scripts the scoring engine.
 
-* [ ] `mqlaunch obsidian inbox` delegates to `mq-agent` or reads exported canonical status
-* [ ] `mqlaunch obsidian promote` stays thin confirm/delegate surface only
-* [ ] `mq-agent obsidian inbox list` is available
-* [ ] `mq-agent obsidian inbox score` is available
-* [ ] `mq-agent obsidian promote --dry-run` is available
-* [ ] `mq-agent obsidian promote --confirm` is available
+The delegated commands — `mq-agent obsidian inbox list` / `score`,
+`promote --dry-run` / `--confirm`, and the thin `mqlaunch obsidian inbox` /
+`promote` surfaces — are owned by the
+[31-60 day track](#31-60-days-inbox-ranking-and-promotion-loop). This workstream
+holds the governance line over them:
+
+* [ ] shell stays a surface, not the scoring engine
+* [ ] durable-memory promotion stays review-gated through `mq-agent`
 * [ ] release gate detects schema drift before promotion paths are trusted
 
 Done when:
 
-* [ ] repeated patterns become visible as ranked candidates
-* [ ] shell remains a surface, not the judge
-* [ ] durable memory promotion stays review-gated
+* [ ] repeated patterns become visible as ranked candidates via the owned track
+* [ ] no promotion or scoring logic lands in shell
 
 #### Workstream E — B2 / Atlas alignment
 
