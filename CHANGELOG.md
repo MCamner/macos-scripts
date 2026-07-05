@@ -52,6 +52,14 @@ All notable changes to this project will be documented in this file.
   (`hal remember "buy milk"`) is now split on whitespace rather than kept
   together by the shell — quote it at the HAL level if grouping is needed.
 
+### Removed
+
+* Dead `run_git_screen` in `terminal/launchers/mqlaunch.sh` — it had no live
+  caller in the launcher graph (the live copy lives in
+  `tools/scripts/mqlaunch_desktop.sh`). Surfaced while de-layering the git
+  concern (Step 11a); removed as a standalone cleanup rather than folded into a
+  refactor.
+
 ## [1.0.0] - 2026-06-10
 
 ### Added
