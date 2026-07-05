@@ -70,6 +70,25 @@ jobs:
       - name: mqlaunch smoke suite
         run: MACOS_SCRIPTS_HOME="$GITHUB_WORKSPACE" MQ_NO_TUI=1 ./tools/scripts/test-all.sh
 
+  docs-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Same tool and .markdownlint.json config as the pre-commit hook, but
+      # WITHOUT --fix, so rules the hook cannot auto-fix (MD040, MD036, ...)
+      # fail the build here instead of slipping through silently.
+      - name: markdownlint all .md (no auto-fix)
+        run: >-
+          npx --yes markdownlint-cli "**/*.md"
+          --ignore node_modules --ignore backups --ignore .git
+
   python-tests:
     name: Python tests
     runs-on: ubuntu-latest
