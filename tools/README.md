@@ -18,7 +18,7 @@ Keep powerful, reusable building blocks in one place:
 
 ## 📦 Contents
 
-```
+```text
 tools/
 ├── cli/                  # user-facing CLI tools
 ├── scripts/              # system, diagnostics, and utility scripts
@@ -34,7 +34,7 @@ tools/
 
 Safe, repeatable release workflow:
 
-```
+```text
 release.sh
 ```
 
@@ -83,7 +83,7 @@ Used for:
 
 Located in:
 
-```
+```text
 tools/scripts/
 ```
 
@@ -107,7 +107,7 @@ bash tools/scripts/<script-name>.sh
 
 ## 🗃 Legacy
 
-```
+```text
 tools/legacy/
 ```
 
@@ -125,13 +125,13 @@ Contains:
 
 Source:
 
-```
+```text
 tools/mac-terminal-guide/
 ```
 
 Generated HTML:
 
-```
+```text
 docs/mac-terminal-guide.html
 ```
 

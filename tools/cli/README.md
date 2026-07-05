@@ -28,4 +28,3 @@ From the project root:
 ## Notes
 
 CLI tools in this directory should stay focused, scriptable, and easy to call from launchers, menus, or terminal shortcuts.
-

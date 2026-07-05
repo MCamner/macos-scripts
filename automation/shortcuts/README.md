@@ -4,10 +4,10 @@
 
 It is meant for quick everyday actions:
 
-- list available shortcuts
-- search by name
-- run a shortcut from Terminal
-- open a shortcut directly in the Shortcuts app
+* list available shortcuts
+* search by name
+* run a shortcut from Terminal
+* open a shortcut directly in the Shortcuts app
 
 ## Location
 
@@ -21,10 +21,10 @@ The native `shortcuts` CLI is already useful, but it is easier to reach for a sm
 
 `mqshortcuts` makes it faster to:
 
-- inspect your shortcut library
-- run common automations without leaving Terminal
-- search inside folders
-- connect Apple Shortcuts with `macos-scripts` workflows
+* inspect your shortcut library
+* run common automations without leaving Terminal
+* search inside folders
+* connect Apple Shortcuts with `macos-scripts` workflows
 
 ## Commands
 
@@ -91,13 +91,13 @@ mqlaunch shortcuts search clip
 
 ## Notes
 
-- requires the macOS `shortcuts` command-line tool
-- uses `rg` for search if available, otherwise falls back to `grep`
-- includes an interactive menu via `mqlaunch shortcuts`
+* requires the macOS `shortcuts` command-line tool
+* uses `rg` for search if available, otherwise falls back to `grep`
+* includes an interactive menu via `mqlaunch shortcuts`
 
 ## Typical Use Cases
 
-- run personal automations faster
-- connect file workflows with Shortcuts
-- inspect your shortcut library from Terminal
-- bridge GUI automation and shell workflows
+* run personal automations faster
+* connect file workflows with Shortcuts
+* inspect your shortcut library from Terminal
+* bridge GUI automation and shell workflows

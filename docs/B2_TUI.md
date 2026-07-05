@@ -59,7 +59,7 @@ From the interactive menu: **Main → 5 (Dev) → a (B2 Atlas Prompt TUI)**
 
 Launches the full-screen textual TUI.
 
-```
+```text
 ┌──────────────────────────────────────────────────┐
 │ B2 Atlas Prompt OS                               │
 ├───────────────────┬──────────────────────────────┤
@@ -206,7 +206,7 @@ fixtures and `unittest.mock.patch`.
 
 ## Package layout
 
-```
+```text
 mqlaunch/b2_tui/
 ├── config.py               path constants
 ├── models.py               Prompt dataclass

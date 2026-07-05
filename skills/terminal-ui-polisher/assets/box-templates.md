@@ -30,11 +30,11 @@ render_example_panel() {
 
 Rules:
 
-- Use `surface_terminal_width`; never hardcode box width.
-- Use `surface_split_row`; do not draw a manual center divider.
-- Keep section labels short uppercase nouns.
-- Keep every option label short enough to fit at the 60-column clamp.
-- Keep border color from `surface_panel_color`.
+* Use `surface_terminal_width`; never hardcode box width.
+* Use `surface_split_row`; do not draw a manual center divider.
+* Keep section labels short uppercase nouns.
+* Keep every option label short enough to fit at the 60-column clamp.
+* Keep border color from `surface_panel_color`.
 
 ## Legacy Frame Helpers
 
@@ -73,12 +73,12 @@ fallback_status_row() {
 
 Rules:
 
-- `UI_INNER` is `UI_WIDTH - 4` because each row has border, space, text, space, border.
-- Two-column rows should contain one outer box, not two nested boxes.
-- `left_width + 1 + right_width` must equal `UI_INNER`.
-- For status rows, `label_width + colon + space + value_width` must equal `UI_INNER`.
-- If the prompt accepts `b`, the helper text must say so.
-- In non-interactive tests, EOF should exit/back instead of looping on `Invalid`.
+* `UI_INNER` is `UI_WIDTH - 4` because each row has border, space, text, space, border.
+* Two-column rows should contain one outer box, not two nested boxes.
+* `left_width + 1 + right_width` must equal `UI_INNER`.
+* For status rows, `label_width + colon + space + value_width` must equal `UI_INNER`.
+* If the prompt accepts `b`, the helper text must say so.
+* In non-interactive tests, EOF should exit/back instead of looping on `Invalid`.
 
 ## Visual Target
 
