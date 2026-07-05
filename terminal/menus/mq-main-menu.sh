@@ -318,8 +318,11 @@ handle_main_prompt_command() {
       local _hal_args="${normalized#hal }"
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
-      # shellcheck disable=SC2086
-      eval "mq_hal_main $_hal_args"
+      # Split into argv without eval (see run_hal in mqlaunch-repl.sh): safe
+      # against globs, command substitution, and ; | & in the request.
+      local -a _hal_argv
+      read -r -a _hal_argv <<< "$_hal_args"
+      mq_hal_main ${_hal_argv[@]+"${_hal_argv[@]}"}
       pause_enter
       return 0
       ;;
