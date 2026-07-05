@@ -604,113 +604,6 @@ open_terminal_guide() {
   fi
 }
 
-# Coordinates system check behavior.
-system_check() {
-  local prompt_count="0"
-  local resolved_prompt_dir=""
-  local ai_status=""
-  local link_target=""
-  local active_cmd=""
-
-  resolved_prompt_dir="$(resolve_prompt_dir 2>/dev/null || true)"
-  ai_status="$(resolve_ai_status)"
-
-  if [[ -n "$resolved_prompt_dir" ]]; then
-    prompt_count="$(find "$resolved_prompt_dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
-  fi
-
-  if [[ -L "$BIN_LINK" ]]; then
-    link_target="$(readlink "$BIN_LINK" 2>/dev/null || true)"
-  fi
-
-  active_cmd="$(command -v mqlaunch 2>/dev/null || true)"
-
-  print_header
-  row "SYSTEM CHECK"
-  empty_row
-
-  if [[ -d "$BASE_DIR" ]]; then
-    row "[OK]   Base dir found"
-  else
-    row "[FAIL] Base dir missing"
-  fi
-
-  if [[ -x "$MQ_SCRIPT" ]]; then
-    row "[OK]   mqlaunch.sh executable"
-  elif [[ -e "$MQ_SCRIPT" ]]; then
-    row "[FAIL] mqlaunch.sh found but not executable"
-  else
-    row "[FAIL] mqlaunch.sh missing"
-  fi
-
-  case "$ai_status" in
-    OK)
-      row "[OK]   AI backend executable"
-      ;;
-    FOUND_NOT_EXECUTABLE)
-      row "[FAIL] AI backend found but not executable"
-      ;;
-    MISSING)
-      row "[FAIL] AI backend missing"
-      ;;
-  esac
-
-  if [[ -n "$resolved_prompt_dir" ]]; then
-    row "[OK]   Prompt dir found"
-    row "       $resolved_prompt_dir"
-  else
-    row "[FAIL] Prompt dir missing"
-  fi
-
-  if [[ -f "$TERMINAL_GUIDE_HTML" ]]; then
-    row "[OK]   Terminal guide local file found"
-  else
-    row "[FAIL] Terminal guide local file missing"
-  fi
-
-  if [[ -L "$BIN_LINK" ]]; then
-    if [[ "$link_target" == "$BASE_DIR/bin/mqlaunch" || "$link_target" == "$MQ_SCRIPT" ]]; then
-      row "[OK]   ~/bin/mqlaunch symlink correct"
-    else
-      row "[FAIL] ~/bin/mqlaunch points elsewhere"
-      row "       $link_target"
-    fi
-  elif [[ -e "$BIN_LINK" ]]; then
-    row "[FAIL] ~/bin/mqlaunch exists but is not a symlink"
-  else
-    row "[FAIL] ~/bin/mqlaunch missing"
-  fi
-
-  if [[ -n "$active_cmd" ]]; then
-    row "[OK]   mqlaunch command resolves"
-    row "       $active_cmd"
-  else
-    row "[FAIL] mqlaunch command not found in PATH"
-  fi
-
-  if command -v git >/dev/null 2>&1; then
-    row "[OK]   git available"
-  else
-    row "[FAIL] git missing"
-  fi
-
-  if command -v open >/dev/null 2>&1; then
-    row "[OK]   open command available"
-  else
-    row "[FAIL] open command missing"
-  fi
-
-  if command -v pbcopy >/dev/null 2>&1; then
-    row "[OK]   pbcopy available"
-  else
-    row "[FAIL] pbcopy missing"
-  fi
-
-  row "Prompt files: $prompt_count"
-  print_footer
-  pause_enter
-}
-
 # Opens downloads folder.
 open_downloads_folder() {
   open_folder_screen "OPEN DOWNLOADS FOLDER" "$HOME/Downloads" "Downloads folder missing:"
@@ -1123,8 +1016,9 @@ open_tools_menu() {
   fi
 }
 
-# Diagnostics — version reporting, self-check, debug bundle, and release notes
-# — live in a dedicated library (Step 11a monolith de-layering, audit P4).
+# Diagnostics — version reporting, self-check, debug bundle, release notes, and
+# the system check — live in a dedicated library (Step 11a monolith de-layering,
+# audit P4).
 # Sourced into this scope so they keep using the ambient UI helpers and
 # $BASE_DIR; no behavior change — the functions are verbatim moves.
 if [[ -f "$BASE_DIR/mqlaunch/lib/diagnostics.sh" ]]; then
