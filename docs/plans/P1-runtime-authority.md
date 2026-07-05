@@ -152,11 +152,11 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 
 **Objective:** Document the actual runtime as it exists now.
 
-* [ ] Create `docs/AUTHORITY_MAP.md`
-* [ ] Mark each runtime-relevant path as `LIVE`, `COMPAT`, `DEPRECATED`, or `TEST-ONLY`
+* [x] Create `docs/AUTHORITY_MAP.md`
+* [x] Mark each runtime-relevant path as `LIVE`, `COMPAT`, `DEPRECATED`, or `TEST-ONLY`
 * [ ] Update repo documentation to reflect actual runtime authority
-* [ ] Document performance as an explicit compat exception
-* [ ] Declare the current dashboard authority
+* [x] Document performance as an explicit compat exception
+* [x] Declare the current dashboard authority
 
 #### Exit criteria
 
