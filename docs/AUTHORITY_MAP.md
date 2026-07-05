@@ -70,6 +70,7 @@ Reached through other live paths:
 | --- | --- |
 | `mqlaunch/lib/recommendations/*` | `terminal/menus/recommendations-menu.sh` |
 | `mqlaunch/lib/mqobsidian/*` | `terminal/menus/mq-obsidian-menu.sh` |
+| `mqlaunch/lib/network.sh` | `terminal/launchers/mqlaunch.sh` (sourced) — network concern de-layered out of the monolith (Step 11a) |
 
 ## Bridges
 
