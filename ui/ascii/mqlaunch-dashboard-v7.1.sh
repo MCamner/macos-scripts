@@ -125,28 +125,6 @@ mq_git_branch() {
   git branch --show-current 2>/dev/null
 }
 
-# Handles mq git dirty state.
-mq_git_dirty_state() {
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
-  if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
-    printf '%s' "DIRTY"
-  else
-    printf '%s' "CLEAN"
-  fi
-}
-
-# Handles mq git counts.
-mq_git_counts() {
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
-
-  local staged unstaged untracked
-  staged="$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')"
-  unstaged="$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')"
-  untracked="$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')"
-
-  printf '%s|%s|%s' "$staged" "$unstaged" "$untracked"
-}
-
 # Handles mq git ahead behind.
 mq_git_ahead_behind() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
@@ -304,26 +282,6 @@ mq_bar() {
   done
 
   printf '%s %s%s%s %s' "$label" "$color" "$bar" "$C_RESET" "$value"
-}
-
-# Handles mq dirty severity.
-mq_dirty_severity() {
-  local staged="${1:-0}"
-  local unstaged="${2:-0}"
-  local untracked="${3:-0}"
-  local total=$(( staged + unstaged + untracked ))
-
-  if (( total == 0 )); then
-    printf '%s' "STABLE"
-  elif (( total <= 2 )); then
-    printf '%s' "LOW"
-  elif (( total <= 6 )); then
-    printf '%s' "MEDIUM"
-  elif (( total <= 12 )); then
-    printf '%s' "HIGH"
-  else
-    printf '%s' "CRITICAL"
-  fi
 }
 
 # Handles mq dirty severity color.
