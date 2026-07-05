@@ -18,6 +18,7 @@ CONCERNS=(
   "mqlaunch/lib/fzf-pickers.sh : fzf_git_log fzf_git_branch fzf_kill_process fzf_kill_port fzf_run_snippet fzf_recent_files"
   "mqlaunch/lib/diagnostics.sh : get_repo_version show_version_info run_self_check run_debug_bundle show_release_notes system_check"
   "mqlaunch/lib/git-menus.sh : open_git_menu open_release_menu"
+  "mqlaunch/lib/repo-picker.sh : run_github_repo_picker"
 )
 
 total=0
