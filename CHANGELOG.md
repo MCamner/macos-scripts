@@ -20,6 +20,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* Monolith de-layering (Step 11a): the network concern (status, diagnostics,
+  and connectivity actions — 17 functions) moved verbatim out of
+  `terminal/launchers/mqlaunch.sh` into `mqlaunch/lib/network.sh`, sourced back
+  into the launcher's scope. No behavior change; the launcher drops ~200 lines
+  and the concern now has a named owner. Guarded by
+  `tests/network-lib-delayer-smoke.sh`, which fails if a network function is
+  redefined in the monolith or the lib source is dropped.
 * `semantic-memory-maintainer` renamed to `vector-store-maintainer` to avoid
   routing collision with mq-mcp's skill of the same name.
 * `command-template-library` skill moved to mq-ums, where the contracts and
