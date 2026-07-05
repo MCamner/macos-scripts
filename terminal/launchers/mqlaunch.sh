@@ -82,7 +82,16 @@ MQ_SCRIPT="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 BACKUP_DIR="$BASE_DIR/backups"
 BIN_LINK="$HOME/bin/mqlaunch"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
-DASHBOARD_V71="$BASE_DIR/ui/ascii/mqlaunch-dashboard-v7.1.sh"
+
+# print_header is owned by mq-ui.sh (single header authority). Opt the main loop
+# into the dashboard-v7.1 header via mq-ui's cached path — this is a plain
+# (non-exported) shell var so it drives this launcher's own print_header calls
+# without forcing the dashboard header onto child subprocesses, which set the
+# flag themselves where they want it. Cache freshness is bounded by
+# MQ_DASHBOARD_CACHE_TTL (default 5s) and invalidated by mutating flows
+# (open_git_menu / open_release_menu). Set MQ_DASHBOARD_CACHE_TTL=0 for an
+# uncached, per-screen header while investigating.
+MQ_USE_DASHBOARD_HEADER=1
 
 TERMINAL_GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 TERMINAL_GUIDE_URL="https://mcamner.github.io/macos-scripts/"
@@ -220,20 +229,10 @@ if [[ -f "$BASE_DIR/terminal/menus/recommendations-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/recommendations-menu.sh"
 fi
 
-# Prints header.
-print_header() {
-  clear
-  if [[ -f "$DASHBOARD_V71" ]]; then
-    bash "$DASHBOARD_V71" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE"
-  else
-    echo "$APP_TITLE — $APP_SUBTITLE"
-    printf '%s
-' "----------------------------------------------------------------------------------------"
-  fi
-  echo
-}
-
 # --- Shared UI ------------------------------------------------
+# print_header is provided by mq-ui.sh (the single header authority); the
+# launcher no longer overrides it. With MQ_USE_DASHBOARD_HEADER=1 (set above)
+# mq-ui renders the cached dashboard-v7.1 header for the main loop.
 open_app() {
   local app_name="$1"
   open -a "$app_name" >/dev/null 2>&1 || {
