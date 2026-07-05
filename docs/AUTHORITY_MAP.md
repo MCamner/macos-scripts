@@ -60,7 +60,7 @@ Reached through other live paths:
 
 | Path | Role | Authority |
 | --- | --- | --- |
-| `ui/terminal-ui/mq-ui.sh` | Shared UI library (rendering, padding, git-status snapshot) | **UI authority** (26 live references) |
+| `ui/terminal-ui/mq-ui.sh` | Shared UI library (rendering, padding, git-status snapshot, `print_header`) | **UI authority** (26 live references) — sole owner of `print_header`; the launcher no longer overrides it (Step 11a) |
 | `ui/ascii/mqlaunch-dashboard-v7.1.sh` | Branded dashboard | **Dashboard authority** |
 | `ui/dashboards/mq-dashboard.sh` | Status dashboard used by the tools menu / theme manager | secondary, keep until folded into the authority |
 

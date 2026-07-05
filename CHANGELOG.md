@@ -33,6 +33,18 @@ All notable changes to this project will be documented in this file.
   drops ~720 lines and each concern now has a named owner. Guarded by
   `tests/monolith-delayer-smoke.sh`, a table-driven check that fails if any
   extracted function is redefined in the monolith or a lib source is dropped.
+* `print_header` now has a single owner: `ui/terminal-ui/mq-ui.sh`. The launcher
+  no longer overrides it; instead it opts the main loop into the dashboard-v7.1
+  header via `MQ_USE_DASHBOARD_HEADER=1`. **Behavior change:** the main-loop
+  header now renders through mq-ui's *cached* dashboard path (bounded by
+  `MQ_DASHBOARD_CACHE_TTL`, default 5s, and invalidated by the git/release
+  flows) instead of re-forking the dashboard script uncached on every screen.
+  This removes a hidden fork in render behavior and aligns the main loop with
+  the cache and invalidation model the rest of the runtime already used; it also
+  avoids a dashboard re-fork per screen render. Escape hatch: set
+  `MQ_DASHBOARD_CACHE_TTL=0` for an uncached, per-screen header while
+  investigating. The dead `DASHBOARD_V71` launcher variable (only the removed
+  override used it) is gone.
 * `semantic-memory-maintainer` renamed to `vector-store-maintainer` to avoid
   routing collision with mq-mcp's skill of the same name.
 * `command-template-library` skill moved to mq-ums, where the contracts and
