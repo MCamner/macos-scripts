@@ -15,6 +15,7 @@ echo
 echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/headless-smoke.sh"
 "$PROJECT_ROOT/tests/git-status-contract-smoke.sh"
+"$PROJECT_ROOT/tests/runtime-authority-freeze-smoke.sh"
 "$PROJECT_ROOT/tests/mq-stack-contract-smoke.sh"
 "$PROJECT_ROOT/tests/gitmerge-safe-smoke.sh"
 "$PROJECT_ROOT/tests/dashboard-header-cache-smoke.sh"
