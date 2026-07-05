@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
   and marked that roadmap deliverable done.
 * Added a smoke test that locks the MQ Obsidian menu out of memory promotion or
   rejection routes, preserving the review-gated ownership boundary.
+* Verified the review command delegation boundary through
+  `tests/mq-agent-routing-smoke.sh` and marked the roadmap item done.
 * Monolith de-layering (Step 11a): five concerns moved verbatim out of
   `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
   the launcher's scope — the network concern (status/diagnostics/connectivity,

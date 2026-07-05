@@ -80,7 +80,7 @@ Goal: make the Obsidian SSOT plan explicit and buildable without expanding
 | Done | Existing MQ Obsidian menu kept as read-only/presentation-first surface |
 | Done | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
 | Done | Add/verify tests that MQ Obsidian menu actions do not promote memory |
-| Todo | Add/verify tests that review commands delegate through `mq-agent` |
+| Done | Add/verify tests that review commands delegate through `mq-agent` |
 | Todo | Add `mqlaunch obsidian status` or documented alias for current menu/status |
 
 Expected commands:
@@ -98,6 +98,10 @@ Definition of done:
 mqlaunch can show Obsidian readiness and open canonical views,
 but all scoring, promotion, schema, and cognition logic is owned elsewhere.
 ```
+
+Boundary test: `tests/mq-agent-routing-smoke.sh` verifies that review,
+risk-review, architecture, repo-health, and mcp-status routes stay delegated
+through `mq-agent`.
 
 ## 31-60 Days: Inbox Ranking And Promotion Loop
 
