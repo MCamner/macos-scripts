@@ -171,7 +171,8 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 **Objective:** Stop the repo from getting worse while migration is in progress.
 
 * [ ] Freeze new feature work in `terminal/mqlaunch-v1/`
-* [ ] Freeze new direct dependencies from live menus into v1
+* [x] Freeze new direct dependencies from live menus into v1
+      (CI-enforced by `scripts/check-runtime-authority.sh`)
 * [ ] Freeze new duplicated dashboard/UI logic
 * [ ] Add comments or docs to every bridge explaining why it still exists
 * [ ] Define one accepted location per concern for future fixes

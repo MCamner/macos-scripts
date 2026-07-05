@@ -98,6 +98,16 @@ them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 * `terminal/bridges/tools-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/menus/mq-performance-menu.sh:26` → **sources** `terminal/mqlaunch-v1/commands/performance.sh` (the only direct live-menu → v1 `source`)
 
+### Enforcement (Step 10 freeze)
+
+`scripts/check-runtime-authority.sh` is the freeze gate. It scans live runtime
+shell (`terminal/`, `ui/`, `mqlaunch/`, excluding the v1 tree) and fails if any
+file **not** on the compat allowlist references `mqlaunch-v1`. The allowlist is
+exactly the four edges above; keep it in sync with this file. The check runs in
+CI (Quality → *Runtime authority freeze*) and locally via
+`tests/runtime-authority-freeze-smoke.sh`. Shrinking the allowlist is a Step 12
+win; growing it must be a conscious, reviewed decision.
+
 ## Dead — DEPRECATED
 
 Present in the tree, no live reference found. Safe-to-delete candidates:

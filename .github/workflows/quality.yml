@@ -20,6 +20,9 @@ jobs:
       - name: Skills are consistent (frontmatter, cross-refs, paths, SKILLS.md)
         run: ./scripts/check-skills.sh
 
+      - name: Runtime authority freeze (no new live -> mqlaunch-v1 edges)
+        run: ./scripts/check-runtime-authority.sh
+
       - name: bash -n on install.sh
         run: bash -n install.sh
 
