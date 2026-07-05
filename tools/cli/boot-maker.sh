@@ -29,10 +29,26 @@ if [ "$ARCH" == "arm64" ]; then
 
     case $m_choice in
         1)
-            echo -e "\n${CYAN}[SYSTEM] Launching official Asahi Linux installer...${NC}"
-            echo "Please follow the on-screen instructions carefully."
-            sleep 2
-            curl -L https://alx.sh | sh
+            echo -e "\n${CYAN}[SYSTEM] Fetching official Asahi Linux installer...${NC}"
+            # Download first, then run — never pipe a remote URL straight into a
+            # shell. This lets the user inspect (and lets curl failures abort)
+            # before any downloaded code executes.
+            asahi_installer="$(mktemp -t asahi-installer.XXXXXX)"
+            trap 'rm -f "$asahi_installer"' EXIT
+            if ! curl -fSL https://alx.sh -o "$asahi_installer"; then
+                echo -e "${RED}[ERROR] Download failed. No changes made.${NC}"
+                exit 1
+            fi
+            echo -e "${YELLOW}Downloaded to: $asahi_installer${NC}"
+            echo -e "${YELLOW}Review it (r), run it (y), or abort (any other key)?${NC}"
+            read -p "Selection [r/y/N]: " a_choice
+            case "$a_choice" in
+                r|R) ${PAGER:-less} "$asahi_installer"
+                     read -p "Run it now? [y/N]: " a_confirm
+                     [[ "$a_confirm" =~ ^[yY]$ ]] && sh "$asahi_installer" ;;
+                y|Y) sh "$asahi_installer" ;;
+                *)   echo -e "${YELLOW}Aborted. No changes made.${NC}" ;;
+            esac
             exit
             ;;
         2)
