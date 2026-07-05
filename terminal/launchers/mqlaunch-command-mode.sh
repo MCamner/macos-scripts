@@ -106,6 +106,7 @@ Quick commands:
   mqlaunch obsidian status
   mqlaunch obsidian inbox
   mqlaunch obsidian views
+  mqlaunch obsidian promote --dry-run
   mqlaunch mqobsidian
   mqlaunch agent doctor
   mqlaunch agent score .
@@ -731,9 +732,18 @@ dispatch_cli_command() {
             return 1
           fi
           ;;
+        promote)
+          shift 2 || true
+          if declare -f run_agent_command >/dev/null; then
+            run_agent_command obsidian-promote "$@"
+          else
+            echo "ERROR: mq-agent bridge not loaded" >&2
+            return 1
+          fi
+          ;;
         *)
           echo "ERROR: unknown mqobsidian command: $sub" >&2
-          echo "usage: mqlaunch obsidian [status|inbox|views]" >&2
+          echo "usage: mqlaunch obsidian [status|inbox|views|promote]" >&2
           return 1
           ;;
       esac

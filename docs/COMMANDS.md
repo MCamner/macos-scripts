@@ -413,12 +413,16 @@ mqlaunch obsidian                 # open the MQ Obsidian menu
 mqlaunch obsidian status          # read-only consumer status / doctor
 mqlaunch obsidian inbox           # list memory inbox files; no promotion
 mqlaunch obsidian views           # open manifest-defined views
+mqlaunch obsidian promote --dry-run    # delegate promotion preview to mq-agent
+mqlaunch obsidian promote --confirm    # delegate confirmed promotion to mq-agent
 ```
 
 `mqlaunch obsidian status` is the direct alias for the existing read-only
 mqobsidian doctor/status surface. `inbox` and `views` stay presentation-only:
 they list or open exported vault surfaces and do not score, promote, reject, or
-write durable memory.
+write durable memory. `promote` is a thin delegation surface to
+`mq-agent obsidian promote`; mqlaunch does not inspect, score, approve, or write
+the memory item itself.
 
 ### HAL Repo Status
 

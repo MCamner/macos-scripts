@@ -141,8 +141,8 @@ promotion_score =
 | Todo | `mq-agent obsidian inbox score` |
 | Todo | `mq-agent obsidian promote --dry-run` |
 | Todo | `mq-agent obsidian promote --confirm` |
-| Todo | `mqlaunch obsidian inbox` delegates to `mq-agent` or read-only export |
-| Todo | `mqlaunch obsidian promote` stays a thin confirm/delegate surface |
+| Done | `mqlaunch obsidian inbox` delegates to `mq-agent` or read-only export |
+| Done | `mqlaunch obsidian promote` stays a thin confirm/delegate surface |
 | Todo | Release gate detects schema drift before release |
 
 Threshold guidance:

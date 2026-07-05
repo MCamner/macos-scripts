@@ -454,6 +454,10 @@ run_agent_command() {
       shift || true
       _run_agent memory resolve-supersede "$@"
       ;;
+    obsidian-promote)
+      shift || true
+      _run_agent obsidian promote "$@"
+      ;;
     mcp-tools)
       shift || true
       _run_agent mcp tools "$@"

@@ -31,6 +31,9 @@ All notable changes to this project will be documented in this file.
   `tests/mq-agent-routing-smoke.sh` and marked the roadmap item done.
 * Added direct `mqlaunch obsidian status`, `mqlaunch obsidian inbox`, and
   `mqlaunch obsidian views` routes for read-only mqobsidian status/navigation.
+* Added `mqlaunch obsidian promote` as a thin delegate to
+  `mq-agent obsidian promote`, keeping scoring and memory writes out of
+  mqlaunch.
 * Monolith de-layering (Step 11a): five concerns moved verbatim out of
   `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
   the launcher's scope — the network concern (status/diagnostics/connectivity,
