@@ -38,7 +38,25 @@ This project is built for macOS with `zsh`/`bash`. The doctor command checks
 the local tools used by the workflows, including `git`, `brew`, `node`,
 `python`, and `jq`.
 
-### Option 1 — Install (recommended)
+### Option 1 — Inspect, then install (recommended)
+
+Piping a remote script straight into `bash` runs code you have not seen.
+Download it, read it, then run it:
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
+  -o install.sh
+less install.sh          # review what it does
+bash install.sh --dry-run   # preview changes without modifying your system
+bash install.sh
+```
+
+### Option 2 — One-liner (convenience)
+
+Only if you already trust the source. Note: fetching the script and any
+checksum from the same host gives no real integrity guarantee against a
+compromised source — prefer Option 1 or the clone below.
 
 ```bash
 curl -fsSL \
@@ -46,15 +64,7 @@ curl -fsSL \
   | bash
 ```
 
-Preview install changes without modifying your system:
-
-```bash
-curl -fsSL \
-  https://raw.githubusercontent.com/MCamner/macos-scripts/main/install.sh \
-  | bash -- --dry-run
-```
-
-### Option 2 — Clone
+### Option 3 — Clone
 
 ```bash
 git clone https://github.com/MCamner/macos-scripts.git
