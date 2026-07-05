@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mq_debug` — a diagnostic logger in `mq-ui.sh`, silent unless `MQ_DEBUG` is
+  set, writing to stderr and always returning 0. Use it as `… || mq_debug "why"`
+  to make an unexpected best-effort failure observable instead of swallowing it
+  with `2>/dev/null || true`. Adopted at the git-screen `cd` guard and the
+  Obsidian menu's optional-lib loader; broader adoption is incremental.
 * `scripts/check-skills.sh` — validates skill frontmatter, cross-references,
   referenced paths, and the generated SKILLS.md table; wired into the Quality
   workflow. `--fix` regenerates the table.

@@ -457,6 +457,21 @@ print_main_footer() {
   border
 }
 
+# Diagnostic logger for observability. Silent unless MQ_DEBUG is set to a
+# non-empty, non-"0"/"false"/"no"/"off" value. Writes to stderr so it never
+# corrupts rendered stdout, and always returns 0 — so it is safe as an
+# `... || mq_debug "why"` tail on a best-effort command without changing that
+# command's (non-fatal) control flow. Use it instead of swallowing an
+# *unexpected* failure with `2>/dev/null || true`. Expected-empty results
+# (no upstream, no tags) should stay silent.
+mq_debug() {
+  case "${MQ_DEBUG:-}" in
+    ''|0|false|no|off) return 0 ;;
+  esac
+  printf '%b[mq-debug %s]%b %s\n' "${C_DIM:-}" "$(date '+%H:%M:%S')" "${C_RESET:-}" "$*" >&2
+  return 0
+}
+
 # Handles ui ok.
 ui_ok() {
   printf "%b%s%b\n" "$C_OK" "$1" "$C_RESET"

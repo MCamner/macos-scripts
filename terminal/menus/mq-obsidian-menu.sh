@@ -26,8 +26,13 @@ fi
 # the menu degrades gracefully if it is absent.
 : "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 for _mqobs_lib in errors resolve manifest open; do
-  [[ -f "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh" ]] \
-    && source "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
+  if [[ -f "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh" ]]; then
+    source "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
+  elif command -v mq_debug >/dev/null 2>&1; then
+    # Optional lib absent — degrade gracefully, but make it observable so a
+    # missing Obsidian feature is diagnosable under MQ_DEBUG instead of silent.
+    mq_debug "mq-obsidian-menu: lib not found: mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
+  fi
 done
 unset _mqobs_lib
 

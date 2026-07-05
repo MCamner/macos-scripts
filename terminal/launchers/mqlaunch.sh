@@ -336,7 +336,7 @@ run_git_screen() {
   empty_row
 
   (
-    cd "$BASE_DIR" 2>/dev/null || exit 1
+    cd "$BASE_DIR" 2>/dev/null || { mq_debug "run_git_screen: cannot cd to $BASE_DIR"; exit 1; }
     eval "$cmd"
   )
 
