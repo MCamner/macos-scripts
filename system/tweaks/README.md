@@ -20,7 +20,7 @@ This tool lets you:
 
 ## 📁 Location
 
-```
+```text
 system/tweaks/macos-tweaks.sh
 ```
 
@@ -30,13 +30,13 @@ system/tweaks/macos-tweaks.sh
 
 Make sure the script is executable:
 
-```
+```bash
 chmod +x system/tweaks/macos-tweaks.sh
 ```
 
 Run interactive menu:
 
-```
+```bash
 ./system/tweaks/macos-tweaks.sh menu
 ```
 
@@ -62,7 +62,7 @@ Run interactive menu:
 
 Always start with:
 
-```
+```bash
 ./system/tweaks/macos-tweaks.sh all --dry-run
 ```
 
@@ -119,19 +119,19 @@ Backup is automatically created before applying tweaks.
 
 Manual backup:
 
-```
+```bash
 ./system/tweaks/macos-tweaks.sh backup
 ```
 
 Revert to latest:
 
-```
+```bash
 ./system/tweaks/macos-tweaks.sh revert-latest
 ```
 
 Backups are stored in:
 
-```
+```text
 ~/.macos-tweaks-backup/
 ```
 
@@ -141,7 +141,7 @@ Backups are stored in:
 
 View current system configuration:
 
-```
+```bash
 ./system/tweaks/macos-tweaks.sh status
 ```
 

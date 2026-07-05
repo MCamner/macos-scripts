@@ -52,7 +52,7 @@ Tillgängliga UI-funktioner (definierade i `mq-ui.sh`):
 
 Prompten består av tre delar i sekvens — utanför boxen, efter `print_footer`:
 
-```
+```text
 ────────────────────────────────────────────────────────────────────────────────
 <menynamn> >
 ────────────────────────────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ Justera med blanksteg — aldrig med tab.
 
 Så här ser det ut i terminalen efter `print_footer`:
 
-```
+```text
 ────────────────────────────────────────────────────────────────────────────────
 system >
 ────────────────────────────────────────────────────────────────────────────────

@@ -4,21 +4,21 @@ Launcher entrypoints for the `mqlaunch` command surface.
 
 ## Current launcher
 
-- `mqlaunch.sh` — the primary launcher behind `bin/mqlaunch`
+* `mqlaunch.sh` — the primary launcher behind `bin/mqlaunch`
 
 It supports both:
 
-- menu mode via `mqlaunch`
-- command mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
+* menu mode via `mqlaunch`
+* command mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
 
 ## What lives here
 
-- main launcher flow and entry bootstrap
-- command routing and aliases
-- dashboard / header integration
-- shared actions used by menus
-- demo mode
-- theme menu integration
+* main launcher flow and entry bootstrap
+* command routing and aliases
+* dashboard / header integration
+* shared actions used by menus
+* demo mode
+* theme menu integration
 
 ## Common commands
 
@@ -50,9 +50,9 @@ Use `mqlaunch theme` to open the menu, `mqlaunch theme-macos` to apply the macOS
 
 Use the launcher in three ways:
 
-- start in menu mode with `mqlaunch`
-- jump straight into a task with direct commands like `mqlaunch system check` or `mqlaunch release notes`
-- showcase the command surface with `mqlaunch demo`
+* start in menu mode with `mqlaunch`
+* jump straight into a task with direct commands like `mqlaunch system check` or `mqlaunch release notes`
+* showcase the command surface with `mqlaunch demo`
 
 ## Run locally
 
@@ -70,8 +70,8 @@ Keep `mqlaunch` as one coherent entrypoint: easy to navigate, easy to script, an
 
 Current routing is intentionally mixed:
 
-- `dev` and `tools` are primary in the main launcher flow
-- `performance` is still user-facing as a primary command, but its implementation currently lives behind the compatibility bridge
+* `dev` and `tools` are primary in the main launcher flow
+* `performance` is still user-facing as a primary command, but its implementation currently lives behind the compatibility bridge
 
 This is a deliberate choice.
 

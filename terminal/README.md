@@ -12,11 +12,11 @@ The `terminal/` section is where the project becomes a usable terminal environme
 
 It is designed for:
 
-- launcher-driven workflows
-- direct command mode
-- menu-based terminal tools
-- reusable terminal UI patterns
-- modular expansion over time
+* launcher-driven workflows
+* direct command mode
+* menu-based terminal tools
+* reusable terminal UI patterns
+* modular expansion over time
 
 ---
 
@@ -36,8 +36,8 @@ terminal/
 
 The current `mqlaunch` surface is built around one launcher with two modes:
 
-- menu mode via `mqlaunch`
-- direct mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
+* menu mode via `mqlaunch`
+* direct mode via commands such as `mqlaunch system check`, `mqlaunch release notes`, and `mqlaunch demo`
 
 Primary commands to know:
 

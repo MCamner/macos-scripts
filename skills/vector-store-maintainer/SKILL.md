@@ -15,34 +15,34 @@ vector stores).
 
 Use this skill when the user asks to:
 
-- upload, refresh, inspect, or clean OpenAI vector stores
-- decide what files should be included in semantic repository memory
-- create or update a knowledge pack
-- remove stale or duplicate vector-store files
-- compare local repo content against indexed OpenAI Storage files
-- debug `file_search`, `mqlaunch ask`, `mqlaunch srm`, or repo-memory behavior
-- document vector store IDs, upload scripts, or memory policy
+* upload, refresh, inspect, or clean OpenAI vector stores
+* decide what files should be included in semantic repository memory
+* create or update a knowledge pack
+* remove stale or duplicate vector-store files
+* compare local repo content against indexed OpenAI Storage files
+* debug `file_search`, `mqlaunch ask`, `mqlaunch srm`, or repo-memory behavior
+* document vector store IDs, upload scripts, or memory policy
 
 ## When not to use
 
-- mq-mcp semantic repo packs or its semantic-index docs — use mq-mcp's `semantic-memory-maintainer`
-- Docs content changes unrelated to memory — use `docs-maintainer`
-- mqlaunch command routing for `ask`/`srm` — use `mqlaunch-command-surface`
+* mq-mcp semantic repo packs or its semantic-index docs — use mq-mcp's `semantic-memory-maintainer`
+* Docs content changes unrelated to memory — use `docs-maintainer`
+* mqlaunch command routing for `ask`/`srm` — use `mqlaunch-command-surface`
 
 ## Evals
 
 ### Should trigger
 
-- "refresh the vector store for this repo"
-- "what files should go into the knowledge pack?"
-- "file_search isn't finding the new docs"
-- "clean stale files out of OpenAI Storage"
+* "refresh the vector store for this repo"
+* "what files should go into the knowledge pack?"
+* "file_search isn't finding the new docs"
+* "clean stale files out of OpenAI Storage"
 
 ### Should not trigger
 
-- "rebuild the mq-mcp semantic memory pack" → mq-mcp's `semantic-memory-maintainer`
-- "update the README" → use `docs-maintainer`
-- "add an mqlaunch ask alias" → use `mqlaunch-command-surface`
+* "rebuild the mq-mcp semantic memory pack" → mq-mcp's `semantic-memory-maintainer`
+* "update the README" → use `docs-maintainer`
+* "add an mqlaunch ask alias" → use `mqlaunch-command-surface`
 
 ## Core rule
 
@@ -69,20 +69,20 @@ Before deleting files from OpenAI Storage or a vector store, identify the target
 
 Good candidates:
 
-- `README.md`, `CHANGELOG.md`, `ROADMAP.md`
-- architecture, command, release, and troubleshooting docs
-- `SKILL.md` files and small reference markdown files
-- CLI entrypoints and important scripts when they explain behavior
-- tests that encode important contracts
-- generated manifests such as `repo-tree.md` or `vector-store-manifest.md`
+* `README.md`, `CHANGELOG.md`, `ROADMAP.md`
+* architecture, command, release, and troubleshooting docs
+* `SKILL.md` files and small reference markdown files
+* CLI entrypoints and important scripts when they explain behavior
+* tests that encode important contracts
+* generated manifests such as `repo-tree.md` or `vector-store-manifest.md`
 
 Usually exclude:
 
-- secrets and `.env` values
-- screenshots, images, archives, binaries
-- `.DS_Store`, caches, build outputs, virtualenvs
-- generated HTML when a markdown source exists
-- duplicate backups unless explicitly needed for history
+* secrets and `.env` values
+* screenshots, images, archives, binaries
+* `.DS_Store`, caches, build outputs, virtualenvs
+* generated HTML when a markdown source exists
+* duplicate backups unless explicitly needed for history
 
 ## Maintenance workflow
 
@@ -99,9 +99,8 @@ Usually exclude:
 
 Report:
 
-- target vector store name and ID
-- files uploaded, attached, skipped, or removed
-- indexing status
-- verification query result
-- any uncertainty about stale duplicates or ownership
-
+* target vector store name and ID
+* files uploaded, attached, skipped, or removed
+* indexing status
+* verification query result
+* any uncertainty about stale duplicates or ownership

@@ -8,11 +8,11 @@ Its job is to make the start of a work session feel fast and intentional by open
 
 By default, `mqlogin.sh`:
 
-- creates a timestamped log file
-- detects the current `macos-scripts` project root
-- opens the project folder
-- opens Visual Studio Code if installed
-- opens Terminal and starts `mqlaunch`
+* creates a timestamped log file
+* detects the current `macos-scripts` project root
+* opens the project folder
+* opens Visual Studio Code if installed
+* opens Terminal and starts `mqlaunch`
 
 If `mqlaunch` is not available, it falls back to opening a terminal session in the project root and showing `git status`.
 
@@ -56,9 +56,9 @@ mqlaunch login check
 
 `mqlogin.sh` supports three main modes:
 
-- `menu` = launch the full `mqlaunch` menu
-- `about` = show `mqlaunch about`, then hand off to the full menu
-- `check` = run `mqlaunch check`, then hand off to the full menu
+* `menu` = launch the full `mqlaunch` menu
+* `about` = show `mqlaunch about`, then hand off to the full menu
+* `check` = run `mqlaunch check`, then hand off to the full menu
 
 Default mode:
 
@@ -107,9 +107,9 @@ Each run creates a timestamped log file so you can inspect how the session boot 
 
 `mqlogin` is designed as a clean entry point into the same workflow system as `mqlaunch`:
 
-- launch context first
-- tools second
-- minimal friction
-- graceful fallback if parts are missing
+* launch context first
+* tools second
+* minimal friction
+* graceful fallback if parts are missing
 
 It works well as a manual “start my workspace” command, and it can also be used as the basis for a macOS login item or LaunchAgent later.

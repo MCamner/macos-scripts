@@ -18,12 +18,12 @@ tools/scripts/ollama-document-review.py terminal/menus/ --model qwen3:4b
 
 ## What it does
 
-- Reads selected `.sh`, `.bash`, `.zsh`, and `.py` files
-- Sends content to local Ollama
-- Prints up to five high-signal documentation/comment suggestions per file
-- Focuses on purpose, side effects, exit behavior, and smoke-test contracts
-- **Does not modify files**
-- **Does not commit changes**
+* Reads selected `.sh`, `.bash`, `.zsh`, and `.py` files
+* Sends content to local Ollama
+* Prints up to five high-signal documentation/comment suggestions per file
+* Focuses on purpose, side effects, exit behavior, and smoke-test contracts
+* **Does not modify files**
+* **Does not commit changes**
 
 ## Default model
 

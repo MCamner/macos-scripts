@@ -4,8 +4,8 @@ System utilities, diagnostics, and workflow helpers for **macos-scripts**.
 
 This directory contains **active runtime tools** used by both:
 
-- direct CLI usage
-- mqlaunch menus and workflows
+* direct CLI usage
+* mqlaunch menus and workflows
 
 ---
 
@@ -13,16 +13,16 @@ This directory contains **active runtime tools** used by both:
 
 Provide fast, reliable tools for:
 
-- system diagnostics
-- observability
-- troubleshooting
-- workflow support
+* system diagnostics
+* observability
+* troubleshooting
+* workflow support
 
 These scripts are designed to be:
 
-- safe to run
-- useful standalone
-- easy to integrate into mqlaunch
+* safe to run
+* useful standalone
+* easy to integrate into mqlaunch
 
 ---
 
@@ -80,9 +80,9 @@ tools/scripts/
 
 ### Legend
 
-- 🟢 **Stable** — safe to use, core functionality
-- 🟡 **Beta** — works, but evolving
-- 🔴 **Experimental** — unstable or exploratory
+* 🟢 **Stable** — safe to use, core functionality
+* 🟡 **Beta** — works, but evolving
+* 🔴 **Experimental** — unstable or exploratory
 
 ---
 
@@ -152,9 +152,9 @@ Best first step.
 
 Use it to:
 
-- verify your environment
-- detect missing tools
-- check repo readiness
+* verify your environment
+* detect missing tools
+* check repo readiness
 
 ```bash
 bash tools/scripts/doctor.sh
@@ -168,8 +168,8 @@ Best overview tool.
 
 Use it to:
 
-- get a live system snapshot
-- review CPU, memory, disk, network, battery, and git status
+* get a live system snapshot
+* review CPU, memory, disk, network, battery, and git status
 
 ```bash
 bash tools/scripts/mission-control.sh
@@ -183,8 +183,8 @@ Best for connectivity checks.
 
 Use it to:
 
-- inspect network basics
-- troubleshoot IP, gateway, and connectivity issues
+* inspect network basics
+* troubleshoot IP, gateway, and connectivity issues
 
 ```bash
 bash tools/scripts/network-ghost.sh
@@ -198,8 +198,8 @@ Best before sharing or committing.
 
 Use it to:
 
-- detect sensitive files or risky config patterns
-- reduce the chance of leaking secrets
+* detect sensitive files or risky config patterns
+* reduce the chance of leaking secrets
 
 ```bash
 bash tools/scripts/vault-scan.sh
@@ -213,8 +213,8 @@ Best when something is broken.
 
 Use it to:
 
-- capture a troubleshooting snapshot
-- gather useful system and environment context
+* capture a troubleshooting snapshot
+* gather useful system and environment context
 
 ---
 
@@ -224,9 +224,9 @@ Use it to:
 
 Checks environment readiness.
 
-- validates tools (git, brew, etc.)
-- checks repo state
-- highlights issues with fixes
+* validates tools (git, brew, etc.)
+* checks repo state
+* highlights issues with fixes
 
 ---
 
@@ -234,11 +234,11 @@ Checks environment readiness.
 
 Live system overview.
 
-- CPU / memory / disk
-- network / IP
-- battery
-- git status
-- top processes
+* CPU / memory / disk
+* network / IP
+* battery
+* git status
+* top processes
 
 ---
 
@@ -246,8 +246,8 @@ Live system overview.
 
 Process and system monitoring.
 
-- tracks resource usage
-- helps identify bottlenecks
+* tracks resource usage
+* helps identify bottlenecks
 
 ---
 
@@ -255,8 +255,8 @@ Process and system monitoring.
 
 Network diagnostics tool.
 
-- IP / gateway
-- connectivity insights
+* IP / gateway
+* connectivity insights
 
 ---
 
@@ -264,8 +264,8 @@ Network diagnostics tool.
 
 Security-oriented scan.
 
-- detects sensitive files / config issues
-- useful before commits or sharing
+* detects sensitive files / config issues
+* useful before commits or sharing
 
 ---
 
@@ -273,8 +273,8 @@ Security-oriented scan.
 
 Creates a snapshot for troubleshooting.
 
-- system state
-- logs / environment info
+* system state
+* logs / environment info
 
 ---
 
@@ -282,8 +282,8 @@ Creates a snapshot for troubleshooting.
 
 Scripts prefixed with `test-` are used for:
 
-- validating mqlaunch flows
-- smoke testing tools
+* validating mqlaunch flows
+* smoke testing tools
 
 Run all tests:
 
@@ -295,14 +295,14 @@ bash tools/scripts/test-all.sh
 
 ## ⚠️ Notes
 
-- These scripts are part of the **active toolchain**
-- Deprecated or one-off scripts are moved to:
+* These scripts are part of the **active toolchain**
+* Deprecated or one-off scripts are moved to:
 
 ```text
 tools/legacy/
 ```
 
-- CLI-style tools live in:
+* CLI-style tools live in:
 
 ```text
 tools/cli/
@@ -312,10 +312,10 @@ tools/cli/
 
 ## 🔗 How it fits
 
-- `tools/scripts/` → core runtime tools
-- `tools/cli/` → user-facing commands
-- `terminal/` → mqlaunch UI
-- `automation/` → workflows
+* `tools/scripts/` → core runtime tools
+* `tools/cli/` → user-facing commands
+* `terminal/` → mqlaunch UI
+* `automation/` → workflows
 
 👉 Scripts power the system — mqlaunch exposes them.
 
@@ -323,10 +323,10 @@ tools/cli/
 
 ## ⚡ Philosophy
 
-- fast > complex
-- observable > opaque
-- reusable > one-off
-- terminal-first
+* fast > complex
+* observable > opaque
+* reusable > one-off
+* terminal-first
 
 ---
 
