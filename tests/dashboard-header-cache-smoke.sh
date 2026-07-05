@@ -64,10 +64,12 @@ pass "MQ_DASHBOARD_CACHE_TTL=0 disables caching"
 
 # 5. The mutating sub-menus invalidate the cache on the way back to the main
 # loop, so a commit/stash/tag is reflected immediately rather than after the TTL.
-LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"
-awk '/^open_git_menu\(\)/{f=1} f&&/mq_dashboard_cache_invalidate/{print; exit}' "$LAUNCHER" \
+# open_git_menu / open_release_menu were de-layered into mqlaunch/lib/git-menus.sh
+# (Step 11a); the contract is unchanged, only the file that owns it.
+GIT_MENUS="$ROOT/mqlaunch/lib/git-menus.sh"
+awk '/^open_git_menu\(\)/{f=1} f&&/mq_dashboard_cache_invalidate/{print; exit}' "$GIT_MENUS" \
   | grep -q mq_dashboard_cache_invalidate || fail "open_git_menu does not invalidate the cache on Back"
-awk '/^open_release_menu\(\)/{f=1} f&&/mq_dashboard_cache_invalidate/{print; exit}' "$LAUNCHER" \
+awk '/^open_release_menu\(\)/{f=1} f&&/mq_dashboard_cache_invalidate/{print; exit}' "$GIT_MENUS" \
   | grep -q mq_dashboard_cache_invalidate || fail "open_release_menu does not invalidate the cache on Back"
 pass "git and release menus invalidate the cache on return"
 

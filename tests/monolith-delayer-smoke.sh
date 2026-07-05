@@ -17,6 +17,7 @@ CONCERNS=(
   "mqlaunch/lib/network.sh : network_default_interface network_service_name network_interface_ip network_dns_server network_gateway network_ssid network_ping_ms network_value network_report copy_network_info open_network_settings ping_test show_dns_gateway run_network_pulse run_network_ghost run_network_quality show_network_info"
   "mqlaunch/lib/fzf-pickers.sh : fzf_git_log fzf_git_branch fzf_kill_process fzf_kill_port fzf_run_snippet fzf_recent_files"
   "mqlaunch/lib/diagnostics.sh : get_repo_version show_version_info run_self_check run_debug_bundle show_release_notes system_check"
+  "mqlaunch/lib/git-menus.sh : open_git_menu open_release_menu"
 )
 
 total=0

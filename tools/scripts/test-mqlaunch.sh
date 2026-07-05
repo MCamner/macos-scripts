@@ -61,7 +61,7 @@ assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
 assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
 assert_grep 'restart\|reload\|relaunch\).*restart_mqlaunch' "$LEGACY" "mqlaunch restart route exists"
 assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"
-assert_grep 'terminal/launchers/gitlaunch\.sh' "$LEGACY" "Git route uses gitlaunch"
+assert_grep 'terminal/launchers/gitlaunch\.sh' "$PROJECT_ROOT/mqlaunch/lib/git-menus.sh" "Git route uses gitlaunch"
 assert_grep 'RELEASE_SCRIPT="\$RELEASE_REPO/release\.sh"' "$RELEASE_MENU" "Release menu points at root release script"
 
 assert_grep 'render_main_menu_panel' "$PROJECT_ROOT/terminal/menus/mq-main-menu.sh" "Main menu panel exists"
