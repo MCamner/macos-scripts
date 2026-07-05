@@ -20,13 +20,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-* Monolith de-layering (Step 11a): the network concern (status, diagnostics,
-  and connectivity actions — 17 functions) and the fzf interactive pickers
-  (git log/branch, kill process/port, run snippet, recent files — 6 functions)
-  moved verbatim out of `terminal/launchers/mqlaunch.sh` into
-  `mqlaunch/lib/network.sh` and `mqlaunch/lib/fzf-pickers.sh`, sourced back into
-  the launcher's scope. No behavior change; the launcher drops ~310 lines and
-  each concern now has a named owner. Guarded by
+* Monolith de-layering (Step 11a): three concerns moved verbatim out of
+  `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
+  the launcher's scope — the network concern (status/diagnostics/connectivity,
+  17 functions → `mqlaunch/lib/network.sh`), the fzf interactive pickers
+  (git log/branch, kill process/port, run snippet, recent files, 6 functions →
+  `mqlaunch/lib/fzf-pickers.sh`), and diagnostics (version reporting,
+  self-check, debug bundle, release notes, 5 functions →
+  `mqlaunch/lib/diagnostics.sh`). No behavior change; the launcher drops ~430
+  lines and each concern now has a named owner. Guarded by
   `tests/monolith-delayer-smoke.sh`, a table-driven check that fails if any
   extracted function is redefined in the monolith or a lib source is dropped.
 * `semantic-memory-maintainer` renamed to `vector-store-maintainer` to avoid
