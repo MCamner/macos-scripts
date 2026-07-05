@@ -26,6 +26,15 @@ All notable changes to this project will be documented in this file.
   contract gate, and smoke tests. `docs-maintainer` no longer routes to the
   non-existent `repo-product-auditor`.
 
+### Fixed
+
+* The HAL command surface (`hal …` in the REPL and main menu) no longer runs
+  user input through `eval`. Requests are tokenized into argv with `read -ra`,
+  so `*`, `;`, `|`, and `$(…)` in a request stay literal instead of being
+  expanded or executed. Behavior change: a quoted multi-word argument
+  (`hal remember "buy milk"`) is now split on whitespace rather than kept
+  together by the shell — quote it at the HAL level if grouping is needed.
+
 ## [1.0.0] - 2026-06-10
 
 ### Added

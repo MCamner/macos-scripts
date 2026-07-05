@@ -117,7 +117,14 @@ run_hal() {
   if [[ -z "$args" ]]; then
     mq_hal_run
   else
-    eval "mq_hal_run $args"
+    # Split the request into argv without eval: read -ra word-splits on
+    # whitespace but never globs, runs command substitution, or honours ; | &,
+    # so a stray or hostile metacharacter becomes a literal argument. The
+    # ${arr[@]+...} guard keeps an all-whitespace request safe under `set -u`
+    # on bash 3.2 (empty array).
+    local -a hal_args
+    read -r -a hal_args <<< "$args"
+    mq_hal_run ${hal_args[@]+"${hal_args[@]}"}
   fi
 }
 
