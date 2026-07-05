@@ -20,6 +20,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* ROADMAP now tracks the `mqobsidian` v0.1.0 single-source-of-truth foundation
+  as an upstream dependency, while keeping `mqlaunch` read-only or
+  delegate-only for truth, inbox, ranking, and promotion surfaces.
+* Documented the canonical mqobsidian view-manifest keys consumed by `mqlaunch`
+  and marked that roadmap deliverable done.
+* Added a smoke test that locks the MQ Obsidian menu out of memory promotion or
+  rejection routes, preserving the review-gated ownership boundary.
 * Monolith de-layering (Step 11a): five concerns moved verbatim out of
   `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
   the launcher's scope — the network concern (status/diagnostics/connectivity,

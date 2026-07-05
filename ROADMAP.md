@@ -78,8 +78,8 @@ Goal: make the Obsidian SSOT plan explicit and buildable without expanding
 | Done | Repo ownership map documented |
 | Done | `mqlaunch` boundary against direct cognition/memory logic documented |
 | Done | Existing MQ Obsidian menu kept as read-only/presentation-first surface |
-| Todo | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
-| Todo | Add/verify tests that MQ Obsidian menu actions do not promote memory |
+| Done | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
+| Done | Add/verify tests that MQ Obsidian menu actions do not promote memory |
 | Todo | Add/verify tests that review commands delegate through `mq-agent` |
 | Todo | Add `mqlaunch obsidian status` or documented alias for current menu/status |
 
@@ -180,6 +180,88 @@ Definition of done:
 The operator can answer "what is true about the MQ stack right now?"
 from one terminal surface backed by Obsidian truth exports.
 ```
+
+## Upstream Dependency: mqobsidian v0.1.0 SSOT Foundation
+
+`mqobsidian` owns the canonical truth structure for the MQ stack. This repo
+depends on that work, but must not implement competing truth, inbox, ranking,
+or promotion logic locally.
+
+Status: Proposed · Priority: P1 · Owner: `mqobsidian`
+
+Current status:
+
+* [ ] canonical truth schema is not yet fully locked
+* [ ] inbox, ranking, and promotion state are not yet unified under one explicit model
+* [ ] consumer repos still risk inventing local truth if exports/contracts stay underdefined
+* [ ] moderator workflow risks becoming a bottleneck without clear promotion states and thresholds
+
+### mqobsidian owns
+
+* [ ] canonical truth schema
+* [ ] inbox structure and promotion queue structure
+* [ ] durable memory categories and persistence rules
+* [ ] canonical status, views, and manifests consumed by other repos
+* [ ] freshness/state markers for truth surfaces
+* [ ] promotion state and memory lifecycle states
+* [ ] single source of truth rules across the stack
+
+### macos-scripts relationship
+
+`mqlaunch` may consume exported status/views/manifests and delegate workflows to
+`mq-agent`, but it must not define schema, compute rankings, promote memory, or
+invent local lifecycle state.
+
+Expected consumer contract:
+
+```text
+mqlaunch -> read/open exported truth views
+mqlaunch -> delegate inbox/promote workflows to mq-agent
+mq-agent -> write/orchestrate through mqobsidian contracts
+mqobsidian -> own schema, state, persistence, and durable views
+```
+
+### Required upstream delivery
+
+#### A. Canonical schema
+
+* [ ] define status manifest
+* [ ] define inbox manifest
+* [ ] define views manifest
+* [ ] define learn/review/decision schemas
+* [ ] define promotion-state fields
+* [ ] define archival/deprecation lifecycle fields
+
+#### B. Inbox and ranking model
+
+* [ ] define what enters inbox
+* [ ] define recurrence/evidence fields
+* [ ] define ranking inputs
+* [ ] define review-needed vs auto-promotable states
+* [ ] define thresholds and exception paths
+
+#### C. Durable memory governance
+
+* [ ] define what qualifies as durable memory
+* [ ] define what remains transient or session-local
+* [ ] define promotion approvals and guardrails
+* [ ] define rollback/deprecation path for bad memory
+* [ ] define traceability from source evidence to durable note
+
+#### D. Consumer contracts
+
+* [ ] define canonical read surfaces for `mqlaunch`
+* [ ] define canonical delegation/contract surfaces for `mq-agent`
+* [ ] version exported truth surfaces
+* [ ] expose freshness and drift markers
+
+### Dependency exit criteria
+
+* [ ] `mqobsidian` is the undisputed truth owner
+* [ ] inbox, ranking, promotion, and durable memory have one canonical model
+* [ ] consumers read from exported truth surfaces instead of inventing local truth
+* [ ] every promoted durable memory item can be traced back to source evidence
+* [ ] `mqlaunch` has enough contract detail to stay read-only or delegate-only
 
 ## Phase 12 / v2.0.0 — Runtime Authority And Shell Governance
 

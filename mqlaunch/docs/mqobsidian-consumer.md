@@ -19,6 +19,37 @@ pattern/feedback logic.
 · `execution` · `mq-agent-hot` · `mq-mcp-hot` · `mq-hal-hot`. Paths are resolved
 from the manifest, not hardcoded — change the manifest, not the logic.
 
+## Canonical manifest contract
+
+`mqlaunch` consumes only `mqlaunch/config/mqobsidian/views.json`. The manifest is
+an array of view records with these required fields:
+
+| Field | Allowed values | Consumer behavior |
+| --- | --- | --- |
+| `key` | stable string identifier | CLI/menu argument; must not be inferred from paths |
+| `label` | display string | menu/picker text only |
+| `type` | `file` or `folder` | validates whether the target should be a file or folder |
+| `relative_path` | vault-relative path | resolved under `MQ_OBSIDIAN_DIR` or the fallback vault |
+
+Canonical keys currently consumed by `mqlaunch`:
+
+| Key | Kind | Target |
+| --- | --- | --- |
+| `dashboard` | file | `systems/mqobsidian/index.md` |
+| `roadmaps` | folder | `roadmap` |
+| `reviews` | folder | `reviews` |
+| `decisions` | folder | `decisions` |
+| `execution` | folder | `execution` |
+| `mq-agent-hot` | file | `systems/mq-agent/hot.md` |
+| `mq-mcp-hot` | file | `systems/mq-mcp/hot.md` |
+| `mq-hal-hot` | file | `systems/mq-hal/hot.md` |
+| `roadmap-doc` | file | `docs/roadmap-token-reduction.md` |
+| `context-budget` | file | `docs/context-budget.md` |
+
+Ownership rule: adding, removing, renaming, or repointing keys changes the
+consumer contract. Keep that change in the manifest and docs; do not duplicate
+view paths in shell menu logic.
+
 ## Commands
 
 | Command | Does |
