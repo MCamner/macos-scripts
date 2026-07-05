@@ -430,6 +430,14 @@ run_agent_command() {
       shift || true
       _run_agent_repo_health "$@"
       ;;
+    stack)
+      shift || true
+      if [[ $# -eq 0 ]]; then
+        _run_agent stack status
+      else
+        _run_agent stack "$@"
+      fi
+      ;;
     mcp-status)
       shift || true
       _run_agent mcp status "$@"

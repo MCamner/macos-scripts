@@ -143,7 +143,7 @@ promotion_score =
 | Todo | `mq-agent obsidian promote --confirm` |
 | Done | `mqlaunch obsidian inbox` delegates to `mq-agent` or read-only export |
 | Done | `mqlaunch obsidian promote` stays a thin confirm/delegate surface |
-| Todo | Release gate detects schema drift before release |
+| Done | Release gate detects schema drift before release |
 
 Threshold guidance:
 
@@ -172,7 +172,7 @@ Goal: make Obsidian the visible single source of truth across the MQ stack.
 | Todo | `mq-agent stack contract-check` compares repo contracts to Obsidian truth |
 | Todo | `repo-signal` feeds readiness/publishability into truth exports |
 | Todo | `mq-mcp` review and memory results can be saved as learn/review records |
-| Todo | `mqlaunch stack status` reads/delegates canonical truth status |
+| Done | `mqlaunch stack status` reads/delegates canonical truth status |
 | Todo | `mqlaunch hal brief` includes Obsidian truth freshness |
 | Todo | `mq-ums` contributes first read-only infrastructure signal |
 | Todo | Obsidian dashboards show stack map, integration gaps, and promotion queue |

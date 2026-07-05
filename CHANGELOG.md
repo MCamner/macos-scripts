@@ -34,6 +34,10 @@ All notable changes to this project will be documented in this file.
 * Added `mqlaunch obsidian promote` as a thin delegate to
   `mq-agent obsidian promote`, keeping scoring and memory writes out of
   mqlaunch.
+* Added a release-check gate for the local mqobsidian view-manifest consumer
+  contract, blocking malformed or drifted `views.json` before release.
+* Added delegate-only `mqlaunch stack status` / `mqlaunch stack ...` routing to
+  `mq-agent stack`, keeping canonical truth parsing outside mqlaunch.
 * Monolith de-layering (Step 11a): five concerns moved verbatim out of
   `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
   the launcher's scope — the network concern (status/diagnostics/connectivity,

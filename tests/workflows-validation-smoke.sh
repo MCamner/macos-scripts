@@ -40,9 +40,11 @@ echo "[7/9] validator checks docs and routing"
 grep -q "COMMAND SURFACE" "$VALIDATOR"
 grep -q "DOCUMENTATION" "$VALIDATOR"
 
-echo "[8/9] release-check runs workflow validation"
+echo "[8/9] release-check runs workflow validation and manifest contract checks"
 grep -q "WORKFLOW VALIDATION" "$RELEASE_CHECK"
 grep -q "automation/workflows/validate.sh" "$RELEASE_CHECK"
+grep -q "MQOBSIDIAN MANIFEST CONTRACT" "$RELEASE_CHECK"
+grep -q "check_mqobsidian_manifest_contract" "$RELEASE_CHECK"
 
 echo "[9/9] validator runs"
 MACOS_SCRIPTS_HOME="$ROOT" "$VALIDATOR" >/tmp/mq-workflows-validate.out

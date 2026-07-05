@@ -60,6 +60,7 @@ echo "[6/9] mqlaunch stack commands delegate through mq-agent bridge"
 grep -q 'run_agent_command review' "$COMMAND_MODE"
 grep -q 'run_agent_command risk-review' "$COMMAND_MODE"
 grep -q 'run_agent_command repo-health' "$COMMAND_MODE"
+grep -q 'run_agent_command stack' "$COMMAND_MODE"
 grep -q 'run_agent_command mcp-status' "$COMMAND_MODE"
 
 echo "[7/9] mqlaunch command mode does not embed direct mq-mcp cognition"

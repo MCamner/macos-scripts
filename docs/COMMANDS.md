@@ -170,6 +170,9 @@ mqlaunch review repo architecture              # review repo in architecture mod
 mqlaunch risk-review                            # risk review current diff via mq-agent
 mqlaunch architecture                           # show mq-mcp architecture decisions
 mqlaunch repo-health                            # repo-signal + orchestration contract health
+mqlaunch stack status                           # canonical stack truth status via mq-agent
+mqlaunch stack contract-check                   # delegate stack contract check to mq-agent
+mqlaunch stack truth-export                     # delegate stack truth export to mq-agent
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
@@ -177,6 +180,10 @@ mqlaunch ui                                     # copy UI prompt to clipboard
 `mqlaunch` only delegates these review and architecture commands. Review
 logic, severity labels, semantic memory, and risk routing stay in `mq-mcp`;
 `mq-agent` is the orchestration layer between mqlaunch and mq-mcp.
+
+`mqlaunch stack ...` is also delegate-only. `status` defaults to
+`mq-agent stack status`; `contract-check`, `truth-export`, and future stack
+verbs are forwarded to `mq-agent stack` without local truth parsing.
 
 ### Workflow orchestration (flow)
 

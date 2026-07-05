@@ -95,6 +95,7 @@ Quick commands:
   mqlaunch architecture
   mqlaunch risk-review
   mqlaunch repo-health
+  mqlaunch stack status
   mqlaunch mcp-status
   mqlaunch flow
   mqlaunch flow run repo-preflight ~/macos-scripts
@@ -258,6 +259,21 @@ dispatch_cli_command() {
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command repo-health "$@"
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return 0
+      ;;
+
+    stack|/stack)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        if [[ $# -eq 0 ]]; then
+          run_agent_command stack status
+        else
+          run_agent_command stack "$@"
+        fi
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
