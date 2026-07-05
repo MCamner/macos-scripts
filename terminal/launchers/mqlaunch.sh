@@ -323,28 +323,6 @@ safe_run_ai() {
   fi
 }
 
-# Runs git screen.
-run_git_screen() {
-  local title="$1"
-  local cmd="$2"
-
-  print_header
-  row "$title"
-  empty_row
-  row "Repo:"
-  row " $BASE_DIR"
-  empty_row
-
-  (
-    cd "$BASE_DIR" 2>/dev/null || { mq_debug "run_git_screen: cannot cd to $BASE_DIR"; exit 1; }
-    eval "$cmd"
-  )
-
-  echo
-  print_footer
-  pause_enter
-}
-
 # Network concern — status, diagnostics, and connectivity actions — lives in a
 # dedicated library (Step 11a monolith de-layering, audit P4). Sourced into this
 # scope so it keeps using the ambient UI helpers and $BASE_DIR; no behavior
