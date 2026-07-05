@@ -158,7 +158,7 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 * [ ] Document performance as an explicit compat exception
 * [ ] Declare the current dashboard authority
 
-**Exit criteria**
+#### Exit criteria
 
 * [ ] A new contributor can identify the current runtime entrypoint
 * [ ] The repo documents which paths are live and which are compat
@@ -176,7 +176,7 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 * [ ] Add comments or docs to every bridge explaining why it still exists
 * [ ] Define one accepted location per concern for future fixes
 
-**Exit criteria**
+#### Exit criteria
 
 * [ ] No new change can land in v1 without explicit exception
 * [ ] No new live logic increases bridge debt
@@ -194,7 +194,7 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 * [ ] Keep launcher behavior stable while reducing internal decision weight
 * [ ] Remove obsolete inline logic after replacement is verified
 
-**Exit criteria**
+#### Exit criteria
 
 * [ ] `mqlaunch.sh` acts primarily as coordinator
 * [ ] major concerns have named ownership outside the monolith
@@ -213,7 +213,7 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 * [ ] Remove bridges that no longer carry live traffic
 * [ ] Reclassify v1 from `COMPAT` to `DEPRECATED` only when no live path reaches it
 
-**Exit criteria**
+#### Exit criteria
 
 * [ ] No live menu depends directly on v1
 * [ ] Bridges exist only where strictly necessary
