@@ -218,7 +218,15 @@ surface_panel_header() {
 repeat_char() {
   local count="$1"
   local char="$2"
-  printf '%*s' "$count" '' | tr ' ' "$char"
+  local i out=""
+  # Build by concatenation, not `tr`: tr is byte-based, so under a non-UTF-8
+  # locale it splits a multibyte box glyph (─ = E2 94 80) into lone bytes that
+  # render as vertical replacement marks. Appending the char preserves it.
+  (( count < 0 )) && count=0
+  for (( i = 0; i < count; i++ )); do
+    out+="$char"
+  done
+  printf '%s' "$out"
 }
 
 # Handles border.
