@@ -201,6 +201,9 @@ mqlaunch hal last                # show latest HAL memory item
 mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
 mqlaunch hal context             # show mqobsidian context-pack status
+mqlaunch obsidian status         # read-only mqobsidian consumer status
+mqlaunch obsidian inbox          # read-only memory inbox listing
+mqlaunch obsidian views          # open a manifest-defined mqobsidian view
 mqlaunch hal brief               # compact repo status brief
 mqlaunch hal release-brief       # release readiness brief
 mqlaunch hal audit               # publish quality + README score via repo-signal

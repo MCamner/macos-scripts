@@ -81,7 +81,7 @@ Goal: make the Obsidian SSOT plan explicit and buildable without expanding
 | Done | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
 | Done | Add/verify tests that MQ Obsidian menu actions do not promote memory |
 | Done | Add/verify tests that review commands delegate through `mq-agent` |
-| Todo | Add `mqlaunch obsidian status` or documented alias for current menu/status |
+| Done | Add `mqlaunch obsidian status` or documented alias for current menu/status |
 
 Expected commands:
 

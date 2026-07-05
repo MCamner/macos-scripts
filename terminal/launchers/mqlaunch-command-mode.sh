@@ -103,6 +103,9 @@ Quick commands:
   mqlaunch srm ask "your question"
   mqlaunch agent
   mqlaunch obsidian
+  mqlaunch obsidian status
+  mqlaunch obsidian inbox
+  mqlaunch obsidian views
   mqlaunch mqobsidian
   mqlaunch agent doctor
   mqlaunch agent score .
@@ -700,12 +703,40 @@ dispatch_cli_command() {
       ;;
 
     obsidian|mqobsidian|memory-menu|mq-memory)
-      if declare -f mq_obsidian_menu_main >/dev/null; then
-        mq_obsidian_menu_main
-      else
-        echo "ERROR: mqobsidian menu not loaded" >&2
-        return 1
-      fi
+      case "$sub" in
+        ""|menu)
+          if declare -f mq_obsidian_menu_main >/dev/null; then
+            mq_obsidian_menu_main
+          else
+            echo "ERROR: mqobsidian menu not loaded" >&2
+            return 1
+          fi
+          ;;
+        status|doctor)
+          "$BASE_DIR/mqlaunch/commands/mqobsidian/mqobsidian-doctor.sh"
+          ;;
+        inbox)
+          if declare -f mq_obsidian_show_inbox >/dev/null; then
+            mq_obsidian_show_inbox
+          else
+            echo "ERROR: mqobsidian menu not loaded" >&2
+            return 1
+          fi
+          ;;
+        views|open-view|navigate)
+          if declare -f mq_obsidian_open_view_picker >/dev/null; then
+            mq_obsidian_open_view_picker
+          else
+            echo "ERROR: mqobsidian view picker not loaded" >&2
+            return 1
+          fi
+          ;;
+        *)
+          echo "ERROR: unknown mqobsidian command: $sub" >&2
+          echo "usage: mqlaunch obsidian [status|inbox|views]" >&2
+          return 1
+          ;;
+      esac
       return 0
       ;;
 

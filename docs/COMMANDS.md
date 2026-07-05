@@ -406,6 +406,20 @@ mqlaunch hal context budget
 
 Shows read-only mqobsidian context-pack readiness. Delegates to `mq-hal context`; it does not generate packs or write to mqobsidian.
 
+### MQ Obsidian
+
+```bash
+mqlaunch obsidian                 # open the MQ Obsidian menu
+mqlaunch obsidian status          # read-only consumer status / doctor
+mqlaunch obsidian inbox           # list memory inbox files; no promotion
+mqlaunch obsidian views           # open manifest-defined views
+```
+
+`mqlaunch obsidian status` is the direct alias for the existing read-only
+mqobsidian doctor/status surface. `inbox` and `views` stay presentation-only:
+they list or open exported vault surfaces and do not score, promote, reject, or
+write durable memory.
+
 ### HAL Repo Status
 
 ```bash
