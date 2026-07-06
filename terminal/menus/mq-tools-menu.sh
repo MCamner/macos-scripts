@@ -750,28 +750,12 @@ print_document_functions_menu() {
 
 # Documents functions menu loop.
 document_functions_menu_loop() {
-  local choice sep_width sep_color sep
+  local choice
 
   while true; do
     print_document_functions_menu
-    sep_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
-    sep_color="$(surface_panel_color)"
-    sep="$(repeat_char "$sep_width" '─')"
-
-    printf '%b%s%b\n' "$sep_color" "$sep" "${C_RESET:-}"
-    printf '%bdocs > %b\n' "${C_TITLE:-}" "${C_RESET:-}"
-    printf '%b%s%b\n' "$sep_color" "$sep" "${C_RESET:-}"
-    printf '\033[2A\r'
-    printf '%bdocs > %b' "${C_TITLE:-}" "${C_RESET:-}"
-
-    choice=""
-    if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
-      vared -p "" -c choice
-      printf '\033[1B\r\n'
-    else
-      read -r choice
-      printf '\033[1B\r\n'
-    fi
+    read_menu_choice "" "docs"
+    choice="$REPLY"
     echo
 
     case "$choice" in
