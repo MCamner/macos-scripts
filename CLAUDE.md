@@ -38,6 +38,13 @@ Stop reading as soon as the task is grounded.
 
 `mqobsidian` is durable memory, not live runtime truth.
 
+## MQ Stack Architecture
+
+Whole-stack architecture and the memory loop (this repo owns local shell
+launchers / terminal UX) are documented in mqobsidian:
+
+`https://github.com/MCamner/mqobsidian/blob/main/docs/architecture/mq-stack.md`
+
 If the task depends on current code behavior, tests, contracts, CLI behavior,
 or runtime state, verify in this repo before making claims.
 
@@ -58,6 +65,18 @@ or machine-specific private paths.
 
 If `mqobsidian` is missing, stale, or too weak for the task, say so and verify
 in the repo. Do not invent continuity.
+
+## Continuous Learning
+
+Durable learning is owned by `mqobsidian`. This repo emits observations; it keeps
+no separate learning store.
+
+For corrections, successful patterns, anti-patterns, command scores, and repeated
+observations, follow the skill:
+
+`$MQ_OBSIDIAN_DIR/skills-src/mq-continuous-learning/SKILL.md`
+
+Do not store durable learning in this repo unless explicitly required.
 
 ## GOVERNOR — mansys/mcamner
 
