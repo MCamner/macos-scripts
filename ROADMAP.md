@@ -66,6 +66,236 @@ with the detailed engineering plan in
 workstream sequencing (owners, dependencies, `Not before` gating, risk register)
 in [docs/plans/v2.0.0-sequencing.md](docs/plans/v2.0.0-sequencing.md).
 
+## P1: CLI Contract And Automation Safety
+
+**Status:** Planned
+**Priority:** P1
+**Risk if delayed:** High
+**Owner:** `macos-scripts`
+**Secondary repos:** none; delegated commands keep their existing owners
+
+Goal: make every direct `mqlaunch` command predictable for humans, scripts, and
+delegated MQ tools without expanding shell into orchestration or cognition.
+
+### Verified baseline — 2026-07-14
+
+* [x] `repo-signal doctor` reports 100/100 repo health, docs quality, and AI readiness
+* [x] `mqlaunch workflows validate` passes 16 checks with no warnings
+* [x] `mqlaunch selftest` passes, including syntax checks for 148 shell files
+* [x] `mqlaunch doctor --json` emits valid machine-readable health output
+* [ ] unknown commands currently copy an AI prompt and return success instead of
+  reporting a usage error
+* [ ] namespace help is inconsistent; for example, `mqlaunch obsidian --help`
+  reports an error, opens a menu, and returns success
+* [ ] delegated failures can be swallowed; backend failure does not always reach
+  the caller's exit status
+* [ ] `mqlaunch help`, `mqlaunch commands`, docs, palette, and dispatch contain
+  overlapping command inventories that can drift
+* [ ] `NO_COLOR=1 mqlaunch commands` still emits ANSI/dashboard output when piped
+* [ ] CI ShellCheck is warn-only because findings are ignored with `|| true`
+
+### Architecture boundary
+
+* [x] `mqlaunch` owns argument parsing, help, output mode, exit-code propagation,
+  menus, and terminal UX
+* [x] `mq-agent` continues to own orchestration and delegated workflow semantics
+* [x] `mq-mcp` continues to own execution tools and safety classes
+* [x] `mqobsidian` continues to own durable truth and memory contracts
+* [ ] no CLI-hardening task may move delegated business logic into shell
+
+### Non-goals
+
+* [x] no new AI fallback for unknown commands
+* [x] no rewrite of `mq-agent`, `mq-mcp`, `mq-hal`, or mqobsidian contracts
+* [x] no broad menu redesign
+* [x] no removal of compatibility routes before Phase 12 gates allow it
+* [x] no global JSON mode for commands that do not have a stable JSON contract
+
+### Delivery A: Strict unknown-command contract
+
+**Files:**
+
+* [ ] modify `terminal/launchers/mqlaunch.sh`
+* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh` if it owns a parallel
+  unknown-command path
+* [ ] create `tests/unknown-command-contract-smoke.sh`
+* [ ] update `docs/COMMANDS.md`
+
+Tasks:
+
+* [ ] write unknown-command diagnostics to stderr
+* [ ] return exit code `2` for unknown commands and invalid arguments
+* [ ] never copy to clipboard, open a menu, or invoke AI implicitly
+* [ ] suggest explicit `mqlaunch ask` and the nearest documented command only
+* [ ] test interactive, redirected, and headless execution
+
+Exit gate:
+
+* [ ] a typo has no side effects and reliably returns `2`
+
+### Delivery B: Namespace help contract
+
+**Files:**
+
+* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
+* [ ] modify the owning namespace modules under `terminal/menus/` or
+  `mqlaunch/commands/` only where help must be implemented
+* [ ] create `tests/namespace-help-smoke.sh`
+* [ ] update `docs/COMMANDS.md`
+
+Tasks:
+
+* [ ] support `mqlaunch <namespace> --help` and `-h` for `agent`, `hal`, `obsidian`,
+  `repos`, `skills`, `srm`, and `stack`
+* [ ] print help without rendering the login dashboard or opening an interactive menu
+* [ ] return `0` for valid help and `2` for invalid namespace arguments
+* [ ] keep namespace help safe without optional backends installed
+
+Exit gate:
+
+* [ ] every documented namespace has non-interactive, dependency-light help
+
+### Delivery C: Delegated exit-code propagation
+
+**Files:**
+
+* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
+* [ ] modify `terminal/menus/mq-agent-menu.sh`
+* [ ] modify `terminal/bridges/hal-bridge.sh` only if its wrapper loses status
+* [ ] create `tests/delegated-exit-code-smoke.sh`
+
+Tasks:
+
+* [ ] preserve the delegated command's non-zero exit status
+* [ ] keep pause/render helpers from overwriting the captured status
+* [ ] keep JSON stdout clean while sending launcher diagnostics to stderr
+* [ ] test missing backend, backend usage error, and backend runtime failure
+
+Exit gate:
+
+* [ ] scripts can trust `mqlaunch` exit codes without parsing terminal text
+
+### Delivery D: Authoritative command registry
+
+**Not before:** Phase 12 identifies the single live dispatcher and compatibility boundary.
+
+**Files:**
+
+* [ ] create one registry in the Phase 12 authority-owned runtime path
+* [ ] modify `terminal/menus/mq-help-menu.sh`
+* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
+* [ ] modify `terminal/launchers/mqlaunch.sh`
+* [ ] modify the command palette consumer
+* [ ] create `tests/command-registry-drift-smoke.sh`
+
+Tasks:
+
+* [ ] define canonical name, aliases, namespace, summary, mode, and owner per command
+* [ ] generate or validate help, command index, palette, docs, and dispatch coverage
+* [ ] include currently under-discovered commands such as `architecture`,
+  `repo-health`, `stack status`, `obsidian`, `srm`, and `repos wiki-status`
+* [ ] reject duplicate canonical names and alias collisions
+* [ ] preserve compatibility aliases until their Phase 12 removal gate is met
+
+Exit gate:
+
+* [ ] one registry proves that routing, help, palette, and documentation agree
+
+### Delivery E: Plain and machine-readable output contract
+
+**Files:**
+
+* [ ] modify the Phase 12 authority-owned UI/output helpers
+* [ ] modify `terminal/menus/mq-help-menu.sh`
+* [ ] modify `terminal/launchers/mqlaunch.sh`
+* [ ] create `tests/plain-output-contract-smoke.sh`
+* [ ] update `docs/COMMANDS.md`
+
+Tasks:
+
+* [ ] respect `NO_COLOR` and add `--no-color` where global parsing permits it
+* [ ] suppress banners, cursor control, and dashboard rendering when stdout is not a TTY
+* [ ] define `--quiet` only for commands with useful primary stdout
+* [ ] keep `--json` opt-in and schema-backed; diagnostics go to stderr
+* [ ] test pipe, redirect, CI/headless, and normal TTY modes
+
+Exit gate:
+
+* [ ] plain output contains no ANSI escapes and JSON output parses without cleanup
+
+### Delivery F: Enforced shell static analysis
+
+**Files:**
+
+* [ ] modify `.github/workflows/quality.yml`
+* [ ] modify `tools/scripts/lint.sh`
+* [ ] document intentional suppressions next to affected code
+
+Tasks:
+
+* [ ] inventory current ShellCheck error-severity findings
+* [ ] fix or narrowly suppress verified false positives
+* [ ] remove warn-only `|| true` behavior for `--severity=error`
+* [ ] retain `bash -n` and `zsh -n` as separate syntax gates
+* [ ] keep Zsh files out of Bash-only ShellCheck assumptions
+
+Exit gate:
+
+* [ ] new error-severity ShellCheck findings fail CI
+
+### Sequencing
+
+1. [ ] Delivery A — strict unknown-command behavior
+2. [ ] Delivery B — namespace help
+3. [ ] Delivery C — exit-code propagation
+4. [ ] Phase 12 runtime-authority classification required before Delivery D
+5. [ ] Delivery D — authoritative registry
+6. [ ] Delivery E — plain/output contract on the authoritative runtime
+7. [ ] Delivery F — enforced ShellCheck after the touched runtime is clean
+
+### Test gates
+
+```bash
+mqlaunch workflows validate
+mqlaunch selftest
+MQ_NO_TUI=1 mqlaunch help
+MQ_NO_TUI=1 mqlaunch definitely-not-a-command; test "$?" -eq 2
+if NO_COLOR=1 MQ_NO_TUI=1 mqlaunch commands | LC_ALL=C grep -q $'\033'; then exit 1; fi
+./tools/scripts/lint.sh
+mqlaunch release-check
+git diff --check
+```
+
+Focused tests added by each delivery must run independently before the full
+selftest. A public command or output-contract change also requires README and
+`docs/COMMANDS.md` review.
+
+### Approval gates
+
+* [x] roadmap write approved by this task
+* [ ] implementation requires a separate explicit request
+* [ ] commit requires explicit approval
+* [ ] push and merge require explicit approval
+* [ ] compatibility deletion requires the Phase 12 removal gate
+
+### Rollback
+
+* [ ] each delivery must be independently revertible
+* [ ] retain current human help text as fallback until registry parity is proven
+* [ ] preserve compatibility aliases during rollback
+* [ ] never roll back by weakening exit-code or no-side-effect tests
+
+### Overall exit criteria
+
+* [ ] unknown and invalid commands are side-effect free and return `2`
+* [ ] every public namespace has non-interactive help
+* [ ] delegated failures preserve their exit status
+* [ ] command routing, help, palette, and docs share one validated inventory
+* [ ] redirected output is plain and JSON output is parseable
+* [ ] ShellCheck error-severity findings block CI
+* [ ] all existing selftests, workflow validation, release gates, and safety
+  boundaries remain green
+
 ## 0-30 Days: Roadmap Sanity And SSOT Read-Only Surface
 
 Goal: make the Obsidian SSOT plan explicit and buildable without expanding
