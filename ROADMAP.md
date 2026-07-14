@@ -81,14 +81,14 @@ delegated MQ tools without expanding shell into orchestration or cognition.
 
 * [x] `repo-signal doctor` reports 100/100 repo health, docs quality, and AI readiness
 * [x] `mqlaunch workflows validate` passes 16 checks with no warnings
-* [x] `mqlaunch selftest` passes, including syntax checks for 150 shell files
+* [x] `mqlaunch selftest` passes, including syntax checks for 151 shell files
 * [x] `mqlaunch doctor --json` emits valid machine-readable health output
 * [x] unknown commands write diagnostics to stderr, suggest an explicit command,
   avoid side effects, and return usage exit code `2`
 * [x] namespace help is local, non-interactive, dependency-light, and consistent
   for the documented public namespaces
-* [ ] delegated failures can be swallowed; backend failure does not always reach
-  the caller's exit status
+* [x] delegated failures preserve backend status through command-mode, optional
+  pause rendering, and the full launcher process
 * [ ] `mqlaunch help`, `mqlaunch commands`, docs, palette, and dispatch contain
   overlapping command inventories that can drift
 * [ ] `NO_COLOR=1 mqlaunch commands` still emits ANSI/dashboard output when piped
@@ -159,21 +159,21 @@ Exit gate:
 
 **Files:**
 
-* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
-* [ ] modify `terminal/menus/mq-agent-menu.sh`
-* [ ] modify `terminal/bridges/hal-bridge.sh` only if its wrapper loses status
-* [ ] create `tests/delegated-exit-code-smoke.sh`
+* [x] modify `terminal/launchers/mqlaunch-command-mode.sh`
+* [x] verify `terminal/menus/mq-agent-menu.sh` already preserves status
+* [x] verify `terminal/bridges/hal-bridge.sh` already preserves status
+* [x] create `tests/delegated-exit-code-smoke.sh`
 
 Tasks:
 
-* [ ] preserve the delegated command's non-zero exit status
-* [ ] keep pause/render helpers from overwriting the captured status
-* [ ] keep JSON stdout clean while sending launcher diagnostics to stderr
-* [ ] test missing backend, backend usage error, and backend runtime failure
+* [x] preserve the delegated command's non-zero exit status
+* [x] keep pause/render helpers from overwriting the captured status
+* [x] keep JSON stdout clean while sending launcher diagnostics to stderr
+* [x] test missing backend, backend usage error, and backend runtime failure
 
 Exit gate:
 
-* [ ] scripts can trust `mqlaunch` exit codes without parsing terminal text
+* [x] scripts can trust `mqlaunch` exit codes without parsing terminal text
 
 ### Delivery D: Authoritative command registry
 
@@ -247,7 +247,7 @@ Exit gate:
 
 1. [x] Delivery A — strict unknown-command behavior
 2. [x] Delivery B — namespace help
-3. [ ] Delivery C — exit-code propagation
+3. [x] Delivery C — exit-code propagation
 4. [ ] Phase 12 runtime-authority classification required before Delivery D
 5. [ ] Delivery D — authoritative registry
 6. [ ] Delivery E — plain/output contract on the authoritative runtime
@@ -289,7 +289,7 @@ selftest. A public command or output-contract change also requires README and
 
 * [ ] unknown and invalid commands are side-effect free and return `2`
 * [ ] every public namespace has non-interactive help
-* [ ] delegated failures preserve their exit status
+* [x] delegated failures preserve their exit status
 * [ ] command routing, help, palette, and docs share one validated inventory
 * [ ] redirected output is plain and JSON output is parseable
 * [ ] ShellCheck error-severity findings block CI

@@ -1322,19 +1322,11 @@ if [[ $# -gt 0 ]]; then
       ;;
   esac
 
-  if dispatch_cli_command "$@"; then
-    exit 0
-  else
-    cmd_status=$?
-    if [[ $cmd_status -eq 2 ]]; then
-      exit 2
-    fi
-  fi
-
   if [[ "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" == "menu" ]]; then
     main_loop
   else
-    run_arg_command "$@"
+    dispatch_cli_command "$@"
+    exit $?
   fi
 else
   main_loop

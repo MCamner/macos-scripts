@@ -25,6 +25,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/command-docs-smoke.sh"
 "$PROJECT_ROOT/tests/unknown-command-contract-smoke.sh"
 "$PROJECT_ROOT/tests/namespace-help-smoke.sh"
+"$PROJECT_ROOT/tests/delegated-exit-code-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="

@@ -187,6 +187,11 @@ mqlaunch stack --help
 `-h` is equivalent to `--help`. Valid namespace help returns `0`; extra help
 arguments return usage exit code `2`.
 
+Delegated commands preserve the backend exit status. Scripts can distinguish a
+usage error (`2`) from a runtime failure without parsing terminal text. Launcher
+pauses never replace that status, and `--json` suppresses pause output so stdout
+remains machine-readable.
+
 ---
 
 ## AI assistant

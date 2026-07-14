@@ -279,7 +279,7 @@ HELP
 
 # Routes cli command to the matching command handler.
 dispatch_cli_command() {
-  local area sub namespace
+  local area sub namespace command_status
   area="$(normalize_cli_word "${1:-}")"
   sub="$(normalize_cli_word "${2:-}")"
 
@@ -359,44 +359,48 @@ dispatch_cli_command() {
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command review "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     architecture|/architecture)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command architecture "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     risk-review|/risk-review)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command risk-review "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     repo-health|/repo-health)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command repo-health "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     stack|/stack)
@@ -407,33 +411,36 @@ dispatch_cli_command() {
         else
           run_agent_command stack "$@"
         fi
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     mcp-status|/mcp-status)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command mcp-status "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     flow|/flow)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command flow "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     ui|/ui)
@@ -470,11 +477,12 @@ dispatch_cli_command() {
         shift
         if declare -f run_agent_command >/dev/null; then
           run_agent_command "$_mem_verb" "$@"
+          command_status=$?
         else
           echo "ERROR: mq-agent bridge not loaded" >&2
           return 1
         fi
-        return 0
+        return "$command_status"
       fi
       "$BASE_DIR/tools/scripts/srm.sh" "$@"
       return 0
@@ -833,12 +841,13 @@ dispatch_cli_command() {
       shift
       if declare -f mq_hal_run >/dev/null; then
         mq_hal_run "$@"
+        command_status=$?
       else
         echo "ERROR: mq-hal bridge not loaded" >&2
         return 1
       fi
       has_json_flag "$@" || pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     agent|mq-agent)
@@ -896,7 +905,8 @@ dispatch_cli_command() {
           return 1
           ;;
       esac
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     mqlaunch)
