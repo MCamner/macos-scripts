@@ -1,6 +1,6 @@
 # P1 — Consolidate mqlaunch Runtime Authority
 
-**Status:** Planned
+**Status:** In progress — Phase 1 declared; Phase 2 freeze enforced
 **Priority:** P1
 **Type:** Architecture / Runtime consolidation
 **Risk if delayed:** High
@@ -92,37 +92,37 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 
 ### LIVE
 
-* [ ] `bin/mqlaunch` is the official entrypoint
-* [ ] `terminal/launchers/mqlaunch.sh` is the current runtime coordinator
-* [ ] `terminal/menus/` is the official live menu layer
-* [ ] `ui/terminal-ui/mq-ui.sh` is the shared live UI library
-* [ ] `ui/ascii/mqlaunch-dashboard-v7.1.sh` is declared current dashboard authority
-* [ ] `mqlaunch/lib/mqobsidian/*` is classified as live support library
-* [ ] `mqlaunch/lib/recommendations/*` is classified as live support library
+* [x] `bin/mqlaunch` is the official entrypoint
+* [x] `terminal/launchers/mqlaunch.sh` is the current runtime coordinator
+* [x] `terminal/menus/` is the official live menu layer
+* [x] `ui/terminal-ui/mq-ui.sh` is the shared live UI library
+* [x] `ui/ascii/mqlaunch-dashboard-v7.1.sh` is declared current dashboard authority
+* [x] `mqlaunch/lib/mqobsidian/*` is classified as live support library
+* [x] `mqlaunch/lib/recommendations/*` is classified as live support library
 
 ### COMPAT
 
-* [ ] `terminal/bridges/performance-bridge.sh` is explicitly marked active compat
-* [ ] `terminal/bridges/dev-bridge.sh` is explicitly marked fallback compat
-* [ ] `terminal/bridges/tools-bridge.sh` is explicitly marked fallback compat
-* [ ] `terminal/mqlaunch-v1/` is marked compat runtime dependency while still reachable
-* [ ] `terminal/menus/mq-performance-menu.sh` is marked compat wrapper until migrated
+* [x] `terminal/bridges/performance-bridge.sh` is explicitly marked active compat
+* [x] `terminal/bridges/dev-bridge.sh` is explicitly marked fallback compat
+* [x] `terminal/bridges/tools-bridge.sh` is explicitly marked fallback compat
+* [x] `terminal/mqlaunch-v1/` is marked compat runtime dependency while still reachable
+* [x] `terminal/menus/mq-performance-menu.sh` is marked compat wrapper until migrated
 
 ### DEPRECATED / SHADOW
 
-* [ ] non-authoritative `mqlaunch/` paths are marked non-runtime unless proven live
-* [ ] legacy dashboard variants are marked non-current
-* [ ] any duplicate implementation without runtime authority is marked deprecated
+* [x] non-authoritative `mqlaunch/` paths are marked non-runtime unless proven live
+* [x] legacy dashboard variants are marked non-current
+* [x] any duplicate implementation without runtime authority is marked deprecated
 
 ---
 
 ## Rules to lock now
 
-* [ ] No new feature work in `terminal/mqlaunch-v1/`
-* [ ] No new direct live dependencies on v1 commands or v1 libs
-* [ ] No new business logic added to the monolith if a live module already owns that concern
-* [ ] No duplicate dashboard or UI logic introduced outside the chosen authority path
-* [ ] No path may be called "legacy" if it still participates in runtime without compat labeling
+* [x] No new feature work in `terminal/mqlaunch-v1/`
+* [x] No new direct live dependencies on v1 commands or v1 libs
+* [x] No new business logic added to the monolith if a live module already owns that concern
+* [x] No duplicate dashboard or UI logic introduced outside the chosen authority path
+* [x] No path may be called "legacy" if it still participates in runtime without compat labeling
 
 ---
 
@@ -130,19 +130,19 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 
 ### Allowed
 
-* [ ] `bin/` → `terminal/launchers/`
-* [ ] `terminal/launchers/` → `terminal/menus/`
-* [ ] `terminal/menus/` → `ui/terminal-ui/`
-* [ ] `terminal/menus/` → `mqlaunch/lib/`
-* [ ] `terminal/menus/` → `terminal/bridges/` only where documented compat is required
+* [x] `bin/` → `terminal/launchers/`
+* [x] `terminal/launchers/` → `terminal/menus/`
+* [x] `terminal/menus/` → `ui/terminal-ui/`
+* [x] `terminal/menus/` → `mqlaunch/lib/`
+* [x] `terminal/menus/` → `terminal/bridges/` only where documented compat is required
 
 ### Not allowed
 
-* [ ] live menus depending directly on `terminal/mqlaunch-v1/*`
-* [ ] new logic added to bridges beyond routing/adaptation
-* [ ] parallel implementations of the same menu responsibility across monolith, v1, and new modules
-* [ ] dashboard rendering logic copied across multiple dashboard files
-* [ ] hidden fallback paths without documentation
+* [x] live menus depending directly on `terminal/mqlaunch-v1/*` are forbidden
+* [x] new logic added to bridges beyond routing/adaptation is forbidden
+* [x] parallel implementations across monolith, v1, and new modules are forbidden
+* [x] dashboard rendering logic copied across multiple dashboard files is forbidden
+* [x] hidden fallback paths without documentation are forbidden
 
 ---
 
@@ -154,15 +154,15 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 
 * [x] Create `docs/AUTHORITY_MAP.md`
 * [x] Mark each runtime-relevant path as `LIVE`, `COMPAT`, `DEPRECATED`, or `TEST-ONLY`
-* [ ] Update repo documentation to reflect actual runtime authority
+* [x] Update repo documentation to reflect actual runtime authority
 * [x] Document performance as an explicit compat exception
 * [x] Declare the current dashboard authority
 
 #### Exit criteria
 
-* [ ] A new contributor can identify the current runtime entrypoint
-* [ ] The repo documents which paths are live and which are compat
-* [ ] Performance exception is explicit, not implied
+* [x] A new contributor can identify the current runtime entrypoint
+* [x] The repo documents which paths are live and which are compat
+* [x] Performance exception is explicit, not implied
 
 ---
 
@@ -226,11 +226,11 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 
 ### PR1 — Runtime authority declaration
 
-* [ ] Add `docs/AUTHORITY_MAP.md`
-* [ ] Document official entrypoint
-* [ ] Document live menu layer
-* [ ] Document compat paths
-* [ ] Document forbidden dependency directions
+* [x] Add `docs/AUTHORITY_MAP.md`
+* [x] Document official entrypoint
+* [x] Document live menu layer
+* [x] Document compat paths
+* [x] Document forbidden dependency directions
 
 ### PR2 — Legacy freeze
 

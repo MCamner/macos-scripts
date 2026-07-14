@@ -81,7 +81,7 @@ delegated MQ tools without expanding shell into orchestration or cognition.
 
 * [x] `repo-signal doctor` reports 100/100 repo health, docs quality, and AI readiness
 * [x] `mqlaunch workflows validate` passes 16 checks with no warnings
-* [x] `mqlaunch selftest` passes, including syntax checks for 151 shell files
+* [x] `mqlaunch selftest` passes, including syntax checks for 152 shell files
 * [x] `mqlaunch doctor --json` emits valid machine-readable health output
 * [x] unknown commands write diagnostics to stderr, suggest an explicit command,
   avoid side effects, and return usage exit code `2`
@@ -248,7 +248,7 @@ Exit gate:
 1. [x] Delivery A — strict unknown-command behavior
 2. [x] Delivery B — namespace help
 3. [x] Delivery C — exit-code propagation
-4. [ ] Phase 12 runtime-authority classification required before Delivery D
+4. [x] Phase 12 runtime-authority classification required before Delivery D
 5. [ ] Delivery D — authoritative registry
 6. [ ] Delivery E — plain/output contract on the authoritative runtime
 7. [ ] Delivery F — enforced ShellCheck after the touched runtime is clean
@@ -499,7 +499,7 @@ mqobsidian -> own schema, state, persistence, and durable views
 
 ## Phase 12 / v2.0.0 — Runtime Authority And Shell Governance
 
-**Status:** Proposed
+**Status:** In progress — authority declared; compat removal remains gated
 **Priority:** P1
 **Type:** Architecture / Runtime governance
 **Owner:** `macos-scripts`
@@ -526,13 +526,13 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### This repo owns
 
-* [ ] terminal entrypoint authority
-* [ ] launcher/runtime path authority
-* [ ] menu-layer authority
-* [ ] dashboard/UI authority
-* [ ] compat boundary for legacy runtime paths
-* [ ] allowed dependency directions inside shell/runtime
-* [ ] read-only or delegate-only shell integration toward other repos
+* [x] terminal entrypoint authority
+* [x] launcher/runtime path authority
+* [x] menu-layer authority
+* [x] dashboard/UI authority
+* [x] compat boundary for legacy runtime paths
+* [x] allowed dependency directions inside shell/runtime
+* [x] read-only or delegate-only shell integration toward other repos
 
 ### This repo does not own
 
@@ -545,30 +545,30 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### Target state
 
-* [ ] one documented runtime authority
-* [ ] one documented compatibility boundary
-* [ ] one current dashboard/UI authority
-* [ ] one allowed dependency model
+* [x] one documented runtime authority
+* [x] one documented compatibility boundary
+* [x] one current dashboard/UI authority
+* [x] one allowed dependency model
 * [ ] no direct live dependency on legacy runtime paths
 
 ### Scope
 
-* [ ] define and document runtime authority
-* [ ] classify `LIVE`, `COMPAT`, `DEPRECATED`, and `TEST-ONLY` paths
-* [ ] freeze further architecture drift
-* [ ] consolidate dashboard/UI authority
-* [ ] keep `mqlaunch obsidian *` read-only, open, or delegate-only
-* [ ] require fixes to land in the authority-owning layer
+* [x] define and document runtime authority
+* [x] classify `LIVE`, `COMPAT`, `DEPRECATED`, and `TEST-ONLY` paths
+* [x] freeze further architecture drift
+* [x] consolidate dashboard/UI authority
+* [x] keep `mqlaunch obsidian *` read-only, open, or delegate-only
+* [x] require fixes to land in the authority-owning layer
 
 ### Delivery
 
 #### A. Runtime authority
 
-* [ ] declare official entrypoint and runtime coordinator
-* [ ] declare official live menu layer
-* [ ] classify `mqlaunch/lib/*` by actual live usage
-* [ ] classify `terminal/mqlaunch-v1/*` as compat until unreachable
-* [ ] document forbidden direct dependencies into legacy paths
+* [x] declare official entrypoint and runtime coordinator
+* [x] declare official live menu layer
+* [x] classify `mqlaunch/lib/*` by actual live usage
+* [x] classify `terminal/mqlaunch-v1/*` as compat until unreachable
+* [x] document forbidden direct dependencies into legacy paths
 
 #### B. Drift freeze
 
@@ -585,11 +585,11 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### Exit criteria
 
-* [ ] exactly one runtime authority is documented
-* [ ] all runtime-relevant paths are classified
+* [x] exactly one runtime authority is documented
+* [x] all runtime-relevant paths are classified
 * [ ] no live menu depends directly on legacy runtime paths
-* [ ] dashboard/UI logic has one current authority
-* [ ] shell remains operator surface, not truth owner
+* [x] dashboard/UI logic has one current authority
+* [x] shell remains operator surface, not truth owner
 
 ## B2 / Atlas Prompt OS Track
 

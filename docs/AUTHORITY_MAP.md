@@ -8,7 +8,7 @@ guessing, and so the v2.0.0 migration (see
 Governance*, plan in [plans/P1-runtime-authority.md](plans/P1-runtime-authority.md))
 has a concrete starting inventory.
 
-Verified against the repo on **2026-07-05** by tracing actual `source`/subprocess
+Verified against the repo on **2026-07-14** by tracing actual `source`/subprocess
 edges from the entry points. Re-verify (and update this file) whenever a bridge,
 menu, or launcher path changes — the CI check proposed in Step 10 should fail if
 a new live→legacy edge appears.
@@ -36,7 +36,7 @@ a new live→legacy edge appears.
 
 | Path | Role |
 | --- | --- |
-| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (~2082 lines) |
+| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (1333 lines) |
 | `terminal/launchers/mqlaunch-command-mode.sh` | CLI/command dispatch, sourced by the launcher |
 | `terminal/launchers/mqlaunch-repl.sh` | Interactive REPL surface (`mqlaunch repl`) |
 
@@ -90,7 +90,7 @@ Reached through other live paths:
 
 | Path | Class | Reachability |
 | --- | --- | --- |
-| `terminal/mqlaunch-v1/**` (24 files, ~1629 LOC) | **COMPAT** | Not reachable except through the compat edges below |
+| `terminal/mqlaunch-v1/**` (25 files, 1629 shell LOC) | **COMPAT** | Reachable only through the compat edges below |
 | `terminal/menus/mq-performance-menu.sh` | **COMPAT** | Live menu, but sources v1 directly (see edges) — a compat wrapper until migrated |
 
 ### The exact live→legacy edges (remove these in Step 12)
