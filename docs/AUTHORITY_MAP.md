@@ -83,7 +83,7 @@ Reached through other live paths:
 | `terminal/bridges/hal-bridge.sh` | **LIVE** | routes to `mq-hal`; no `mqlaunch-v1` reach |
 | `terminal/bridges/brain-bridge.sh` | **LIVE** | routes to the mqobsidian brain surface; no v1 reach |
 | `terminal/bridges/performance-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` as a subprocess |
-| `terminal/bridges/dev-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` |
+| `terminal/bridges/dev-bridge.sh` | **DEPRECATED** | inert tombstone; v1 routing retired in Step 12.1 |
 | `terminal/bridges/tools-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` |
 
 ## Legacy runtime — COMPAT
@@ -95,11 +95,10 @@ Reached through other live paths:
 
 ### The exact live→legacy edges (remove these in Step 12)
 
-These four edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
+These three edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
 them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 
 * `terminal/bridges/performance-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
-* `terminal/bridges/dev-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/bridges/tools-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/menus/mq-performance-menu.sh:26` → **sources** `terminal/mqlaunch-v1/commands/performance.sh` (the only direct live-menu → v1 `source`)
 
@@ -108,7 +107,7 @@ them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 `scripts/check-runtime-authority.sh` is the freeze gate. It scans live runtime
 shell (`terminal/`, `ui/`, `mqlaunch/`, excluding the v1 tree) and fails if any
 file **not** on the compat allowlist references `mqlaunch-v1`. The allowlist is
-exactly the four edges above; keep it in sync with this file. The check runs in
+exactly the three edges above; keep it in sync with this file. The check runs in
 CI (Quality → *Runtime authority freeze*) and locally via
 `tests/runtime-authority-freeze-smoke.sh`. Shrinking the allowlist is a Step 12
 win; growing it must be a conscious, reviewed decision.

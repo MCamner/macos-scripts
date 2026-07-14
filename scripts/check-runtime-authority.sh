@@ -19,7 +19,6 @@ cd "$ROOT"
 # (Step 12); growing it must be a conscious, reviewed decision.
 ALLOW=(
   "terminal/bridges/performance-bridge.sh"
-  "terminal/bridges/dev-bridge.sh"
   "terminal/bridges/tools-bridge.sh"
   "terminal/menus/mq-performance-menu.sh"
 )

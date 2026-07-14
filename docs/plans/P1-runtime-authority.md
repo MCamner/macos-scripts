@@ -18,9 +18,9 @@ Grounding for the classification below. Verified in this repo, not assumed:
 * Live entrypoint chain: `bin/mqlaunch` → `terminal/launchers/mqlaunch.sh`
   (~2082-line coordinator) → sources `ui/terminal-ui/mq-ui.sh`,
   `terminal/menus/*`, `terminal/bridges/*`, and `mqlaunch/lib/{recommendations,mqobsidian}`.
-* Bridges that still source `terminal/mqlaunch-v1/`: `performance-bridge.sh`,
-  `dev-bridge.sh`, `tools-bridge.sh`. `hal-bridge.sh` and `brain-bridge.sh` do
-  **not** reach v1.
+* Bridges that still invoke `terminal/mqlaunch-v1/`: `performance-bridge.sh`
+  and `tools-bridge.sh`. The dev bridge was decommissioned in Step 12.1;
+  `hal-bridge.sh` and `brain-bridge.sh` do **not** reach v1.
 * The only **live menu** reaching v1 directly today is
   `terminal/menus/mq-performance-menu.sh:26`, which sources
   `terminal/mqlaunch-v1/commands/performance.sh`. This is the concrete
@@ -29,7 +29,7 @@ Grounding for the classification below. Verified in this repo, not assumed:
   dashboard on a live path); its render already delegates git-status parsing to
   `mq_git_status_snapshot` in `mq-ui.sh` (P3, done).
 * `terminal/mqlaunch-v1/` is ~1629 LOC across 24 files, reachable only through
-  the three bridges above and test/tooling scripts.
+  the remaining compat edges and test/tooling scripts.
 
 ## Why this matters
 
@@ -103,7 +103,8 @@ Everything else must be marked as either `LIVE`, `COMPAT`, `DEPRECATED`, or
 ### COMPAT
 
 * [x] `terminal/bridges/performance-bridge.sh` is explicitly marked active compat
-* [x] `terminal/bridges/dev-bridge.sh` is explicitly marked fallback compat
+* [x] `terminal/bridges/dev-bridge.sh` was fallback compat and is now deprecated
+      after its v1 routing was retired in Step 12.1
 * [x] `terminal/bridges/tools-bridge.sh` is explicitly marked fallback compat
 * [x] `terminal/mqlaunch-v1/` is marked compat runtime dependency while still reachable
 * [x] `terminal/menus/mq-performance-menu.sh` is marked compat wrapper until migrated
