@@ -1299,20 +1299,14 @@ run_arg_command() {
     guard) "$BASE_DIR/tools/scripts/blackout.sh" ;;
     help|-h|--help) show_help ;;
     *)
-      echo "${C_ERR}Unknown command:${C_RESET} $cmd"
-      echo
-      echo "Try:"
-      echo "  mqlaunch ask \"Vad betyder kommandot: $cmd $*\""
-      echo
-
-      if declare -f mq_ai_prompt_ask >/dev/null; then
-        echo "Copying an /ask prompt for this unknown command..."
-        mq_ai_prompt_ask "Vad betyder kommandot '$cmd $*' i mqlaunch, och finns det ett liknande kommando?"
-        return 0
+      if declare -f print_unknown_command_error >/dev/null; then
+        print_unknown_command_error "$cmd"
+      else
+        printf 'ERROR: Unknown command: %s\n' "$cmd" >&2
+        printf 'For AI help, run explicitly: mqlaunch ask "What does %s mean?"\n' \
+          "$cmd" >&2
       fi
-
-      show_help
-      exit 1
+      return 2
       ;;
   esac
 }

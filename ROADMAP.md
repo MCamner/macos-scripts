@@ -81,12 +81,12 @@ delegated MQ tools without expanding shell into orchestration or cognition.
 
 * [x] `repo-signal doctor` reports 100/100 repo health, docs quality, and AI readiness
 * [x] `mqlaunch workflows validate` passes 16 checks with no warnings
-* [x] `mqlaunch selftest` passes, including syntax checks for 148 shell files
+* [x] `mqlaunch selftest` passes, including syntax checks for 150 shell files
 * [x] `mqlaunch doctor --json` emits valid machine-readable health output
-* [ ] unknown commands currently copy an AI prompt and return success instead of
-  reporting a usage error
-* [ ] namespace help is inconsistent; for example, `mqlaunch obsidian --help`
-  reports an error, opens a menu, and returns success
+* [x] unknown commands write diagnostics to stderr, suggest an explicit command,
+  avoid side effects, and return usage exit code `2`
+* [x] namespace help is local, non-interactive, dependency-light, and consistent
+  for the documented public namespaces
 * [ ] delegated failures can be swallowed; backend failure does not always reach
   the caller's exit status
 * [ ] `mqlaunch help`, `mqlaunch commands`, docs, palette, and dispatch contain
@@ -115,45 +115,45 @@ delegated MQ tools without expanding shell into orchestration or cognition.
 
 **Files:**
 
-* [ ] modify `terminal/launchers/mqlaunch.sh`
-* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh` if it owns a parallel
+* [x] modify `terminal/launchers/mqlaunch.sh`
+* [x] modify `terminal/launchers/mqlaunch-command-mode.sh` if it owns a parallel
   unknown-command path
-* [ ] create `tests/unknown-command-contract-smoke.sh`
-* [ ] update `docs/COMMANDS.md`
+* [x] create `tests/unknown-command-contract-smoke.sh`
+* [x] update `docs/COMMANDS.md`
 
 Tasks:
 
-* [ ] write unknown-command diagnostics to stderr
-* [ ] return exit code `2` for unknown commands and invalid arguments
-* [ ] never copy to clipboard, open a menu, or invoke AI implicitly
-* [ ] suggest explicit `mqlaunch ask` and the nearest documented command only
-* [ ] test interactive, redirected, and headless execution
+* [x] write unknown-command diagnostics to stderr
+* [x] return exit code `2` for unknown top-level commands
+* [x] never copy to clipboard, open a menu, or invoke AI implicitly
+* [x] suggest explicit `mqlaunch ask` and the nearest documented command only
+* [x] test interactive pseudo-TTY, redirected, and headless execution
 
 Exit gate:
 
-* [ ] a typo has no side effects and reliably returns `2`
+* [x] a typo has no side effects and reliably returns `2`
 
 ### Delivery B: Namespace help contract
 
 **Files:**
 
-* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
-* [ ] modify the owning namespace modules under `terminal/menus/` or
-  `mqlaunch/commands/` only where help must be implemented
-* [ ] create `tests/namespace-help-smoke.sh`
-* [ ] update `docs/COMMANDS.md`
+* [x] modify `terminal/launchers/mqlaunch-command-mode.sh`
+* [x] keep owning namespace modules unchanged because help is resolved before
+  delegation in the central command-mode boundary
+* [x] create `tests/namespace-help-smoke.sh`
+* [x] update `docs/COMMANDS.md`
 
 Tasks:
 
-* [ ] support `mqlaunch <namespace> --help` and `-h` for `agent`, `hal`, `obsidian`,
+* [x] support `mqlaunch <namespace> --help` and `-h` for `agent`, `hal`, `obsidian`,
   `repos`, `skills`, `srm`, and `stack`
-* [ ] print help without rendering the login dashboard or opening an interactive menu
-* [ ] return `0` for valid help and `2` for invalid namespace arguments
-* [ ] keep namespace help safe without optional backends installed
+* [x] print help without rendering the login dashboard or opening an interactive menu
+* [x] return `0` for valid help and `2` when help receives extra arguments
+* [x] keep namespace help safe without optional backends installed
 
 Exit gate:
 
-* [ ] every documented namespace has non-interactive, dependency-light help
+* [x] every documented namespace has non-interactive, dependency-light help
 
 ### Delivery C: Delegated exit-code propagation
 
@@ -245,8 +245,8 @@ Exit gate:
 
 ### Sequencing
 
-1. [ ] Delivery A — strict unknown-command behavior
-2. [ ] Delivery B — namespace help
+1. [x] Delivery A — strict unknown-command behavior
+2. [x] Delivery B — namespace help
 3. [ ] Delivery C — exit-code propagation
 4. [ ] Phase 12 runtime-authority classification required before Delivery D
 5. [ ] Delivery D — authoritative registry

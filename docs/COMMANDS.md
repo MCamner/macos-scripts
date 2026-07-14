@@ -157,6 +157,38 @@ These commands are read-only except `skills new`, which creates a local
 
 ---
 
+## Command errors
+
+Unknown top-level commands are side-effect free. They write a short diagnostic
+to stderr, suggest the nearest documented command and return exit code `2`.
+They never open a menu, copy a prompt to the clipboard or invoke AI implicitly.
+
+```bash
+mqlaunch doctro
+# stderr: ERROR: Unknown command: doctro
+# stderr: Did you mean: mqlaunch doctor
+# exit: 2
+```
+
+AI help remains explicit: `mqlaunch ask "What does doctro mean?"`.
+
+Public namespaces provide local help without loading their optional backend:
+
+```bash
+mqlaunch agent --help
+mqlaunch hal --help
+mqlaunch obsidian --help
+mqlaunch repos --help
+mqlaunch skills --help
+mqlaunch srm --help
+mqlaunch stack --help
+```
+
+`-h` is equivalent to `--help`. Valid namespace help returns `0`; extra help
+arguments return usage exit code `2`.
+
+---
+
 ## AI assistant
 
 ```bash
