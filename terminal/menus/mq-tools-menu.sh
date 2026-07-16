@@ -34,6 +34,7 @@ OLLAMA_DOCUMENT_REVIEW="$BASE_DIR/tools/scripts/ollama-document-review.py"
 MQ_MCP_REVIEW="$BASE_DIR/tools/scripts/mq-mcp-review.py"
 MQ_SKILLS="$BASE_DIR/tools/scripts/mq-skills.py"
 MQ_REPOS="$BASE_DIR/tools/scripts/mq-repos.py"
+MARKDOWNLINT="$BASE_DIR/tools/scripts/markdownlint.sh"
 MQ_MCP_HOME="${MQ_MCP_HOME:-$HOME/mq-mcp}"
 DOCUMENT_FUNCTION_TARGETS=("$WORK_DIR")
 DOCUMENT_FUNCTION_ARGS=(--summary --exclude '*.bak.*' --exclude '*.bak' --exclude '*/.git/*' --exclude '*/backups/*')
@@ -44,6 +45,42 @@ LAUNCHERS_DIR="$BASE_DIR/terminal/launchers"
 MENUS_DIR="$BASE_DIR/terminal/menus"
 GUIDE_HTML="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 GUIDE_URL="https://mcamner.github.io/macos-scripts/"
+
+# Runs markdownlint in the selected working repository.
+run_markdownlint() {
+  if [[ ! -f "$MARKDOWNLINT" ]]; then
+    ui_err "markdownlint.sh not found: $MARKDOWNLINT"
+    pause_if_interactive
+    return 1
+  fi
+
+  (cd "$WORK_DIR" && bash "$MARKDOWNLINT" "$@")
+  local status=$?
+  pause_if_interactive
+  return "$status"
+}
+
+# Runs markdownlint autofix after an explicit confirmation.
+run_markdownlint_fix() {
+  local confirm
+
+  print_header
+  row_bold "MARKDOWN FIX"
+  empty_row
+  row "Repo: $WORK_DIR"
+  row "This may modify Markdown files."
+  print_footer
+  printf 'Fix Markdown files now? [y/N] '
+  read -r confirm
+
+  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    ui_warn "Cancelled."
+    pause_if_interactive
+    return 0
+  fi
+
+  run_markdownlint --fix "$@"
+}
 
 # Normalizes document function target.
 normalize_document_function_target() {
@@ -818,6 +855,9 @@ print_tools_menu() {
   surface_split_row "17. Skills audit" "18. Skills validate" "$width" "$panel_color"
   surface_split_row "19. Repos summary" "20. Repos diff" "$width" "$panel_color"
   surface_split_row "21. Skills ecosystem" "22. Repos status" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "MARKDOWN" "$width" "$panel_color"
+  surface_split_row "23. Markdown lint" "24. Markdown fix" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -874,6 +914,8 @@ tools_menu_loop() {
     20) run_mq_repos_diff_summary ;;
     21) run_mq_skills_ecosystem_validate ;;
     22) run_mq_repos_status ;;
+    23) run_markdownlint ;;
+    24) run_markdownlint_fix ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
@@ -904,6 +946,9 @@ Commands:
   repos       Summarize local MQ ecosystem repos
   repos-status
               Show branch, upstream and dirty state for known MQ repos
+  markdownlint Lint Markdown files in the current repo
+  markdownlint-fix
+              Fix Markdown files after confirmation
 USAGE
 }
 
@@ -927,6 +972,8 @@ main() {
     repos|repos-summary) run_mq_repos_summary ;;
     repos-diff|diff-summary) run_mq_repos_diff_summary ;;
     repos-status|status) run_mq_repos_status ;;
+    markdownlint|mdlint) run_markdownlint "${@:2}" ;;
+    markdownlint-fix|mdlint-fix) run_markdownlint_fix "${@:2}" ;;
     help|-h|--help) usage ;;
     *)
       ui_err "Unknown command: $cmd"
@@ -938,5 +985,5 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]] || [[ -z "${ZSH_VERSION:-}" && "${0}" == *mq-tools-menu* ]]; then
-  main "${1:-menu}"
+  main "$@"
 fi

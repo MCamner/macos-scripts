@@ -1335,6 +1335,9 @@ if [[ $# -gt 0 ]]; then
     if [[ $cmd_status -eq 2 ]]; then
       exit 2
     fi
+    case "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" in
+      markdownlint|mdlint) exit "$cmd_status" ;;
+    esac
   fi
 
   if [[ "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" == "menu" ]]; then

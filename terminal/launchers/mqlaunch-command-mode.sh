@@ -88,6 +88,8 @@ Quick commands:
   mqlaunch check
   mqlaunch self-check
   mqlaunch debug
+  mqlaunch markdownlint
+  mqlaunch markdownlint --fix ROADMAP.md
   mqlaunch hal
   mqlaunch theme
   mqlaunch theme-macos
@@ -572,6 +574,11 @@ dispatch_cli_command() {
     palette|fzf|search)
       run_command_palette
       return 0
+      ;;
+
+    markdownlint|mdlint)
+      "$BASE_DIR/tools/scripts/markdownlint.sh" "${@:2}"
+      return $?
       ;;
 
     ghost)
