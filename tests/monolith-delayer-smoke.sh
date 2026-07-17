@@ -20,6 +20,7 @@ CONCERNS=(
   "mqlaunch/lib/git-menus.sh : open_git_menu open_release_menu"
   "mqlaunch/lib/repo-picker.sh : run_github_repo_picker"
   "mqlaunch/lib/themes.sh : open_themes_menu theme_cmd theme_current_variant theme_source_state"
+  "mqlaunch/lib/prompts.sh : resolve_prompt_dir resolve_ai_status safe_run_ai prompts_pick show_prompt_files backup_prompts open_ai_prompts_folder"
 )
 
 total=0
