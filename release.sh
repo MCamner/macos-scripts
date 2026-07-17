@@ -10,6 +10,7 @@ VERSION=""
 VERSION_FILE="VERSION"
 README_FILE="README.md"
 CHANGELOG_FILE="CHANGELOG.md"
+CONTRACT_FILE=".mq/repo-contract.json"
 
 
 # Shows usage.
@@ -31,13 +32,15 @@ What it does:
   4. Verifies tag v<version> does not already exist
   5. Updates VERSION
   6. Updates README version badge when present
-  7. Verifies CHANGELOG.md contains the version
-  8. Shows a diff preview
-  9. Creates a release commit
- 10. Creates annotated tag v<version>
- 11. Pushes main and the new tag to origin
- 12. Regenerates and pushes wiki Command-Reference (warn-only)
- 13. Optionally creates a GitHub Release via gh CLI
+  7. Syncs .mq/repo-contract.json to the release version
+  8. Verifies CHANGELOG.md contains the version
+  9. Verifies the contract version matches VERSION (post-bump re-gate)
+ 10. Shows a diff preview
+ 11. Creates a release commit
+ 12. Creates annotated tag v<version>
+ 13. Pushes main and the new tag to origin
+ 14. Regenerates and pushes wiki Command-Reference (warn-only)
+ 15. Optionally creates a GitHub Release via gh CLI
 
 Special mode:
   --init-changelog
@@ -47,7 +50,8 @@ Special mode:
 Safety:
   - --dry-run performs local checks and file updates, shows the diff,
     then rolls changes back and exits without fetch/commit/tag/push.
-  - If the script aborts before commit, VERSION and README.md are restored.
+  - If the script aborts before commit, VERSION, README.md and the contract
+    are restored.
 USAGE
 }
 
@@ -63,7 +67,7 @@ error() {
 
 # Handles rollback local changes.
 rollback_local_changes() {
-  git checkout -- "${VERSION_FILE}" "${README_FILE}" 2>/dev/null || true
+  git checkout -- "${VERSION_FILE}" "${README_FILE}" "${CONTRACT_FILE}" 2>/dev/null || true
   log_step "Rolled back local file changes"
 }
 
@@ -109,6 +113,40 @@ update_version_file() {
   local version="$1"
   log_step "Updating VERSION -> ${version}"
   printf '%s\n' "${version}" > "${VERSION_FILE}"
+}
+
+# Syncs the version the rest of the MQ stack reads. release.sh used to bump
+# VERSION but not the contract, so tags shipped with the contract one version
+# behind (v1.0.1). The pointer file, not the canonical contract, carries the
+# version the stack gate compares.
+sync_contract_version() {
+  local version="$1"
+  [[ -f "${CONTRACT_FILE}" ]] || { error "Required file missing: ${CONTRACT_FILE}"; exit 1; }
+  log_step "Syncing ${CONTRACT_FILE} -> ${version}"
+  python3 - "${CONTRACT_FILE}" "${version}" <<'PY'
+import json, sys
+path, version = sys.argv[1], sys.argv[2]
+with open(path) as f:
+    data = json.load(f)
+data["version"] = version
+with open(path, "w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+PY
+}
+
+# Post-bump re-gate: after the version surfaces are written, refuse to commit
+# unless the contract actually matches VERSION. A silent mismatch becomes a hard
+# stop here instead of a drifted tag caught later by another repo's CI.
+verify_contract_matches_version() {
+  local version="$1"
+  local contract_ver
+  contract_ver="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "${CONTRACT_FILE}")"
+  if [[ "${contract_ver}" != "${version}" ]]; then
+    error "${CONTRACT_FILE} version '${contract_ver}' != VERSION '${version}' after sync — aborting"
+    exit 1
+  fi
+  log_step "Verified ${CONTRACT_FILE} matches VERSION (${version})"
 }
 
 # Handles update readme badge.
@@ -164,7 +202,7 @@ Release summary
 Version : ${VERSION}
 Tag     : ${tag}
 Branch  : main
-Files   : ${VERSION_FILE}, ${README_FILE}, ${CHANGELOG_FILE}
+Files   : ${VERSION_FILE}, ${README_FILE}, ${CHANGELOG_FILE}, ${CONTRACT_FILE}
 GitHub  : $( [[ "${GITHUB_RELEASE}" == true ]] && echo enabled || echo disabled )
 EOF_SUMMARY
 }
@@ -174,7 +212,7 @@ create_release_commit_and_tag() {
   local version="$1"
   local tag="v${version}"
 
-  git add "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}"
+  git add "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" "${CONTRACT_FILE}"
   git commit -m "Prepare ${tag} release"
   git tag -a "${tag}" -m "${tag}"
 }
@@ -294,6 +332,7 @@ fi
 require_file "${VERSION_FILE}"
 require_file "${README_FILE}"
 require_file "${CHANGELOG_FILE}"
+require_file "${CONTRACT_FILE}"
 
 if [[ "${INIT_CHANGELOG}" == true ]]; then
   init_changelog_section "${VERSION}"
@@ -324,12 +363,15 @@ fi
 
 update_version_file "${VERSION}"
 update_readme_badge "${VERSION}"
+sync_contract_version "${VERSION}"
 
 log_step "Verifying CHANGELOG contains version ${VERSION}"
 require_changelog_version "${VERSION}"
 
+verify_contract_matches_version "${VERSION}"
+
 log_step "Showing diff preview"
-git --no-pager diff -- "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" || true
+git --no-pager diff -- "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" "${CONTRACT_FILE}" || true
 
 if [[ "${DRY_RUN}" == true ]]; then
   printf '\nDry run complete. No commit, tag, or push performed.\n'
