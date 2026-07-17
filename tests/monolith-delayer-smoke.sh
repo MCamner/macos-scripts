@@ -19,6 +19,7 @@ CONCERNS=(
   "mqlaunch/lib/diagnostics.sh : get_repo_version show_version_info run_self_check run_debug_bundle show_release_notes system_check"
   "mqlaunch/lib/git-menus.sh : open_git_menu open_release_menu"
   "mqlaunch/lib/repo-picker.sh : run_github_repo_picker"
+  "mqlaunch/lib/themes.sh : open_themes_menu theme_cmd theme_current_variant theme_source_state"
 )
 
 total=0

@@ -21,27 +21,14 @@ else
   exit 1
 fi
 
-# Reads or applies the theme cmd setting.
-theme_cmd() {
-  local cmd="${1:-current}"
-  shift || true
-
-  if [[ -x "$THEME_SCRIPT" ]]; then
-    bash "$THEME_SCRIPT" "$cmd" "$@"
-  elif [[ -f "$THEME_SCRIPT" ]]; then
-    chmod +x "$THEME_SCRIPT" 2>/dev/null || true
-    bash "$THEME_SCRIPT" "$cmd" "$@"
-  else
-    print_header
-    row_bold "THEME SWITCHER"
-    empty_row
-    row "Theme switcher script missing:"
-    row " $THEME_SCRIPT"
-    print_footer
-    pause_enter
-    return 1
-  fi
-}
+THEMES_LIB="$BASE_DIR/mqlaunch/lib/themes.sh"
+if [[ -f "$THEMES_LIB" ]]; then
+  # shellcheck disable=SC1090
+  source "$THEMES_LIB"
+else
+  echo "Missing themes library: $THEMES_LIB" >&2
+  exit 1
+fi
 
 # Prints themes menu.
 print_themes_menu() {
@@ -63,6 +50,7 @@ print_themes_menu() {
 # Keeps the themes menu interactive until the user backs out.
 themes_menu_loop() {
   local choice
+  local MQ_THEME_ERROR_HEADING_BOLD=1
 
   while true; do
     print_themes_menu
