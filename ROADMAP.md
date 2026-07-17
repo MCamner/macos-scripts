@@ -305,6 +305,9 @@ following checklist reflects the current macos-scripts priorities for
 * [x] Keep `mqlaunch` thin and predictable, delegating workflow and safety logic to `mq-agent`
 * [x] Maintain the documented integration boundary between `mqlaunch`, `mq-agent`, `mq-mcp`, and `mqobsidian`
 * [x] Keep `mqlaunch` menus and prompt shortcuts aligned with published docs
+* [x] Add markdownlint lint/fix routes, Tools menu actions, tests, and docs
+* [x] Extract shared theme and prompt concerns from the live launcher with regression gates
+* [ ] Migrate the performance menu off `terminal/mqlaunch-v1/`
 * [ ] Add explicit `mqlaunch agent` commands for `doctor`, `score`, `audit`, `release-check`, `mcp-status`, and `mcp-tools`
 * [ ] Add a `mqlaunch flow repo-preflight <path-to-repo>` workflow entrypoint
 * [ ] Add a dedicated `mqlaunch agent release` or equivalent release gateway command
@@ -642,6 +645,8 @@ forward-looking roadmap.
 * release-check gate with repo-signal publish readiness
 * workflow validation / health checks
 * gitleaks secrets scan
+* markdownlint command and Tools menu routes for lint and confirmed fix mode
+* shared theme and prompt concern libraries with monolith regression coverage
 * mq-mcp review routing through `mq-agent`
 * architecture, risk-review, repo-health, and mcp-status commands
 * HAL bridge for brief, audit, release brief, repo status, CI, and context
