@@ -216,6 +216,7 @@ mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
 mqlaunch workflows validate      # workflow files, docs and routing check
 mqlaunch selftest                # smoke tests + shell lint
+mqlaunch markdownlint            # lint Markdown in the current repo
 mqlaunch release-check           # release readiness check
 mqlaunch repos wiki-status       # local docs + GitHub Wiki freshness
 mqlaunch demo                    # guided demo

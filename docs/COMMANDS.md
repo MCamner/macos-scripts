@@ -135,6 +135,19 @@ mqlaunch doctor --json | jq -e '.summary.fail == 0'
 
 ---
 
+## Markdown
+
+```bash
+mqlaunch markdownlint                     # lint all Markdown files in current repo
+mqlaunch markdownlint ROADMAP.md docs/     # lint selected paths
+mqlaunch markdownlint --fix ROADMAP.md     # fix selected files
+```
+
+The Tools menu exposes separate **Markdown lint** and **Markdown fix** actions.
+The menu fix action requires explicit confirmation before files are changed.
+
+---
+
 ## MQ ecosystem skills and repos
 
 ```bash
