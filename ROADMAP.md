@@ -296,6 +296,25 @@ selftest. A public command or output-contract change also requires README and
 * [ ] all existing selftests, workflow validation, release gates, and safety
   boundaries remain green
 
+## macos-scripts roadmap checklist
+
+This repo is the local terminal gateway for MQ stack workflows. The
+following checklist reflects the current macos-scripts priorities for
+`mqlaunch` and `mq-agent` integration.
+
+* [x] Keep `mqlaunch` thin and predictable, delegating workflow and safety logic to `mq-agent`
+* [x] Maintain the documented integration boundary between `mqlaunch`, `mq-agent`, `mq-mcp`, and `mqobsidian`
+* [x] Keep `mqlaunch` menus and prompt shortcuts aligned with published docs
+* [ ] Add explicit `mqlaunch agent` commands for `doctor`, `score`, `audit`, `release-check`, `mcp-status`, and `mcp-tools`
+* [ ] Add a `mqlaunch flow repo-preflight <path-to-repo>` workflow entrypoint
+* [ ] Add a dedicated `mqlaunch agent release` or equivalent release gateway command
+* [ ] Add stack and brain surface commands such as `mqlaunch agent stack sweep` and `mqlaunch agent brain-gate`
+* [ ] Include `mqlaunch flow repo-preflight` in smoke tests and CI validation
+* [ ] Document `MQ_AGENT_BIN`, `MQ_OBSIDIAN_DIR`, and install/link setup for `macos-scripts`
+* [ ] Add or improve install/link guidance in the repo README and docs
+* [ ] Add `release-check --codegraph` support to the `mqlaunch` command surface if the underlying workflow supports it
+* [ ] Keep `mqlaunch` command routing and menu inventory in sync with `docs/MQLAUNCH_INTEGRATION.md`
+
 ## 0-30 Days: Roadmap Sanity And SSOT Read-Only Surface
 
 Goal: make the Obsidian SSOT plan explicit and buildable without expanding
