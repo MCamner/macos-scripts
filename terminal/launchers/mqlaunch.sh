@@ -1044,20 +1044,14 @@ run_arg_command() {
     guard) "$BASE_DIR/tools/scripts/blackout.sh" ;;
     help|-h|--help) show_help ;;
     *)
-      echo "${C_ERR}Unknown command:${C_RESET} $cmd"
-      echo
-      echo "Try:"
-      echo "  mqlaunch ask \"Vad betyder kommandot: $cmd $*\""
-      echo
-
-      if declare -f mq_ai_prompt_ask >/dev/null; then
-        echo "Copying an /ask prompt for this unknown command..."
-        mq_ai_prompt_ask "Vad betyder kommandot '$cmd $*' i mqlaunch, och finns det ett liknande kommando?"
-        return 0
+      if declare -f print_unknown_command_error >/dev/null; then
+        print_unknown_command_error "$cmd"
+      else
+        printf 'ERROR: Unknown command: %s\n' "$cmd" >&2
+        printf 'For AI help, run explicitly: mqlaunch ask "What does %s mean?"\n' \
+          "$cmd" >&2
       fi
-
-      show_help
-      exit 1
+      return 2
       ;;
   esac
 }
@@ -1073,22 +1067,11 @@ if [[ $# -gt 0 ]]; then
       ;;
   esac
 
-  if dispatch_cli_command "$@"; then
-    exit 0
-  else
-    cmd_status=$?
-    if [[ $cmd_status -eq 2 ]]; then
-      exit 2
-    fi
-    case "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" in
-      markdownlint|mdlint) exit "$cmd_status" ;;
-    esac
-  fi
-
   if [[ "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" == "menu" ]]; then
     main_loop
   else
-    run_arg_command "$@"
+    dispatch_cli_command "$@"
+    exit $?
   fi
 else
   main_loop

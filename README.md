@@ -2,7 +2,7 @@
 
 ![macOS](https://img.shields.io/badge/platform-macOS-black)
 ![Shell](https://img.shields.io/badge/shell-zsh%20%2B%20bash-1f6feb)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-2ea44f)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -118,6 +118,7 @@ mqlaunch workflows validate      # workflow command-surface health check
 mqlaunch workflows save          # save workspace snapshot
 mqlaunch release-check           # release readiness gate
 mqlaunch repos status            # MQ ecosystem repo status
+mqlaunch stack status            # canonical stack truth status via mq-agent
 ```
 
 ---
@@ -189,6 +190,7 @@ mqlaunch review                  # review current diff via mq-agent -> mq-mcp
 mqlaunch risk-review             # risk review via mq-agent -> mq-mcp
 mqlaunch architecture            # show mq-mcp architecture memory
 mqlaunch repo-health             # repo-signal + mq-mcp contract health
+mqlaunch stack status            # canonical stack truth status via mq-agent
 mqlaunch mcp-status              # mq-mcp status and tool count
 mqlaunch hal                     # open HAL menu
 mqlaunch hal "your request"      # local Ollama-powered safe command router
@@ -201,6 +203,10 @@ mqlaunch hal last                # show latest HAL memory item
 mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
 mqlaunch hal context             # show mqobsidian context-pack status
+mqlaunch obsidian status         # read-only mqobsidian consumer status
+mqlaunch obsidian inbox          # read-only memory inbox listing
+mqlaunch obsidian views          # open a manifest-defined mqobsidian view
+mqlaunch obsidian promote --dry-run # delegate promotion preview to mq-agent
 mqlaunch hal brief               # compact repo status brief
 mqlaunch hal release-brief       # release readiness brief
 mqlaunch hal audit               # publish quality + README score via repo-signal

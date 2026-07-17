@@ -8,7 +8,7 @@ guessing, and so the v2.0.0 migration (see
 Governance*, plan in [plans/P1-runtime-authority.md](plans/P1-runtime-authority.md))
 has a concrete starting inventory.
 
-Verified against the repo on **2026-07-05** by tracing actual `source`/subprocess
+Verified against the repo on **2026-07-14** by tracing actual `source`/subprocess
 edges from the entry points. Re-verify (and update this file) whenever a bridge,
 menu, or launcher path changes — the CI check proposed in Step 10 should fail if
 a new live→legacy edge appears.
@@ -36,7 +36,7 @@ a new live→legacy edge appears.
 
 | Path | Role |
 | --- | --- |
-| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (~2082 lines) |
+| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (1333 lines) |
 | `terminal/launchers/mqlaunch-command-mode.sh` | CLI/command dispatch, sourced by the launcher |
 | `terminal/launchers/mqlaunch-repl.sh` | Interactive REPL surface (`mqlaunch repl`) |
 
@@ -83,23 +83,22 @@ Reached through other live paths:
 | `terminal/bridges/hal-bridge.sh` | **LIVE** | routes to `mq-hal`; no `mqlaunch-v1` reach |
 | `terminal/bridges/brain-bridge.sh` | **LIVE** | routes to the mqobsidian brain surface; no v1 reach |
 | `terminal/bridges/performance-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` as a subprocess |
-| `terminal/bridges/dev-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` |
+| `terminal/bridges/dev-bridge.sh` | **DEPRECATED** | inert tombstone; v1 routing retired in Step 12.1 |
 | `terminal/bridges/tools-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` |
 
 ## Legacy runtime — COMPAT
 
 | Path | Class | Reachability |
 | --- | --- | --- |
-| `terminal/mqlaunch-v1/**` (24 files, ~1629 LOC) | **COMPAT** | Not reachable except through the compat edges below |
+| `terminal/mqlaunch-v1/**` (25 files, 1629 shell LOC) | **COMPAT** | Reachable only through the compat edges below |
 | `terminal/menus/mq-performance-menu.sh` | **COMPAT** | Live menu, but sources v1 directly (see edges) — a compat wrapper until migrated |
 
 ### The exact live→legacy edges (remove these in Step 12)
 
-These four edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
+These three edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
 them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 
 * `terminal/bridges/performance-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
-* `terminal/bridges/dev-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/bridges/tools-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/menus/mq-performance-menu.sh:26` → **sources** `terminal/mqlaunch-v1/commands/performance.sh` (the only direct live-menu → v1 `source`)
 
@@ -108,7 +107,7 @@ them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 `scripts/check-runtime-authority.sh` is the freeze gate. It scans live runtime
 shell (`terminal/`, `ui/`, `mqlaunch/`, excluding the v1 tree) and fails if any
 file **not** on the compat allowlist references `mqlaunch-v1`. The allowlist is
-exactly the four edges above; keep it in sync with this file. The check runs in
+exactly the three edges above; keep it in sync with this file. The check runs in
 CI (Quality → *Runtime authority freeze*) and locally via
 `tests/runtime-authority-freeze-smoke.sh`. Shrinking the allowlist is a Step 12
 win; growing it must be a conscious, reviewed decision.

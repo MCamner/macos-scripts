@@ -14,6 +14,115 @@ has_json_flag() {
   return 1
 }
 
+# Prints a side-effect-free usage error for an unknown top-level command.
+nearest_cli_command() {
+  local unknown="${1:-}"
+
+  printf '%s\n' \
+    about agent architecture ask brain bundle check commands demo dev doctor \
+    excalidraw fix flow ghost git guard hal help index learn mc mcp-status \
+    memory network notes obsidian palette perf pulse release release-check \
+    repo-health repos review risk-review scan selftest skills srm stack system \
+    theme tools ui version workflows workspace | awk -v target="$unknown" '
+      function distance(a, b, d, i, j, cost, deletion, insertion, substitution) {
+        delete d
+        for (i = 0; i <= length(a); i++) d[i, 0] = i
+        for (j = 0; j <= length(b); j++) d[0, j] = j
+        for (i = 1; i <= length(a); i++) {
+          for (j = 1; j <= length(b); j++) {
+            cost = (substr(a, i, 1) == substr(b, j, 1)) ? 0 : 1
+            deletion = d[i - 1, j] + 1
+            insertion = d[i, j - 1] + 1
+            substitution = d[i - 1, j - 1] + cost
+            d[i, j] = deletion < insertion ? deletion : insertion
+            if (substitution < d[i, j]) d[i, j] = substitution
+          }
+        }
+        return d[length(a), length(b)]
+      }
+      {
+        score = distance(target, $0)
+        if (best == "" || score < best_score) {
+          best = $0
+          best_score = score
+        }
+      }
+      END { print best }
+    '
+}
+
+print_unknown_command_error() {
+  local command_name="${1:-}"
+  local nearest
+  nearest="$(nearest_cli_command "$command_name")"
+
+  printf 'ERROR: Unknown command: %s\n' "$command_name" >&2
+  [[ -n "$nearest" ]] && printf 'Did you mean: mqlaunch %s\n' "$nearest" >&2
+  printf 'For AI help, run explicitly: mqlaunch ask "What does %s mean?"\n' \
+    "$command_name" >&2
+}
+
+# Prints dependency-light help for public mqlaunch namespaces.
+print_namespace_help() {
+  case "${1:-}" in
+    agent)
+      cat <<'HELP'
+Usage: mqlaunch agent <command> [args]
+
+Commands: doctor, score, audit, release-check, review, architecture,
+          risk-review, repo-health, stack, mcp-status, mcp-tools, flow
+HELP
+      ;;
+    hal)
+      cat <<'HELP'
+Usage: mqlaunch hal <command> [args]
+
+Commands: brief, release-brief, context, audit, doctor, fix-doctor,
+          timeline, session, last, remember, repos, raw
+HELP
+      ;;
+    obsidian)
+      cat <<'HELP'
+Usage: mqlaunch obsidian <command> [args]
+
+Commands: status, inbox, views, promote
+HELP
+      ;;
+    repos)
+      cat <<'HELP'
+Usage: mqlaunch repos <command> [args]
+
+Commands: list, status, roadmaps, skills, wiki-status, diff-summary
+HELP
+      ;;
+    skills)
+      cat <<'HELP'
+Usage: mqlaunch skills <command> [args]
+
+Commands: audit, validate, new
+HELP
+      ;;
+    srm)
+      cat <<'HELP'
+Usage: mqlaunch srm <command> [args]
+
+Commands: ask, search, inspect, cochange, review-status,
+          promote-from-review, resolve-supersede
+HELP
+      ;;
+    stack)
+      cat <<'HELP'
+Usage: mqlaunch stack <command> [args]
+
+Commands: status, contract-check, truth-export
+HELP
+      ;;
+    *)
+      return 2
+      ;;
+  esac
+}
+
 # AI prompt helpers
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
@@ -97,6 +206,7 @@ Quick commands:
   mqlaunch architecture
   mqlaunch risk-review
   mqlaunch repo-health
+  mqlaunch stack status
   mqlaunch mcp-status
   mqlaunch flow
   mqlaunch flow run repo-preflight ~/macos-scripts
@@ -105,6 +215,10 @@ Quick commands:
   mqlaunch srm ask "your question"
   mqlaunch agent
   mqlaunch obsidian
+  mqlaunch obsidian status
+  mqlaunch obsidian inbox
+  mqlaunch obsidian views
+  mqlaunch obsidian promote --dry-run
   mqlaunch mqobsidian
   mqlaunch agent doctor
   mqlaunch agent score .
@@ -167,9 +281,33 @@ HELP
 
 # Routes cli command to the matching command handler.
 dispatch_cli_command() {
-  local area sub
+  local area sub namespace command_status
   area="$(normalize_cli_word "${1:-}")"
   sub="$(normalize_cli_word "${2:-}")"
+
+  namespace="$area"
+  case "$namespace" in
+    mq-agent) namespace="agent" ;;
+    mqobsidian|memory-menu|mq-memory) namespace="obsidian" ;;
+    skill) namespace="skills" ;;
+    memory|repo-memory) namespace="srm" ;;
+  esac
+
+  case "$namespace" in
+    agent|hal|obsidian|repos|skills|srm|stack)
+      case "$sub" in
+        -h|--help|help)
+          if [[ $# -ne 2 ]]; then
+            printf 'ERROR: mqlaunch %s help accepts no additional arguments\n' \
+              "$namespace" >&2
+            return 2
+          fi
+          print_namespace_help "$namespace"
+          return 0
+          ;;
+      esac
+      ;;
+  esac
 
   case "$area" in
     ""|menu)
@@ -223,66 +361,88 @@ dispatch_cli_command() {
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command review "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     architecture|/architecture)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command architecture "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     risk-review|/risk-review)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command risk-review "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     repo-health|/repo-health)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command repo-health "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
+      ;;
+
+    stack|/stack)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        if [[ $# -eq 0 ]]; then
+          run_agent_command stack status
+        else
+          run_agent_command stack "$@"
+        fi
+        command_status=$?
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return "$command_status"
       ;;
 
     mcp-status|/mcp-status)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command mcp-status "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     flow|/flow)
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command flow "$@"
+        command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     ui|/ui)
@@ -319,11 +479,12 @@ dispatch_cli_command() {
         shift
         if declare -f run_agent_command >/dev/null; then
           run_agent_command "$_mem_verb" "$@"
+          command_status=$?
         else
           echo "ERROR: mq-agent bridge not loaded" >&2
           return 1
         fi
-        return 0
+        return "$command_status"
       fi
       "$BASE_DIR/tools/scripts/srm.sh" "$@"
       return 0
@@ -687,12 +848,13 @@ dispatch_cli_command() {
       shift
       if declare -f mq_hal_run >/dev/null; then
         mq_hal_run "$@"
+        command_status=$?
       else
         echo "ERROR: mq-hal bridge not loaded" >&2
         return 1
       fi
       has_json_flag "$@" || pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     agent|mq-agent)
@@ -707,13 +869,51 @@ dispatch_cli_command() {
       ;;
 
     obsidian|mqobsidian|memory-menu|mq-memory)
-      if declare -f mq_obsidian_menu_main >/dev/null; then
-        mq_obsidian_menu_main
-      else
-        echo "ERROR: mqobsidian menu not loaded" >&2
-        return 1
-      fi
-      return 0
+      case "$sub" in
+        ""|menu)
+          if declare -f mq_obsidian_menu_main >/dev/null; then
+            mq_obsidian_menu_main
+          else
+            echo "ERROR: mqobsidian menu not loaded" >&2
+            return 1
+          fi
+          ;;
+        status|doctor)
+          "$BASE_DIR/mqlaunch/commands/mqobsidian/mqobsidian-doctor.sh"
+          ;;
+        inbox)
+          if declare -f mq_obsidian_show_inbox >/dev/null; then
+            mq_obsidian_show_inbox
+          else
+            echo "ERROR: mqobsidian menu not loaded" >&2
+            return 1
+          fi
+          ;;
+        views|open-view|navigate)
+          if declare -f mq_obsidian_open_view_picker >/dev/null; then
+            mq_obsidian_open_view_picker
+          else
+            echo "ERROR: mqobsidian view picker not loaded" >&2
+            return 1
+          fi
+          ;;
+        promote)
+          shift 2 || true
+          if declare -f run_agent_command >/dev/null; then
+            run_agent_command obsidian-promote "$@"
+          else
+            echo "ERROR: mq-agent bridge not loaded" >&2
+            return 1
+          fi
+          ;;
+        *)
+          echo "ERROR: unknown mqobsidian command: $sub" >&2
+          echo "usage: mqlaunch obsidian [status|inbox|views|promote]" >&2
+          return 1
+          ;;
+      esac
+      command_status=$?
+      return "$command_status"
       ;;
 
     mqlaunch)
@@ -790,12 +990,8 @@ dispatch_cli_command() {
       ;;
 
     *)
-      if declare -f mq_ai_prompt_ask >/dev/null; then
-        echo "Unknown command → routing to /ask"
-        mq_ai_prompt_ask "$@"
-        return 0
-      fi
-      return 1
+      print_unknown_command_error "$area"
+      return 2
       ;;
   esac
 }

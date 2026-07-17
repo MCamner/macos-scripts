@@ -4,7 +4,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.0.1] - 2026-07-16
 
 ### Added
 
@@ -29,6 +29,15 @@ All notable changes to this project will be documented in this file.
   rejection routes, preserving the review-gated ownership boundary.
 * Verified the review command delegation boundary through
   `tests/mq-agent-routing-smoke.sh` and marked the roadmap item done.
+* Added direct `mqlaunch obsidian status`, `mqlaunch obsidian inbox`, and
+  `mqlaunch obsidian views` routes for read-only mqobsidian status/navigation.
+* Added `mqlaunch obsidian promote` as a thin delegate to
+  `mq-agent obsidian promote`, keeping scoring and memory writes out of
+  mqlaunch.
+* Added a release-check gate for the local mqobsidian view-manifest consumer
+  contract, blocking malformed or drifted `views.json` before release.
+* Added delegate-only `mqlaunch stack status` / `mqlaunch stack ...` routing to
+  `mq-agent stack`, keeping canonical truth parsing outside mqlaunch.
 * Monolith de-layering (Step 11a): five concerns moved verbatim out of
   `terminal/launchers/mqlaunch.sh` into dedicated libraries sourced back into
   the launcher's scope — the network concern (status/diagnostics/connectivity,

@@ -39,7 +39,7 @@ Current policy:
 
 ```text
 terminal/bridges/
-├── dev-bridge.sh           # legacy fallback for old Dev routing
+├── dev-bridge.sh           # inert tombstone; legacy Dev routing retired
 ├── performance-bridge.sh   # active bridge for Performance
 ├── tools-bridge.sh         # legacy fallback for old Tools routing
 └── README.md
@@ -47,7 +47,7 @@ terminal/bridges/
 
 ## How They Work
 
-Each bridge:
+Active compatibility bridges:
 
 * builds the path to `terminal/mqlaunch-v1/mqlaunch.sh`
 * checks whether the v1 launcher is executable
@@ -59,8 +59,6 @@ Each bridge:
 
 Examples from the current files:
 
-* `open_v1_dev_menu()`
-* `run_v1_dev_command()`
 * `open_performance_menu()`
 * `run_performance_command()`
 * `open_v1_performance_menu()` (compatibility alias)

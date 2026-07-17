@@ -1,6 +1,6 @@
 # Step 12 — Compat Removal: Migrate Off v1 And Delete It
 
-**Status:** Planned
+**Status:** In progress — 12.1 complete
 **Target release:** `v2.0.0` (final gate)
 **Theme:** Make `terminal/mqlaunch-v1/` unreachable, then delete it — closing the
 last legacy runtime dependency and the last duplicate UI implementation.
@@ -22,19 +22,19 @@ complete, so Step 12 is unblocked.
 ## What actually reaches v1 today
 
 The v1 tree is **24 `.sh` files, ~1629 LOC**. Its *live* surface is far
-narrower than its size — only three entry points, gated by the four documented
+narrower than its size — only two entry points, gated by the three remaining
 compat edges on the freeze-gate `ALLOW` list:
 
 | Live edge | How it reaches v1 | Coupling |
 | --- | --- | --- |
 | `terminal/bridges/performance-bridge.sh` | `bash v1/mqlaunch.sh performance` + `run_performance_command` | **subprocess** |
 | `terminal/menus/mq-performance-menu.sh` | `source v1/commands/performance.sh` (504 LOC) | **sourced — deepest** |
-| `terminal/bridges/dev-bridge.sh` | `open_v1_dev_menu` / `run_v1_dev_command` → `bash v1/mqlaunch.sh dev` | **dead** (see below) |
+| `terminal/bridges/dev-bridge.sh` | v1 functions removed in 12.1 | **decommissioned** |
 | `terminal/bridges/tools-bridge.sh` | `open_v1_tools_menu` / `run_v1_tools_command` → `bash v1/mqlaunch.sh tools` | **dead** (see below) |
 
 Everything else in v1 (`commands/{about,bundle,check,index,login,meta,notes,repo,shortcuts,system}.sh`,
 `menus/*`, `lib/{core,router,ui}.sh`) is reachable only transitively when the v1
-launcher boots for one of those three subcommands. Nothing live sources it
+launcher boots for one of those two subcommands. Nothing live sources it
 directly.
 
 ### Key finding — dev/tools are already off v1
@@ -43,8 +43,8 @@ The launcher's `open_dev_menu` / `open_tools_menu` already call the **live**
 `dev_menu_loop` / `tools_menu_loop` (`terminal/menus/mq-dev-menu.sh`,
 `mq-tools-menu.sh`, sourced at launcher lines ~149/167). The v1-reaching bridge
 functions (`open_v1_dev_menu`, `run_v1_dev_command`, and the tools equivalents)
-have **zero live callers** (verified by grep, 2026-07-05). They are dead code
-kept alive only by the `ALLOW` list.
+had **zero live callers** (verified by grep, 2026-07-05). The dev functions are
+now removed; the tools functions remain dead code kept alive only by `ALLOW`.
 
 That means the real migration is **performance only**. dev/tools is a dead-code
 decommission.
@@ -59,7 +59,7 @@ shrink — the gate already flags stale allowlist entries.
 
 | # | Workstream | Risk | Gate to start |
 | --- | --- | --- | --- |
-| 12.1 | Decommission dead dev bridge → drop `dev-bridge.sh` v1 functions; remove from `ALLOW` | Low | — |
+| 12.1 | ~~Decommission dead dev bridge → drop `dev-bridge.sh` v1 functions; remove from `ALLOW`~~ **Done** | Low | — |
 | 12.2 | Decommission dead tools bridge → same for `tools-bridge.sh` | Low | — |
 | 12.3 | Golden-snapshot performance output (`mqlaunch performance` + each subcmd) as a regression fixture | Low | — |
 | 12.4 | Migrate `v1/commands/performance.sh` → a live lib (`mqlaunch/lib/performance.sh`); repoint `mq-performance-menu.sh` + `performance-bridge.sh`; drop the v1 subprocess | **High** | 12.3 green |

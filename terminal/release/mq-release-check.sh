@@ -99,6 +99,45 @@ else
   warn_or_fail "tests/mq-stack-contract-smoke.sh not found or not executable" || exit 1
 fi
 
+section "MQOBSIDIAN MANIFEST CONTRACT"
+check_mqobsidian_manifest_contract() {
+  local manifest="$BASE_DIR/mqlaunch/config/mqobsidian/views.json"
+
+  if [[ ! -f "$manifest" ]]; then
+    fail "mqobsidian view manifest missing: $manifest"
+    return 1
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    fail "jq is required to validate mqobsidian view manifest"
+    return 1
+  fi
+
+  if ! jq empty "$manifest" >/dev/null 2>&1; then
+    fail "mqobsidian view manifest is not valid JSON: $manifest"
+    return 1
+  fi
+
+  if ! jq -e '
+    type == "array" and
+    length > 0 and
+    all(.[]; (
+      (.key | type == "string" and length > 0) and
+      (.label | type == "string" and length > 0) and
+      (.relative_path | type == "string" and length > 0) and
+      (.type == "file" or .type == "folder")
+    )) and
+    ((map(.key) | length) == (map(.key) | unique | length))
+  ' "$manifest" >/dev/null; then
+    fail "mqobsidian view manifest violates the consumer contract"
+    echo "Expected non-empty array with unique key plus label, relative_path, and type=file|folder."
+    return 1
+  fi
+
+  pass "mqobsidian view manifest contract is valid"
+}
+check_mqobsidian_manifest_contract || exit 1
+
 section "SYSTEM CHECK"
 if [[ -x "$BASE_DIR/tools/scripts/doctor.sh" ]]; then
   "$BASE_DIR/tools/scripts/doctor.sh"

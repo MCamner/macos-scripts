@@ -38,6 +38,15 @@ assert_grep() {
   pass "$label"
 }
 
+# Coordinates assert absent grep behavior.
+assert_not_grep() {
+  local pattern="$1"
+  local file="$2"
+  local label="$3"
+  grep -qE "$pattern" "$file" && fail "$label"
+  pass "$label"
+}
+
 # Coordinates assert cmd ok behavior.
 assert_cmd_ok() {
   local label="$1"
@@ -58,6 +67,7 @@ assert_cmd_ok "V1 launcher help works" bash "$V1" help
 
 assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance route exists in launcher"
 assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
+assert_not_grep 'mqlaunch-v1' "$DEV_BRIDGE" "Dev bridge is decommissioned from v1"
 assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
 assert_grep 'restart\|reload\|relaunch\).*restart_mqlaunch' "$LEGACY" "mqlaunch restart route exists"
 assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"

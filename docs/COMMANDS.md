@@ -170,6 +170,43 @@ These commands are read-only except `skills new`, which creates a local
 
 ---
 
+## Command errors
+
+Unknown top-level commands are side-effect free. They write a short diagnostic
+to stderr, suggest the nearest documented command and return exit code `2`.
+They never open a menu, copy a prompt to the clipboard or invoke AI implicitly.
+
+```bash
+mqlaunch doctro
+# stderr: ERROR: Unknown command: doctro
+# stderr: Did you mean: mqlaunch doctor
+# exit: 2
+```
+
+AI help remains explicit: `mqlaunch ask "What does doctro mean?"`.
+
+Public namespaces provide local help without loading their optional backend:
+
+```bash
+mqlaunch agent --help
+mqlaunch hal --help
+mqlaunch obsidian --help
+mqlaunch repos --help
+mqlaunch skills --help
+mqlaunch srm --help
+mqlaunch stack --help
+```
+
+`-h` is equivalent to `--help`. Valid namespace help returns `0`; extra help
+arguments return usage exit code `2`.
+
+Delegated commands preserve the backend exit status. Scripts can distinguish a
+usage error (`2`) from a runtime failure without parsing terminal text. Launcher
+pauses never replace that status, and `--json` suppresses pause output so stdout
+remains machine-readable.
+
+---
+
 ## AI assistant
 
 ```bash
@@ -183,6 +220,9 @@ mqlaunch review repo architecture              # review repo in architecture mod
 mqlaunch risk-review                            # risk review current diff via mq-agent
 mqlaunch architecture                           # show mq-mcp architecture decisions
 mqlaunch repo-health                            # repo-signal + orchestration contract health
+mqlaunch stack status                           # canonical stack truth status via mq-agent
+mqlaunch stack contract-check                   # delegate stack contract check to mq-agent
+mqlaunch stack truth-export                     # delegate stack truth export to mq-agent
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
@@ -190,6 +230,10 @@ mqlaunch ui                                     # copy UI prompt to clipboard
 `mqlaunch` only delegates these review and architecture commands. Review
 logic, severity labels, semantic memory, and risk routing stay in `mq-mcp`;
 `mq-agent` is the orchestration layer between mqlaunch and mq-mcp.
+
+`mqlaunch stack ...` is also delegate-only. `status` defaults to
+`mq-agent stack status`; `contract-check`, `truth-export`, and future stack
+verbs are forwarded to `mq-agent stack` without local truth parsing.
 
 ### Workflow orchestration (flow)
 
@@ -418,6 +462,24 @@ mqlaunch hal context budget
 ```
 
 Shows read-only mqobsidian context-pack readiness. Delegates to `mq-hal context`; it does not generate packs or write to mqobsidian.
+
+### MQ Obsidian
+
+```bash
+mqlaunch obsidian                 # open the MQ Obsidian menu
+mqlaunch obsidian status          # read-only consumer status / doctor
+mqlaunch obsidian inbox           # list memory inbox files; no promotion
+mqlaunch obsidian views           # open manifest-defined views
+mqlaunch obsidian promote --dry-run    # delegate promotion preview to mq-agent
+mqlaunch obsidian promote --confirm    # delegate confirmed promotion to mq-agent
+```
+
+`mqlaunch obsidian status` is the direct alias for the existing read-only
+mqobsidian doctor/status surface. `inbox` and `views` stay presentation-only:
+they list or open exported vault surfaces and do not score, promote, reject, or
+write durable memory. `promote` is a thin delegation surface to
+`mq-agent obsidian promote`; mqlaunch does not inspect, score, approve, or write
+the memory item itself.
 
 ### HAL Repo Status
 
