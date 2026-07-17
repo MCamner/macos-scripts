@@ -54,7 +54,7 @@ mqlaunch shows menu -> delegates -> mq-agent orchestrates -> mq-mcp executes
 
 ## P1: Consolidate mqlaunch Runtime Authority
 
-Status: Planned · Priority: P1 · Risk if delayed: High · Owner: `mqlaunch`
+Status: In progress · Priority: P1 · Risk if delayed: High · Owner: `mqlaunch`
 
 mqlaunch currently behaves as three partially overlapping runtimes at once: the
 live launcher-centered path, a legacy modular `terminal/mqlaunch-v1/` path still
@@ -269,7 +269,7 @@ mqobsidian -> own schema, state, persistence, and durable views
 
 ## Phase 12 / v2.0.0 — Runtime Authority And Shell Governance
 
-**Status:** Proposed
+**Status:** In progress — authority declared; compat removal remains gated
 **Priority:** P1
 **Type:** Architecture / Runtime governance
 **Owner:** `macos-scripts`
@@ -296,13 +296,13 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### This repo owns
 
-* [ ] terminal entrypoint authority
-* [ ] launcher/runtime path authority
-* [ ] menu-layer authority
-* [ ] dashboard/UI authority
-* [ ] compat boundary for legacy runtime paths
-* [ ] allowed dependency directions inside shell/runtime
-* [ ] read-only or delegate-only shell integration toward other repos
+* [x] terminal entrypoint authority
+* [x] launcher/runtime path authority
+* [x] menu-layer authority
+* [x] dashboard/UI authority
+* [x] compat boundary for legacy runtime paths
+* [x] allowed dependency directions inside shell/runtime
+* [x] read-only or delegate-only shell integration toward other repos
 
 ### This repo does not own
 
@@ -315,30 +315,30 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### Target state
 
-* [ ] one documented runtime authority
-* [ ] one documented compatibility boundary
-* [ ] one current dashboard/UI authority
-* [ ] one allowed dependency model
+* [x] one documented runtime authority
+* [x] one documented compatibility boundary
+* [x] one current dashboard/UI authority
+* [x] one allowed dependency model
 * [ ] no direct live dependency on legacy runtime paths
 
 ### Scope
 
-* [ ] define and document runtime authority
-* [ ] classify `LIVE`, `COMPAT`, `DEPRECATED`, and `TEST-ONLY` paths
-* [ ] freeze further architecture drift
-* [ ] consolidate dashboard/UI authority
-* [ ] keep `mqlaunch obsidian *` read-only, open, or delegate-only
-* [ ] require fixes to land in the authority-owning layer
+* [x] define and document runtime authority
+* [x] classify `LIVE`, `COMPAT`, `DEPRECATED`, and `TEST-ONLY` paths
+* [x] freeze further architecture drift
+* [x] consolidate dashboard/UI authority
+* [x] keep `mqlaunch obsidian *` read-only, open, or delegate-only
+* [x] require fixes to land in the authority-owning layer
 
 ### Delivery
 
 #### A. Runtime authority
 
-* [ ] declare official entrypoint and runtime coordinator
-* [ ] declare official live menu layer
-* [ ] classify `mqlaunch/lib/*` by actual live usage
-* [ ] classify `terminal/mqlaunch-v1/*` as compat until unreachable
-* [ ] document forbidden direct dependencies into legacy paths
+* [x] declare official entrypoint and runtime coordinator
+* [x] declare official live menu layer
+* [x] classify `mqlaunch/lib/*` by actual live usage
+* [x] classify `terminal/mqlaunch-v1/*` as compat until unreachable
+* [x] document forbidden direct dependencies into legacy paths
 
 #### B. Drift freeze
 
@@ -355,11 +355,11 @@ chance of duplicate fixes, UI drift, and wrong-surface edits.
 
 ### Exit criteria
 
-* [ ] exactly one runtime authority is documented
-* [ ] all runtime-relevant paths are classified
+* [x] exactly one runtime authority is documented
+* [x] all runtime-relevant paths are classified
 * [ ] no live menu depends directly on legacy runtime paths
-* [ ] dashboard/UI logic has one current authority
-* [ ] shell remains operator surface, not truth owner
+* [x] dashboard/UI logic has one current authority
+* [x] shell remains operator surface, not truth owner
 
 ## B2 / Atlas Prompt OS Track
 
@@ -393,6 +393,7 @@ forward-looking roadmap.
 * release-check gate with repo-signal publish readiness
 * workflow validation / health checks
 * gitleaks secrets scan
+* markdownlint command and Tools menu routes for lint and confirmed fix mode
 * mq-mcp review routing through `mq-agent`
 * architecture, risk-review, repo-health, and mcp-status commands
 * HAL bridge for brief, audit, release brief, repo status, CI, and context
