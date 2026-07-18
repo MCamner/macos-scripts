@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The git "auto commit + push" automation no longer leaves the working checkout
+  off-main. After creating and pushing an `mq/...` PR branch,
+  `create_pr_branch_for_push` (in `gitlaunch.sh` and `mq-git-menu.sh`) now calls
+  `tools/scripts/git-restore-to-base.sh`, which restores the checkout to the base
+  branch and rewinds the local base ref to origin — non-destructively, since the
+  commit is already on the pushed PR branch. Runs even when the push or PR step
+  failed; reports repo/branch/dirty/next-command if it cannot restore. Proven by
+  `tests/git-restore-to-base-smoke.sh`.
+
 ### Changed
 
 * Added a root `release-check.sh` conforming to the `repo_release_check.v1`
