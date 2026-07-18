@@ -4,6 +4,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+* Added a root `release-check.sh` conforming to the `repo_release_check.v1`
+  contract: `--json` emits the machine-readable verdict (`schema`, `repo`,
+  `status`, `blockers`, `warnings`, `evidence`) on clean stdout and exits 0;
+  human mode prints per-check ok/FAIL. Runs the read-only checks (contract/
+  CHANGELOG/README version surfaces, check-skills, runtime-authority freeze,
+  `bash -n` syntax, mqlaunch smoke suite). Lets mq-agent's `stack release --all
+  --preflight` read the release verdict.
+
 ## [1.0.1] - 2026-07-16
 
 ### Added
