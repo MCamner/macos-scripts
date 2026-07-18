@@ -753,30 +753,34 @@ function create_pr_branch_for_push() {
   status=$?
   echo "$output"
 
-  if [[ "$status" -ne 0 ]]; then
-    return "$status"
+  local rc="$status"
+  if [[ "$status" -eq 0 ]]; then
+    if command -v gh >/dev/null 2>&1; then
+      echo ""
+      printf "%bCreate the pull request now? [Y/n]: %b" "$C_LABEL" "$C_RESET"
+      read confirm </dev/tty
+      if [[ "$confirm" =~ ^[Nn]$ ]]; then
+        echo "Skipped. Open it later with:"
+        echo "  gh pr create --base $base_branch --head $pr_branch --fill"
+      elif ! gh pr create --base "$base_branch" --head "$pr_branch" --fill; then
+        echo ""
+        echo "PR creation failed. Open it manually with:"
+        echo "  gh pr create --base $base_branch --head $pr_branch --fill"
+        rc=1
+      fi
+    else
+      echo ""
+      echo "Install the GitHub CLI (gh) to open the PR automatically. Then run:"
+      echo "  gh pr create --base $base_branch --head $pr_branch --fill"
+    fi
   fi
 
-  if command -v gh >/dev/null 2>&1; then
-    echo ""
-    printf "%bCreate the pull request now? [Y/n]: %b" "$C_LABEL" "$C_RESET"
-    read confirm </dev/tty
-    if [[ "$confirm" =~ ^[Nn]$ ]]; then
-      echo "Skipped. Open it later with:"
-      echo "  gh pr create --base $base_branch --head $pr_branch --fill"
-      return 0
-    fi
-    if ! gh pr create --base "$base_branch" --head "$pr_branch" --fill; then
-      echo ""
-      echo "PR creation failed. Open it manually with:"
-      echo "  gh pr create --base $base_branch --head $pr_branch --fill"
-      return 1
-    fi
-  else
-    echo ""
-    echo "Install the GitHub CLI (gh) to open the PR automatically. Then run:"
-    echo "  gh pr create --base $base_branch --head $pr_branch --fill"
-  fi
+  # Never leave the checkout on the PR branch: restore it to the base branch.
+  # Runs even when the push or PR step above failed. Non-destructive — the
+  # commit is already on the pushed PR branch.
+  "${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true
+
+  return "$rc"
 }
 
 # Coordinates pr aware push behavior.

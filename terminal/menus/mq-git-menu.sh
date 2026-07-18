@@ -138,6 +138,11 @@ create_pr_branch_for_push() {
     echo "Next: gh pr create --base $base_branch --head $pr_branch --fill"
   fi
 
+  # Never leave the checkout on the PR branch: restore it to the base branch
+  # (runs even when the push failed). Non-destructive — the commit is already on
+  # the pushed PR branch.
+  "$BASE_DIR/tools/scripts/git-restore-to-base.sh" "$base_branch" "$CURRENT_REPO" || true
+
   return "$status"
 }
 
