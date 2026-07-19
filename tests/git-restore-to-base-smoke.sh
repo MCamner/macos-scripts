@@ -6,8 +6,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER="$ROOT/tools/scripts/git-restore-to-base.sh"
+GIT_MENU="$ROOT/terminal/menus/mq-git-menu.sh"
 
 [ -x "$HELPER" ] || { echo "FAIL: $HELPER missing or not executable" >&2; exit 1; }
+[ -r "$GIT_MENU" ] || { echo "FAIL: $GIT_MENU missing or not readable" >&2; exit 1; }
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -27,22 +29,26 @@ _git "$REPO" add -A
 _git "$REPO" commit -q -m init
 _git "$REPO" push -q -u origin main
 
-# Simulate the automation: commit on main, then branch a PR branch off it and
-# push that (mirrors run_ai_commit -> create_pr_branch_for_push).
+# Create the automation commit on main.
 echo change > "$REPO/f.txt"
 _git "$REPO" commit -q -am "update project files"
-PR_BRANCH="mq/update-project-files-$(date +%Y%m%d-%H%M%S)"
-_git "$REPO" switch -q -c "$PR_BRANCH"
-_git "$REPO" push -q -u origin "$PR_BRANCH"
 
-# Pre-condition: the bug's end state — checkout off-main, main ahead (unpushed).
-[ "$(_git "$REPO" branch --show-current)" = "$PR_BRANCH" ] \
-  || { echo "FAIL: setup did not leave checkout on the PR branch" >&2; exit 1; }
+# Pre-condition: main has the unpushed automation commit.
 [ "$(_git "$REPO" rev-list --count origin/main..main)" -eq 1 ] \
   || { echo "FAIL: setup did not leave main ahead of origin" >&2; exit 1; }
 
-# Act: restore.
-"$HELPER" main "$REPO"
+# Act through the real menu function. mq-git-menu.sh assigns CURRENT_REPO while
+# being sourced, so MQ_GIT_REPO must point at the disposable test repo first.
+export MACOS_SCRIPTS_HOME="$ROOT"
+export MQ_GIT_REPO="$REPO"
+# shellcheck disable=SC1090
+source "$GIT_MENU"
+create_pr_branch_for_push main "update project files interrupt test" <<< "y"
+
+PR_BRANCH="$(_git "$REPO" for-each-ref --format='%(refname:short)' \
+  'refs/remotes/origin/mq/update-project-files-interrupt-test-*' | head -1)"
+[ -n "$PR_BRANCH" ] \
+  || { echo "FAIL: menu flow did not push the PR branch" >&2; exit 1; }
 
 # Assert: checkout back on main.
 [ "$(_git "$REPO" branch --show-current)" = "main" ] \
@@ -54,7 +60,7 @@ _git "$REPO" push -q -u origin "$PR_BRANCH"
 [ -z "$(_git "$REPO" status --porcelain)" ] \
   || { echo "FAIL: working tree not clean after restore" >&2; exit 1; }
 # Assert: the automation commit is preserved on the pushed PR branch (nothing lost).
-_git "$REPO" rev-parse --verify -q "origin/$PR_BRANCH" >/dev/null \
+_git "$REPO" rev-parse --verify -q "$PR_BRANCH" >/dev/null \
   || { echo "FAIL: PR-branch commit not preserved on origin" >&2; exit 1; }
 
 # Idempotence: running restore again from a clean base branch is a no-op success.
