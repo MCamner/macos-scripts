@@ -9,5 +9,6 @@
     "mq-stack-repo-contract.v1",
     "mqlaunch.v1",
     "stack-cockpit.v1"
-  ]
+  ],
+  "release_mode": "pull_request"
 }
