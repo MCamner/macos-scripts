@@ -748,6 +748,9 @@ function create_pr_branch_for_push() {
     return 1
   fi
 
+  trap '"${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true; exit 130' INT
+  trap '"${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true; exit 143' TERM
+
   git switch -c "$pr_branch" 2>/dev/null || git checkout -b "$pr_branch"
   output=$(git push -u origin "$pr_branch" 2>&1)
   status=$?
@@ -775,11 +778,8 @@ function create_pr_branch_for_push() {
     fi
   fi
 
-  # Never leave the checkout on the PR branch: restore it to the base branch.
-  # Runs even when the push or PR step above failed. Non-destructive — the
-  # commit is already on the pushed PR branch.
   "${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true
-
+  trap - INT TERM
   return "$rc"
 }
 
