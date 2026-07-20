@@ -128,6 +128,9 @@ create_pr_branch_for_push() {
     return 1
   fi
 
+  trap '"$BASE_DIR/tools/scripts/git-restore-to-base.sh" "$base_branch" "$CURRENT_REPO" || true; exit 130' INT
+  trap '"$BASE_DIR/tools/scripts/git-restore-to-base.sh" "$base_branch" "$CURRENT_REPO" || true; exit 143' TERM
+
   git -C "$CURRENT_REPO" switch -c "$pr_branch" 2>/dev/null || git -C "$CURRENT_REPO" checkout -b "$pr_branch"
   output="$(git -C "$CURRENT_REPO" push -u origin "$pr_branch" 2>&1)"
   status=$?
@@ -138,11 +141,8 @@ create_pr_branch_for_push() {
     echo "Next: gh pr create --base $base_branch --head $pr_branch --fill"
   fi
 
-  # Never leave the checkout on the PR branch: restore it to the base branch
-  # (runs even when the push failed). Non-destructive — the commit is already on
-  # the pushed PR branch.
   "$BASE_DIR/tools/scripts/git-restore-to-base.sh" "$base_branch" "$CURRENT_REPO" || true
-
+  trap - INT TERM
   return "$status"
 }
 
