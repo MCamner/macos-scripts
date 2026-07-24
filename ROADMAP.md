@@ -1,663 +1,750 @@
 # Roadmap
 
-Current version: 1.0.0
+Current version: 1.0.1
 
-## Purpose
+## Current direction
 
-`macos-scripts` owns the local terminal entrypoint for the MQ stack.
-`mqlaunch` should make the right workflow easy to find and run, while deeper
-planning, review, memory, and execution logic stay in the repos that own them.
+`macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-Current focus: `v1.0.1` release readiness hardening, roadmap freshness, and
-stack-surface verification.
-
-## Design Boundary
+The next major product step is:
 
 ```text
-mqlaunch shows menu -> delegates -> mq-agent orchestrates -> mq-mcp executes
-                                      mqobsidian stores truth and memory
+v2.0.0 — Runtime Authority and Command Surface Governance
 ```
 
-`mqlaunch` may:
+The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
-* show menus, command shortcuts, and local status
-* open documented Obsidian views through the mqobsidian manifest/consumer lib
-* run read-only checks and status commands
-* delegate orchestration to `mq-agent`, `mq-hal`, `repo-signal`, and `mq-mcp`
-
-`mqlaunch` must not:
-
-* implement review, risk, or architecture logic itself
-* call mq-mcp tools directly when `mq-agent` owns the workflow
-* parse, score, or promote semantic memory in shell scripts
-* make Obsidian truth-schema decisions locally
-
-## Repo Ownership
-
-| Repo/layer | Owns | `mqlaunch` relationship |
-| --- | --- | --- |
-| `mqlaunch` / `macos-scripts` | Terminal entrypoint, menus, shortcuts, operator UX | Show and delegate |
-| `mq-agent` | Orchestration, planning, promotion flow, cross-tool workflows | Primary target for mutating/intelligent commands |
-| `mq-mcp` | Runtime tools, review, safety, cognition, memory APIs | Reached through `mq-agent` |
-| `mqobsidian` | Single source of truth, schemas, canonical paths, dashboards | Open/read exported views; do not own schemas |
-| `repo-signal` | Readiness, publishability, quality signals | Read status and release gates |
-| `mq-hal` | Operator brief, local cockpit, read-only status summaries | Delegate HAL surface |
-| `mq-ums` | External infrastructure signals | Future read-only signal source |
-
-## Priority Model
-
-1. Keep `mqlaunch` thin and predictable.
-2. Make Obsidian truth visible without moving ownership into shell.
-3. Prefer read-only proof commands before mutating workflows.
-4. Promote repeated learnings only through a review-gated `mq-agent` flow.
-5. Keep B2/Atlas as a useful prompt surface, not the owner of stack truth.
-
-## P1: Consolidate mqlaunch Runtime Authority
-
-Status: Planned · Priority: P1 · Risk if delayed: High · Owner: `mqlaunch`
-
-mqlaunch currently behaves as three partially overlapping runtimes at once: the
-live launcher-centered path, a legacy modular `terminal/mqlaunch-v1/` path still
-reachable through bridges, and a newer `mqlaunch/lib/` module path used by some
-menus. Resolving that is the headline architecture item for the next release. It
-is developed below as **[Phase 12 / v2.0.0](#phase-12--v200--runtime-authority-and-shell-governance)**,
-with the detailed engineering plan in
-[docs/plans/P1-runtime-authority.md](docs/plans/P1-runtime-authority.md) and the
-workstream sequencing (owners, dependencies, `Not before` gating, risk register)
-in [docs/plans/v2.0.0-sequencing.md](docs/plans/v2.0.0-sequencing.md).
-
-## P1: CLI Contract And Automation Safety
-
-**Status:** Planned
-**Priority:** P1
-**Risk if delayed:** High
-**Owner:** `macos-scripts`
-**Secondary repos:** none; delegated commands keep their existing owners
-
-Goal: make every direct `mqlaunch` command predictable for humans, scripts, and
-delegated MQ tools without expanding shell into orchestration or cognition.
-
-### Verified baseline — 2026-07-14
-
-* [x] `repo-signal doctor` reports 100/100 repo health, docs quality, and AI readiness
-* [x] `mqlaunch workflows validate` passes 16 checks with no warnings
-* [x] `mqlaunch selftest` passes, including syntax checks for 152 shell files
-* [x] `mqlaunch doctor --json` emits valid machine-readable health output
-* [x] unknown commands write diagnostics to stderr, suggest an explicit command,
-  avoid side effects, and return usage exit code `2`
-* [x] namespace help is local, non-interactive, dependency-light, and consistent
-  for the documented public namespaces
-* [x] delegated failures preserve backend status through command-mode, optional
-  pause rendering, and the full launcher process
-* [ ] `mqlaunch help`, `mqlaunch commands`, docs, palette, and dispatch contain
-  overlapping command inventories that can drift
-* [ ] `NO_COLOR=1 mqlaunch commands` still emits ANSI/dashboard output when piped
-* [ ] CI ShellCheck is warn-only because findings are ignored with `|| true`
-
-### Architecture boundary
-
-* [x] `mqlaunch` owns argument parsing, help, output mode, exit-code propagation,
-  menus, and terminal UX
-* [x] `mq-agent` continues to own orchestration and delegated workflow semantics
-* [x] `mq-mcp` continues to own execution tools and safety classes
-* [x] `mqobsidian` continues to own durable truth and memory contracts
-* [ ] no CLI-hardening task may move delegated business logic into shell
-
-### Non-goals
-
-* [x] no new AI fallback for unknown commands
-* [x] no rewrite of `mq-agent`, `mq-mcp`, `mq-hal`, or mqobsidian contracts
-* [x] no broad menu redesign
-* [x] no removal of compatibility routes before Phase 12 gates allow it
-* [x] no global JSON mode for commands that do not have a stable JSON contract
-
-### Delivery A: Strict unknown-command contract
-
-**Files:**
-
-* [x] modify `terminal/launchers/mqlaunch.sh`
-* [x] modify `terminal/launchers/mqlaunch-command-mode.sh` if it owns a parallel
-  unknown-command path
-* [x] create `tests/unknown-command-contract-smoke.sh`
-* [x] update `docs/COMMANDS.md`
-
-Tasks:
-
-* [x] write unknown-command diagnostics to stderr
-* [x] return exit code `2` for unknown top-level commands
-* [x] never copy to clipboard, open a menu, or invoke AI implicitly
-* [x] suggest explicit `mqlaunch ask` and the nearest documented command only
-* [x] test interactive pseudo-TTY, redirected, and headless execution
-
-Exit gate:
-
-* [x] a typo has no side effects and reliably returns `2`
-
-### Delivery B: Namespace help contract
-
-**Files:**
-
-* [x] modify `terminal/launchers/mqlaunch-command-mode.sh`
-* [x] keep owning namespace modules unchanged because help is resolved before
-  delegation in the central command-mode boundary
-* [x] create `tests/namespace-help-smoke.sh`
-* [x] update `docs/COMMANDS.md`
-
-Tasks:
-
-* [x] support `mqlaunch <namespace> --help` and `-h` for `agent`, `hal`, `obsidian`,
-  `repos`, `skills`, `srm`, and `stack`
-* [x] print help without rendering the login dashboard or opening an interactive menu
-* [x] return `0` for valid help and `2` when help receives extra arguments
-* [x] keep namespace help safe without optional backends installed
-
-Exit gate:
-
-* [x] every documented namespace has non-interactive, dependency-light help
-
-### Delivery C: Delegated exit-code propagation
-
-**Files:**
-
-* [x] modify `terminal/launchers/mqlaunch-command-mode.sh`
-* [x] verify `terminal/menus/mq-agent-menu.sh` already preserves status
-* [x] verify `terminal/bridges/hal-bridge.sh` already preserves status
-* [x] create `tests/delegated-exit-code-smoke.sh`
-
-Tasks:
-
-* [x] preserve the delegated command's non-zero exit status
-* [x] keep pause/render helpers from overwriting the captured status
-* [x] keep JSON stdout clean while sending launcher diagnostics to stderr
-* [x] test missing backend, backend usage error, and backend runtime failure
-
-Exit gate:
-
-* [x] scripts can trust `mqlaunch` exit codes without parsing terminal text
-
-### Delivery D: Authoritative command registry
-
-**Not before:** Phase 12 identifies the single live dispatcher and compatibility boundary.
-
-**Files:**
-
-* [ ] create one registry in the Phase 12 authority-owned runtime path
-* [ ] modify `terminal/menus/mq-help-menu.sh`
-* [ ] modify `terminal/launchers/mqlaunch-command-mode.sh`
-* [ ] modify `terminal/launchers/mqlaunch.sh`
-* [ ] modify the command palette consumer
-* [ ] create `tests/command-registry-drift-smoke.sh`
-
-Tasks:
-
-* [ ] define canonical name, aliases, namespace, summary, mode, and owner per command
-* [ ] generate or validate help, command index, palette, docs, and dispatch coverage
-* [ ] include currently under-discovered commands such as `architecture`,
-  `repo-health`, `stack status`, `obsidian`, `srm`, and `repos wiki-status`
-* [ ] reject duplicate canonical names and alias collisions
-* [ ] preserve compatibility aliases until their Phase 12 removal gate is met
-
-Exit gate:
-
-* [ ] one registry proves that routing, help, palette, and documentation agree
-
-### Delivery E: Plain and machine-readable output contract
-
-**Files:**
-
-* [ ] modify the Phase 12 authority-owned UI/output helpers
-* [ ] modify `terminal/menus/mq-help-menu.sh`
-* [ ] modify `terminal/launchers/mqlaunch.sh`
-* [ ] create `tests/plain-output-contract-smoke.sh`
-* [ ] update `docs/COMMANDS.md`
-
-Tasks:
-
-* [ ] respect `NO_COLOR` and add `--no-color` where global parsing permits it
-* [ ] suppress banners, cursor control, and dashboard rendering when stdout is not a TTY
-* [ ] define `--quiet` only for commands with useful primary stdout
-* [ ] keep `--json` opt-in and schema-backed; diagnostics go to stderr
-* [ ] test pipe, redirect, CI/headless, and normal TTY modes
-
-Exit gate:
-
-* [ ] plain output contains no ANSI escapes and JSON output parses without cleanup
-
-### Delivery F: Enforced shell static analysis
-
-**Files:**
-
-* [ ] modify `.github/workflows/quality.yml`
-* [ ] modify `tools/scripts/lint.sh`
-* [ ] document intentional suppressions next to affected code
-
-Tasks:
-
-* [ ] inventory current ShellCheck error-severity findings
-* [ ] fix or narrowly suppress verified false positives
-* [ ] remove warn-only `|| true` behavior for `--severity=error`
-* [ ] retain `bash -n` and `zsh -n` as separate syntax gates
-* [ ] keep Zsh files out of Bash-only ShellCheck assumptions
-
-Exit gate:
-
-* [ ] new error-severity ShellCheck findings fail CI
-
-### Sequencing
-
-1. [x] Delivery A — strict unknown-command behavior
-2. [x] Delivery B — namespace help
-3. [x] Delivery C — exit-code propagation
-4. [x] Phase 12 runtime-authority classification required before Delivery D
-5. [ ] Delivery D — authoritative registry
-6. [ ] Delivery E — plain/output contract on the authoritative runtime
-7. [ ] Delivery F — enforced ShellCheck after the touched runtime is clean
-
-### Test gates
-
-```bash
-mqlaunch workflows validate
-mqlaunch selftest
-MQ_NO_TUI=1 mqlaunch help
-MQ_NO_TUI=1 mqlaunch definitely-not-a-command; test "$?" -eq 2
-if NO_COLOR=1 MQ_NO_TUI=1 mqlaunch commands | LC_ALL=C grep -q $'\033'; then exit 1; fi
-./tools/scripts/lint.sh
-mqlaunch release-check
-git diff --check
-```
-
-Focused tests added by each delivery must run independently before the full
-selftest. A public command or output-contract change also requires README and
-`docs/COMMANDS.md` review.
-
-### Approval gates
-
-* [x] roadmap write approved by this task
-* [ ] implementation requires a separate explicit request
-* [ ] commit requires explicit approval
-* [ ] push and merge require explicit approval
-* [ ] compatibility deletion requires the Phase 12 removal gate
-
-### Rollback
-
-* [ ] each delivery must be independently revertible
-* [ ] retain current human help text as fallback until registry parity is proven
-* [ ] preserve compatibility aliases during rollback
-* [ ] never roll back by weakening exit-code or no-side-effect tests
-
-### Overall exit criteria
-
-* [ ] unknown and invalid commands are side-effect free and return `2`
-* [ ] every public namespace has non-interactive help
-* [x] delegated failures preserve their exit status
-* [ ] command routing, help, palette, and docs share one validated inventory
-* [ ] redirected output is plain and JSON output is parseable
-* [ ] ShellCheck error-severity findings block CI
-* [ ] all existing selftests, workflow validation, release gates, and safety
-  boundaries remain green
-
-## macos-scripts roadmap checklist
-
-This repo is the local terminal gateway for MQ stack workflows. The
-following checklist reflects the current macos-scripts priorities for
-`mqlaunch` and `mq-agent` integration.
-
-* [x] Keep `mqlaunch` thin and predictable, delegating workflow and safety logic to `mq-agent`
-* [x] Maintain the documented integration boundary between `mqlaunch`, `mq-agent`, `mq-mcp`, and `mqobsidian`
-* [x] Keep `mqlaunch` menus and prompt shortcuts aligned with published docs
-* [x] Add markdownlint lint/fix routes, Tools menu actions, tests, and docs
-* [x] Extract shared theme and prompt concerns from the live launcher with regression gates
-* [ ] Migrate the performance menu off `terminal/mqlaunch-v1/`
-* [ ] Add explicit `mqlaunch agent` commands for `doctor`, `score`, `audit`, `release-check`, `mcp-status`, and `mcp-tools`
-* [ ] Add a `mqlaunch flow repo-preflight <path-to-repo>` workflow entrypoint
-* [ ] Add a dedicated `mqlaunch agent release` or equivalent release gateway command
-* [ ] Add stack and brain surface commands such as `mqlaunch agent stack sweep` and `mqlaunch agent brain-gate`
-* [ ] Include `mqlaunch flow repo-preflight` in smoke tests and CI validation
-* [ ] Document `MQ_AGENT_BIN`, `MQ_OBSIDIAN_DIR`, and install/link setup for `macos-scripts`
-* [ ] Add or improve install/link guidance in the repo README and docs
-* [ ] Add `release-check --codegraph` support to the `mqlaunch` command surface if the underlying workflow supports it
-* [ ] Keep `mqlaunch` command routing and menu inventory in sync with `docs/MQLAUNCH_INTEGRATION.md`
-
-## 0-30 Days: Roadmap Sanity And SSOT Read-Only Surface
-
-Goal: make the Obsidian SSOT plan explicit and buildable without expanding
-`mqlaunch` beyond its boundary.
-
-| Status | Deliverable |
-| --- | --- |
-| Done | `ROADMAP.md` reflects current `1.0.0` release state |
-| Done | Historical v0.5-v1.0 work summarized under completed work |
-| Done | Repo ownership map documented |
-| Done | `mqlaunch` boundary against direct cognition/memory logic documented |
-| Done | Existing MQ Obsidian menu kept as read-only/presentation-first surface |
-| Done | Document canonical mqobsidian manifest keys consumed by `mqlaunch` |
-| Done | Add/verify tests that MQ Obsidian menu actions do not promote memory |
-| Done | Add/verify tests that review commands delegate through `mq-agent` |
-| Done | Add `mqlaunch obsidian status` or documented alias for current menu/status |
-
-Expected commands:
-
-```bash
-mqlaunch hal context
-mqlaunch obsidian status
-mqlaunch obsidian inbox
-mqlaunch obsidian views
-```
-
-Definition of done:
+`mqlaunch` should stay thin:
 
 ```text
-mqlaunch can show Obsidian readiness and open canonical views,
-but all scoring, promotion, schema, and cognition logic is owned elsewhere.
+mqlaunch shows the right workflow
+mq-agent owns orchestration
+mq-mcp owns execution and review tools
+mqobsidian owns durable truth and memory
+mq-hal owns local operator summaries
+repo-signal owns repo readiness signals
 ```
 
-Boundary test: `tests/mq-agent-routing-smoke.sh` verifies that review,
-risk-review, architecture, repo-health, and mcp-status routes stay delegated
-through `mq-agent`.
-
-## 31-60 Days: Inbox Ranking And Promotion Loop
-
-Goal: make repeated Codex/Claude/mqlaunch patterns visible as candidates
-without making the user manually moderate everything.
-
-Ownership:
+The existing public delegation boundary remains:
 
 ```text
-mqlaunch -> mq-agent obsidian ... -> mqobsidian schemas/files
+mqlaunch shows menu -> mq-agent orchestrates -> mq-mcp executes
 ```
 
-Candidate lifecycle:
+In practical terms, `mqlaunch` must not implement review, risk, or architecture logic itself, or parse, score, or promote semantic memory in shell scripts.
+
+The product problem is that `mqlaunch` currently has too many overlapping command surfaces: menu entries, help output, command palette, direct command dispatch, legacy launcher paths, and newer module paths. The next release must reduce that ambiguity.
+
+---
+
+## Product principle
+
+The user should never wonder:
 
 ```text
-observed -> candidate -> promoted -> canonical -> deprecated
+Which mqlaunch path am I using?
+Is this command shown in help but missing from dispatch?
+Will this print clean JSON or a terminal dashboard?
+Does this shell path own logic that should belong to mq-agent?
 ```
 
-Suggested scoring model:
+A good terminal entrypoint feels obvious. It does not hide complexity. It routes it.
 
-```text
-promotion_score =
-  frequency
-+ successful_reuse
-+ cross_tool_reuse
-+ manual_confirmation
-- risk
-- duplication
-- staleness
-```
+---
 
-| Status | Deliverable |
-| --- | --- |
-| Todo | Define inbox record schema in `mqobsidian` |
-| Todo | Define promotion score schema in `mqobsidian` |
-| Todo | `mq-agent obsidian inbox list` |
-| Todo | `mq-agent obsidian inbox score` |
-| Todo | `mq-agent obsidian promote --dry-run` |
-| Todo | `mq-agent obsidian promote --confirm` |
-| Done | `mqlaunch obsidian inbox` delegates to `mq-agent` or read-only export |
-| Done | `mqlaunch obsidian promote` stays a thin confirm/delegate surface |
-| Done | Release gate detects schema drift before release |
+## v2.0.0 — Runtime Authority and Command Surface Governance
 
-Threshold guidance:
+### Goal
 
-```text
-score >= 15       -> candidate
-score >= 25       -> promotion recommended
-score >= 40       -> canonical candidate
-manual reject     -> suppressed
-risk >= high      -> never auto-promote
-```
-
-Definition of done:
-
-```text
-Recurring workflow patterns become ranked candidates.
-Only reviewed, high-value candidates become durable memory.
-```
-
-## 61-90 Days: Stack Truth Cockpit
-
-Goal: make Obsidian the visible single source of truth across the MQ stack.
-
-| Status | Deliverable |
-| --- | --- |
-| Todo | `mq-agent stack truth-export` writes canonical status |
-| Todo | `mq-agent stack contract-check` compares repo contracts to Obsidian truth |
-| Todo | `repo-signal` feeds readiness/publishability into truth exports |
-| Todo | `mq-mcp` review and memory results can be saved as learn/review records |
-| Done | `mqlaunch stack status` reads/delegates canonical truth status |
-| Todo | `mqlaunch hal brief` includes Obsidian truth freshness |
-| Todo | `mq-ums` contributes first read-only infrastructure signal |
-| Todo | Obsidian dashboards show stack map, integration gaps, and promotion queue |
-| Todo | Release gate blocks on stale truth or broken contracts |
-
-Definition of done:
-
-```text
-The operator can answer "what is true about the MQ stack right now?"
-from one terminal surface backed by Obsidian truth exports.
-```
-
-## Upstream Dependency: mqobsidian v0.1.0 SSOT Foundation
-
-`mqobsidian` owns the canonical truth structure for the MQ stack. This repo
-depends on that work, but must not implement competing truth, inbox, ranking,
-or promotion logic locally.
-
-Status: Proposed · Priority: P1 · Owner: `mqobsidian`
-
-Current status:
-
-* [ ] canonical truth schema is not yet fully locked
-* [ ] inbox, ranking, and promotion state are not yet unified under one explicit model
-* [ ] consumer repos still risk inventing local truth if exports/contracts stay underdefined
-* [ ] moderator workflow risks becoming a bottleneck without clear promotion states and thresholds
-
-### mqobsidian owns
-
-* [ ] canonical truth schema
-* [ ] inbox structure and promotion queue structure
-* [ ] durable memory categories and persistence rules
-* [ ] canonical status, views, and manifests consumed by other repos
-* [ ] freshness/state markers for truth surfaces
-* [ ] promotion state and memory lifecycle states
-* [ ] single source of truth rules across the stack
-
-### macos-scripts relationship
-
-`mqlaunch` may consume exported status/views/manifests and delegate workflows to
-`mq-agent`, but it must not define schema, compute rankings, promote memory, or
-invent local lifecycle state.
-
-Expected consumer contract:
-
-```text
-mqlaunch -> read/open exported truth views
-mqlaunch -> delegate inbox/promote workflows to mq-agent
-mq-agent -> write/orchestrate through mqobsidian contracts
-mqobsidian -> own schema, state, persistence, and durable views
-```
-
-### Required upstream delivery
-
-#### A. Canonical schema
-
-* [ ] define status manifest
-* [ ] define inbox manifest
-* [ ] define views manifest
-* [ ] define learn/review/decision schemas
-* [ ] define promotion-state fields
-* [ ] define archival/deprecation lifecycle fields
-
-#### B. Inbox and ranking model
-
-* [ ] define what enters inbox
-* [ ] define recurrence/evidence fields
-* [ ] define ranking inputs
-* [ ] define review-needed vs auto-promotable states
-* [ ] define thresholds and exception paths
-
-#### C. Durable memory governance
-
-* [ ] define what qualifies as durable memory
-* [ ] define what remains transient or session-local
-* [ ] define promotion approvals and guardrails
-* [ ] define rollback/deprecation path for bad memory
-* [ ] define traceability from source evidence to durable note
-
-#### D. Consumer contracts
-
-* [ ] define canonical read surfaces for `mqlaunch`
-* [ ] define canonical delegation/contract surfaces for `mq-agent`
-* [ ] version exported truth surfaces
-* [ ] expose freshness and drift markers
-
-### Dependency exit criteria
-
-* [ ] `mqobsidian` is the undisputed truth owner
-* [ ] inbox, ranking, promotion, and durable memory have one canonical model
-* [ ] consumers read from exported truth surfaces instead of inventing local truth
-* [ ] every promoted durable memory item can be traced back to source evidence
-* [ ] `mqlaunch` has enough contract detail to stay read-only or delegate-only
-
-## Phase 12 / v2.0.0 — Runtime Authority And Shell Governance
-
-**Status:** In progress — authority declared; compat removal remains gated
-**Priority:** P1
-**Type:** Architecture / Runtime governance
-**Owner:** `macos-scripts`
-**Goal:** Make `mqlaunch` behave as one governed terminal runtime with one
-explicit compatibility boundary.
-
-Detailed engineering plan:
-[docs/plans/P1-runtime-authority.md](docs/plans/P1-runtime-authority.md).
-Workstream sequencing, owners, `Not before` gating, and the risk register:
-[docs/plans/v2.0.0-sequencing.md](docs/plans/v2.0.0-sequencing.md).
-
-This repo owns runtime, launcher, menus, UI, and the compat boundary. Truth,
-inbox/promotion, and durable memory now live in
-[`mqobsidian`](https://github.com/MCamner/mqobsidian/blob/main/ROADMAP.md);
-inbox ranking and promotion orchestration live in `mq-agent`
-(`v1.22.0 — Inbox ranking and promotion orchestration`). `mqlaunch` only shows
-and delegates to those surfaces — it does not implement them.
+Make `mqlaunch` one coherent operator surface with one runtime authority, one command registry, one help source, and one output contract.
 
 ### Why this matters
 
-`mqlaunch` currently spans overlapping runtime paths. That makes change
-authority unclear, preserves hidden legacy dependencies, and increases the
-chance of duplicate fixes, UI drift, and wrong-surface edits.
+`macos-scripts` is the front door of the MQ stack. If the front door feels inconsistent, the whole product feels inconsistent — even when the deeper repos are working correctly.
 
-### This repo owns
+`mq-agent` now has a proven PR-mediated release chain. `mqlaunch` should now become the clean, predictable human surface that delegates to it.
 
-* [x] terminal entrypoint authority
-* [x] launcher/runtime path authority
-* [x] menu-layer authority
-* [x] dashboard/UI authority
-* [x] compat boundary for legacy runtime paths
-* [x] allowed dependency directions inside shell/runtime
-* [x] read-only or delegate-only shell integration toward other repos
+---
 
-### This repo does not own
+## P0 — Roadmap and status sync
 
-* [ ] truth schema
-* [ ] durable memory rules
-* [ ] inbox ranking logic
-* [ ] promotion/scoring logic
-* [ ] review cognition
-* [ ] canonical memory persistence
+Status: Planned
+Priority: P0
+Risk if delayed: Low
+Owner: `macos-scripts`
 
-### Target state
+### Problem
 
-* [x] one documented runtime authority
-* [x] one documented compatibility boundary
-* [x] one current dashboard/UI authority
-* [x] one allowed dependency model
-* [ ] no direct live dependency on legacy runtime paths
+The repo version and public docs are ahead of the roadmap status text. Before v2.0.0 work starts, the roadmap must stop describing old release-readiness work as the current focus.
 
-### Scope
+### Tasks
 
-* [x] define and document runtime authority
-* [x] classify `LIVE`, `COMPAT`, `DEPRECATED`, and `TEST-ONLY` paths
-* [x] freeze further architecture drift
-* [x] consolidate dashboard/UI authority
-* [x] keep `mqlaunch obsidian *` read-only, open, or delegate-only
-* [x] require fixes to land in the authority-owning layer
+* [ ] Update `Current version` to `1.0.1`
 
-### Delivery
+  * The version file and README badge already show `1.0.1`.
+  * The roadmap should match the released state.
 
-#### A. Runtime authority
+* [ ] Replace the old current focus text.
 
-* [x] declare official entrypoint and runtime coordinator
-* [x] declare official live menu layer
-* [x] classify `mqlaunch/lib/*` by actual live usage
-* [x] classify `terminal/mqlaunch-v1/*` as compat until unreachable
-* [x] document forbidden direct dependencies into legacy paths
+  * Remove stale focus on `v1.0.1 release readiness hardening`.
+  * Set the new focus to `v2.0.0 — Runtime Authority and Command Surface Governance`.
 
-#### B. Drift freeze
+* [ ] Keep `mqlaunch` ownership clear.
 
-* [ ] freeze new feature work in legacy runtime paths
-* [ ] freeze new direct live dependencies on v1
-* [ ] freeze new duplicate dashboard/UI logic
-* [ ] document bridge exceptions explicitly
+  * `mqlaunch` owns terminal UX, menus, shortcuts, and delegation.
+  * It must not own review cognition, release orchestration, memory promotion, or repo scoring.
 
-#### C. Shell contract boundary
+* [ ] Add a short post-v1.0.1 note.
 
-* [ ] keep shell-level Obsidian actions read-only or delegated
-* [ ] keep shell-level inbox/promote flows as thin surfaces only
-* [ ] fail checks when shell points to stale or broken backend contracts
+  * State that v1.0.1 established the release-readiness baseline.
+  * State that v2.0.0 now focuses on runtime authority and drift prevention.
 
-### Exit criteria
+### Exit gate
 
-* [x] exactly one runtime authority is documented
-* [x] all runtime-relevant paths are classified
-* [ ] no live menu depends directly on legacy runtime paths
-* [x] dashboard/UI logic has one current authority
-* [x] shell remains operator surface, not truth owner
+* [ ] Roadmap, README, VERSION, and repo contract no longer disagree about the current direction.
 
-## B2 / Atlas Prompt OS Track
+---
 
-B2 remains useful, but it is not the owner of stack truth. Its job is prompt
-discovery, routing, composition, history, and optional review delegation.
+## P1 — Single runtime authority
 
-Current state:
+Status: Planned
+Priority: P1
+Risk if delayed: High
+Owner: `macos-scripts`
 
-* `mq b2` opens the interactive prompt TUI.
-* `mq b2 list`, `show`, `route`, `compose`, `history`, and `validate` exist.
-* B2 review flows delegate to `mq-agent` / `mq-mcp`.
-* `mq b2 repo-status`, `roadmap-drift`, and `stack` integrate repo-signal and
-  Obsidian export/status surfaces.
+### Problem
 
-Next B2 priorities:
+`mqlaunch` currently has overlapping runtime paths. This creates drift risk between what the user sees, what help documents, what the palette lists, and what the dispatcher actually runs.
 
-| Status | Deliverable |
-| --- | --- |
-| Todo | Keep B2 exports aligned with mqobsidian canonical paths |
-| Todo | Make B2 stack output consume SSOT truth exports when available |
-| Todo | Keep B2 review and risk logic delegated through `mq-agent` |
-| Todo | Avoid making B2 the promotion engine for durable memory |
+### Product requirement
 
-## Completed Work
+There must be one clearly defined live runtime authority.
 
-Completed work is intentionally summarized here so this file stays useful as a
-forward-looking roadmap.
+Legacy paths may remain temporarily, but only as compatibility shims. They must not continue to grow as parallel runtimes.
 
-* mqlaunch command surface
-* doctor / system check
-* release-check gate with repo-signal publish readiness
-* workflow validation / health checks
-* gitleaks secrets scan
-* markdownlint command and Tools menu routes for lint and confirmed fix mode
-* shared theme and prompt concern libraries with monolith regression coverage
-* mq-mcp review routing through `mq-agent`
-* architecture, risk-review, repo-health, and mcp-status commands
-* HAL bridge for brief, audit, release brief, repo status, CI, and context
-* MQ Obsidian menu for opening views, checks, task packs, inbox, and view regen
-* B2/Atlas Prompt OS MVP through v1.0 stack cockpit
+### Tasks
 
-## Open Questions
+* [ ] Identify the single live dispatcher path.
 
-* Should `mqlaunch obsidian ...` be a direct command namespace, or should the
-  current MQ Obsidian menu remain the main surface with only a few aliases?
-* Which mqobsidian manifest keys are canonical for roadmap, context, inbox,
-  stack truth, and promotion queue views?
-* Which release gate should own stale-truth blocking: `mqlaunch release-check`,
-  `repo-signal`, or `mq-agent stack contract-check`?
+  * Decide which runtime path owns command resolution.
+  * Document why that path is authoritative.
+
+* [ ] Mark legacy paths as compatibility-only.
+
+  * Legacy paths may forward to the authority-owned runtime.
+  * They must not implement new command behavior.
+
+* [ ] Add a runtime authority document.
+
+  * Suggested file: `docs/RUNTIME_AUTHORITY.md`
+
+* [ ] Document allowed responsibilities.
+
+  * argument parsing
+  * command lookup
+  * menu routing
+  * status rendering
+  * delegation to owning repos
+  * exit-code preservation
+
+* [ ] Document forbidden responsibilities.
+
+  * review cognition
+  * release planning
+  * memory promotion
+  * architecture reasoning
+  * direct MCP tool execution when `mq-agent` owns the workflow
+  * GitHub mutation without explicit approval
+
+* [ ] Add tests proving compatibility paths delegate correctly.
+
+  * Direct command path
+  * Menu path
+  * Palette path
+  * Legacy shim path
+
+### Exit gate
+
+* [ ] There is one documented runtime authority.
+* [ ] Compatibility paths are tested as delegation paths, not independent runtimes.
+* [ ] No new feature work is added to legacy paths.
+
+---
+
+## P1 — Authoritative command registry
+
+Status: Planned
+Priority: P1
+Risk if delayed: High
+Owner: `macos-scripts`
+
+### Problem
+
+Command names, aliases, help output, palette entries, menus, and dispatch logic can drift.
+
+A user-facing launcher cannot have five different sources of truth.
+
+### Product requirement
+
+Create one canonical command registry used to validate or generate:
+
+* help output
+* command list
+* palette entries
+* menu routing
+* direct command dispatch
+* docs coverage
+
+### Tasks
+
+* [ ] Create a canonical command registry.
+
+  * Suggested file: `mqlaunch/lib/command-registry.*` or another authority-owned path.
+  * Do not place it in a legacy runtime path.
+
+* [ ] Define registry fields.
+
+  * canonical command name
+  * aliases
+  * namespace
+  * summary
+  * owner repo
+  * safety mode
+  * output modes
+  * delegation target
+  * whether JSON is supported
+  * whether the command is interactive
+  * whether the command is compatibility-only
+
+* [ ] Add registry validation.
+
+  * Reject duplicate command names.
+  * Reject alias collisions.
+  * Reject missing summaries.
+  * Reject undocumented delegated owners.
+  * Reject JSON claims without a stable JSON contract.
+
+* [ ] Validate help against the registry.
+
+  * `mqlaunch help`
+  * `mqlaunch commands`
+  * namespace help
+  * command palette
+
+* [ ] Validate dispatch against the registry.
+
+  * Every public command must be dispatchable or explicitly marked as planned/hidden.
+  * Every dispatchable command must appear in help or be marked internal.
+
+* [ ] Validate docs against the registry.
+
+  * Public docs should not list commands that do not exist.
+  * Existing commands should not be missing from docs unless intentionally hidden.
+
+### Exit gate
+
+* [ ] One registry proves that routing, help, palette, and docs agree.
+* [ ] A CI test fails when command drift appears.
+
+---
+
+## P1 — Command registry drift tests
+
+Status: Planned
+Priority: P1
+Risk if delayed: High
+Owner: `macos-scripts`
+
+### Problem
+
+The dangerous failure is not a broken command. The dangerous failure is a command that appears valid in one surface but behaves differently in another.
+
+### Tasks
+
+* [ ] Add `tests/command-registry-drift-smoke.sh`.
+
+* [ ] Test command inventory consistency.
+
+  * help
+  * command list
+  * palette
+  * direct dispatch
+  * docs index
+
+* [ ] Test alias consistency.
+
+  * No duplicate aliases.
+  * No alias points to multiple commands.
+  * Deprecated aliases are marked explicitly.
+
+* [ ] Test namespace coverage.
+
+  * `agent`
+  * `hal`
+  * `obsidian`
+  * `repos`
+  * `skills`
+  * `srm`
+  * `stack`
+  * `workflows`
+
+* [ ] Test delegation ownership.
+
+  * `mq-agent` commands delegate to `mq-agent`.
+  * `mq-hal` commands delegate to `mq-hal`.
+  * `repo-signal` commands delegate to `repo-signal`.
+  * `mq-mcp` is not called directly when `mq-agent` owns the workflow.
+
+### Exit gate
+
+* [ ] CI fails if command help, palette, docs, and dispatch drift apart.
+
+---
+
+## P1 — Plain and machine-readable output contract
+
+Status: Planned
+Priority: P1
+Risk if delayed: Medium
+Owner: `macos-scripts`
+
+### Problem
+
+A terminal product must behave differently when used by a human and when used by a script.
+
+Humans need clear rendering. Scripts need clean stdout, stable exit codes, and diagnostics on stderr.
+
+### Product requirement
+
+`mqlaunch` must have a predictable output contract.
+
+### Tasks
+
+* [ ] Respect `NO_COLOR=1`.
+
+  * No ANSI colors when disabled.
+  * No decorative dashboard output when stdout is not a TTY.
+
+* [ ] Add or standardize `--no-color` where global parsing permits it.
+
+* [ ] Keep JSON stdout clean.
+
+  * JSON commands must print only JSON to stdout.
+  * Diagnostics must go to stderr.
+
+* [ ] Suppress banners in non-interactive mode.
+
+  * No login dashboard when output is piped.
+  * No cursor control codes in redirected output.
+
+* [ ] Preserve exit codes.
+
+  * Delegated command failures must pass through.
+  * Rendering helpers must not overwrite backend status.
+
+* [ ] Add `tests/plain-output-contract-smoke.sh`.
+
+* [ ] Test the output contract in:
+
+  * normal TTY mode
+  * piped mode
+  * redirected mode
+  * `NO_COLOR=1`
+  * JSON mode
+  * backend failure mode
+
+### Exit gate
+
+* [ ] Humans get readable output.
+* [ ] Scripts get clean output.
+* [ ] CI can trust exit codes without parsing terminal text.
+
+---
+
+## P1 — ShellCheck becomes a real gate
+
+Status: Planned
+Priority: P1
+Risk if delayed: Medium
+Owner: `macos-scripts`
+
+### Problem
+
+Shell syntax checks are already useful, but ShellCheck must not remain warn-only forever. A launcher repo should be boringly reliable.
+
+### Tasks
+
+* [ ] Audit current ShellCheck findings.
+
+  * Classify findings into real bugs, acceptable style exceptions, and intentional shell patterns.
+
+* [ ] Add a project-level ShellCheck policy.
+
+  * Suggested file: `docs/SHELLCHECK_POLICY.md`
+
+* [ ] Remove `|| true` from CI ShellCheck once findings are either fixed or explicitly allowed.
+
+* [ ] Add documented suppressions only where justified.
+
+  * Every suppression should explain why it is safe.
+
+* [ ] Keep syntax checks for all shell files.
+
+### Exit gate
+
+* [ ] ShellCheck is a required CI gate.
+* [ ] Remaining suppressions are documented and intentional.
+
+---
+
+## P2 — Thin delegation polish
+
+Status: Planned
+Priority: P2
+Risk if delayed: Medium
+Owner: `macos-scripts`
+Primary delegated repo: `mq-agent`
+
+### Problem
+
+`mqlaunch` should feel powerful without becoming powerful in the wrong place.
+
+The front door should make the right workflow easy to find, then hand off to the repo that owns the logic.
+
+### Tasks
+
+* [ ] Review all `mq-agent` delegation commands.
+
+  * Keep them as thin pass-throughs.
+  * Avoid local shell logic that duplicates `mq-agent`.
+
+* [ ] Add `mqlaunch stack status` alignment with `mq-agent ship status` once `ship status` exists.
+
+  * `mqlaunch` should display or delegate the release cockpit.
+  * It should not reimplement release state logic.
+
+* [ ] Add a clear “owner” label in help output.
+
+  * Example: `owner: mq-agent`
+  * Example: `owner: mq-hal`
+  * Example: `owner: repo-signal`
+
+* [ ] Improve failure messages for missing delegated tools.
+
+  * Missing `mq-agent`
+  * Missing `mq-hal`
+  * Missing `repo-signal`
+  * Missing `mq-mcp`
+
+* [ ] Keep local quick commands local only when they truly belong to the terminal entrypoint.
+
+### Exit gate
+
+* [ ] A user can tell which repo owns each command.
+* [ ] `mqlaunch` does not duplicate deeper stack logic.
+
+---
+
+## P2 — Operator experience polish
+
+Status: Planned
+Priority: P2
+Risk if delayed: Low
+Owner: `macos-scripts`
+
+### Problem
+
+Once runtime authority and command consistency are fixed, the product can become calmer and easier to use.
+
+### Tasks
+
+* [ ] Improve first-run experience.
+
+  * `mqlaunch doctor`
+  * dependency checks
+  * missing tool hints
+  * next recommended setup step
+
+* [ ] Improve command discovery.
+
+  * clearer namespace groups
+  * shorter summaries
+  * fewer duplicate entries
+  * highlight most useful workflows first
+
+* [ ] Improve stack status entrypoints.
+
+  * show `mq-agent`
+  * show `mq-mcp`
+  * show `mqobsidian`
+  * show `mq-hal`
+  * show `repo-signal`
+  * show clear next action when one is known
+
+* [ ] Keep menus focused.
+
+  * Remove or hide low-value duplicated paths.
+  * Prefer fewer, better choices.
+
+### Exit gate
+
+* [ ] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
+
+---
+
+## P3 — Compatibility cleanup
+
+Status: Future
+Priority: P3
+Risk if delayed: Low
+Owner: `macos-scripts`
+
+### Problem
+
+Compatibility routes are useful during migration, but they become debt if they remain forever.
+
+### Tasks
+
+* [ ] List all compatibility paths.
+
+  * legacy command paths
+  * legacy menu paths
+  * old bridge paths
+  * aliases
+  * deprecated scripts
+
+* [ ] Mark compatibility routes in the command registry.
+
+* [ ] Add usage notes or migration hints.
+
+* [ ] Remove only after:
+
+  * runtime authority is stable
+  * command registry drift tests are green
+  * docs no longer point to the old path
+  * release-check passes
+  * no active workflow depends on the old path
+
+### Exit gate
+
+* [ ] Compatibility cleanup happens only after the new authority path is proven.
+
+---
+
+## v2.0.0 Non-goals
+
+* [ ] Do not add more menu items just because a command exists.
+
+  * Better product means clearer choices, not more choices.
+
+* [ ] Do not move orchestration logic from `mq-agent` into shell.
+
+  * `mqlaunch` delegates.
+
+* [ ] Do not call `mq-mcp` directly when `mq-agent` owns the workflow.
+
+  * Keep the stack boundary clean.
+
+* [ ] Do not implement memory promotion in shell.
+
+  * Memory promotion belongs behind reviewed `mq-agent` / `mqobsidian` flows.
+
+* [ ] Do not introduce hidden AI fallbacks for unknown commands.
+
+  * Unknown commands should fail clearly.
+
+* [ ] Do not make all commands JSON-capable by default.
+
+  * JSON must be stable and schema-backed.
+
+* [ ] Do not remove legacy paths before the new runtime authority is proven.
+
+---
+
+## Recommended PR order
+
+### PR 1 — Roadmap and status sync
+
+Suggested title:
+
+```text
+docs(roadmap): set v2.0.0 runtime authority direction
+```
+
+Scope:
+
+* [ ] Update current version to `1.0.1`
+* [ ] Replace stale current focus
+* [ ] Add v2.0.0 direction
+* [ ] Keep this docs-only
+
+Exit gate:
+
+* [ ] No code changes
+* [ ] release-check remains READY
+
+---
+
+### PR 2 — Runtime authority design
+
+Suggested title:
+
+```text
+docs(mqlaunch): define runtime authority boundary
+```
+
+Scope:
+
+* [ ] Add `docs/RUNTIME_AUTHORITY.md`
+* [ ] Identify authority-owned runtime path
+* [ ] Mark legacy paths as compatibility-only
+* [ ] Document allowed and forbidden responsibilities
+
+Exit gate:
+
+* [ ] No runtime behavior changes yet
+* [ ] Maintainers can point to one authority model
+
+---
+
+### PR 3 — Command registry foundation
+
+Suggested title:
+
+```text
+feat(mqlaunch): add command registry foundation
+```
+
+Scope:
+
+* [ ] Add canonical command registry
+* [ ] Add registry validation
+* [ ] Add tests for duplicate names and alias collisions
+* [ ] Do not refactor every command yet
+
+Exit gate:
+
+* [ ] Registry exists
+* [ ] Registry validation runs in CI
+* [ ] Existing commands still work
+
+---
+
+### PR 4 — Drift detection
+
+Suggested title:
+
+```text
+test(mqlaunch): detect command surface drift
+```
+
+Scope:
+
+* [ ] Add drift tests for help, commands, palette, docs, and dispatch
+* [ ] Start with detection before large refactor
+* [ ] Document known intentional exceptions
+
+Exit gate:
+
+* [ ] CI detects command-surface drift
+
+---
+
+### PR 5 — Runtime consolidation
+
+Suggested title:
+
+```text
+refactor(mqlaunch): consolidate runtime authority
+```
+
+Scope:
+
+* [ ] Route command resolution through authority path
+* [ ] Keep legacy paths as shims
+* [ ] Preserve compatibility aliases
+* [ ] Ensure delegation owners remain unchanged
+
+Exit gate:
+
+* [ ] All smoke tests pass
+* [ ] Compatibility paths delegate instead of owning behavior
+
+---
+
+### PR 6 — Output contract
+
+Suggested title:
+
+```text
+fix(mqlaunch): enforce plain output contract
+```
+
+Scope:
+
+* [ ] Respect `NO_COLOR=1`
+* [ ] Clean JSON stdout
+* [ ] Diagnostics to stderr
+* [ ] No dashboard rendering when piped
+* [ ] Preserve delegated exit codes
+
+Exit gate:
+
+* [ ] Shell scripts can consume `mqlaunch` safely
+
+---
+
+### PR 7 — ShellCheck gate
+
+Suggested title:
+
+```text
+ci(shell): make ShellCheck a required gate
+```
+
+Scope:
+
+* [ ] Classify ShellCheck findings
+* [ ] Fix real issues
+* [ ] Document intentional suppressions
+* [ ] Remove warn-only behavior
+
+Exit gate:
+
+* [ ] ShellCheck becomes a real CI gate
+
+---
+
+## Definition of Done for v2.0.0
+
+* [ ] One runtime authority is documented.
+* [ ] Legacy runtime paths are compatibility-only.
+* [ ] One command registry exists.
+* [ ] Help, commands, palette, docs, and dispatch are validated against the registry.
+* [ ] Command drift fails CI.
+* [ ] `NO_COLOR=1` is respected.
+* [ ] Piped output does not render dashboards or ANSI noise.
+* [ ] JSON stdout is clean.
+* [ ] Diagnostics go to stderr.
+* [ ] Delegated exit codes are preserved.
+* [ ] ShellCheck is no longer warn-only.
+* [ ] `mqlaunch` remains thin.
+* [ ] `mq-agent` still owns orchestration.
+* [ ] `mq-mcp` still owns execution/review tools.
+* [ ] `mqobsidian` still owns durable truth and memory.
+* [ ] `repo-signal` still owns repo readiness.
+* [ ] `mq-hal` still owns local operator summaries.
+* [ ] Main CI is green.
+* [ ] Release-check is READY.
+* [ ] Contract-check is READY.
+* [ ] Stack-preflight has 0 blockers.
+
+---
+
+## Most important product decision
+
+Do not make `mqlaunch` bigger.
+
+Make it clearer.
+
+The best version of `mqlaunch` is not the one with the most commands. It is the one where the right command is obvious, the output is predictable, and every deeper responsibility is delegated to the repo that owns it.
