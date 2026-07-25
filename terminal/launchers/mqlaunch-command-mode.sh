@@ -14,6 +14,53 @@ has_json_flag() {
   return 1
 }
 
+# Escapes a value for use inside a JSON double-quoted string.
+json_escape_value() {
+  local value="${1:-}"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '%s' "$value"
+}
+
+# Prints the machine-readable form of the about/status dashboard.
+#
+# Output contract (docs/RUNTIME_AUTHORITY.md): stdout is exactly one JSON
+# document — no banner, no ANSI, no prose, no prompt. Diagnostics belong on
+# stderr.
+#
+# This deliberately does not reuse show_about_dashboard's smoke-test field: that
+# renderer shells out to the full test suite, so a machine-readable status call
+# would cost a complete test run — and it recurses when the suite itself runs
+# this path. Smoke status stays where it belongs, in test-all.sh and doctor.
+print_status_json() {
+  local version="unknown" repo_state="unknown" latest_bundle="none"
+  local version_file="$BASE_DIR/VERSION"
+  local bundle_dir="$BASE_DIR/backups/debug-bundles"
+
+  [[ -f "$version_file" ]] && version="$(head -n 1 "$version_file")"
+
+  # "dirty" must mean a dirty worktree, not "git is missing" or "not a repo" —
+  # a machine consumer cannot tell those apart from the dashboard's wording.
+  if command -v git >/dev/null 2>&1 &&
+    git -C "$BASE_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+    if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
+      repo_state="clean"
+    else
+      repo_state="dirty"
+    fi
+  fi
+
+  if [[ -d "$bundle_dir" ]]; then
+    latest_bundle="$(ls -1t "$bundle_dir" 2>/dev/null | head -n 1)"
+    [[ -z "$latest_bundle" ]] && latest_bundle="none"
+  fi
+
+  printf '{"project":"macos-scripts","version":"%s","release_stage":"baseline","repo_state":"%s","latest_bundle":"%s"}\n' \
+    "$(json_escape_value "$version")" \
+    "$repo_state" \
+    "$(json_escape_value "$latest_bundle")"
+}
+
 # Prints a side-effect-free usage error for an unknown top-level command.
 nearest_cli_command() {
   local unknown="${1:-}"
@@ -835,6 +882,10 @@ dispatch_cli_command() {
       ;;
 
     about|status)
+      if has_json_flag "$@"; then
+        print_status_json
+        return 0
+      fi
       show_about_dashboard || true
       return 0
       ;;

@@ -322,10 +322,30 @@ mqlaunch system time                # show date and time
 ```bash
 mqlaunch version                    # show version
 mqlaunch about                      # about / status dashboard
+mqlaunch status                     # alias for about
+mqlaunch status --json              # machine-readable status, JSON only
 mqlaunch notes                      # show CHANGELOG
 mqlaunch repo                       # open repo root in Finder
 mqlaunch guide                      # open terminal guide
 ```
+
+`status --json` (and `about --json`) print exactly one JSON document to stdout —
+no banner, no ANSI, no prompt:
+
+```json
+{
+  "project": "macos-scripts",
+  "version": "1.0.1",
+  "release_stage": "baseline",
+  "repo_state": "clean",
+  "latest_bundle": "none"
+}
+```
+
+`repo_state` is `clean`, `dirty`, or `unknown` when the repo root is not a git
+checkout. The JSON form omits the dashboard's smoke-test field on purpose: that
+field runs the full test suite, which a machine-readable call should not do. Use
+`mqlaunch selftest` or `mqlaunch doctor --json` for health.
 
 ---
 
