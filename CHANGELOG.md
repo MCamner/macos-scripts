@@ -24,6 +24,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* 22 dispatch branches invoked a script under `$BASE_DIR` and then ended in an
+  unconditional `return 0`, so a failing delegate was reported as success:
+  `mqlaunch repos LIST` and `mqlaunch skills no-such-subcommand` both wrote a
+  usage error to stderr and exited 0. Every delegating branch now captures
+  `command_status` and returns it, matching the idiom the agent and HAL routes
+  already used. `pause_enter` no longer overwrites the status on the routes that
+  call it. `tests/delegated-exit-code-smoke.sh` gained the two behavioural cases
+  and a structural check that fails if any delegating branch reverts to an
+  unconditional `return 0`.
 * `mqlaunch` dispatched `memory` from two different branches. The
   `srm|memory|repo-memory` branch claims it first, so the `memory` listed in the
   brain-bridge branch below it could never match — `mqlaunch memory` has always
