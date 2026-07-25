@@ -186,6 +186,10 @@ Priority: P1
 Risk if delayed: High
 Owner: `macos-scripts`
 
+Subcommands are not modelled yet, and the consumer work is blocked until they
+are. The reasons and the decisions are in
+[docs/plans/P1-command-registry-subcommands.md](docs/plans/P1-command-registry-subcommands.md).
+
 ### Problem
 
 Command names, aliases, help output, palette entries, menus, and dispatch logic can drift.
