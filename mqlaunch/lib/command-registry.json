@@ -1,0 +1,1168 @@
+{
+  "schema": "mq-command-registry.v1",
+  "repo": "macos-scripts",
+  "scope": "top-level mqlaunch commands dispatched by dispatch_cli_command",
+  "authority": "terminal/launchers/mqlaunch-command-mode.sh",
+  "commands": [
+    {
+      "name": "workflows",
+      "aliases": [
+        "workflow"
+      ],
+      "namespace": null,
+      "summary": "Project boot, command-surface validation, and workspace snapshots",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "workspace",
+      "aliases": [
+        "snapshots"
+      ],
+      "namespace": null,
+      "summary": "Save, list, show, and restore workspace snapshots",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "demo",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Run the launcher demo mode",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "excalidraw",
+      "aliases": [
+        "draw"
+      ],
+      "namespace": null,
+      "summary": "Open the Excalidraw drawing workflow",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "review",
+      "aliases": [
+        "/review"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate a diff review to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent review"
+    },
+    {
+      "name": "architecture",
+      "aliases": [
+        "/architecture"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate architecture analysis to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent architecture"
+    },
+    {
+      "name": "risk-review",
+      "aliases": [
+        "/risk-review"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate a risk review to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent risk-review"
+    },
+    {
+      "name": "repo-health",
+      "aliases": [
+        "/repo-health"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate a repo health report to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent repo-health"
+    },
+    {
+      "name": "stack",
+      "aliases": [
+        "/stack"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate stack status and stack operations to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent stack"
+    },
+    {
+      "name": "mcp-status",
+      "aliases": [
+        "/mcp-status"
+      ],
+      "namespace": "agent",
+      "summary": "Report mq-mcp server status through mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent mcp-status"
+    },
+    {
+      "name": "flow",
+      "aliases": [
+        "/flow"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate a guided flow to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent flow"
+    },
+    {
+      "name": "ui",
+      "aliases": [
+        "/ui"
+      ],
+      "namespace": null,
+      "summary": "Open the local AI prompt UI",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "ask",
+      "aliases": [
+        "/ask"
+      ],
+      "namespace": null,
+      "summary": "Ask a question through the local ask helper",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "srm",
+      "aliases": [
+        "memory",
+        "repo-memory"
+      ],
+      "namespace": "srm",
+      "summary": "Semantic repo memory surface; the co-change loop delegates to mq-agent",
+      "owner": "macos-scripts",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent memory-*"
+    },
+    {
+      "name": "skills",
+      "aliases": [
+        "skill"
+      ],
+      "namespace": "skills",
+      "summary": "List and inspect installed skills",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "repos",
+      "aliases": [],
+      "namespace": "repos",
+      "summary": "MQ ecosystem repo status, roadmaps, skills, and diff summaries",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "fix",
+      "aliases": [
+        "/fix"
+      ],
+      "namespace": null,
+      "summary": "Run the local fix helper",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "chat",
+      "aliases": [
+        "/chat"
+      ],
+      "namespace": null,
+      "summary": "Open the local chat helper",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "release-check",
+      "aliases": [
+        "/release-check",
+        "check-release"
+      ],
+      "namespace": null,
+      "summary": "Release readiness gate backed by repo-signal scoring",
+      "owner": "repo-signal",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "repo-signal publish-readiness"
+    },
+    {
+      "name": "review-brain",
+      "aliases": [
+        "/review-brain"
+      ],
+      "namespace": null,
+      "summary": "Run the brain-backed review through mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent review-brain"
+    },
+    {
+      "name": "signal-brain",
+      "aliases": [
+        "/signal-brain"
+      ],
+      "namespace": null,
+      "summary": "Run the brain-backed signal report through mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent signal-brain"
+    },
+    {
+      "name": "learn-promote",
+      "aliases": [
+        "/learn-promote",
+        "promote-pattern"
+      ],
+      "namespace": null,
+      "summary": "Promote a learned pattern through mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent learn-promote"
+    },
+    {
+      "name": "selftest",
+      "aliases": [
+        "/selftest",
+        "test-all"
+      ],
+      "namespace": null,
+      "summary": "Run the launcher smoke suite and shell lint",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "doctor",
+      "aliases": [
+        "/doctor"
+      ],
+      "namespace": null,
+      "summary": "Environment and dependency check",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "scan",
+      "aliases": [
+        "/scan"
+      ],
+      "namespace": null,
+      "summary": "Run the local scan workflow",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "atlas",
+      "aliases": [
+        "/atlas"
+      ],
+      "namespace": null,
+      "summary": "Run the Atlas prompt workflow",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "system",
+      "aliases": [],
+      "namespace": null,
+      "summary": "System namespace: performance, network, doctor, checks, and local utilities",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "git",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Git namespace: opens the git menu and git workflows",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "release",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Release namespace: release menu, notes, version, and status",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "dev",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Dev namespace: AI helpers, tools, and current-project actions",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "help",
+      "aliases": [
+        "-h",
+        "--help"
+      ],
+      "namespace": null,
+      "summary": "Show launcher help, the command index, and namespace help",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "perf",
+      "aliases": [
+        "performance"
+      ],
+      "namespace": null,
+      "summary": "Open the performance menu",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "net",
+      "aliases": [
+        "network"
+      ],
+      "namespace": null,
+      "summary": "Show local network information",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "palette",
+      "aliases": [
+        "fzf",
+        "search"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy command palette over the dispatchable command surface",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "markdownlint",
+      "aliases": [
+        "mdlint"
+      ],
+      "namespace": null,
+      "summary": "Run markdownlint over the repo",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "ghost",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Run the network ghost workflow",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "pulse",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Run the pulse system overview",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "reap",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Run the overseer process reaper",
+      "owner": "macos-scripts",
+      "safety": "destructive",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "guard",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Run the blackout guard workflow",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "mc",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Open mission control",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "nickname-set",
+      "aliases": [
+        "nick-set",
+        "nick"
+      ],
+      "namespace": null,
+      "summary": "Set or show the operator nickname",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "theme-macos",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Apply the macOS terminal theme",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "theme-reset",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Reset the terminal theme",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "check",
+      "aliases": [
+        "health"
+      ],
+      "namespace": null,
+      "summary": "Run the system check",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "self-check",
+      "aliases": [
+        "selfcheck"
+      ],
+      "namespace": null,
+      "summary": "Run the launcher self-check",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "debug",
+      "aliases": [
+        "bundle",
+        "debug-bundle",
+        "support"
+      ],
+      "namespace": null,
+      "summary": "Collect a debug bundle for support",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "apps",
+      "aliases": [
+        "guide-ai",
+        "terminal-guide-ai"
+      ],
+      "namespace": null,
+      "summary": "Open the HAL terminal guide, or ask it a question",
+      "owner": "mq-hal",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": "mq-hal terminal-guide"
+    },
+    {
+      "name": "docfunc",
+      "aliases": [
+        "document-functions"
+      ],
+      "namespace": null,
+      "summary": "Document shell functions in the current working directory",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "docwrite",
+      "aliases": [
+        "document-functions-write",
+        "update-comments"
+      ],
+      "namespace": null,
+      "summary": "Write generated function documentation back into sources",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "version",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Show launcher and repo version information",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "notes",
+      "aliases": [
+        "release-notes"
+      ],
+      "namespace": null,
+      "summary": "Show the changelog",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "about",
+      "aliases": [
+        "status"
+      ],
+      "namespace": null,
+      "summary": "Status dashboard; --json emits one machine-readable document",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "index",
+      "aliases": [
+        "commands"
+      ],
+      "namespace": null,
+      "summary": "Show the command index",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "hal",
+      "aliases": [],
+      "namespace": "hal",
+      "summary": "Delegate operator summaries and audits to mq-hal",
+      "owner": "mq-hal",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-hal"
+    },
+    {
+      "name": "agent",
+      "aliases": [
+        "mq-agent"
+      ],
+      "namespace": "agent",
+      "summary": "Delegate orchestration commands to mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent"
+    },
+    {
+      "name": "obsidian",
+      "aliases": [
+        "mqobsidian",
+        "memory-menu",
+        "mq-memory"
+      ],
+      "namespace": "obsidian",
+      "summary": "Durable memory surface backed by mqobsidian",
+      "owner": "mqobsidian",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": "mqobsidian"
+    },
+    {
+      "name": "mqlaunch",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Self-referential prefix; re-dispatches the remaining arguments",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": true,
+      "delegates_to": null
+    },
+    {
+      "name": "github",
+      "aliases": [
+        "10",
+        "hub",
+        "ghub",
+        "gh-search",
+        "gh-pick"
+      ],
+      "namespace": null,
+      "summary": "GitHub repo picker",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "git-log",
+      "aliases": [
+        "gitlog",
+        "glog"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy git log browser",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "git-branch",
+      "aliases": [
+        "branch-switch",
+        "gbranch"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy git branch switcher",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "kill-process",
+      "aliases": [
+        "killp",
+        "pkill-fzf"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy process killer",
+      "owner": "macos-scripts",
+      "safety": "destructive",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "kill-port",
+      "aliases": [
+        "killport",
+        "port-kill"
+      ],
+      "namespace": null,
+      "summary": "Kill the process listening on a port",
+      "owner": "macos-scripts",
+      "safety": "destructive",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "snippets",
+      "aliases": [
+        "snippet",
+        "scripts"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy snippet runner",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "recent",
+      "aliases": [
+        "recent-files",
+        "rf"
+      ],
+      "namespace": null,
+      "summary": "Fuzzy recent-file picker",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "brain",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Brain bridge entrypoint",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "note",
+      "aliases": [
+        "sessions",
+        "decisions",
+        "reviews",
+        "learn",
+        "verified",
+        "systems"
+      ],
+      "namespace": null,
+      "summary": "Brain-bridge note verbs routed by the invoked name",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "b2tui",
+      "aliases": [
+        "b2"
+      ],
+      "namespace": null,
+      "summary": "B2 Atlas Prompt OS terminal interface",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    }
+  ]
+}
