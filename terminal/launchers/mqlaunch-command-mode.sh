@@ -518,7 +518,10 @@ dispatch_cli_command() {
       # review-status / promote-from-review / resolve-supersede action the review queues.
       # Everything else stays the local SRM surface.
       local _mem_verb=""
-      case "${1:-}" in
+      # Route on the normalised word, not the raw one: every other namespace is
+      # case-insensitive. Only the verb is matched here — whatever follows is a
+      # question owned by srm.sh and is forwarded untouched.
+      case "$sub" in
         cochange)            _mem_verb="memory-cochange" ;;
         review-status)       _mem_verb="memory-review-status" ;;
         promote-from-review) _mem_verb="memory-promote-from-review" ;;
@@ -550,17 +553,21 @@ dispatch_cli_command() {
 
     repos)
       shift
-      case "${1:-}" in
+      case "$sub" in
         ""|menu|hub)
           "$BASE_DIR/bin/mqlaunch" hub
           command_status=$?
           ;;
         list|roadmaps|skills|status|wiki-status|diff-summary)
-          "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
+          # mq-repos.py matches its command word exactly, so forward the
+          # normalised one. Arguments after it keep the case the user typed.
+          "$BASE_DIR/tools/scripts/mq-repos.py" "$sub" "${@:2}"
           command_status=$?
           pause_enter
           ;;
         *)
+          # Unknown: forward verbatim so the delegate's error names the word the
+          # user actually typed.
           "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
           command_status=$?
           pause_enter
