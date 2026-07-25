@@ -65,7 +65,10 @@ print("  ok: color on TTY, none under NO_COLOR")
 PY
 
 echo "[3/5] NO_COLOR is honoured in the central colour guard (structural)"
-grep -qE 'if \[\[ -t 1 && -z "\$\{NO_COLOR:-\}" \]\]' "$UI"
+# Fixed-string match: the guard line is literal, and ERE brace handling differs
+# between BSD (macOS) and GNU (Linux) grep.
+# shellcheck disable=SC2016
+grep -qF 'if [[ -t 1 && -z "${NO_COLOR:-}" ]]' "$UI"
 
 echo "[4/5] JSON mode prints only JSON to stdout — no banner, no ANSI"
 json_out="$(MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 bash "$LAUNCH" doctor --json 2>/dev/null)"
