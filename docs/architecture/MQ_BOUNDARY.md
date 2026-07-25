@@ -4,6 +4,8 @@
 
 It is a cockpit and launcher: it makes local workflows discoverable, gives the
 operator safe shortcuts, and delegates stack behavior to the repos that own it.
+The runtime ownership policy is defined in
+[`docs/RUNTIME_AUTHORITY.md`](../RUNTIME_AUTHORITY.md).
 
 ```text
 mqlaunch shows menu -> delegates -> mq-agent orchestrates -> mq-mcp executes

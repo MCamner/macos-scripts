@@ -11,12 +11,12 @@ and a controlled compatibility boundary.
 Linked from [ROADMAP.md](../../ROADMAP.md). This is the detailed plan; the
 roadmap carries only the compact entry.
 
-## Runtime facts (verified against repo, 2026-07-05)
+## Runtime facts (verified against repo, 2026-07-24)
 
 Grounding for the classification below. Verified in this repo, not assumed:
 
 * Live entrypoint chain: `bin/mqlaunch` → `terminal/launchers/mqlaunch.sh`
-  (~2082-line coordinator) → sources `ui/terminal-ui/mq-ui.sh`,
+  (1078-line coordinator) → sources `ui/terminal-ui/mq-ui.sh`,
   `terminal/menus/*`, `terminal/bridges/*`, and `mqlaunch/lib/{recommendations,mqobsidian}`.
 * Bridges that still invoke `terminal/mqlaunch-v1/`: `performance-bridge.sh`
   and `tools-bridge.sh`. The dev bridge was decommissioned in Step 12.1;

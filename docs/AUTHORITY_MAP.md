@@ -1,17 +1,17 @@
 # Runtime Authority Map
 
-The one place that says which paths are **live runtime**, which are a
+The path inventory that says which paths are **live runtime**, which are a
 **compatibility bridge to legacy code**, which are **dead**, and which are
-**test-only**. It exists so a contributor can tell where a fix belongs without
-guessing, and so the v2.0.0 migration (see
-[ROADMAP.md](../ROADMAP.md) → *Phase 12 / v2.0.0 — Runtime Authority And Shell
-Governance*, plan in [plans/P1-runtime-authority.md](plans/P1-runtime-authority.md))
-has a concrete starting inventory.
+**test-only**. The stable governance boundary and single-authority decision live
+in [RUNTIME_AUTHORITY.md](RUNTIME_AUTHORITY.md); this map records current
+reachability so a contributor can tell where a fix belongs without guessing.
+The detailed migration plan lives in
+[plans/P1-runtime-authority.md](plans/P1-runtime-authority.md).
 
-Verified against the repo on **2026-07-14** by tracing actual `source`/subprocess
+Verified against the repo on **2026-07-24** by tracing actual `source`/subprocess
 edges from the entry points. Re-verify (and update this file) whenever a bridge,
-menu, or launcher path changes — the CI check proposed in Step 10 should fail if
-a new live→legacy edge appears.
+menu, or launcher path changes — the Step 10 CI freeze check fails if a new
+live→legacy edge appears.
 
 ## Legend
 
@@ -36,7 +36,7 @@ a new live→legacy edge appears.
 
 | Path | Role |
 | --- | --- |
-| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (1333 lines) |
+| `terminal/launchers/mqlaunch.sh` | Current runtime coordinator (1078 lines) |
 | `terminal/launchers/mqlaunch-command-mode.sh` | CLI/command dispatch, sourced by the launcher |
 | `terminal/launchers/mqlaunch-repl.sh` | Interactive REPL surface (`mqlaunch repl`) |
 
@@ -90,7 +90,7 @@ Reached through other live paths:
 
 | Path | Class | Reachability |
 | --- | --- | --- |
-| `terminal/mqlaunch-v1/**` (25 files, 1629 shell LOC) | **COMPAT** | Reachable only through the compat edges below |
+| `terminal/mqlaunch-v1/**` (24 files, 1629 shell LOC) | **COMPAT** | Reachable only through the compat edges below |
 | `terminal/menus/mq-performance-menu.sh` | **COMPAT** | Live menu, but sources v1 directly (see edges) — a compat wrapper until migrated |
 
 ### The exact live→legacy edges (remove these in Step 12)

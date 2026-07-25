@@ -255,6 +255,10 @@ Full reference: [docs/B2_TUI.md](docs/B2_TUI.md)
 ## 📚 Documentation map
 
 * [Command reference](docs/COMMANDS.md) — full `mqlaunch` command surface
+* [Runtime authority](docs/RUNTIME_AUTHORITY.md) — dispatcher ownership,
+  compatibility policy, and allowed responsibilities
+* [Runtime authority map](docs/AUTHORITY_MAP.md) — current live, compatibility,
+  deprecated, and test-only path inventory
 * [B2 TUI reference](docs/B2_TUI.md) — B2 Atlas Prompt OS terminal interface
 * [Terminal guide](terminal/README.md) — launchers, menus, themes, and bridges
 * [Tools guide](tools/README.md) — helper scripts and utility workflows
