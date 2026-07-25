@@ -8,6 +8,30 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch/lib/command-registry.json` — the canonical inventory of top-level
+  `mqlaunch` commands: 67 entries covering 145 names, each carrying its aliases,
+  namespace, summary, owner repo, safety mode, output modes, JSON support,
+  interactivity, compatibility status and delegation target.
+  `tools/scripts/validate-command-registry.py` is the gate: it rejects duplicate
+  names and alias collisions, empty summaries, unknown owners or safety modes,
+  and JSON claims not backed by a JSON output mode — then walks
+  `dispatch_cli_command` and fails if the registry and the dispatcher disagree in
+  either direction. Registered as `tests/command-registry-smoke.sh`, which also
+  asserts that the gate itself fires rather than passing everything. The registry
+  sits on the authority-owned path required by `docs/RUNTIME_AUTHORITY.md`.
+  Nothing consumes it at runtime yet; help, palette and docs generation come
+  later in the v2.0.0 block.
+
+### Fixed
+
+* `mqlaunch` dispatched `memory` from two different branches. The
+  `srm|memory|repo-memory` branch claims it first, so the `memory` listed in the
+  brain-bridge branch below it could never match — `mqlaunch memory` has always
+  gone to the SRM surface, never to the brain bridge. Removed the unreachable
+  token; behaviour is unchanged, and the registry gate now fails if a duplicate
+  route is introduced again. Found while mapping the command surface for the
+  registry.
+
 * `docs/RUNTIME_AUTHORITY.md` — the runtime-governance contract for `mqlaunch`.
   Names the single live authority (`bin/mqlaunch` → `mqlaunch.sh` →
   `mqlaunch-command-mode.sh`), the allowed and forbidden responsibilities of that

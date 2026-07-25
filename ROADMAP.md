@@ -181,7 +181,7 @@ Legacy paths may remain temporarily, but only as compatibility shims. They must 
 
 ## P1 — Authoritative command registry
 
-Status: Planned
+Status: In progress — registry and validation delivered, consumers open
 Priority: P1
 Risk if delayed: High
 Owner: `macos-scripts`
@@ -205,12 +205,12 @@ Create one canonical command registry used to validate or generate:
 
 ### Tasks
 
-* [ ] Create a canonical command registry.
+* [x] Create a canonical command registry.
 
-  * Suggested file: `mqlaunch/lib/command-registry.*` or another authority-owned path.
-  * Do not place it in a legacy runtime path.
+  * `mqlaunch/lib/command-registry.json` — 67 top-level commands, 145 names.
+  * On the authority-owned path, as required by `docs/RUNTIME_AUTHORITY.md`.
 
-* [ ] Define registry fields.
+* [x] Define registry fields.
 
   * canonical command name
   * aliases
@@ -224,13 +224,15 @@ Create one canonical command registry used to validate or generate:
   * whether the command is interactive
   * whether the command is compatibility-only
 
-* [ ] Add registry validation.
+* [x] Add registry validation.
 
   * Reject duplicate command names.
   * Reject alias collisions.
   * Reject missing summaries.
   * Reject undocumented delegated owners.
   * Reject JSON claims without a stable JSON contract.
+  * `tools/scripts/validate-command-registry.py`, gated by
+    `tests/command-registry-smoke.sh`.
 
 * [ ] Validate help against the registry.
 
@@ -239,10 +241,11 @@ Create one canonical command registry used to validate or generate:
   * namespace help
   * command palette
 
-* [ ] Validate dispatch against the registry.
+* [x] Validate dispatch against the registry.
 
   * Every public command must be dispatchable or explicitly marked as planned/hidden.
   * Every dispatchable command must appear in help or be marked internal.
+  * Parity is enforced in both directions; drift fails the suite.
 
 * [ ] Validate docs against the registry.
 
@@ -251,8 +254,9 @@ Create one canonical command registry used to validate or generate:
 
 ### Exit gate
 
-* [ ] One registry proves that routing, help, palette, and docs agree.
-* [ ] A CI test fails when command drift appears.
+* [ ] One registry proves that routing, help, palette, and docs agree — routing
+  is proven; help, palette and docs are not yet validated against the registry.
+* [x] A CI test fails when command drift appears.
 
 ---
 
@@ -630,16 +634,16 @@ feat(mqlaunch): add command registry foundation
 
 Scope:
 
-* [ ] Add canonical command registry
-* [ ] Add registry validation
-* [ ] Add tests for duplicate names and alias collisions
-* [ ] Do not refactor every command yet
+* [x] Add canonical command registry
+* [x] Add registry validation
+* [x] Add tests for duplicate names and alias collisions
+* [x] Do not refactor every command yet
 
 Exit gate:
 
-* [ ] Registry exists
-* [ ] Registry validation runs in CI
-* [ ] Existing commands still work
+* [x] Registry exists
+* [x] Registry validation runs in CI
+* [x] Existing commands still work
 
 ---
 

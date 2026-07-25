@@ -1025,7 +1025,9 @@ dispatch_cli_command() {
       return 0
       ;;
 
-    note|sessions|decisions|reviews|learn|verified|systems|memory)
+    # `memory` is deliberately absent here: the srm|memory|repo-memory branch
+    # above claims it first, so listing it again never matched.
+    note|sessions|decisions|reviews|learn|verified|systems)
       if declare -f mq_brain_run >/dev/null; then
         mq_brain_run "$area" "${@:2}"
       else
