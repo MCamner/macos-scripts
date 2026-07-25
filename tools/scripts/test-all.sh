@@ -30,6 +30,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/namespace-help-smoke.sh"
 "$PROJECT_ROOT/tests/delegated-exit-code-smoke.sh"
 "$PROJECT_ROOT/tests/runtime-authority-classification-smoke.sh"
+"$PROJECT_ROOT/tests/compat-path-delegation-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="
