@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `docs/RUNTIME_AUTHORITY.md` — the runtime-governance contract for `mqlaunch`.
+  Names the single live authority (`bin/mqlaunch` → `mqlaunch.sh` →
+  `mqlaunch-command-mode.sh`), the allowed and forbidden responsibilities of that
+  path, the LIVE/COMPAT/DEPRECATED/TEST-ONLY classes, the compatibility policy
+  and its removal gate, and the dependency direction that forbids new live edges
+  into `terminal/mqlaunch-v1/`. `AUTHORITY_MAP.md` keeps the path-by-path
+  inventory; this document holds the boundary that must stay true while those
+  paths migrate. Linked from the README documentation map, `COMMAND_SURFACE.md`
+  and `MQ_BOUNDARY.md`. Closes the P1 "Single runtime authority" roadmap block,
+  whose delegation tests already existed in
+  `tests/compat-path-delegation-smoke.sh`.
+
 ### Fixed
 
 * `mqlaunch status --json` (and `about --json`) now emit machine-readable JSON

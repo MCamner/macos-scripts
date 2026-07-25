@@ -109,7 +109,7 @@ The repo version and public docs are ahead of the roadmap status text. Before v2
 
 ## P1 — Single runtime authority
 
-Status: Planned
+Status: Done — see `docs/RUNTIME_AUTHORITY.md`
 Priority: P1
 Risk if delayed: High
 Owner: `macos-scripts`
@@ -126,21 +126,24 @@ Legacy paths may remain temporarily, but only as compatibility shims. They must 
 
 ### Tasks
 
-* [ ] Identify the single live dispatcher path.
+* [x] Identify the single live dispatcher path.
 
   * Decide which runtime path owns command resolution.
   * Document why that path is authoritative.
+  * `bin/mqlaunch` → `mqlaunch.sh` → `mqlaunch-command-mode.sh`.
 
-* [ ] Mark legacy paths as compatibility-only.
+* [x] Mark legacy paths as compatibility-only.
 
   * Legacy paths may forward to the authority-owned runtime.
   * They must not implement new command behavior.
+  * Classified in `docs/AUTHORITY_MAP.md`, enforced by
+    `scripts/check-runtime-authority.sh`.
 
-* [ ] Add a runtime authority document.
+* [x] Add a runtime authority document.
 
-  * Suggested file: `docs/RUNTIME_AUTHORITY.md`
+  * `docs/RUNTIME_AUTHORITY.md`
 
-* [ ] Document allowed responsibilities.
+* [x] Document allowed responsibilities.
 
   * argument parsing
   * command lookup
@@ -149,7 +152,7 @@ Legacy paths may remain temporarily, but only as compatibility shims. They must 
   * delegation to owning repos
   * exit-code preservation
 
-* [ ] Document forbidden responsibilities.
+* [x] Document forbidden responsibilities.
 
   * review cognition
   * release planning
@@ -158,18 +161,21 @@ Legacy paths may remain temporarily, but only as compatibility shims. They must 
   * direct MCP tool execution when `mq-agent` owns the workflow
   * GitHub mutation without explicit approval
 
-* [ ] Add tests proving compatibility paths delegate correctly.
+* [x] Add tests proving compatibility paths delegate correctly.
 
   * Direct command path
   * Menu path
   * Palette path
   * Legacy shim path
+  * All four covered by `tests/compat-path-delegation-smoke.sh`.
 
 ### Exit gate
 
-* [ ] There is one documented runtime authority.
-* [ ] Compatibility paths are tested as delegation paths, not independent runtimes.
-* [ ] No new feature work is added to legacy paths.
+* [x] There is one documented runtime authority.
+* [x] Compatibility paths are tested as delegation paths, not independent runtimes.
+* [x] No new feature work is added to legacy paths — held by
+  `scripts/check-runtime-authority.sh` and
+  `tests/runtime-authority-freeze-smoke.sh`.
 
 ---
 

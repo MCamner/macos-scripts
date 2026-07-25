@@ -2,6 +2,11 @@
 
 `mqlaunch` commands are grouped by ownership and risk.
 
+The single dispatcher and its allowed responsibilities are defined in
+[`docs/RUNTIME_AUTHORITY.md`](../RUNTIME_AUTHORITY.md). The current
+path-by-path classification is maintained in
+[`docs/AUTHORITY_MAP.md`](../AUTHORITY_MAP.md).
+
 | Tier | Examples | Purpose |
 | --- | --- | --- |
 | Core | `mqlaunch`, `doctor`, `selftest`, `release-check` | Stable repo and launcher baseline |
