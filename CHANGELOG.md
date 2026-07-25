@@ -8,6 +8,18 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch status --json` (and `about --json`) now emit machine-readable JSON
+  only. The `about|status` route ignored its arguments and always rendered the
+  dashboard, so a caller piping `--json` got ~5.9 KB of ASCII banner, no JSON,
+  and exit 0 — a silent failure. `dispatch_cli_command` now branches on
+  `has_json_flag` into `print_status_json`, which prints one JSON document
+  (`project`, `version`, `release_stage`, `repo_state`, `latest_bundle`) on
+  clean stdout. The JSON path also drops the dashboard's smoke-test field, which
+  shelled out to the full test suite: the call went from 20.7 s to 0.1 s and no
+  longer recurses when run from `test-all.sh`. `repo_state` reports `unknown`
+  instead of `dirty` when the repo root is not a git checkout. Proven by two new
+  steps in `tests/plain-output-contract-smoke.sh`.
+
 * The git "auto commit + push" automation no longer leaves the working checkout
   off-main. After creating and pushing an `mq/...` PR branch,
   `create_pr_branch_for_push` (in `gitlaunch.sh` and `mq-git-menu.sh`) now calls
