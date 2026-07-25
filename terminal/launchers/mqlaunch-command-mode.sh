@@ -391,7 +391,8 @@ dispatch_cli_command() {
           "$BASE_DIR/automation/workflows/workspace.sh" "$sub" "${3:-}"
           ;;
       esac
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     demo)
@@ -506,7 +507,8 @@ dispatch_cli_command() {
     ask|/ask)
       shift
       "$BASE_DIR/tools/scripts/ask.sh" "$@"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     srm|memory|repo-memory)
@@ -534,14 +536,16 @@ dispatch_cli_command() {
         return "$command_status"
       fi
       "$BASE_DIR/tools/scripts/srm.sh" "$@"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     skills|skill)
       shift
       "$BASE_DIR/tools/scripts/mq-skills.py" "$@"
+      command_status=$?
       [[ "${1:-}" != "--json" ]] && pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     repos)
@@ -549,34 +553,40 @@ dispatch_cli_command() {
       case "${1:-}" in
         ""|menu|hub)
           "$BASE_DIR/bin/mqlaunch" hub
+          command_status=$?
           ;;
         list|roadmaps|skills|status|wiki-status|diff-summary)
           "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
+          command_status=$?
           pause_enter
           ;;
         *)
           "$BASE_DIR/tools/scripts/mq-repos.py" "$@"
+          command_status=$?
           pause_enter
           ;;
       esac
-      return 0
+      return "$command_status"
       ;;
 
     fix|/fix)
       shift
       "$BASE_DIR/tools/scripts/fix.sh" "$@"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     chat|/chat)
       "$BASE_DIR/tools/scripts/chat.sh"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     release-check|/release-check|check-release)
       "$BASE_DIR/terminal/release/mq-release-check.sh" "${@:2}"
+      command_status=$?
       pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     review-brain|/review-brain)
@@ -623,14 +633,16 @@ dispatch_cli_command() {
 
     doctor|/doctor)
       "$BASE_DIR/tools/scripts/doctor.sh" "${@:2}"
+      command_status=$?
       [[ "${2:-}" != "--json" && -z "${MQ_NO_TUI:-}" ]] && pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     scan|/scan)
       "$BASE_DIR/tools/scripts/scan.sh"
+      command_status=$?
       pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     atlas|/atlas)
@@ -676,7 +688,8 @@ dispatch_cli_command() {
           return 2
           ;;
       esac
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     git)
@@ -710,7 +723,8 @@ dispatch_cli_command() {
           return 2
           ;;
       esac
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     dev)
@@ -858,17 +872,20 @@ dispatch_cli_command() {
       else
         "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
       fi
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     docfunc|document-functions)
       MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     docwrite|document-functions-write|update-comments)
       MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     version)
@@ -982,37 +999,44 @@ dispatch_cli_command() {
       else
         "$BASE_DIR/bin/mqlaunch" hub
       fi
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     git-log|gitlog|glog)
       declare -f fzf_git_log >/dev/null && fzf_git_log || "$BASE_DIR/bin/mqlaunch" git-log
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     git-branch|branch-switch|gbranch)
       declare -f fzf_git_branch >/dev/null && fzf_git_branch || "$BASE_DIR/bin/mqlaunch" git-branch
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     kill-process|killp|pkill-fzf)
       declare -f fzf_kill_process >/dev/null && fzf_kill_process || "$BASE_DIR/bin/mqlaunch" kill-process
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     kill-port|killport|port-kill)
       declare -f fzf_kill_port >/dev/null && fzf_kill_port || "$BASE_DIR/bin/mqlaunch" kill-port
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     snippets|snippet|scripts)
       declare -f fzf_run_snippet >/dev/null && fzf_run_snippet || "$BASE_DIR/bin/mqlaunch" snippets
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     recent|recent-files|rf)
       declare -f fzf_recent_files >/dev/null && fzf_recent_files || "$BASE_DIR/bin/mqlaunch" recent
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     brain)

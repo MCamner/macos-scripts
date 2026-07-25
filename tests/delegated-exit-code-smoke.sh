@@ -32,23 +32,23 @@ assert_status() {
 
 echo "SMOKE: delegated exit-code contract"
 
-echo "[1/5] missing backend is non-zero"
+echo "[1/7] missing backend is non-zero"
 unset -f run_agent_command 2>/dev/null || true
 assert_status 1 dispatch_cli_command review
 grep -q 'bridge not loaded' "$TMPDIR_TEST/stderr"
 
-echo "[2/5] usage and runtime failures propagate"
+echo "[2/7] usage and runtime failures propagate"
 run_agent_command() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 MQ_TEST_BACKEND_STATUS=2 assert_status 2 dispatch_cli_command review
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command stack status
 
-echo "[3/5] HAL pause does not overwrite backend status"
+echo "[3/7] HAL pause does not overwrite backend status"
 mq_hal_run() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 rm -f "$TMPDIR_TEST/pause.log"
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command hal brief
 [[ -s "$TMPDIR_TEST/pause.log" ]]
 
-echo "[4/5] JSON stdout stays clean"
+echo "[4/7] JSON stdout stays clean"
 mq_hal_run() {
   printf '{"schema":"hal.test.v1"}\n'
   return 42
@@ -59,7 +59,7 @@ assert_status 42 dispatch_cli_command hal brief --json
 [[ ! -e "$TMPDIR_TEST/pause.log" ]]
 [[ ! -s "$TMPDIR_TEST/stderr" ]]
 
-echo "[5/5] full launcher returns backend status without double dispatch"
+echo "[5/7] full launcher returns backend status without double dispatch"
 mkdir -p "$TMPDIR_TEST/bin" "$TMPDIR_TEST/agent"
 cat > "$TMPDIR_TEST/bin/uv" <<EOF
 #!/usr/bin/env bash
@@ -86,6 +86,89 @@ set -e
   echo "full launcher delegated more than once" >&2
   exit 1
 }
+
+echo "[6/7] external script delegates propagate their status"
+# Steps 1-5 stub shell functions, which only reaches the agent and HAL families.
+# Most of the surface delegates to scripts under $BASE_DIR instead, and those
+# were never covered. Both cases below are real argparse failures.
+run_launcher() {
+  set +e
+  MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 MQLAUNCH_HEADLESS=1 \
+    timeout 60 "$ROOT/terminal/launchers/mqlaunch.sh" "$@" \
+    </dev/null >"$TMPDIR_TEST/stdout" 2>"$TMPDIR_TEST/stderr"
+  local status=$?
+  set -e
+  return "$status"
+}
+
+for bad_case in "repos LIST" "skills no-such-subcommand"; do
+  # shellcheck disable=SC2086
+  set -- $bad_case
+  if run_launcher "$@"; then
+    echo "delegated failure reported success: mqlaunch $bad_case" >&2
+    exit 1
+  fi
+  grep -q 'usage:' "$TMPDIR_TEST/stderr" || {
+    echo "expected a delegate usage error on stderr for: mqlaunch $bad_case" >&2
+    exit 1
+  }
+done
+
+# The success path must stay 0, so the fix cannot be "always return non-zero".
+run_launcher repos list || {
+  echo "successful delegation no longer exits 0" >&2
+  exit 1
+}
+
+echo "[7/7] no delegating branch ends in an unconditional return 0"
+# The behavioural cases above pin two branches. This keeps the other nineteen
+# from drifting back, and stops new ones from being written that way.
+python3 - "$COMMAND_MODE" <<'PY'
+import re
+import sys
+
+lines = open(sys.argv[1]).read().splitlines()
+start = next(i for i, l in enumerate(lines) if l.strip() == 'case "$area" in')
+
+branch = re.compile(
+    r'((?:"[^"]*"|[A-Za-z0-9_*/.\-])+(?:\|(?:"[^"]*"|[A-Za-z0-9_*/.\-])+)*)\)'
+)
+depth = 0
+current = None
+bodies = {}
+for i in range(start, len(lines)):
+    s = lines[i].strip()
+    if s.startswith("case ") and re.match(r'case\s+"?\$', s):
+        depth += 1
+    elif s.startswith("esac"):
+        depth -= 1
+        if depth == 0:
+            break
+    elif branch.match(s):
+        if depth == 1:
+            current = (branch.match(s).group(1), i + 1)
+            bodies[current] = []
+        elif current is not None:
+            bodies[current].append(s)
+    elif current is not None:
+        bodies[current].append(s)
+
+offenders = []
+for (name, line), body in bodies.items():
+    text = "\n".join(body)
+    if not re.search(r"\$BASE_DIR/(tools|terminal|bin|automation)", text):
+        continue
+    if re.search(r"^return 0$", text, re.M):
+        offenders.append(f"  line {line}: {name}")
+
+if offenders:
+    print(
+        "these branches delegate and then discard the delegate's status:",
+        file=sys.stderr,
+    )
+    print("\n".join(offenders), file=sys.stderr)
+    sys.exit(1)
+PY
 
 bash -n "$0"
 echo "OK: delegated failures preserve their exit status"
