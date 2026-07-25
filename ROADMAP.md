@@ -12,6 +12,8 @@ The next major product step is:
 v2.0.0 — Runtime Authority and Command Surface Governance
 ```
 
+v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
+
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
 `mqlaunch` should stay thin:
@@ -68,7 +70,7 @@ Make `mqlaunch` one coherent operator surface with one runtime authority, one co
 
 ## P0 — Roadmap and status sync
 
-Status: Planned
+Status: Done
 Priority: P0
 Risk if delayed: Low
 Owner: `macos-scripts`
@@ -79,29 +81,29 @@ The repo version and public docs are ahead of the roadmap status text. Before v2
 
 ### Tasks
 
-* [ ] Update `Current version` to `1.0.1`
+* [x] Update `Current version` to `1.0.1`
 
   * The version file and README badge already show `1.0.1`.
   * The roadmap should match the released state.
 
-* [ ] Replace the old current focus text.
+* [x] Replace the old current focus text.
 
   * Remove stale focus on `v1.0.1 release readiness hardening`.
   * Set the new focus to `v2.0.0 — Runtime Authority and Command Surface Governance`.
 
-* [ ] Keep `mqlaunch` ownership clear.
+* [x] Keep `mqlaunch` ownership clear.
 
   * `mqlaunch` owns terminal UX, menus, shortcuts, and delegation.
   * It must not own review cognition, release orchestration, memory promotion, or repo scoring.
 
-* [ ] Add a short post-v1.0.1 note.
+* [x] Add a short post-v1.0.1 note.
 
   * State that v1.0.1 established the release-readiness baseline.
   * State that v2.0.0 now focuses on runtime authority and drift prevention.
 
 ### Exit gate
 
-* [ ] Roadmap, README, VERSION, and repo contract no longer disagree about the current direction.
+* [x] Roadmap, README, VERSION, and repo contract no longer disagree about the current direction.
 
 ---
 
@@ -303,7 +305,7 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
 ## P1 — Plain and machine-readable output contract
 
-Status: Planned
+Status: In progress — colour and JSON delivered, piped rendering open (#67)
 Priority: P1
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -322,42 +324,43 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 
 * [ ] Respect `NO_COLOR=1`.
 
-  * No ANSI colors when disabled.
-  * No decorative dashboard output when stdout is not a TTY.
+  * [x] No ANSI colors when disabled — central colour guard in `ui/terminal-ui/mq-ui.sh` (#63).
+  * [ ] No decorative dashboard output when stdout is not a TTY — still open (#67).
 
-* [ ] Add or standardize `--no-color` where global parsing permits it.
+* [ ] Add or standardize `--no-color` where global parsing permits it — not implemented (#67).
 
-* [ ] Keep JSON stdout clean.
+* [x] Keep JSON stdout clean.
 
-  * JSON commands must print only JSON to stdout.
+  * JSON commands must print only JSON to stdout — `status --json` fixed in #65.
   * Diagnostics must go to stderr.
 
-* [ ] Suppress banners in non-interactive mode.
+* [ ] Suppress banners in non-interactive mode — still open (#67).
 
   * No login dashboard when output is piped.
   * No cursor control codes in redirected output.
 
-* [ ] Preserve exit codes.
+* [x] Preserve exit codes.
 
   * Delegated command failures must pass through.
   * Rendering helpers must not overwrite backend status.
+  * Covered by `tests/delegated-exit-code-smoke.sh`.
 
-* [ ] Add `tests/plain-output-contract-smoke.sh`.
+* [x] Add `tests/plain-output-contract-smoke.sh`.
 
 * [ ] Test the output contract in:
 
-  * normal TTY mode
-  * piped mode
-  * redirected mode
-  * `NO_COLOR=1`
-  * JSON mode
-  * backend failure mode
+  * [x] normal TTY mode — pty-driven check in the contract smoke
+  * [ ] piped mode — no test yet (#67)
+  * [ ] redirected mode — no test yet (#67)
+  * [x] `NO_COLOR=1`
+  * [x] JSON mode
+  * [x] backend failure mode — `tests/delegated-exit-code-smoke.sh`
 
 ### Exit gate
 
-* [ ] Humans get readable output.
-* [ ] Scripts get clean output.
-* [ ] CI can trust exit codes without parsing terminal text.
+* [x] Humans get readable output.
+* [ ] Scripts get clean output — `status --json` is clean, plain `status` still emits the banner when piped (#67).
+* [x] CI can trust exit codes without parsing terminal text.
 
 ---
 
