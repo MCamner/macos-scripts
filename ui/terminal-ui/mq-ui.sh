@@ -23,7 +23,9 @@ fi
 # ------------------------------------------------------------
 # ANSI colors
 # ------------------------------------------------------------
-if [[ -t 1 ]]; then
+# Honour NO_COLOR (https://no-color.org): any non-empty value disables color,
+# even on a TTY. Colors stay off when stdout is not a terminal.
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   _MQ_DEFAULT_RESET=$'\033[0m'
   _MQ_DEFAULT_TITLE=$'\033[1;33m'
   _MQ_DEFAULT_ERR=$'\033[0;31m'
