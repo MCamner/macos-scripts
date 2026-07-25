@@ -574,6 +574,8 @@ Compatibility routes are useful during migration, but they become debt if they r
 
 ### PR 1 — Roadmap and status sync
 
+Delivered in #61 and #68.
+
 Suggested title:
 
 ```text
@@ -582,19 +584,21 @@ docs(roadmap): set v2.0.0 runtime authority direction
 
 Scope:
 
-* [ ] Update current version to `1.0.1`
-* [ ] Replace stale current focus
-* [ ] Add v2.0.0 direction
-* [ ] Keep this docs-only
+* [x] Update current version to `1.0.1`
+* [x] Replace stale current focus
+* [x] Add v2.0.0 direction
+* [x] Keep this docs-only
 
 Exit gate:
 
-* [ ] No code changes
-* [ ] release-check remains READY
+* [x] No code changes
+* [x] release-check remains READY
 
 ---
 
 ### PR 2 — Runtime authority design
+
+Delivered in #69.
 
 Suggested title:
 
@@ -604,15 +608,15 @@ docs(mqlaunch): define runtime authority boundary
 
 Scope:
 
-* [ ] Add `docs/RUNTIME_AUTHORITY.md`
-* [ ] Identify authority-owned runtime path
-* [ ] Mark legacy paths as compatibility-only
-* [ ] Document allowed and forbidden responsibilities
+* [x] Add `docs/RUNTIME_AUTHORITY.md`
+* [x] Identify authority-owned runtime path
+* [x] Mark legacy paths as compatibility-only
+* [x] Document allowed and forbidden responsibilities
 
 Exit gate:
 
-* [ ] No runtime behavior changes yet
-* [ ] Maintainers can point to one authority model
+* [x] No runtime behavior changes yet
+* [x] Maintainers can point to one authority model
 
 ---
 
@@ -683,6 +687,8 @@ Exit gate:
 
 ### PR 6 — Output contract
 
+Partly delivered in #63 and #65; the rest is tracked in #67.
+
 Suggested title:
 
 ```text
@@ -691,15 +697,16 @@ fix(mqlaunch): enforce plain output contract
 
 Scope:
 
-* [ ] Respect `NO_COLOR=1`
-* [ ] Clean JSON stdout
-* [ ] Diagnostics to stderr
-* [ ] No dashboard rendering when piped
-* [ ] Preserve delegated exit codes
+* [x] Respect `NO_COLOR=1`
+* [x] Clean JSON stdout
+* [x] Diagnostics to stderr
+* [ ] No dashboard rendering when piped — open (#67)
+* [x] Preserve delegated exit codes
 
 Exit gate:
 
-* [ ] Shell scripts can consume `mqlaunch` safely
+* [ ] Shell scripts can consume `mqlaunch` safely — `status --json` is safe;
+  plain `status` still emits the banner when piped (#67)
 
 ---
 
