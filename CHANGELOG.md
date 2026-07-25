@@ -24,6 +24,16 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch repos LIST` failed while `mqlaunch system TIME` worked. Command
+  words are lowercased into `sub` before routing, but the `srm` and `repos`
+  branches shifted and re-read the raw `"${1:-}"`, so those two namespaces were
+  case-sensitive and nothing else was. Both now route on the normalised word,
+  and `repos` forwards it to `mq-repos.py`, which matches its command word
+  exactly. Only the command word is normalised: arguments keep the case the user
+  typed, an unknown subcommand is still forwarded verbatim so the delegate's
+  error names what was actually typed, and the free-text question that `srm`
+  hands to `srm.sh` is untouched. Implements D1 of
+  `docs/plans/P1-command-registry-subcommands.md`.
 * 22 dispatch branches invoked a script under `$BASE_DIR` and then ended in an
   unconditional `return 0`, so a failing delegate was reported as success:
   `mqlaunch repos LIST` and `mqlaunch skills no-such-subcommand` both wrote a

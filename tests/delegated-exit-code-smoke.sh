@@ -101,7 +101,7 @@ run_launcher() {
   return "$status"
 }
 
-for bad_case in "repos LIST" "skills no-such-subcommand"; do
+for bad_case in "repos no-such-subcommand" "skills no-such-subcommand"; do
   # shellcheck disable=SC2086
   set -- $bad_case
   if run_launcher "$@"; then
