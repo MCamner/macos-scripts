@@ -46,6 +46,33 @@ if [[ ! -t 0 || ! -t 1 || -n "${MQLAUNCH_HEADLESS:-}" ]]; then
   export MQ_NO_TUI=1
 fi
 
+# --- Global --no-color --------------------------------------
+# The flag form of NO_COLOR (https://no-color.org), for callers who have a
+# command line but no control over the environment.
+#
+# Parsed here, before the UI library is sourced: mq-ui.sh resolves the C_*
+# variables at source time, so a strip that ran any later would arrive after the
+# escape codes had already been chosen.
+#
+# Accepted in any position, like --json already is, and removed from the argv
+# that gets forwarded. Nothing downstream loses the intent by that removal —
+# NO_COLOR is exported, and that is the form the standard defines and the form a
+# delegated tool reads anyway.
+_mq_argv=()
+_mq_no_color=0
+for _mq_arg in "$@"; do
+  if [[ "$_mq_arg" == "--no-color" ]]; then
+    _mq_no_color=1
+  else
+    _mq_argv+=("$_mq_arg")
+  fi
+done
+if [[ "$_mq_no_color" -eq 1 ]]; then
+  export NO_COLOR=1
+  set -- ${_mq_argv[@]+"${_mq_argv[@]}"}
+fi
+unset _mq_arg _mq_argv _mq_no_color
+
 # Performance bridge
 if [[ -f "$BASE_DIR/terminal/bridges/performance-bridge.sh" ]]; then
   # shellcheck disable=SC1091
@@ -659,7 +686,13 @@ show_about_dashboard() {
     repo_state="dirty"
   fi
 
-  if [[ -x "$test_script" ]]; then
+  # Running the suite is a thirty-second side effect of asking for status, and
+  # it is fine on a terminal where a human chose to wait. Piped, it is not: the
+  # suite runs the output-contract test, which runs `status`, which runs the
+  # suite. A machine consumer gets the field, not the recursion (#67).
+  if mq_wants_plain_output; then
+    smoke_status="not run (mqlaunch check)"
+  elif [[ -x "$test_script" ]]; then
     if "$test_script" >/dev/null 2>&1; then
       smoke_status="PASS"
     else

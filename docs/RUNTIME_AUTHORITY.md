@@ -162,16 +162,22 @@ The authority-owned runtime must preserve these invariants:
 
 * human TTY output may use the shared terminal UI
 * non-TTY output must not render dashboards or cursor-control noise
-* `NO_COLOR=1` and supported no-color flags must suppress ANSI color
+* `NO_COLOR=1` and the global `--no-color` flag must suppress ANSI color
 * JSON mode prints only JSON to stdout
 * diagnostics go to stderr
 * delegated failures preserve the backend exit status
 * unknown commands fail clearly and without side effects
 
-The detailed output contract is tracked separately in the v2.0.0 roadmap. The
-colour and JSON invariants above are enforced today by
-`tests/plain-output-contract-smoke.sh`; suppressing decorative output on non-TTY
-stdout is still open (see issue #67).
+All of the invariants above are enforced by
+`tests/plain-output-contract-smoke.sh` (#67), which drives the commands rather
+than reading the sources: colour is compared with and without `NO_COLOR` under a
+pseudo-terminal, and the plain path is compared piped against a real terminal.
+
+The rendering decision lives in one predicate, `mq_wants_plain_output` in
+`ui/terminal-ui/mq-ui.sh`, which looks only at stdout. It is deliberately not
+`MQ_NO_TUI`: that flag answers "can I prompt?" and takes stdin into account,
+while this one answers "will anyone see box drawing?". A human running
+`mqlaunch status | less` has a terminal on stdin and still wants plain output.
 
 ## Change rule
 
