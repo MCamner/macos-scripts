@@ -237,14 +237,26 @@ border() {
 }
 
 # Handles row.
+#
+# The padding exists so the box borders line up. Off a terminal there is no box,
+# so it is trailing whitespace on every line — and the precision that comes with
+# it truncates at BOX_INNER, which silently cuts long paths out of piped output.
 row() {
   local text="$1"
+  if mq_wants_plain_output; then
+    printf '%s\n' "$text"
+    return
+  fi
   printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
 # Handles row bold.
 row_bold() {
   local text="$1"
+  if mq_wants_plain_output; then
+    printf '%s\n' "$text"
+    return
+  fi
   printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
@@ -319,6 +331,17 @@ mq_has_interactive_tty() {
   [[ -z "${MQ_NO_TUI:-}" && -t 0 && -t 1 ]]
 }
 
+# True when stdout is being read by something other than a terminal.
+#
+# Rendering and interactivity are separate axes, so this is deliberately not
+# MQ_NO_TUI. MQ_NO_TUI answers "can I prompt?" and takes stdin into account;
+# this answers "will anyone see box drawing?" and looks only at stdout. A human
+# running `mqlaunch status | less` still has a terminal on stdin — but the
+# banner is going into a pipe, and that is what decides how to render (#67).
+mq_wants_plain_output() {
+  [[ ! -t 1 ]]
+}
+
 # Handles read menu choice.
 read_menu_choice() {
   local label="${2:-mqlaunch}"
@@ -351,7 +374,12 @@ set_terminal_title() {
 }
 
 # Handles clear screen.
+#
+# Clearing a pipe is meaningless, and the escape sequence that would do it lands
+# in the consumer's data as a cursor-control code. Same for the title sequence.
 clear_screen() {
+  mq_wants_plain_output && return 0
+
   if command -v tput >/dev/null 2>&1 && [[ -n "${TERM:-}" ]]; then
     tput clear 2>/dev/null || printf '\033[H\033[2J'
   else
@@ -417,8 +445,16 @@ print_dashboard_header() {
 }
 
 # Prints header.
+#
+# The banner, the logo and the dashboard panels are the product's face on a
+# terminal and noise everywhere else. Suppressed as a whole rather than per
+# element: a caller piping `mqlaunch status` wants the status, and 5.8 KB of box
+# drawing ahead of it is what made the plain path unusable from a script (#67).
+# The rows that follow are content and still print.
 print_header() {
   local dashboard nickname
+
+  mq_wants_plain_output && return 0
 
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
     dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
@@ -442,8 +478,14 @@ print_header() {
 }
 
 # Prints footer.
+#
+# Host, user and wall-clock time are screen furniture, not results, and the
+# timestamp makes otherwise identical piped output differ on every run.
 print_footer() {
   local now host user_name
+
+  mq_wants_plain_output && return 0
+
   now="$(date '+%Y-%m-%d %H:%M:%S')"
   host="$(short_host)"
   user_name="${USER:-unknown}"

@@ -319,7 +319,7 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
 ## P1 — Plain and machine-readable output contract
 
-Status: In progress — colour and JSON delivered, piped rendering open (#67)
+Status: Done — see `docs/RUNTIME_AUTHORITY.md` (#63, #65, #73, #67)
 Priority: P1
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -336,22 +336,27 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 
 ### Tasks
 
-* [ ] Respect `NO_COLOR=1`.
+* [x] Respect `NO_COLOR=1`.
 
   * [x] No ANSI colors when disabled — central colour guard in `ui/terminal-ui/mq-ui.sh` (#63).
-  * [ ] No decorative dashboard output when stdout is not a TTY — still open (#67).
+  * [x] No decorative dashboard output when stdout is not a TTY — `mq_wants_plain_output`
+    gates `print_header`, `print_footer`, `clear_screen` and the row padding (#67).
 
-* [ ] Add or standardize `--no-color` where global parsing permits it — not implemented (#67).
+* [x] Add or standardize `--no-color` where global parsing permits it — global flag
+  parsed in `terminal/launchers/mqlaunch.sh` before the UI library is sourced,
+  accepted in any position, exported as `NO_COLOR` (#67).
 
 * [x] Keep JSON stdout clean.
 
   * JSON commands must print only JSON to stdout — `status --json` fixed in #65.
   * Diagnostics must go to stderr.
 
-* [ ] Suppress banners in non-interactive mode — still open (#67).
+* [x] Suppress banners in non-interactive mode (#67).
 
   * No login dashboard when output is piped.
   * No cursor control codes in redirected output.
+  * `mqlaunch status` piped went from 5880 bytes of dashboard to 554 bytes of
+    fields, and stopped running the test suite to fill in one of them.
 
 * [x] Preserve exit codes.
 
@@ -368,19 +373,22 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 
 * [x] Add `tests/plain-output-contract-smoke.sh`.
 
-* [ ] Test the output contract in:
+* [x] Test the output contract in:
 
   * [x] normal TTY mode — pty-driven check in the contract smoke
-  * [ ] piped mode — no test yet (#67)
-  * [ ] redirected mode — no test yet (#67)
-  * [x] `NO_COLOR=1`
+  * [x] piped mode — `| cat`, compared against the same command on a pty (#67)
+  * [x] redirected mode — `> file`, checked separately from the pipe because a
+    guard that looked at anything other than `isatty(1)` would pass one and
+    fail the other (#67)
+  * [x] `NO_COLOR=1` and `--no-color`
   * [x] JSON mode
   * [x] backend failure mode — `tests/delegated-exit-code-smoke.sh`
 
 ### Exit gate
 
 * [x] Humans get readable output.
-* [ ] Scripts get clean output — `status --json` is clean, plain `status` still emits the banner when piped (#67).
+* [x] Scripts get clean output — no banner, no cursor codes, no padding, and
+  content preserved in both piped and redirected mode (#67).
 * [x] CI can trust exit codes without parsing terminal text.
 
 ---
@@ -702,7 +710,8 @@ Exit gate:
 
 ### PR 6 — Output contract
 
-Partly delivered in #63 and #65; the rest is tracked in #67.
+Delivered across #63 (colour), #65 (JSON), #73 (termination) and #67 (rendering
+and `--no-color`).
 
 Suggested title:
 
@@ -712,16 +721,16 @@ fix(mqlaunch): enforce plain output contract
 
 Scope:
 
-* [x] Respect `NO_COLOR=1`
+* [x] Respect `NO_COLOR=1` and `--no-color`
 * [x] Clean JSON stdout
 * [x] Diagnostics to stderr
-* [ ] No dashboard rendering when piped — open (#67)
+* [x] No dashboard rendering when piped (#67)
 * [x] Preserve delegated exit codes
 
 Exit gate:
 
-* [ ] Shell scripts can consume `mqlaunch` safely — `status --json` is safe;
-  plain `status` still emits the banner when piped (#67)
+* [x] Shell scripts can consume `mqlaunch` safely — `--json` for structured
+  output, plain commands for text, neither carrying terminal decoration
 
 ---
 
@@ -753,8 +762,8 @@ Exit gate:
 * [ ] One command registry exists.
 * [ ] Help, commands, palette, docs, and dispatch are validated against the registry.
 * [ ] Command drift fails CI.
-* [ ] `NO_COLOR=1` is respected.
-* [ ] Piped output does not render dashboards or ANSI noise.
+* [x] `NO_COLOR=1` is respected.
+* [x] Piped output does not render dashboards or ANSI noise.
 * [ ] JSON stdout is clean.
 * [ ] Diagnostics go to stderr.
 * [ ] Delegated exit codes are preserved.
