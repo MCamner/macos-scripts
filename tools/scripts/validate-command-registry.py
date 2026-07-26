@@ -154,6 +154,59 @@ def _branch_rejects(lines: list[str], branch_line: int) -> bool:
 errors: list[str] = []
 
 
+def check_output_modes(label: str, entry: dict) -> None:
+    """Hold `json` and `output_modes` to each other.
+
+    Agreement between the two fields is the most a static check can prove — they
+    are wrong together as easily as they are right together, which is how #78
+    happened. tests/output-mode-parity-smoke.sh runs the command and compares
+    the declaration to what actually comes out.
+    """
+    modes = entry.get("output_modes", [])
+    for mode in modes:
+        if mode not in OUTPUT_MODES:
+            err(f"{label}: unknown output mode {mode!r}")
+
+    if entry.get("json") and "json" not in modes:
+        err(f"{label}: json is true but 'json' is not in output_modes")
+    if not entry.get("json") and "json" in modes:
+        err(f"{label}: 'json' in output_modes but json is false")
+
+
+def check_subcommand_output(label: str, sub: dict) -> None:
+    """Validate a subcommand's optional output-mode declaration.
+
+    P1 kept subcommand entries at name/aliases/summary because a field no gate
+    can check is a field that drifts. Output mode earns its place now that
+    tests/output-mode-parity-smoke.sh executes the command: `system` is
+    human-only while `mqlaunch system doctor --json` emits a real machine
+    document, and a consumer reading only the parent would hide that.
+
+    Both fields are optional and must arrive together. Declaring `json` without
+    `output_modes` — or the reverse — is a half-stated contract, and a consumer
+    would have to guess which half to trust. Omitting both means the subcommand
+    claims nothing, and the parity gate holds it to producing nothing.
+    """
+    has_json = "json" in sub
+    has_modes = "output_modes" in sub
+
+    if has_json != has_modes:
+        present, absent = ("json", "output_modes") if has_json else ("output_modes", "json")
+        err(f"{label}: declares {present!r} without {absent!r}")
+        return
+    if not has_json:
+        return
+
+    if not isinstance(sub["json"], bool):
+        err(f"{label}: field 'json' has wrong type")
+        return
+    if not isinstance(sub["output_modes"], list):
+        err(f"{label}: field 'output_modes' has wrong type")
+        return
+
+    check_output_modes(label, sub)
+
+
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}", file=sys.stderr)
     sys.exit(1)
@@ -229,6 +282,7 @@ def check_subcommands(
                 err(f"{name}.{sub_name}: aliases must be an array")
             if not str(sub.get("summary", "")).strip():
                 err(f"{name}.{sub_name}: summary is empty")
+            check_subcommand_output(f"{name} {sub_name}", sub)
             for word in [sub_name, *sub.get("aliases", [])]:
                 if word in registry_words:
                     err(
@@ -300,17 +354,9 @@ def main(argv: list[str] | None = None) -> int:
         if safety not in SAFETY:
             err(f"{name}: unknown safety mode {safety!r}")
 
-        modes = entry.get("output_modes", [])
-        for mode in modes:
-            if mode not in OUTPUT_MODES:
-                err(f"{name}: unknown output mode {mode!r}")
-
         # A command claiming JSON must actually offer it as an output mode.
         # Otherwise the registry advertises a contract nothing honours.
-        if entry.get("json") and "json" not in modes:
-            err(f"{name}: json is true but 'json' is not in output_modes")
-        if not entry.get("json") and "json" in modes:
-            err(f"{name}: 'json' in output_modes but json is false")
+        check_output_modes(name, entry)
 
         # Delegation must name where it goes, and only non-local owners delegate.
         delegates = entry.get("delegates_to")

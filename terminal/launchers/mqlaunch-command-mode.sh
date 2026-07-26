@@ -552,9 +552,11 @@ dispatch_cli_command() {
 
     skills|skill)
       shift
+      # No --json special case here: mq-skills.py has no such flag, so skipping
+      # the pause for it only made a rejected argument look like a machine mode.
       "$BASE_DIR/tools/scripts/mq-skills.py" "$@"
       command_status=$?
-      [[ "${1:-}" != "--json" ]] && pause_enter
+      pause_enter
       return "$command_status"
       ;;
 

@@ -308,10 +308,9 @@
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
-        "human",
-        "json"
+        "human"
       ],
-      "json": true,
+      "json": false,
       "interactive": false,
       "compat_only": false,
       "delegates_to": null
@@ -587,7 +586,12 @@
         {
           "name": "doctor",
           "aliases": [],
-          "summary": "Run the environment doctor"
+          "summary": "Run the environment doctor",
+          "output_modes": [
+            "human",
+            "json"
+          ],
+          "json": true
         },
         {
           "name": "check",

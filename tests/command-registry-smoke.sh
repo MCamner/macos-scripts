@@ -12,14 +12,14 @@ VALIDATOR="$ROOT/tools/scripts/validate-command-registry.py"
 
 echo "SMOKE: command registry"
 
-echo "[1/9] registry and validator exist"
+echo "[1/11] registry and validator exist"
 test -f "$REGISTRY"
 test -f "$VALIDATOR"
 
-echo "[2/9] registry is valid and agrees with dispatch"
+echo "[2/11] registry is valid and agrees with dispatch"
 python3 "$VALIDATOR" >/dev/null
 
-echo "[3/9] the registry lives on the authority-owned path"
+echo "[3/11] the registry lives on the authority-owned path"
 # docs/RUNTIME_AUTHORITY.md forbids the registry living in a legacy runtime path.
 case "$REGISTRY" in
   */mqlaunch/lib/*) ;;
@@ -29,7 +29,7 @@ grep -q 'terminal/mqlaunch-v1' "$REGISTRY" && {
   echo "registry references a legacy runtime path" >&2; exit 1
 }
 
-echo "[4/9] the validator rejects a duplicate command name"
+echo "[4/11] the validator rejects a duplicate command name"
 # Proves the gate fires. A registry whose validator passes anything is useless.
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -87,18 +87,18 @@ expect_reject() {
   esac
 }
 
-echo "[5/9] the validator rejects a subcommand the dispatcher does not handle"
+echo "[5/11] the validator rejects a subcommand the dispatcher does not handle"
 mutate "$tmp_dir/extra-sub.json" \
   'entry["subcommands"].append({"name": "not-a-real-subcommand", "aliases": [], "summary": "x"})'
 expect_reject "$tmp_dir/extra-sub.json" "a subcommand dispatch does not handle" \
   "registry lists subcommand 'not-a-real-subcommand'"
 
-echo "[6/9] the validator rejects a dispatch subcommand missing from the registry"
+echo "[6/11] the validator rejects a dispatch subcommand missing from the registry"
 mutate "$tmp_dir/missing-sub.json" 'entry["subcommands"].pop()'
 expect_reject "$tmp_dir/missing-sub.json" "a registry missing a dispatched subcommand" \
   "but the registry does not list it"
 
-echo "[7/9] the validator rejects a missing alias of a dispatched subcommand"
+echo "[7/11] the validator rejects a missing alias of a dispatched subcommand"
 # Aliases are part of the surface: `mqlaunch system performance` is as real as
 # `mqlaunch system perf`, and a consumer that only sees one of them is wrong.
 mutate "$tmp_dir/missing-alias.json" '''
@@ -112,19 +112,45 @@ else:
 expect_reject "$tmp_dir/missing-alias.json" "a subcommand with a dropped alias" \
   "but the registry does not list it"
 
-echo "[8/9] the validator rejects dropping subcommands from a namespace that has them"
+echo "[8/11] the validator rejects dropping subcommands from a namespace that has them"
 # Drift by omission is the easy failure: a namespace grows a nested case and
 # nobody declares it. Silence must fail too.
 mutate "$tmp_dir/no-subs.json" 'entry.pop("subcommands"); entry.pop("unknown_subcommand", None)'
 expect_reject "$tmp_dir/no-subs.json" "a namespace that dropped its subcommands" \
   "but the registry declares none"
 
-echo "[9/9] the validator rejects an unknown_subcommand claim that contradicts dispatch"
+echo "[9/11] the validator rejects an unknown_subcommand claim that contradicts dispatch"
 # `system` rejects unknown words with exit 2, so its list is the whole
 # surface. Claiming it forwards would tell a consumer the list is partial.
 mutate "$tmp_dir/wrong-surface.json" 'entry["unknown_subcommand"] = "forward"'
 expect_reject "$tmp_dir/wrong-surface.json" "an unknown_subcommand claim contradicting dispatch" \
   "unknown_subcommand is 'forward' but dispatch is 'reject'"
+
+# `system doctor` carries the optional per-subcommand output declaration:
+# `system` is human-only, but `mqlaunch system doctor --json` emits a real
+# machine document. The two checks below cover what a static gate can prove
+# about that field; tests/output-mode-parity-smoke.sh runs the command.
+sub_mutate() {
+  # sub_mutate <output> <python body operating on `sub`>
+  mutate "$1" '''
+sub = next((s for s in entry["subcommands"] if s["name"] == "doctor"), None)
+if sub is None:
+    raise SystemExit("system declares no doctor subcommand to mutate")
+if "json" not in sub:
+    raise SystemExit("system doctor carries no output declaration to mutate")
+'''"$2"
+}
+
+echo "[10/11] the validator rejects a subcommand claiming JSON it does not list"
+sub_mutate "$tmp_dir/sub-json-modes.json" 'sub["output_modes"] = ["human"]'
+expect_reject "$tmp_dir/sub-json-modes.json" "a subcommand whose json flag and output_modes disagree" \
+  "system doctor: json is true but 'json' is not in output_modes"
+
+echo "[11/11] the validator rejects a half-stated subcommand output declaration"
+# One field without the other leaves a consumer guessing which half to trust.
+sub_mutate "$tmp_dir/sub-half.json" 'sub.pop("output_modes")'
+expect_reject "$tmp_dir/sub-half.json" "a subcommand declaring json without output_modes" \
+  "system doctor: declares 'json' without 'output_modes'"
 
 bash -n "$0"
 
