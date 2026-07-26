@@ -325,9 +325,10 @@
       "owner": "repo-signal",
       "safety": "delegating",
       "output_modes": [
-        "human"
+        "human",
+        "json"
       ],
-      "json": false,
+      "json": true,
       "interactive": false,
       "compat_only": false,
       "delegates_to": "repo-signal publish-readiness"

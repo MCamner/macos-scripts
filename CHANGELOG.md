@@ -24,6 +24,16 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch release-check --json` printed the human banner and exited 0. The
+  route forwarded flags to `terminal/release/mq-release-check.sh`, which reads
+  only `--brain` and discards everything else, so a caller asking for JSON got
+  a successful-looking banner to parse. `--json` now reaches `release-check.sh`,
+  which owns the `repo_release_check.v1` contract, and its output is identical
+  to running that script directly. Unknown flags exit 2 with a usage error
+  instead of being ignored. Human mode is unchanged and keeps the wider review
+  the two scripts do not share — secrets scan, mqobsidian manifest contract,
+  changelog versus commits. The registry entry declared `"json": false` and now
+  matches.
 * `mqlaunch git help` never returned. It reached `open_git_menu`, which treats
   its argument as a repo path, so `help` became a failed path lookup and the
   interactive menu opened and looped on EOF — 12580 bytes and no exit without a
