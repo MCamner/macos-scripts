@@ -8,6 +8,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Subcommands in the command registry. The nine namespaces that dispatch a
+  nested `case "$sub" in` — `workspace`, `srm`, `repos`, `system`, `git`,
+  `release`, `dev`, `help`, `obsidian` — now declare their 47 subcommands with
+  aliases and summaries, plus `unknown_subcommand`, which records whether the
+  namespace rejects an unrecognised word itself (exit 2) or forwards it to a
+  delegate. That is the one thing a consumer must know before publishing the
+  list as complete: `system` rejects, so its list is the whole surface; `repos`
+  forwards, so the registry can only speak for what `mqlaunch` routes.
+  `validate-command-registry.py` gates all of it in both directions — a
+  subcommand the dispatcher does not handle, a dispatched subcommand or alias
+  the registry omits, a namespace that grows a nested case and declares
+  nothing, and an `unknown_subcommand` value that contradicts the `*` branch.
+  Five fixtures in `tests/command-registry-smoke.sh` assert the gate fires for
+  the right reason, not merely that it exits non-zero.
 * `mqlaunch/lib/command-registry.json` — the canonical inventory of top-level
   `mqlaunch` commands: 67 entries covering 145 names, each carrying its aliases,
   namespace, summary, owner repo, safety mode, output modes, JSON support,

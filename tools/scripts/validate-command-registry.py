@@ -2,9 +2,10 @@
 """Validate the mqlaunch command registry against itself and against dispatch.
 
 The registry (mqlaunch/lib/command-registry.json) is the canonical inventory of
-top-level mqlaunch commands. This validator is the gate that keeps it canonical:
-it rejects internally inconsistent registries, and it fails when the registry and
-the dispatcher disagree about which commands exist.
+mqlaunch's command surface: top-level commands, and the subcommands mqlaunch
+itself routes. This validator is the gate that keeps it canonical: it rejects
+internally inconsistent registries, and it fails when the registry and the
+dispatcher disagree about which commands or subcommands exist.
 
 Run standalone or through tests/command-registry-smoke.sh.
 """
@@ -26,6 +27,11 @@ SCHEMA = "mq-command-registry.v1"
 OWNERS = {"macos-scripts", "mq-agent", "mq-mcp", "mqobsidian", "mq-hal", "repo-signal"}
 SAFETY = {"read-only", "local-write", "delegating", "destructive"}
 OUTPUT_MODES = {"human", "json", "interactive"}
+# What the namespace does with a word it does not recognise. `system` prints an
+# error and exits 2, so its declared list is the whole surface. `repos` hands the
+# word to mq-repos.py, so the list is only what mqlaunch itself routes — the
+# distinction a consumer needs before publishing the list as complete.
+UNKNOWN_SUBCOMMAND = {"reject", "forward"}
 
 REQUIRED_FIELDS = {
     "name": str,
@@ -50,13 +56,17 @@ BRANCH = re.compile(
 )
 
 
-def dispatch_branches() -> list[tuple[int, str]]:
-    """Return (line, pattern) for each branch of the dispatcher's main case.
+def parse_dispatch() -> tuple[list[tuple[int, str]], dict[str, dict]]:
+    """Return the dispatcher's top-level branches and its subcommand cases.
 
     The dispatcher opens several case statements; the authoritative one switches
-    on "$area". Nested cases handle subcommands and are out of scope for the
-    top-level registry, so the walk tracks case/esac depth rather than matching
-    on indentation, which is not consistent in the source.
+    on "$area". The walk tracks case/esac depth rather than matching on
+    indentation, which is not consistent in the source.
+
+    The second return value maps each top-level branch pattern that opens a
+    nested `case "$sub" in` to that namespace's subcommand set. Only "$sub" is
+    a subcommand switch: `release-check` switches on "${1:-}" to separate two
+    output modes, and flags are not subcommands.
     """
     lines = DISPATCH.read_text().splitlines()
     try:
@@ -69,6 +79,8 @@ def dispatch_branches() -> list[tuple[int, str]]:
     stack: list[int] = []
     groups: dict[int, list[tuple[int, str]]] = {}
     headers: dict[int, str] = {}
+    parents: dict[int, tuple[int | None, str | None]] = {}
+    open_branch: dict[int, str] = {}
     next_id = 0
 
     for i in range(start, len(lines)):
@@ -76,6 +88,8 @@ def dispatch_branches() -> list[tuple[int, str]]:
         if line.startswith("}"):
             break
         if re.match(r"^\s*case\s+", line):
+            enclosing = stack[-1] if stack else None
+            parents[next_id] = (enclosing, open_branch.get(enclosing))
             stack.append(next_id)
             groups[next_id] = []
             headers[next_id] = line.strip()
@@ -90,11 +104,51 @@ def dispatch_branches() -> list[tuple[int, str]]:
         m = BRANCH.match(line)
         if m:
             groups[stack[-1]].append((i + 1, m.group(1)))
+            open_branch[stack[-1]] = m.group(1)
 
     main = [gid for gid, h in headers.items() if h == 'case "$area" in']
     if len(main) != 1:
         fail(f'expected exactly one `case "$area" in` in dispatch, found {len(main)}')
-    return groups[main[0]]
+    main_id = main[0]
+
+    subcases: dict[str, dict] = {}
+    for gid, header in headers.items():
+        enclosing, branch = parents.get(gid, (None, None))
+        if enclosing != main_id or header != 'case "$sub" in' or branch is None:
+            continue
+        tokens: dict[str, int] = {}
+        fallback_line = None
+        for line_no, pattern in groups[gid]:
+            if pattern == "*":
+                fallback_line = line_no
+                continue
+            for token in pattern.split("|"):
+                token = token.strip('"')
+                if token:
+                    tokens.setdefault(token, line_no)
+        subcases[branch] = {
+            "tokens": tokens,
+            "line": min([ln for ln, _ in groups[gid]], default=0),
+            # An unrecognised word is rejected only when the fallback says so.
+            # If it forwards instead — or there is no fallback and the code falls
+            # through to a delegate — the listed set is not the whole surface,
+            # and a consumer must not present it as exhaustive.
+            "unknown": "reject"
+            if fallback_line is not None and _branch_rejects(lines, fallback_line)
+            else "forward",
+        }
+
+    return groups[main_id], subcases
+
+
+def _branch_rejects(lines: list[str], branch_line: int) -> bool:
+    """True when the case branch starting at branch_line exits non-zero."""
+    for line in lines[branch_line:]:
+        if re.match(r"^\s*;;\s*$", line):
+            return False
+        if re.search(r"\breturn\s+2\b", line):
+            return True
+    return False
 
 
 errors: list[str] = []
@@ -107,6 +161,98 @@ def fail(msg: str) -> None:
 
 def err(msg: str) -> None:
     errors.append(msg)
+
+
+def check_subcommands(
+    commands: list[dict],
+    seen_names: dict[str, str],
+    subcases: dict[str, dict],
+) -> None:
+    """Hold the registry's subcommand sets in parity with the dispatcher.
+
+    The gate runs both ways. A namespace that dispatches subcommands must
+    declare them, and a declared subcommand must be dispatched — drift by
+    omission is as wrong as drift by invention, and only the first is silent.
+    """
+    # Which registry command owns each nested case, resolved through the same
+    # name/alias map the top-level parity check builds.
+    owner_of: dict[str, str] = {}
+    for branch, info in subcases.items():
+        first = branch.split("|")[0].strip('"')
+        command = seen_names.get(first)
+        if command is None:
+            err(f"dispatch nests subcommands under unknown branch {branch!r}")
+            continue
+        owner_of[command] = branch
+
+    for entry in commands:
+        name = entry.get("name", "<unnamed>")
+        subs = entry.get("subcommands")
+        unknown = entry.get("unknown_subcommand")
+
+        if subs is None:
+            if unknown is not None:
+                err(f"{name}: unknown_subcommand without a subcommands array")
+            if name in owner_of:
+                err(
+                    f"{name}: dispatch handles subcommands "
+                    f"(line {subcases[owner_of[name]]['line']}) "
+                    f"but the registry declares none"
+                )
+            continue
+
+        if not isinstance(subs, list):
+            err(f"{name}: subcommands must be an array")
+            continue
+        if unknown not in UNKNOWN_SUBCOMMAND:
+            err(
+                f"{name}: unknown_subcommand must be one of "
+                f"{sorted(UNKNOWN_SUBCOMMAND)}"
+            )
+
+        if name not in owner_of:
+            err(f"{name}: declares subcommands but dispatch has no case for them")
+            continue
+
+        info = subcases[owner_of[name]]
+
+        registry_words: dict[str, str] = {}
+        for sub in subs:
+            if not isinstance(sub, dict):
+                err(f"{name}: subcommand entries must be objects")
+                continue
+            sub_name = sub.get("name")
+            if not isinstance(sub_name, str) or not sub_name:
+                err(f"{name}: subcommand is missing a name")
+                continue
+            if not isinstance(sub.get("aliases"), list):
+                err(f"{name}.{sub_name}: aliases must be an array")
+            if not str(sub.get("summary", "")).strip():
+                err(f"{name}.{sub_name}: summary is empty")
+            for word in [sub_name, *sub.get("aliases", [])]:
+                if word in registry_words:
+                    err(
+                        f"{name}: duplicate subcommand word {word!r}: claimed by "
+                        f"both {registry_words[word]!r} and {sub_name!r}"
+                    )
+                else:
+                    registry_words[word] = sub_name
+
+        for word in sorted(set(info["tokens"]) - set(registry_words)):
+            err(
+                f"{name}: dispatch handles subcommand {word!r} "
+                f"(line {info['tokens'][word]}) but the registry does not list it"
+            )
+        for word in sorted(set(registry_words) - set(info["tokens"])):
+            err(f"{name}: registry lists subcommand {word!r} but dispatch does not")
+
+        # A forwarding namespace accepts words the registry cannot enumerate.
+        # Saying so is the only honest way to publish a partial list.
+        if unknown in UNKNOWN_SUBCOMMAND and unknown != info["unknown"]:
+            err(
+                f"{name}: unknown_subcommand is {unknown!r} but dispatch is "
+                f"{info['unknown']!r}"
+            )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -183,7 +329,7 @@ def main(argv: list[str] | None = None) -> int:
                 seen_names[candidate] = name
 
     # --- parity with the dispatcher -------------------------------------------
-    branches = dispatch_branches()
+    branches, subcases = parse_dispatch()
     dispatch_names: dict[str, int] = {}
     for line, pattern in branches:
         if pattern in NON_COMMAND_PATTERNS:
@@ -209,14 +355,18 @@ def main(argv: list[str] | None = None) -> int:
     for token in extra:
         err(f"registry lists {token!r} but dispatch does not handle it")
 
+    check_subcommands(commands, seen_names, subcases)
+
     if errors:
         print(f"FAIL: {len(errors)} registry problem(s)", file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
 
+    subcommand_count = sum(len(c.get("subcommands", [])) for c in commands)
     print(
         f"OK: {len(commands)} commands, {len(seen_names)} names, "
+        f"{subcommand_count} subcommands in {len(subcases)} namespaces, "
         f"registry and dispatch agree"
     )
     return 0
