@@ -1,7 +1,7 @@
 {
   "schema": "mq-command-registry.v1",
   "repo": "macos-scripts",
-  "scope": "top-level mqlaunch commands dispatched by dispatch_cli_command",
+  "scope": "top-level mqlaunch commands dispatched by dispatch_cli_command, and the subcommands mqlaunch itself routes",
   "authority": "terminal/launchers/mqlaunch-command-mode.sh",
   "commands": [
     {
@@ -38,7 +38,37 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the workspace snapshot menu"
+        },
+        {
+          "name": "save",
+          "aliases": [],
+          "summary": "Save a workspace snapshot"
+        },
+        {
+          "name": "list",
+          "aliases": [],
+          "summary": "List saved workspace snapshots"
+        },
+        {
+          "name": "latest",
+          "aliases": [
+            "show"
+          ],
+          "summary": "Show a snapshot; defaults to the latest"
+        },
+        {
+          "name": "restore",
+          "aliases": [],
+          "summary": "Restore a snapshot; defaults to the latest"
+        }
+      ]
     },
     {
       "name": "demo",
@@ -243,7 +273,30 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent memory-*"
+      "delegates_to": "mq-agent memory-*",
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "cochange",
+          "aliases": [],
+          "summary": "Feed a repo/file pair into the co-change memory inbox"
+        },
+        {
+          "name": "review-status",
+          "aliases": [],
+          "summary": "Show the scoring review state and held review queues"
+        },
+        {
+          "name": "promote-from-review",
+          "aliases": [],
+          "summary": "Approve a held promotion-review memory"
+        },
+        {
+          "name": "resolve-supersede",
+          "aliases": [],
+          "summary": "Accept or reject a supersede proposal"
+        }
+      ]
     },
     {
       "name": "skills",
@@ -277,7 +330,47 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [
+            "hub"
+          ],
+          "summary": "Open the repo hub"
+        },
+        {
+          "name": "list",
+          "aliases": [],
+          "summary": "List known MQ ecosystem repos"
+        },
+        {
+          "name": "roadmaps",
+          "aliases": [],
+          "summary": "List roadmap files across repos"
+        },
+        {
+          "name": "skills",
+          "aliases": [],
+          "summary": "Summarise local skills per repo"
+        },
+        {
+          "name": "status",
+          "aliases": [],
+          "summary": "Show branch, upstream, last commit, and dirty state"
+        },
+        {
+          "name": "wiki-status",
+          "aliases": [],
+          "summary": "Show local docs and GitHub Wiki freshness signals"
+        },
+        {
+          "name": "diff-summary",
+          "aliases": [],
+          "summary": "Show the git change summary per repo"
+        }
+      ]
     },
     {
       "name": "fix",
@@ -469,7 +562,77 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the system menu"
+        },
+        {
+          "name": "perf",
+          "aliases": [
+            "performance"
+          ],
+          "summary": "Open the performance menu"
+        },
+        {
+          "name": "net",
+          "aliases": [
+            "network"
+          ],
+          "summary": "Show network information"
+        },
+        {
+          "name": "doctor",
+          "aliases": [],
+          "summary": "Run the environment doctor"
+        },
+        {
+          "name": "check",
+          "aliases": [
+            "health"
+          ],
+          "summary": "Run the system check"
+        },
+        {
+          "name": "self-check",
+          "aliases": [
+            "selfcheck"
+          ],
+          "summary": "Run the launcher self-check"
+        },
+        {
+          "name": "debug",
+          "aliases": [
+            "debug-bundle",
+            "bundle"
+          ],
+          "summary": "Collect a debug bundle"
+        },
+        {
+          "name": "repo",
+          "aliases": [
+            "folder"
+          ],
+          "summary": "Open the repo folder"
+        },
+        {
+          "name": "browser",
+          "aliases": [
+            "web"
+          ],
+          "summary": "Open the repo in a browser"
+        },
+        {
+          "name": "time",
+          "aliases": [
+            "date"
+          ],
+          "summary": "Show the current date and time"
+        }
+      ]
     },
     {
       "name": "git",
@@ -485,7 +648,15 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the git menu for the current repo"
+        }
+      ]
     },
     {
       "name": "release",
@@ -501,7 +672,32 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the release menu"
+        },
+        {
+          "name": "notes",
+          "aliases": [
+            "release-notes"
+          ],
+          "summary": "Show the release notes"
+        },
+        {
+          "name": "version",
+          "aliases": [],
+          "summary": "Show version information"
+        },
+        {
+          "name": "status",
+          "aliases": [],
+          "summary": "Show release status"
+        }
+      ]
     },
     {
       "name": "dev",
@@ -517,7 +713,30 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the dev menu"
+        },
+        {
+          "name": "ai",
+          "aliases": [],
+          "summary": "Open the AI helper menu"
+        },
+        {
+          "name": "tools",
+          "aliases": [],
+          "summary": "Open the tools menu"
+        },
+        {
+          "name": "current",
+          "aliases": [],
+          "summary": "Open the dev menu for the current project"
+        }
+      ]
     },
     {
       "name": "help",
@@ -535,7 +754,55 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the help center menu"
+        },
+        {
+          "name": "index",
+          "aliases": [
+            "commands"
+          ],
+          "summary": "Show the command index"
+        },
+        {
+          "name": "about",
+          "aliases": [
+            "status"
+          ],
+          "summary": "Show the about dashboard"
+        },
+        {
+          "name": "version",
+          "aliases": [],
+          "summary": "Show version information"
+        },
+        {
+          "name": "notes",
+          "aliases": [
+            "release-notes"
+          ],
+          "summary": "Show the release notes"
+        },
+        {
+          "name": "repo",
+          "aliases": [
+            "folder"
+          ],
+          "summary": "Open the repo folder"
+        },
+        {
+          "name": "browser",
+          "aliases": [
+            "web"
+          ],
+          "summary": "Open the repo in a browser"
+        }
+      ]
     },
     {
       "name": "perf",
@@ -957,7 +1224,40 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": "mqobsidian"
+      "delegates_to": "mqobsidian",
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the mqobsidian memory menu"
+        },
+        {
+          "name": "status",
+          "aliases": [
+            "doctor"
+          ],
+          "summary": "Run the mqobsidian vault doctor"
+        },
+        {
+          "name": "inbox",
+          "aliases": [],
+          "summary": "Show the mqobsidian memory inbox"
+        },
+        {
+          "name": "views",
+          "aliases": [
+            "open-view",
+            "navigate"
+          ],
+          "summary": "Open the mqobsidian view picker"
+        },
+        {
+          "name": "promote",
+          "aliases": [],
+          "summary": "Promote a memory through mq-agent"
+        }
+      ]
     },
     {
       "name": "mqlaunch",

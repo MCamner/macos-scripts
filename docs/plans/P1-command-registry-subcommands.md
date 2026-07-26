@@ -1,6 +1,6 @@
 # P1 — Subcommand Model for the Command Registry
 
-**Status:** Design — no code change proposed in this document
+**Status:** D1–D5 landed; consumer conversion not started
 **Priority:** P1
 **Type:** Architecture / Command surface governance
 **Owner:** mqlaunch
@@ -172,11 +172,40 @@ which dispatch variable, which fallback, and which help mechanism each namespace
 uses. That encodes the divergence in the contract and makes it permanent. The
 registry states what the surface must be; it is not a survey of what it is.
 
+**Landed.** Each of the nine namespaces with a nested `case "$sub" in` now
+carries two fields:
+
+```json
+"unknown_subcommand": "reject",
+"subcommands": [
+  { "name": "perf", "aliases": ["performance"], "summary": "Open the performance menu" }
+]
+```
+
+`unknown_subcommand` is `reject` when the namespace's `*` branch exits 2 and
+`forward` when it hands the word to a delegate — the one thing a consumer must
+know before publishing the list as complete. It is derived from dispatch and
+checked against it, so it cannot drift into a claim.
+
+The distinction is narrower than "closed vs open" and deliberately so: `repos`
+forwards to `mq-repos.py`, which happens to accept exactly the six words the
+registry lists. The registry does not know that, and must not imply it. What it
+can state is who rejects the word.
+
+The universal `help`, `-h`, `--help` subcommand is not listed per namespace. It
+is owned by the single help route at the top of `dispatch_cli_command`, not by
+any namespace's case, so listing it per entry would be duplicated state with
+nothing to check it against.
+
 ## Minimum contract for consumers
 
-Once D1–D5 are in place, each subcommand entry carries the same fields as a
-top-level entry: `name`, `aliases`, `summary`, `safety`, `output_modes`,
-`json`, `interactive`, and `delegates_to` when it leaves the repo.
+Each subcommand entry carries `name`, `aliases`, and `summary` — no more.
+
+The wider set (`safety`, `output_modes`, `json`, `interactive`, `delegates_to`)
+was considered and dropped: for the 47 subcommands that exist, those values
+either repeat the parent command's or describe a menu function no gate can
+inspect. A field the validator cannot check is a field that drifts. They can be
+added per subcommand when a consumer needs one and a check can back it.
 
 Consumers then hold to three rules:
 
@@ -199,11 +228,17 @@ either generated from the registry or deleted.
 2. Standardise the unknown-subcommand contract and the help route, including
    `git help` (D3, D4). **Done by the subcommand-dispatch convergence PR.**
 3. Extend the registry schema with `subcommands` and widen the validator (D5).
+   **Done by the registry subcommands PR.**
 4. Convert consumers one at a time, help first.
 
-Steps 1 and 2 were behavioural and had tests written first. Step 3 is
-mechanical now that they have landed. No consumer work starts before step 3 is
-green.
+Steps 1 and 2 were behavioural and had tests written first. Step 3 turned out
+not to be mechanical: the honest field was not the one the design assumed, and
+naming it cost a rewrite. Consumer work starts now that step 3 is green.
+
+One gap step 3 does not close: nothing compares a command's declared
+`output_modes` against what it actually does. `release-check` declared
+`"json": false` while offering JSON, and the validator could not see it (#78).
+That check belongs before help, palette, or docs read the registry as truth.
 
 ## Out of scope
 
