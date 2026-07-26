@@ -59,14 +59,23 @@ mqlaunch repos LIST    → mq-repos.py: error: invalid choice: 'LIST'
 
 ### Divergence 2 — four different answers to an unknown subcommand
 
-* `system`, `release`, `dev`, `help` → `print_command_help "<ns>"`, exit 2.
-* `obsidian` → hand-written `echo` with a hardcoded usage string, exit 1. The
-  string lists four subcommands; the branch implements five.
-* `workspace`, `git` → no error at all. The unknown word is forwarded to the
-  handler as if it were valid.
+* `system`, `release`, `dev`, `help` → `print_command_help "<ns>"`, exit 2, and
+  nothing on stderr.
+* `obsidian` → hand-written `echo` with a hardcoded usage string, exit 1. Being
+  written out by hand is how it drifted: neither it nor `print_namespace_help`
+  lists the aliases the branches accept (`doctor`, `open-view`, `navigate`).
+* `workspace` → no error from mqlaunch. The word reaches `workspace.sh`, which
+  rejects it with exit 1.
 * `repos` → its `*` branch is byte-identical to its explicit
   `list|roadmaps|skills|status|wiki-status|diff-summary` branch, so the
   explicit list has no effect whatsoever.
+
+**Correction to an earlier draft of this document:** it listed `git` here as
+forwarding an unknown word "as if it were valid". That was wrong.
+`open_git_menu` takes an optional **repo path** (`mqlaunch/lib/git-menus.sh:16`),
+so `mqlaunch git ~/some/repo` is a supported form and the `*` branch is a
+positional argument, not an unknown-subcommand slot. `git` has no closed
+subcommand set to police. Verified by running it.
 
 ### Divergence 3 — two namespace-help mechanisms with different exit codes
 
@@ -124,19 +133,37 @@ for a second pattern. Any command with subcommands uses one nested
 `case "$sub"` in the dispatcher; commands without subcommands forward their
 arguments and declare no subcommand list.
 
-### D3 — one unknown-subcommand contract
+### D3 — one unknown-subcommand contract, where mqlaunch owns the set
 
-Unknown subcommand → `print_command_help "<namespace>"` on stderr → exit 2.
+Unknown subcommand → a diagnostic on stderr, help on stdout, exit 2, no menu.
 No hand-written usage strings, because those drift from the branch that
-implements them (`obsidian` already has). No silent pass-through, because that
-turns a typo into an argument. `repos`'s duplicated `*` branch collapses into
-one.
+implements them (`obsidian` already has).
+
+The contract applies where **mqlaunch does the routing**: `obsidian`, `system`,
+`release`, `dev`, `help`. It deliberately does not apply to four namespaces that
+have no closed subcommand set:
+
+* `git` takes an optional repo path.
+* `srm` treats an unrecognised first word as the start of the question
+  (`tools/scripts/srm.sh:132-143`). Forcing exit 2 here would remove
+  `mqlaunch srm <free text>`, which is srm's primary form.
+* `repos` and `workspace` let their delegate own the command set. Both already
+  produce a diagnostic and a non-zero exit with no menu, so the observable
+  contract holds; restating their command lists inside mqlaunch would create a
+  second source of truth, which is the drift the registry exists to prevent.
 
 ### D4 — one namespace-help mechanism
 
-Every namespace with subcommands gets `print_namespace_help`, exit 0, and the
-line-344 allowlist disappears in favour of "has subcommands". Namespace help is
-a successful operation; it exits 0 whether the namespace is `hal` or `system`.
+Every namespace mqlaunch routes goes through the same help route and exits 0.
+Namespace help is a successful operation, whether the namespace is `hal` or
+`system`. The route uses `print_namespace_help` and falls back to
+`print_command_help` for namespaces that only have an entry there — one route,
+two text sources, rather than two routes with different exit codes.
+
+Help must also terminate without a terminal. `git help` used to reach
+`open_git_menu`, which loops on EOF; routing `help` before the namespace body
+removes that path. The remaining EOF loop on *bare* menu invocations
+(`mqlaunch git`, `mqlaunch repos`) is a menu-layer defect tracked in #73.
 
 ### D5 — the schema is extended only after D1–D4 land
 
@@ -168,13 +195,15 @@ either generated from the registry or deleted.
 
 ## Sequencing
 
-1. Fix the raw-`"${1:-}"` dispatch in `srm` and `repos` (D1).
-2. Standardise the unknown-subcommand contract, including `git`'s hang (D3, D4).
+1. Fix the raw-`"${1:-}"` dispatch in `srm` and `repos` (D1). **Done in #76.**
+2. Standardise the unknown-subcommand contract and the help route, including
+   `git help` (D3, D4). **Done by the subcommand-dispatch convergence PR.**
 3. Extend the registry schema with `subcommands` and widen the validator (D5).
 4. Convert consumers one at a time, help first.
 
-Steps 1 and 2 are behavioural and need tests written first. Step 3 is
-mechanical once they land. No consumer work starts before step 3 is green.
+Steps 1 and 2 were behavioural and had tests written first. Step 3 is
+mechanical now that they have landed. No consumer work starts before step 3 is
+green.
 
 ## Out of scope
 

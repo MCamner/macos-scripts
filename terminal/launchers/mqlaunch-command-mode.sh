@@ -340,8 +340,13 @@ dispatch_cli_command() {
     memory|repo-memory) namespace="srm" ;;
   esac
 
+  # One help route for every namespace mqlaunch routes itself. Before this,
+  # `system`, `release` and `dev` fell through to their own `*` branch and
+  # exited 2 for a successful help request, and `git` treated `help` as a repo
+  # path and opened the interactive menu, which never returned without a
+  # terminal.
   case "$namespace" in
-    agent|hal|obsidian|repos|skills|srm|stack)
+    agent|dev|git|hal|obsidian|release|repos|skills|srm|stack|system)
       case "$sub" in
         -h|--help|help)
           if [[ $# -ne 2 ]]; then
@@ -349,7 +354,9 @@ dispatch_cli_command() {
               "$namespace" >&2
             return 2
           fi
-          print_namespace_help "$namespace"
+          # Namespaces with a dedicated help text use it; the rest fall back to
+          # the command-help table, which returns 2 for an unknown topic.
+          print_namespace_help "$namespace" || print_command_help "$namespace"
           return 0
           ;;
       esac
@@ -691,6 +698,7 @@ dispatch_cli_command() {
           show_date_time
           ;;
         *)
+          printf 'ERROR: unknown mqlaunch system command: %s\n' "$sub" >&2
           print_command_help "system"
           return 2
           ;;
@@ -726,6 +734,7 @@ dispatch_cli_command() {
           "$BASE_DIR/terminal/menus/mq-release-menu.sh" status
           ;;
         *)
+          printf 'ERROR: unknown mqlaunch release command: %s\n' "$sub" >&2
           print_command_help "release"
           return 2
           ;;
@@ -749,6 +758,7 @@ dispatch_cli_command() {
           open_dev_menu
           ;;
         *)
+          printf 'ERROR: unknown mqlaunch dev command: %s\n' "$sub" >&2
           print_command_help "dev"
           return 2
           ;;
@@ -783,6 +793,7 @@ dispatch_cli_command() {
           open_repo_browser
           ;;
         *)
+          printf 'ERROR: unknown mqlaunch help command: %s\n' "$sub" >&2
           print_command_help "help"
           return 2
           ;;
@@ -982,9 +993,14 @@ dispatch_cli_command() {
           fi
           ;;
         *)
-          echo "ERROR: unknown mqobsidian command: $sub" >&2
-          echo "usage: mqlaunch obsidian [status|inbox|views|promote]" >&2
-          return 1
+          # The usage line used to be written out here by hand, which is how it
+          # drifted from print_namespace_help: neither lists the aliases the
+          # branches above accept (doctor, open-view, navigate). Print the same
+          # help every other namespace prints, and exit 2 like every other
+          # unknown subcommand.
+          printf 'ERROR: unknown mqlaunch obsidian command: %s\n' "$sub" >&2
+          print_namespace_help obsidian
+          return 2
           ;;
       esac
       command_status=$?
