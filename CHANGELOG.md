@@ -24,6 +24,19 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch git help` never returned. It reached `open_git_menu`, which treats
+  its argument as a repo path, so `help` became a failed path lookup and the
+  interactive menu opened and looped on EOF — 12580 bytes and no exit without a
+  terminal. `help`, `-h` and `--help` now resolve before the namespace body for
+  every namespace mqlaunch routes, so `git`, `system`, `release` and `dev` join
+  the seven that already exited 0. `system`, `release` and `dev` previously
+  exited 2 for a successful help request.
+* An unknown subcommand now behaves the same across the namespaces mqlaunch
+  routes itself: a diagnostic on stderr, help on stdout, exit 2, and no menu.
+  `obsidian` used to print a hand-written usage string and exit 1, while
+  `system`, `release`, `dev` and `help` exited 2 silently. `git`, `srm`, `repos`
+  and `workspace` are deliberately unchanged — they have no closed subcommand
+  set, and the reasoning is in `docs/plans/P1-command-registry-subcommands.md`.
 * `mqlaunch repos LIST` failed while `mqlaunch system TIME` worked. Command
   words are lowercased into `sub` before routing, but the `srm` and `repos`
   branches shifted and re-read the raw `"${1:-}"`, so those two namespaces were
