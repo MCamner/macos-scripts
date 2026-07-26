@@ -836,7 +836,7 @@ release_menu_loop() {
 
   while true; do
     print_release_menu
-    read_menu_choice "" "release"
+    read_menu_choice "" "release" || return
     choice="$REPLY"
     echo
 

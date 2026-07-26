@@ -48,6 +48,13 @@ open_git_menu() {
 
     [[ -f "$back_marker" ]] && break
 
+    # Without a terminal gitlaunch renders once and returns without setting the
+    # back marker. That is a clean exit, not the crash the restart counter is
+    # for, so restarting it five times only reprints the menu five times.
+    if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+      break
+    fi
+
     restart_count=$(( restart_count + 1 ))
     if [[ "$restart_count" -ge 5 ]]; then
       printf "Gitlaunch exited unexpectedly %d times; returning to mqlaunch.\n" "$restart_count"

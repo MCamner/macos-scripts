@@ -302,7 +302,7 @@ workflows_menu_loop() {
 
   while true; do
     print_workflows_menu
-    read_menu_choice "" "workflows"
+    read_menu_choice "" "workflows" || return
     choice="$REPLY"
     echo
 

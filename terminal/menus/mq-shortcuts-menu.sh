@@ -194,7 +194,7 @@ shortcuts_menu_loop() {
 
   while true; do
     print_shortcuts_menu
-    read_menu_choice "" "shortcuts"
+    read_menu_choice "" "shortcuts" || return
     choice="$REPLY"
     echo
 

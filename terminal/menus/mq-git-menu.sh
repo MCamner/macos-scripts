@@ -659,7 +659,7 @@ git_menu_loop() {
 
   while true; do
     print_git_menu
-    read_menu_choice "" "git"
+    read_menu_choice "" "git" || return
     choice="$REPLY"
     echo
 

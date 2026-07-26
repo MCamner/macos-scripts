@@ -11,6 +11,11 @@
 
 # fzf: bläddra git log med diff-preview
 fzf_git_log() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_git_log needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin commit
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
@@ -34,6 +39,11 @@ fzf_git_log() {
 
 # fzf: byt git-branch
 fzf_git_branch() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_git_branch needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin branch
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
@@ -56,6 +66,11 @@ fzf_git_branch() {
 
 # fzf: döda processer
 fzf_kill_process() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_kill_process needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin selected pid
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
@@ -74,6 +89,11 @@ fzf_kill_process() {
 
 # fzf: döda process på port
 fzf_kill_port() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_kill_port needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin selected pid port
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
@@ -93,6 +113,11 @@ fzf_kill_port() {
 
 # fzf: kör script från macos-scripts
 fzf_run_snippet() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_run_snippet needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin selected
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1
@@ -114,6 +139,11 @@ fzf_run_snippet() {
 
 # fzf: visa och öppna nyligen ändrade filer
 fzf_recent_files() {
+  # An fzf picker with no terminal blocks on its own stdin forever (#73).
+  if ! mq_has_interactive_tty; then
+    echo "fzf_recent_files needs a terminal." >&2
+    return 1
+  fi
   local fzf_bin selected search_dir
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   [[ -z "$fzf_bin" ]] && echo "fzf not installed." && return 1

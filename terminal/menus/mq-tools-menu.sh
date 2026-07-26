@@ -791,7 +791,7 @@ document_functions_menu_loop() {
 
   while true; do
     print_document_functions_menu
-    read_menu_choice "" "docs"
+    read_menu_choice "" "docs" || return
     choice="$REPLY"
     echo
 
@@ -855,7 +855,7 @@ tools_menu_loop() {
 
   while true; do
     print_tools_menu
-    read_menu_choice "" "tools"
+    read_menu_choice "" "tools" || return
     choice="$REPLY"
     echo
 

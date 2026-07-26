@@ -309,6 +309,16 @@ read_prompt() {
   fi
 }
 
+# True when there is a terminal a human can answer a prompt on.
+#
+# The single definition of "interactive" for the whole surface. It used to be
+# spelled out at each prompt, which is how the fzf pickers came to check that
+# fzf was installed but never that anyone was there to use it — they blocked on
+# their own stdin instead of exiting (#73).
+mq_has_interactive_tty() {
+  [[ -z "${MQ_NO_TUI:-}" && -t 0 && -t 1 ]]
+}
+
 # Handles read menu choice.
 read_menu_choice() {
   local label="${2:-mqlaunch}"
@@ -328,9 +338,7 @@ read_menu_choice() {
   fi
 
   REPLY=""
-  if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
-    return 1
-  fi
+  mq_has_interactive_tty || return 1
   IFS= read -r REPLY
   if [[ -t 0 && -t 1 ]]; then
     printf "\033[2B\r\n"

@@ -18,6 +18,14 @@ run_github_repo_picker() {
   fzf_bin="$(command -v fzf 2>/dev/null || true)"
   gh_bin="$(command -v gh 2>/dev/null || true)"
 
+  # A terminal is as much a precondition as gh and fzf are. Without one the
+  # picker used to reach fzf and block on its stdin, which is what made
+  # `mqlaunch repos` (via `hub`) never return without a TTY (#73).
+  if ! mq_has_interactive_tty; then
+    echo "GitHub repo picker needs a terminal." >&2
+    return 1
+  fi
+
   print_header
 
   if [[ -z "$gh_bin" ]]; then

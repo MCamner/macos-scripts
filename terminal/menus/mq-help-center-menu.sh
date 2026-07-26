@@ -66,7 +66,7 @@ open_help_center_menu() {
     print_header
     render_help_center_panel
 
-    read_menu_choice "" "help"
+    read_menu_choice "" "help" || return
     choice="$REPLY"
     echo
 

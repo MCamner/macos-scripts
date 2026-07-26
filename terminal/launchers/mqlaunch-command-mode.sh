@@ -1051,37 +1051,79 @@ dispatch_cli_command() {
       ;;
 
     git-log|gitlog|glog)
-      declare -f fzf_git_log >/dev/null && fzf_git_log || "$BASE_DIR/bin/mqlaunch" git-log
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_git_log >/dev/null; then
+        fzf_git_log
+      else
+        "$BASE_DIR/bin/mqlaunch" git-log
+      fi
       command_status=$?
       return "$command_status"
       ;;
 
     git-branch|branch-switch|gbranch)
-      declare -f fzf_git_branch >/dev/null && fzf_git_branch || "$BASE_DIR/bin/mqlaunch" git-branch
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_git_branch >/dev/null; then
+        fzf_git_branch
+      else
+        "$BASE_DIR/bin/mqlaunch" git-branch
+      fi
       command_status=$?
       return "$command_status"
       ;;
 
     kill-process|killp|pkill-fzf)
-      declare -f fzf_kill_process >/dev/null && fzf_kill_process || "$BASE_DIR/bin/mqlaunch" kill-process
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_kill_process >/dev/null; then
+        fzf_kill_process
+      else
+        "$BASE_DIR/bin/mqlaunch" kill-process
+      fi
       command_status=$?
       return "$command_status"
       ;;
 
     kill-port|killport|port-kill)
-      declare -f fzf_kill_port >/dev/null && fzf_kill_port || "$BASE_DIR/bin/mqlaunch" kill-port
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_kill_port >/dev/null; then
+        fzf_kill_port
+      else
+        "$BASE_DIR/bin/mqlaunch" kill-port
+      fi
       command_status=$?
       return "$command_status"
       ;;
 
     snippets|snippet|scripts)
-      declare -f fzf_run_snippet >/dev/null && fzf_run_snippet || "$BASE_DIR/bin/mqlaunch" snippets
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_run_snippet >/dev/null; then
+        fzf_run_snippet
+      else
+        "$BASE_DIR/bin/mqlaunch" snippets
+      fi
       command_status=$?
       return "$command_status"
       ;;
 
     recent|recent-files|rf)
-      declare -f fzf_recent_files >/dev/null && fzf_recent_files || "$BASE_DIR/bin/mqlaunch" recent
+      # if/else, not `&& ||`: the fallback is for a scope where the picker
+      # lib was never sourced. Chained, the picker returning non-zero
+      # also triggered it, and the fallback re-enters this same branch.
+      if declare -f fzf_recent_files >/dev/null; then
+        fzf_recent_files
+      else
+        "$BASE_DIR/bin/mqlaunch" recent
+      fi
       command_status=$?
       return "$command_status"
       ;;

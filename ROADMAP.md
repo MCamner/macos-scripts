@@ -359,6 +359,13 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
   * Rendering helpers must not overwrite backend status.
   * Covered by `tests/delegated-exit-code-smoke.sh`.
 
+* [x] Interactive surfaces terminate without a terminal.
+
+  * Menus, `gitlaunch`, and the fzf pickers must exit rather than loop or block
+    when there is no TTY — a command that never returns is worse for a script
+    than one that fails.
+  * Covered by `tests/menu-eof-smoke.sh` (#73).
+
 * [x] Add `tests/plain-output-contract-smoke.sh`.
 
 * [ ] Test the output contract in:
