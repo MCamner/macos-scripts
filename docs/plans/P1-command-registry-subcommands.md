@@ -1,6 +1,6 @@
 # P1 — Subcommand Model for the Command Registry
 
-**Status:** D1–D5 landed; consumer conversion not started
+**Status:** D1–D6 landed; consumer conversion not started
 **Priority:** P1
 **Type:** Architecture / Command surface governance
 **Owner:** mqlaunch
@@ -197,15 +197,65 @@ is owned by the single help route at the top of `dispatch_cli_command`, not by
 any namespace's case, so listing it per entry would be duplicated state with
 nothing to check it against.
 
+### D6 — output modes are held to behaviour, not to a second field
+
+**Landed.** `tests/output-mode-parity-smoke.sh` runs a named subset of the
+surface with `--json` and compares the result to the declaration, in both
+directions. Two defects were live on `main` at 00e6d40 and both are fixed here.
+
+`skills` declared `"json": true`. `mq-skills.py` has no `--json` flag; argparse
+rejects it and exits 2. The dispatcher reinforced the claim with
+`[[ "${1:-}" != "--json" ]] && pause_enter`, a special case for a machine mode
+that does not exist. The registry now states `"json": false`, and the special
+case is gone. **No `--json` support was added to `mq-skills.py`**: this delivery
+makes the registry true, and repairing a declaration by building the feature it
+described would turn a truth gate into a feature generator.
+
+`system doctor` was the reverse. `mqlaunch system doctor --json` emits a real
+`repo_doctor` document, and nothing said so — `system` is `"json": false`, and
+subcommands carried no output fields at all. A consumer generating help or docs
+from the registry would have hidden a working machine contract.
+
+That is what earns the per-subcommand fields the minimum contract below dropped.
+`json` and `output_modes` are now optional on a subcommand entry, must be
+declared together, and do not inherit from the parent — `system` is human-only
+while `system doctor` is not, and averaging the two would lose the fact. The
+validator checks the two fields against each other; the parity gate checks them
+against the command.
+
+Neither direction is reachable by static analysis. Grepping scripts for `--json`
+was considered and rejected: scripts mention flags they forward rather than
+implement, and `mqlaunch system doctor` reaches `doctor.sh` through a path no
+grep of the dispatcher would follow. The gate executes.
+
+The exercised subset is 18 invocations, chosen for being cheap and side-effect
+free, and it is not the whole surface. What keeps that honest is a coverage
+rule: anything declaring `json: true` must be exercised, or must name a test
+that covers it. `release-check` takes the one exemption — `release-check --json`
+runs `release-check.sh`, which runs this suite, so exercising it here would not
+terminate — and the exemption is verified rather than trusted.
+
+#### Observations this delivery deliberately leaves open
+
+* `mqlaunch about --json` emits JSON; `mqlaunch help about --json` renders the
+  dashboard. Both are declared correctly, so this is a surface asymmetry, not a
+  registry lie.
+* `mqlaunch docfunc --json` hangs and exits 124.
+* `system time --json` accepts the flag, ignores it, and exits 0. Unhandled
+  `--json` has no single contract across the surface: `repos list --json`
+  exits 2. Making that uniform is a behaviour change, not a parity fix.
+
 ## Minimum contract for consumers
 
-Each subcommand entry carries `name`, `aliases`, and `summary` — no more.
+Each subcommand entry carries `name`, `aliases`, and `summary`, plus the
+optional `json`/`output_modes` pair D6 added where behaviour demands it.
 
-The wider set (`safety`, `output_modes`, `json`, `interactive`, `delegates_to`)
-was considered and dropped: for the 47 subcommands that exist, those values
-either repeat the parent command's or describe a menu function no gate can
-inspect. A field the validator cannot check is a field that drifts. They can be
-added per subcommand when a consumer needs one and a check can back it.
+The wider set (`safety`, `interactive`, `delegates_to`) was considered and
+dropped: for the 47 subcommands that exist, those values either repeat the
+parent command's or describe a menu function no gate can inspect. A field the
+validator cannot check is a field that drifts. They can be added per subcommand
+when a consumer needs one and a check can back it — which is exactly how
+`json` and `output_modes` arrived.
 
 Consumers then hold to three rules:
 
@@ -229,16 +279,20 @@ either generated from the registry or deleted.
    `git help` (D3, D4). **Done by the subcommand-dispatch convergence PR.**
 3. Extend the registry schema with `subcommands` and widen the validator (D5).
    **Done by the registry subcommands PR.**
-4. Convert consumers one at a time, help first.
+4. Hold `output_modes` to observed behaviour (D6). **Done by the output-mode
+   parity PR.**
+5. Convert consumers one at a time, help first.
 
 Steps 1 and 2 were behavioural and had tests written first. Step 3 turned out
 not to be mechanical: the honest field was not the one the design assumed, and
-naming it cost a rewrite. Consumer work starts now that step 3 is green.
+naming it cost a rewrite.
 
-One gap step 3 does not close: nothing compares a command's declared
-`output_modes` against what it actually does. `release-check` declared
-`"json": false` while offering JSON, and the validator could not see it (#78).
-That check belongs before help, palette, or docs read the registry as truth.
+Step 4 closed the gap step 3 left open: nothing compared a command's declared
+`output_modes` against what it actually does, which is how `release-check` came
+to declare `"json": false` while offering JSON (#78). The gate found the same
+class of error in both directions — see D6. Consumer work starts now that it is
+green: help, palette, and docs can read `json` and `output_modes` as truth
+because something executes the commands and fails the build when they diverge.
 
 ## Out of scope
 

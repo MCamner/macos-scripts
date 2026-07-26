@@ -33,6 +33,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/compat-path-delegation-smoke.sh"
 "$PROJECT_ROOT/tests/plain-output-contract-smoke.sh"
 "$PROJECT_ROOT/tests/command-registry-smoke.sh"
+"$PROJECT_ROOT/tests/output-mode-parity-smoke.sh"
 "$PROJECT_ROOT/tests/command-word-normalization-smoke.sh"
 "$PROJECT_ROOT/tests/release-check-contract-smoke.sh"
 
