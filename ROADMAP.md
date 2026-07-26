@@ -283,9 +283,21 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
   * help
   * command list
-  * palette
+  * palette — the palette runs `run_arg_command`, not `dispatch_cli_command`,
+    and that second vocabulary accepts 93 words the registry never modelled.
+    Consistency here means the palette routing through the registry, not the
+    registry absorbing the legacy list.
   * direct dispatch
   * docs index
+
+* [x] Freeze the legacy vocabulary before generating consumers from the registry.
+
+  * `run_arg_command` is compatibility-only and closed for extension, recorded in
+    `mqlaunch/lib/legacy-command-vocabulary.txt`.
+  * Held by `tests/legacy-vocabulary-freeze-smoke.sh`: exact match in both
+    directions, plus a check that the palette stays its only caller.
+  * `skills/mqlaunch-menu-template` no longer tells contributors to register new
+    commands there.
 
 * [ ] Test alias consistency.
 
