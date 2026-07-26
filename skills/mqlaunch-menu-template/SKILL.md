@@ -196,7 +196,7 @@ system >
 Användaren kan skriva:
 
 * Ett nummer (`1`, `2`, `3` …) → menyval
-* Ett mqlaunch-kommando direkt (`git`, `dev`, `perf` …) → dispatchar till `run_arg_command`
+* Ett mqlaunch-kommando direkt (`git`, `dev`, `perf` …) → dispatchar till `dispatch_cli_command`
 * Ett shell-kommando → exekveras i subshell
 * `x` → avslutar
 
@@ -208,8 +208,8 @@ detta i case-satsen:
 ```bash
 *)
   # Försök dispatcha som mqlaunch-kommando
-  if declare -f run_arg_command >/dev/null 2>&1; then
-    run_arg_command "$choice"
+  if declare -f dispatch_cli_command >/dev/null 2>&1; then
+    dispatch_cli_command "$choice"
   else
     print_header
     row "Ogiltigt val: $choice"
@@ -218,6 +218,11 @@ detta i case-satsen:
   fi
   ;;
 ```
+
+`dispatch_cli_command`, inte `run_arg_command`. Den senare är en frusen
+legacy-vokabulär som bara kommandopaletten anropar — se
+`docs/RUNTIME_AUTHORITY.md`. Ett nytt anrop till den fäller
+`tests/legacy-vocabulary-freeze-smoke.sh`.
 
 ---
 
@@ -247,11 +252,21 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-NAMN-menu.sh" ]]; then
 fi
 ```
 
-**Argument-dispatch** (i `run_arg_command` case-satsen):
+**Argument-dispatch** — i registret och i `dispatch_cli_command`, inte i
+`run_arg_command`. Lägg till posten i `mqlaunch/lib/command-registry.json`:
+
+```json
+{ "name": "namn", "aliases": ["namn-menu"], "summary": "Öppna NAMN-menyn",
+  "output_modes": ["human"], "json": false }
+```
+
+och grenen i `terminal/launchers/mqlaunch-command-mode.sh`:
 
 ```bash
 namn|namn-menu) open_NAMN_menu ;;
 ```
+
+`tests/command-registry-smoke.sh` kräver att de två matchar.
 
 **Menyval i mq-main-menu.sh** (om det ska synas i huvudmenyn):
 
@@ -301,7 +316,7 @@ När Codex eller Claude Code ska bygga en ny meny, följ dessa steg:
 4. Spara som `$BASE_DIR/terminal/menus/mq-<namn>-menu.sh`
 5. Gör filen körbar: `chmod +x mq-<namn>-menu.sh`
 6. Lägg till source-block i `mqlaunch.sh`
-7. Registrera argument i `run_arg_command`
+7. Registrera kommandot i `command-registry.json` och `dispatch_cli_command`
 8. Lägg till menyval i `mq-main-menu.sh` om relevant
 
 ---

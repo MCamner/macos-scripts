@@ -139,12 +139,8 @@ beyond thin routing or adaptation.
 
 ## Command-surface governance
 
-Until the authoritative command registry is implemented, the dispatcher is the
-runtime truth for whether a direct command exists. Help, menus, palette entries,
-and documentation must be validated against it.
-
-The planned registry must live on the authority-owned runtime path. Once
-introduced, it will become the canonical command inventory used to validate or
+`mqlaunch/lib/command-registry.json` is the canonical command inventory. It
+lives on the authority-owned runtime path and is the source used to validate or
 generate:
 
 * direct dispatch
@@ -155,6 +151,34 @@ generate:
 * public command documentation
 
 Legacy paths must never own or extend that registry.
+
+### Two dispatchers, one surface
+
+`terminal/launchers/mqlaunch.sh` contains a second dispatcher. The registry
+governs one of them:
+
+| Function | Answers when | Governed by |
+| --- | --- | --- |
+| `dispatch_cli_command` | a word is **typed** | the registry |
+| `run_arg_command` | a word is **chosen from the palette** | frozen baseline |
+
+They do not know the same words. `run_arg_command` accepts 93 the registry has
+never modelled, so `mqlaunch tools`, `login`, `shortcuts`, `guide` and `repo`
+all work from the palette and print `Unknown command` when typed. That is the
+ambiguity v2.0.0 exists to remove, and the product principle names it directly:
+a user should never have to ask whether a command is shown in one place and
+missing from another.
+
+`run_arg_command` is therefore **compatibility-only and closed for extension**.
+Its vocabulary is recorded in `mqlaunch/lib/legacy-command-vocabulary.txt` and
+held there by `tests/legacy-vocabulary-freeze-smoke.sh`, which requires an exact
+match in both directions: it must not grow, and a word removed from the case
+statement must be removed from the baseline in the same commit. Shrinking is the
+intended direction.
+
+A new command belongs in the registry and in `dispatch_cli_command`. Adding one
+to `run_arg_command` gives it a name that works when selected and fails when
+typed, which is the defect, not the feature.
 
 ## Output and failure contract
 
