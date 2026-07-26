@@ -597,10 +597,32 @@ dispatch_cli_command() {
       ;;
 
     release-check|/release-check|check-release)
-      "$BASE_DIR/terminal/release/mq-release-check.sh" "${@:2}"
-      command_status=$?
-      pause_enter
-      return "$command_status"
+      shift
+      # Two scripts, two jobs. release-check.sh owns the machine contract
+      # (repo_release_check.v1); mq-release-check.sh owns the wider human
+      # review — secrets scan, mqobsidian manifest, changelog/commits — and has
+      # no JSON mode. It reads only --brain, so forwarding --json to it meant
+      # the flag was accepted, discarded, and the caller got a banner with
+      # exit 0.
+      case "${1:-}" in
+        --json)
+          # No pause_enter: stdout is exactly one JSON document.
+          "$BASE_DIR/release-check.sh" --json
+          command_status=$?
+          return "$command_status"
+          ;;
+        ""|--brain)
+          "$BASE_DIR/terminal/release/mq-release-check.sh" "$@"
+          command_status=$?
+          pause_enter
+          return "$command_status"
+          ;;
+        *)
+          printf 'ERROR: unknown mqlaunch release-check flag: %s\n' "$1" >&2
+          printf 'usage: mqlaunch release-check [--json|--brain]\n' >&2
+          return 2
+          ;;
+      esac
       ;;
 
     review-brain|/review-brain)

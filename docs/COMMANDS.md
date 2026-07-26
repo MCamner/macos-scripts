@@ -90,8 +90,17 @@ See [docs/safety/gitmerge-safe.md](safety/gitmerge-safe.md).
 ```bash
 mqlaunch release                    # open release menu
 mqlaunch release-check              # run release readiness check
+mqlaunch release-check --json       # repo_release_check.v1 on stdout, nothing else
 MQ_REPO_SIGNAL_FAIL_UNDER=16 mqlaunch release-check   # custom threshold
 ```
+
+The two modes check different things and that is deliberate. `--json` runs the
+machine contract in `release-check.sh` — version surfaces, skills, runtime
+authority, shell syntax, smoke suite — and prints one JSON document. Without
+flags you get the wider human review in
+`terminal/release/mq-release-check.sh`: git state, secrets scan, stack and
+mqobsidian contracts, workflow validation, changelog versus commits. Any other
+flag is rejected with exit 2.
 
 Auto Release flow (option 11 inside the menu):
 
