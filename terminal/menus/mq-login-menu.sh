@@ -127,7 +127,7 @@ login_menu_loop() {
 
   while true; do
     print_login_menu
-    read_menu_choice "" "login"
+    read_menu_choice "" "login" || return
     choice="$REPLY"
     echo
 

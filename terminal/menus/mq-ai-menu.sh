@@ -49,7 +49,7 @@ ai_menu_loop() {
 
   while true; do
     print_ai_menu
-    read_menu_choice "" "ai"
+    read_menu_choice "" "ai" || return
     choice="$REPLY"
     echo
 

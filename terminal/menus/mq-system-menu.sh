@@ -40,7 +40,7 @@ open_system_menu() {
   while true; do
     print_header
     render_system_panel
-    read_menu_choice "" "system"
+    read_menu_choice "" "system" || return
     choice="$REPLY"
     echo
 

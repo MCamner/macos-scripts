@@ -49,7 +49,7 @@ net_menu_loop() {
 
   while true; do
     print_net_menu
-    read_menu_choice "" "network"
+    read_menu_choice "" "network" || return
     choice="$REPLY"
     echo
 

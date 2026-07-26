@@ -558,6 +558,13 @@ function prompt_choice() {
   fi
 
   input=""
+  # Reading /dev/tty ignores a closed stdin, so `</dev/null` never reached this
+  # and the menu re-rendered forever. Same guard as read_menu_choice in
+  # ui/terminal-ui/mq-ui.sh: without a usable terminal there is no choice to
+  # make, and the caller must stop rather than loop on an empty answer.
+  if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+    return 1
+  fi
   IFS= read -r input </dev/tty || true
 
   if [[ -t 0 && -t 1 ]]; then
@@ -991,7 +998,7 @@ while true; do
   echo ""
   render_menu
 
-  prompt_choice
+  prompt_choice || break
 
   case $choice in
     1)

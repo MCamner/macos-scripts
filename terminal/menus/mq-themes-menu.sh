@@ -54,7 +54,7 @@ themes_menu_loop() {
 
   while true; do
     print_themes_menu
-    read_menu_choice "" "themes"
+    read_menu_choice "" "themes" || return
     choice="$REPLY"
     echo
 
