@@ -45,6 +45,9 @@ dispatch() {
     # shellcheck source=/dev/null
     source "$COMMAND_MODE"
     pause_enter() { return 0; }
+    # Read by the dispatcher sourced above — this is what points it at the stub
+    # tree instead of the real one. ShellCheck cannot follow the source.
+    # shellcheck disable=SC2034
     BASE_DIR="$TMPDIR_TEST"
     dispatch_cli_command "$@"
   )

@@ -125,9 +125,15 @@ preview_theme() {
   (
     eval "$(theme_exports "$theme")"
 
+    # Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+    # ShellCheck cannot follow a source, so it sees assignments nothing reads.
+    # shellcheck disable=SC2034
     APP_TITLE="MQ Theme Preview"
+    # shellcheck disable=SC2034
     APP_SUBTITLE="$theme"
+    # shellcheck disable=SC2034
     APP_AUTHOR="Author Mattias Camner"
+    # shellcheck disable=SC2034
     BOX_INNER=88
 
     # shellcheck disable=SC1090

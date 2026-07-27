@@ -4,9 +4,15 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 LOGIN_SCRIPT="$BASE_DIR/automation/login/mqlogin.sh"
 
+# Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+# ShellCheck cannot follow a source, so it sees assignments nothing reads.
+# shellcheck disable=SC2034
 APP_TITLE="MQ Login"
+# shellcheck disable=SC2034
 APP_SUBTITLE="Login and Session Boot"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then

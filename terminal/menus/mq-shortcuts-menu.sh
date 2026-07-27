@@ -4,9 +4,15 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 SHORTCUTS_SCRIPT="$BASE_DIR/automation/shortcuts/mqshortcuts.sh"
 
+# Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+# ShellCheck cannot follow a source, so it sees assignments nothing reads.
+# shellcheck disable=SC2034
 APP_TITLE="MQ Shortcuts"
+# shellcheck disable=SC2034
 APP_SUBTITLE="macOS Shortcuts Workspace"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
