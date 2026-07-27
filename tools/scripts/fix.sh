@@ -3,6 +3,8 @@
 set -euo pipefail
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
+# Operator-provided secrets, outside the repo and optional by design.
+# shellcheck source=/dev/null
 source ~/.env 2>/dev/null || true
 source "$BASE_DIR/.env" 2>/dev/null || true
 

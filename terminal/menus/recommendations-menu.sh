@@ -32,6 +32,8 @@ fi
 : "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 _REC_MENU_LIB="$BASE_DIR/mqlaunch/lib/recommendations"
 for _rec_lib in errors resolve parse actions clipboard render select doctor; do
+  # Path is built per iteration over the eight lib names above.
+  # shellcheck source=/dev/null
   [[ -f "$_REC_MENU_LIB/$_rec_lib.sh" ]] && source "$_REC_MENU_LIB/$_rec_lib.sh"
 done
 unset _rec_lib

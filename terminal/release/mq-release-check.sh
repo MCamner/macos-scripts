@@ -10,6 +10,7 @@ for arg in "${@:-}"; do
 done
 AI_PROMPTS="$BASE_DIR/terminal/ai-prompts/mq-ai-prompts.sh"
 
+# shellcheck source=../ai-prompts/mq-ai-prompts.sh
 [[ -f "$AI_PROMPTS" ]] && source "$AI_PROMPTS"
 
 cd "$BASE_DIR" || {

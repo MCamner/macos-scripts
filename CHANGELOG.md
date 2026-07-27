@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The ten dynamic `source` calls ShellCheck could not follow now carry a
+  directive. Four name the real file — `mq-ui.sh` from `macos-tweaks.sh` and
+  `mq-ui-demo.sh`, `mq-ai-prompts.sh` from the release check, and
+  `mq-performance-menu.sh` from the performance bridge, which had a
+  `disable=SC1091` standing in for a path it could simply have named. Six cannot:
+  the mqobsidian and recommendations menus build their paths inside a loop over a
+  list of library names, and `ask`/`chat`/`fix`/`srm` source an operator's
+  `~/.env`, which lives outside the repo and is optional by design. Those get
+  `source=/dev/null` and a comment saying why no target exists.
+
+  Paths are script-relative, which is the form that resolves wherever ShellCheck
+  is invoked from. That matters more than it looks: `source=` resolves against
+  the working directory by default and against the script's directory under
+  `--source-path=SCRIPTDIR`, and `lint.sh` runs from neither predictably. All
+  four were verified to resolve to a file that exists.
+
+  SC1090 is now zero; the warning count is 31 → 21. The diff is comments only —
+  17 lines added, and the single removed line is the `disable=SC1091` a directive
+  replaced.
+
 ### Fixed
 
 * Three submenus advertised `x. Exit` and did not implement it. `mq-apps-menu`,
