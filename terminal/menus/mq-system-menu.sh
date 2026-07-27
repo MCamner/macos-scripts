@@ -26,7 +26,7 @@ render_system_panel() {
   surface_row "NAVIGATION" "$width" "$panel_color"
   surface_split_row "14. Repo folder" "15. Repo in browser" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -63,10 +63,6 @@ open_system_menu() {
       16) "$BASE_DIR/tools/scripts/brew-check.sh"; pause_enter ;;
       17) "$BASE_DIR/tools/scripts/cleanup.sh"; pause_enter ;;
       b|B|x|X|exit) return ;;
-      x|X)
-        echo "Exiting ${APP_TITLE}..."
-        exit 0
-        ;;
       *)
         echo "${C_ERR}Invalid selection:${C_RESET} $choice"
         pause_enter

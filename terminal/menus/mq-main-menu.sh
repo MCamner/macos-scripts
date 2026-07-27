@@ -334,7 +334,7 @@ handle_main_prompt_command() {
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
-    hal\ *|"hal "*)
+    "hal "*)
       local _hal_args="${normalized#hal }"
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
