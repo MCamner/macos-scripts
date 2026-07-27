@@ -152,6 +152,37 @@ generate:
 
 Legacy paths must never own or extend that registry.
 
+### Retiring an alias
+
+An alias can outlive the reason it was added. Deleting it breaks whoever still
+types it; leaving it in `aliases` tells every consumer it is a current name.
+`deprecated_aliases` is the third state — still dispatched, no longer part of the
+surface a consumer may advertise:
+
+```json
+"aliases": ["performance"],
+"deprecated_aliases": [
+  { "name": "perf-menu", "replacement": "perf" }
+]
+```
+
+The field is metadata on the alias, not a flag on the command. Retiring an old
+spelling says nothing about the command it points at, and a `deprecated: true` on
+the entry could not express the difference.
+
+`tools/scripts/validate-command-registry.py` enforces four rules: a deprecated
+alias must name a `replacement`, that replacement must be an active command name
+or alias and must not itself be deprecated, a word must not be listed as both
+active and deprecated, and one word still belongs to exactly one command.
+Because a deprecated word is still dispatched, it stays subject to registry
+versus dispatch parity like any other.
+
+`tests/registry-consumer-parity-smoke.sh` carries the consumer half: `mqlaunch
+help` and the command palette must not offer a deprecated word, while
+`docs/COMMANDS.md` may still document one — a reference that records the old
+spelling is doing its job. Nothing in the registry is deprecated today; the rules
+exist so the first deprecation is stated rather than remembered.
+
 ### One dispatcher
 
 `dispatch_cli_command` in `terminal/launchers/mqlaunch-command-mode.sh` is the

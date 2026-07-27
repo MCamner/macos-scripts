@@ -316,8 +316,13 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
     and alias through one `seen_names` map, so a collision in either direction
     fails. Fixture [4/11] in `command-registry-smoke.sh` proves it fires.
   * [x] No alias points to multiple commands — same map.
-  * [ ] Deprecated aliases are marked explicitly — the registry has no
-    deprecation field yet. Open.
+  * [x] Deprecated aliases are marked explicitly — `deprecated_aliases` is
+    metadata on the alias, not a flag on the command, so retiring an old
+    spelling says nothing about the command it points at. A deprecated word
+    still dispatches but must name a `replacement`, and neither `mqlaunch help`
+    nor the palette may advertise it. Four validator rules and one consumer
+    rule, five fixtures. Nothing is deprecated today: the rules exist so the
+    first deprecation is stated rather than remembered.
 
 * [ ] Test namespace coverage.
 
