@@ -28,7 +28,7 @@ while true; do
   "$SCAN"
 
   # non-blocking key read (0.1s steps)
-  for i in $(seq 1 $((INTERVAL*10))); do
+  for _ in $(seq 1 $((INTERVAL*10))); do
     read -rsn1 -t 0.1 key
     case "$key" in
       r|R) break ;;                  # force refresh

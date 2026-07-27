@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+* Nine variables that were assigned and never read: `SCRIPT_NAME` in
+  `mqshortcuts.sh` (its usage heredoc is quoted, so nothing expanded it),
+  `REPO_ROOT` in `demo-flow.sh`, `MQ_MCP_REVIEW` in the tools menu (a path
+  constant naming a script that menu never invokes), `C_DIM` in `macos-tweaks.sh`
+  and `BOLD` in `env-snap.sh` (the only colours in either palette nothing used),
+  an unused `warnings` local in the performance menu, `top_glow` and `bot_glow`
+  in `mq-dashboard-v3.sh` (built from `═` while the lines the dashboard actually
+  draws use `▄` and `▀` inline), and a `delay` local in `vault-scan.sh`.
+
+  `vault-scan.sh` is worth flagging rather than quietly resolving: the local said
+  `0.02` while the loop below it sleeps `0.01` as a literal. Either the variable
+  was meant to be used or it is a leftover. Wiring it up would double the
+  animation delay, so this removes the dead local and changes no timing. If the
+  intent was `sleep "$delay"`, that is a separate decision about how the effect
+  should look.
+
+  Two loop counters the bodies never read — in `excalidraw.sh` and `watch.sh` —
+  became `_`.
+
+  Six more SC2034 findings stay, each with a directive naming what reads it:
+  three positional `read` fields in `scan.sh` where dropping the name would make
+  `read` append the value to the previous variable, and three dynamic-scope
+  contracts (`THEME_SCRIPT` and `MQ_THEME_ERROR_HEADING_BOLD` read by
+  `mqlaunch/lib/themes.sh`, `MQ_SURFACE_WIDTH` by the prompt-separator pattern
+  documented in `.claude/templates/`).
+
+  SC2034 is now zero; the ShellCheck warning count is 96 → 45.
+
 ### Added
 
 * `tools/scripts/shellcheck-report.sh` — measures what a stricter ShellCheck

@@ -2,6 +2,9 @@
 
 BASE_DIR="${MACOS_SCRIPTS_HOME:-${HOME}/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
+# Read by mqlaunch/lib/themes.sh as ${THEME_SCRIPT:-<default>} — this is the
+# documented override point for which switcher the theme commands call.
+# shellcheck disable=SC2034
 THEME_SCRIPT="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
 
 # shellcheck disable=SC2034
@@ -50,6 +53,10 @@ print_themes_menu() {
 # Keeps the themes menu interactive until the user backs out.
 themes_menu_loop() {
   local choice
+  # Read by mqlaunch/lib/themes.sh, which this menu calls into. `local` is
+  # deliberate: bash scopes it dynamically, so it applies for the duration of
+  # this loop and nowhere else.
+  # shellcheck disable=SC2034
   local MQ_THEME_ERROR_HEADING_BOLD=1
 
   while true; do

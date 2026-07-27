@@ -149,7 +149,6 @@ mq_dashboard_v3() {
 
   local user host now cwd shell_name os_name branch repo dirty
   local mode_color dirty_color
-  local top_glow bot_glow
 
   user="$(mq_user)"
   host="$(mq_host)"
@@ -169,8 +168,6 @@ mq_dashboard_v3() {
   dirty_color="$NEON_GREEN"
   [[ "$dirty" == "DIRTY" ]] && dirty_color="$NEON_RED"
 
-  top_glow="${NEON_CYAN}${C_BOLD}$(mq_repeat "═" "$width")${C_RESET}"
-  bot_glow="${NEON_MAGENTA}${C_BOLD}$(mq_repeat "═" "$width")${C_RESET}"
 
   clear 2>/dev/null || true
 

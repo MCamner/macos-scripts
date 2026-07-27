@@ -2,7 +2,6 @@
 # demo-flow — MQ stack end-to-end demo: signal → review → release-check → brain
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 MQ_AGENT_BIN="${MQ_AGENT_BIN:-$HOME/mq-agent}"
 
 # Coordinates run agent behavior.

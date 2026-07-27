@@ -5,11 +5,10 @@ CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-BOLD='\033[1m'
 NC='\033[0m'
 
 if [[ ! -t 1 ]]; then
-  CYAN='' GREEN='' YELLOW='' RED='' BOLD='' NC=''
+  CYAN='' GREEN='' YELLOW='' RED='' NC=''
 fi
 
 SNAP_DIR="${HOME}/.local/share/mq-env-snap"
