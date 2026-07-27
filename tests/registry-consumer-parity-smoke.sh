@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# The registry is the source; help and the command reference are consumers.
+# The registry is the source; help, the reference and the palette are consumers.
 #
 # command-registry-smoke.sh holds the registry against dispatch (#81) and
 # output-mode-parity-smoke.sh holds its output claims against observed behaviour
@@ -10,7 +10,7 @@ set -euo pipefail
 # commands that print "Unknown command" when typed, because they are words the
 # palette's separate dispatcher knows and the typed one does not (#85).
 #
-# Two consumers, two different contracts, because they make different promises:
+# Three consumers, three contracts, because they make different promises:
 #
 #   docs/COMMANDS.md   "Complete command listing" — coverage required in both
 #                      directions. Every command has a documented name or alias,
@@ -19,25 +19,45 @@ set -euo pipefail
 #                      required. But every word it advertises must work. A help
 #                      screen that lists a command that does not exist is worse
 #                      than one that omits it.
+#   the palette        a curated picker, same contract as help. Selecting an
+#                      entry now runs dispatch_cli_command, so an entry the
+#                      registry does not know fails in the user's hands rather
+#                      than quietly resolving through a second vocabulary.
 #
-# Both halves are extracted from real output and real markdown rather than
-# grepped for remembered names: the gate this replaces was a list of eleven
-# hand-picked commands, which only ever proved that someone had remembered them.
+# All three are extracted from real output, real markdown and the real heredoc
+# rather than grepped for remembered names: the gate this replaces was a list of
+# eleven hand-picked commands, which only ever proved someone had remembered them.
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REGISTRY="$ROOT/mqlaunch/lib/command-registry.json"
 DOCS="$ROOT/docs/COMMANDS.md"
 LAUNCH="$ROOT/bin/mqlaunch"
+LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"   # owns the palette heredoc
 
 echo "SMOKE: registry consumers do not contradict the registry"
 
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/5] files exist"
+echo "[1/5] files exist, and the palette is wired to the registry's dispatcher"
 test -f "$REGISTRY"
 test -f "$DOCS"
 test -f "$LAUNCH"
+test -f "$LAUNCHER"
+
+# Checking the palette's entries against the registry only means something while
+# selecting one actually goes through the registry's dispatcher. Driving fzf is
+# not something a suite can do, so the wiring is asserted instead: the call, and
+# the source line that puts the function in the palette's scope.
+grep -q 'dispatch_cli_command \${=selected_cmd}' "$LAUNCHER" || {
+  echo "FAIL: the palette no longer dispatches through dispatch_cli_command" >&2
+  exit 1
+}
+grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$LAUNCHER" || {
+  echo "FAIL: command mode is not sourced — dispatch_cli_command is out of scope" >&2
+  exit 1
+}
+echo "  ok: palette selections resolve through dispatch_cli_command"
 
 # Extraction is a separate file so step 5 can run it against mutated input and
 # show the comparison failing. Same discipline as command-registry-smoke.sh.
@@ -77,6 +97,28 @@ def documented_words(path):
     return words
 
 
+def palette_words(path):
+    """First words of every entry in the command palette's heredoc.
+
+    Entries are tab-separated `command<TAB>description`, and a command may be
+    several words (`workflows boot`). Only the first is the dispatch target;
+    the rest are its arguments, and the registry models subcommands separately.
+    """
+    text = open(path, encoding="utf-8").read()
+    # The heredoc opener carries the fzf invocation on the same line, so match
+    # to the end of that line rather than expecting a newline after EOF'.
+    block = re.search(r"run_command_palette\(\).*?cat <<'EOF'[^\n]*\n(.*?)\nEOF",
+                      text, re.S)
+    if block is None:
+        raise SystemExit("could not find the palette heredoc in " + path)
+    words = set()
+    for line in block.group(1).splitlines():
+        entry = line.split("\t", 1)[0].strip()
+        if entry:
+            words.add(entry.split()[0])
+    return words
+
+
 def advertised_words(path):
     """Command words from a `mqlaunch help` capture.
 
@@ -95,8 +137,17 @@ def main():
 
     docs = documented_words(sys.argv[2])
     help_out = advertised_words(sys.argv[3])
+    palette = palette_words(sys.argv[4])
 
     failures = []
+
+    # `main` is the interactive loop the palette was opened from, not a command,
+    # and the palette special-cases it before dispatch ever sees it.
+    palette_ghosts = sorted(palette - known - {"main"})
+    if palette_ghosts:
+        failures.append(
+            f"offered by the command palette but not dispatchable "
+            f"({len(palette_ghosts)}): " + " ".join(palette_ghosts))
 
     undocumented = sorted(n for n, words in surface.items() if not (words & docs))
     if undocumented:
@@ -121,7 +172,8 @@ def main():
         sys.exit(1)
 
     print(f"  ok: {len(commands)} commands, {len(docs)} documented words, "
-          f"{len(help_out)} advertised words, no contradictions")
+          f"{len(help_out)} advertised words, {len(palette)} palette entries, "
+          f"no contradictions")
 
 
 if __name__ == "__main__":
@@ -142,7 +194,7 @@ fi
 printf '  ok: %s bytes\n' "$(wc -c <"$run_dir/help.txt" | tr -d ' ')"
 
 echo "[3/5] every command is documented, and nothing documented is a ghost"
-python3 "$run_dir/consumers.py" "$REGISTRY" "$DOCS" "$run_dir/help.txt"
+python3 "$run_dir/consumers.py" "$REGISTRY" "$DOCS" "$run_dir/help.txt" "$LAUNCHER"
 
 echo "[4/5] the failure demo in the reference is still a failure demo"
 # Step 3 skips blocks containing "Unknown command". That exemption is only sound
@@ -185,15 +237,17 @@ else:
 PY
 
 echo "[5/5] the comparison rejects a consumer that drifts"
-# A gate that has never failed is a comment. Both directions are provoked: a
-# command the docs do not mention, and a documented word nothing dispatches.
-python3 - "$REGISTRY" "$DOCS" "$run_dir" <<'PY'
+# A gate that has never failed is a comment. One fixture per consumer: a command
+# the docs do not mention, a documented word nothing dispatches, and a palette
+# entry the registry does not know.
+python3 - "$REGISTRY" "$DOCS" "$LAUNCHER" "$run_dir" <<'PY'
 import json
 import pathlib
 import subprocess
 import sys
 
-registry_path, docs_path, run_dir = sys.argv[1], sys.argv[2], pathlib.Path(sys.argv[3])
+registry_path, docs_path, launcher_path = sys.argv[1], sys.argv[2], sys.argv[3]
+run_dir = pathlib.Path(sys.argv[4])
 registry = json.load(open(registry_path, encoding="utf-8"))
 
 # 1. A command nobody documented.
@@ -213,18 +267,32 @@ fixture_docs.write_text(
     pathlib.Path(docs_path).read_text(encoding="utf-8")
     + "\n```bash\nmqlaunch not-a-real-command\n```\n", encoding="utf-8")
 
+# 3. A palette entry nothing dispatches.
+launcher_text = pathlib.Path(launcher_path).read_text(encoding="utf-8")
+fixture_launcher = run_dir / "launcher-plus-one.sh"
+marker = "main\tOpen main menu"
+if marker not in launcher_text:
+    sys.exit("palette heredoc no longer starts with the main entry")
+fixture_launcher.write_text(
+    launcher_text.replace(marker, marker + "\nnot-in-the-registry\tfixture", 1),
+    encoding="utf-8")
+
 checker = str(run_dir / "consumers.py")
 help_txt = str(run_dir / "help.txt")
 
 for label, args in (
-    ("an undocumented command", [checker, str(fixture_registry), docs_path, help_txt]),
-    ("a documented ghost", [checker, registry_path, str(fixture_docs), help_txt]),
+    ("an undocumented command",
+     [checker, str(fixture_registry), docs_path, help_txt, launcher_path]),
+    ("a documented ghost",
+     [checker, registry_path, str(fixture_docs), help_txt, launcher_path]),
+    ("a palette entry nothing dispatches",
+     [checker, registry_path, docs_path, help_txt, str(fixture_launcher)]),
 ):
     result = subprocess.run([sys.executable, *args], capture_output=True)
     if result.returncode == 0:
         sys.exit(f"{label} did not fail the comparison")
-print("  ok: both drift directions are detected")
+print("  ok: all three consumers are checked, and each drift is detected")
 PY
 
 bash -n "$0"
-echo "OK: help and the command reference agree with the registry"
+echo "OK: help, the command reference and the palette agree with the registry"

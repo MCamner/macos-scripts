@@ -789,13 +789,20 @@ EOF
 
   selected_cmd="${selected%%$'\t'*}"
 
+  # dispatch_cli_command, not run_arg_command: the palette used to route through
+  # the second, older dispatcher, which is what made a palette entry and a typed
+  # command two different things. Every entry here now resolves through the same
+  # function — and the same registry — as the word a user types (#85, #86).
+  #
+  # `main` stays special. It is not a command; it is the interactive loop this
+  # palette was opened from, and the registry does not model it.
   case "$selected_cmd" in
     main)
       main_loop
       ;;
     *)
       # shellcheck disable=SC2086
-      run_arg_command ${=selected_cmd}
+      dispatch_cli_command ${=selected_cmd}
       ;;
   esac
 }

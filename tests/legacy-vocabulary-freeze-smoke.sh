@@ -116,22 +116,25 @@ unmodelled = legacy - known
 print(f"  ok: {len(legacy)} legacy words, {len(unmodelled)} not modelled by the registry")
 PY
 
-echo "[4/5] the frozen vocabulary is reachable only through the palette"
-# The freeze is about size, not reach. If a menu starts routing choices through
-# run_arg_command, the frozen words become reachable from a new surface and the
-# boundary has moved even though the word list did not.
+echo "[4/5] the frozen vocabulary has no callers at all"
+# The palette was the last one. It routes through dispatch_cli_command now, so
+# run_arg_command is unreachable — the freeze is no longer holding a live
+# surface, it is keeping a dead one from being wired back up.
+#
+# The words stay recorded rather than deleted with the function: this file is
+# the evidence for what the second vocabulary contained, and removing 145 lines
+# of launcher is a separate change from routing the palette.
 callers="$(grep -rn 'run_arg_command' --include="*.sh" "$ROOT/terminal" "$ROOT/mqlaunch" "$ROOT/ui" \
   | grep -v 'run_arg_command() {' \
   | grep -vE ':[0-9]+:[[:space:]]*#' \
   || true)"
-unexpected="$(printf '%s\n' "$callers" | grep -v 'mqlaunch.sh:.*run_arg_command \${=selected_cmd}' | grep . || true)"
-if [[ -n "$unexpected" ]]; then
-  echo "FAIL: run_arg_command is called from somewhere other than the palette:" >&2
-  printf '%s\n' "$unexpected" >&2
-  echo "The frozen vocabulary must not gain new entry points." >&2
+if [[ -n "$callers" ]]; then
+  echo "FAIL: run_arg_command has been given a caller again:" >&2
+  printf '%s\n' "$callers" >&2
+  echo "Commands dispatch through dispatch_cli_command and the registry." >&2
   exit 1
 fi
-echo "  ok: the command palette is the only caller"
+echo "  ok: unreachable"
 
 echo "[5/5] the comparison rejects a word that was never there"
 # Same fixture discipline as command-registry-smoke.sh: prove the diff fires.
