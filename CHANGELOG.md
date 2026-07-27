@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `ui/ascii/mq-dashboard.sh` aborted halfway through rendering. Three lines wrote
+  `${mq_repeat_char "-" "$width"}` — a parameter expansion of a variable by that
+  name — where `$(mq_repeat_char …)`, a command substitution, was meant. bash
+  raises `bad substitution` at runtime, which `bash -n` cannot catch because it
+  is not a parse error.
+
+  The effect was not a missing separator. The function stopped at the first one,
+  so ten lines never printed: user, host, time, shell, OS, repo, branch and all
+  three rules. Verified by diffing the script's output before and after —
+  `main` emits one line to stderr and 12 lines of dashboard, this emits nothing
+  to stderr and 22.
+
+  ShellCheck reported it as SC2154, "mq_repeat_char is referenced but not
+  assigned", and only for the first of the three occurrences.
+
+  `docs/AUTHORITY_MAP.md` lists this file under "Dead — DEPRECATED … safe-to-delete
+  candidates", alongside `mq-dashboard-v3.sh` and `mq-banner.sh`. Deleting the
+  three is a separate decision and a diff worth seeing on its own; this makes the
+  code correct without presuming it.
+
+* `backup_zshrc` in `terminal/themes/mq-zsh-theme-switcher.sh` declared and
+  assigned in one statement, so `local` masked the exit status of the command
+  substitution (SC2155). Split. Both callers use `$(backup_zshrc)` and read
+  stdout, and the function's status comes from its `echo`, so nothing observable
+  changes — confirmed by driving the function against a temp directory.
+
 ### Changed
 
 * The ten dynamic `source` calls ShellCheck could not follow now carry a
