@@ -437,9 +437,37 @@ Owner: `macos-scripts`
 
 Shell syntax checks are already useful, but ShellCheck must not remain warn-only forever. A launcher repo should be boringly reliable.
 
+The premise needed correcting before the work could be planned: ShellCheck is
+**not** warn-only today. `tools/scripts/lint.sh` runs `shellcheck -S error` with
+no `|| true`, and `test-all.sh` calls it, and CI runs `test-all.sh`. Error
+severity has been a hard gate all along. What is warn-only is the separate
+`quality.yml` step, which runs the same severity over a wider surface and
+discards the result.
+
 ### Tasks
 
-* [ ] Audit current ShellCheck findings.
+* [x] Audit current ShellCheck findings.
+
+  * `tools/scripts/shellcheck-report.sh` measures it on demand, so the numbers
+    below can be re-derived rather than trusted.
+
+  | Severity | Findings | Files | Gate cost today |
+  | --- | --- | --- | --- |
+  | error | 0 | 0 | already gated, costs nothing |
+  | warning | 96 | 37 | must be fixed or waived |
+  | info | 270 | 78 | must be fixed or waived |
+  | style | 276 | 79 | must be fixed or waived |
+
+  * The jump is `error` → `warning`, and 51 of those 96 are one rule (SC2034,
+    unused variable). The next four rules account for 36 more. Roughly nine
+    tenths of the warning surface is five rules, which is what makes fixing in
+    groups viable.
+  * 10 zsh scripts are outside ShellCheck entirely — it cannot parse zsh, and
+    `mqlaunch.sh` is one of them. They are covered by `zsh -n`. Hardening
+    ShellCheck does not reach them, and the roadmap should not imply it does.
+  * 34 files are scanned by the warn-only CI step but not by the gate
+    (`tools/legacy/`, `terminal/mqlaunch-v1/`). At error severity they are clean
+    too, so the wider surface currently catches nothing extra.
 
   * Classify findings into real bugs, acceptable style exceptions, and intentional shell patterns.
 
