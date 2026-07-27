@@ -132,7 +132,7 @@ HELP
       cat <<'HELP'
 Usage: mqlaunch obsidian <command> [args]
 
-Commands: status, inbox, views, promote
+Commands: status, inbox, views, regenerate-views, promote
 HELP
       ;;
     repos)
@@ -1040,6 +1040,14 @@ dispatch_cli_command() {
             mq_obsidian_open_view_picker
           else
             echo "ERROR: mqobsidian view picker not loaded" >&2
+            return 1
+          fi
+          ;;
+        regenerate-views|regen-views|rebuild-views)
+          if declare -f mq_obsidian_regenerate_views >/dev/null; then
+            mq_obsidian_regenerate_views
+          else
+            echo "ERROR: mqobsidian regenerate-views handler not loaded" >&2
             return 1
           fi
           ;;

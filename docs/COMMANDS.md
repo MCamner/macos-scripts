@@ -563,6 +563,7 @@ mqlaunch obsidian                 # open the MQ Obsidian menu
 mqlaunch obsidian status          # read-only consumer status / doctor
 mqlaunch obsidian inbox           # list memory inbox files; no promotion
 mqlaunch obsidian views           # open manifest-defined views
+mqlaunch obsidian regenerate-views # option 13 handler; aliases: regen-views, rebuild-views
 mqlaunch obsidian promote --dry-run    # delegate promotion preview to mq-agent
 mqlaunch obsidian promote --confirm    # delegate confirmed promotion to mq-agent
 ```
@@ -570,7 +571,9 @@ mqlaunch obsidian promote --confirm    # delegate confirmed promotion to mq-agen
 `mqlaunch obsidian status` is the direct alias for the existing read-only
 mqobsidian doctor/status surface. `inbox` and `views` stay presentation-only:
 they list or open exported vault surfaces and do not score, promote, reject, or
-write durable memory. `promote` is a thin delegation surface to
+write durable memory. `regenerate-views` and menu option 13 share
+`mq_obsidian_regenerate_views`; the handler reports a planned placeholder until
+mqobsidian registers `scripts/regenerate-memory-views.py`. `promote` is a thin delegation surface to
 `mq-agent obsidian promote`; mqlaunch does not inspect, score, approve, or write
 the memory item itself.
 

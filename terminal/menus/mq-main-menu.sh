@@ -53,10 +53,26 @@ surface_action_word() {
   esac
 }
 
+# Gives selected submenu actions a stable, searchable terminal label.
+surface_choice_summary() {
+  local context="$1"
+  local selected="$2"
+
+  case "$context:$selected" in
+    mqobsidian:12|mqobsidian:triage)
+      printf "option 12: learning inbox triage"
+      ;;
+    mqobsidian:13|mqobsidian:views|mqobsidian:regenerate)
+      printf "option 13: regenerate memory views"
+      ;;
+  esac
+}
+
 # Formats accept scramble for the compact terminal surface.
 surface_accept_scramble() {
   local color="$1"
   local selected="$2"
+  local summary="${3:-}"
   local frame start word
   start=$(( RANDOM % 10 ))
 
@@ -66,8 +82,12 @@ surface_accept_scramble() {
     sleep 0.025
   done
 
-  word="$(surface_action_word $(( start + 7 )))"
-  printf "\r\033[2K%b>> %-10s %s%b" "$C_OK" "$word" "$selected" "$C_RESET"
+  if [[ -n "$summary" ]]; then
+    printf "\r\033[2K%b>> %s%b" "$C_OK" "$summary" "$C_RESET"
+  else
+    word="$(surface_action_word $(( start + 7 )))"
+    printf "\r\033[2K%b>> %-10s %s%b" "$C_OK" "$word" "$selected" "$C_RESET"
+  fi
   sleep 0.04
 }
 
@@ -432,7 +452,7 @@ run_main_shell_command() {
 # Reads main choice from user input or stdin.
 read_main_choice() {
   local label="${1:-mqlaunch}"
-  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt
+  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt summary
   prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> option, mqlaunch command, shell command, or x to exit"
@@ -511,7 +531,8 @@ read_main_choice() {
 
     stty "$old_stty" 2>/dev/null || true
     printf "\033[%d;1H\r\033[2K" "$input_row"
-    surface_accept_scramble "$C_WARN" "${input:-menu}"
+    summary="$(surface_choice_summary "$label" "${input:-menu}")"
+    surface_accept_scramble "$C_WARN" "${input:-menu}" "$summary"
     printf "\n"
     choice="$input"
     return 0
@@ -572,7 +593,8 @@ read_main_choice() {
 
     stty "$old_stty" 2>/dev/null || true
     printf "\r\033[2K"
-    surface_accept_scramble "$C_WARN" "${input:-menu}"
+    summary="$(surface_choice_summary "$label" "${input:-menu}")"
+    surface_accept_scramble "$C_WARN" "${input:-menu}" "$summary"
     printf "\033[3B\r"
     choice="$input"
     return 0

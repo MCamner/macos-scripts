@@ -63,6 +63,10 @@ for namespace in agent dev git hal obsidian release repos skills srm stack syste
   run_help "$namespace" help
 done
 
+HOME="$TMPDIR_TEST" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 MQLAUNCH_HEADLESS=1 \
+  "$LAUNCHER" obsidian --help >"$TMPDIR_TEST/obsidian-help.stdout"
+grep -q 'regenerate-views' "$TMPDIR_TEST/obsidian-help.stdout"
+
 set +e
 HOME="$TMPDIR_TEST" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 \
   "$LAUNCHER" obsidian --help extra >"$TMPDIR_TEST/invalid.stdout" \

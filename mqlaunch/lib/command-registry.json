@@ -1257,6 +1257,14 @@
           "summary": "Open the mqobsidian view picker"
         },
         {
+          "name": "regenerate-views",
+          "aliases": [
+            "regen-views",
+            "rebuild-views"
+          ],
+          "summary": "Regenerate mqobsidian memory views when a producer is registered"
+        },
+        {
           "name": "promote",
           "aliases": [],
           "summary": "Promote a memory through mq-agent"
