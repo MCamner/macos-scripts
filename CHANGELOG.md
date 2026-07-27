@@ -6,6 +6,37 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* `tests/command-docs-smoke.sh` is a README contract instead of a second,
+  hand-maintained command registry. It named eleven commands — `palette`,
+  `ghost`, `pulse`, `reap`, `guard`, `mc`, `nickname-set`, `theme-macos`,
+  `theme-reset`, `bundle` — and grepped for each in `docs/COMMANDS.md` and again
+  in the dispatcher. All twenty assertions were strictly weaker than gates that
+  already run: `tests/registry-consumer-parity-smoke.sh` requires COMMANDS.md
+  coverage in both directions for all 73 commands, and
+  `validate-command-registry.py` holds registry-versus-dispatch parity exactly.
+  All eleven words were verified present in the registry and in COMMANDS.md
+  before the assertions were removed, so nothing stopped being checked — it is
+  checked for 73 commands now rather than eleven.
+
+  In their place, README becomes the fifth consumer of the registry, and the
+  first one that was never checked at all. It is the first page anyone reads, it
+  prints commands in runnable blocks, and nothing verified those commands exist.
+  README has the same contract as `mqlaunch help`: curated, so coverage is not
+  required, but every command it shows must dispatch and it must not promote a
+  word the registry is retiring. Extraction reads only fenced runnable blocks,
+  so the product boundary written as prose — `mqlaunch shows the right
+  workflow` — does not contribute a command called `shows`. Two fixtures, each
+  asserting the reason rather than a non-zero exit: a command README shows that
+  nothing dispatches, and a deprecated spelling README still teaches.
+
+  One assertion was dropped rather than moved: nothing now requires README to
+  mention `mqlaunch palette` specifically. Which commands earn a place on the
+  front page is a curation decision, not a contract, and a gate cannot tell the
+  difference between a command being removed from README and a command being
+  removed.
+
 ### Added
 
 * `deprecated_aliases` in the command registry. An alias can outlive the reason

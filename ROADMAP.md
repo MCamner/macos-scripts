@@ -279,7 +279,7 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
 * [ ] Add `tests/command-registry-drift-smoke.sh`.
 
-* [ ] Test command inventory consistency.
+* [x] Test command inventory consistency.
 
   * [x] help — every advertised word must dispatch. Coverage is not required:
     help is a curated quick index, and forcing all 73 commands into it would
@@ -290,6 +290,8 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
   * [x] direct dispatch — `tests/command-registry-smoke.sh` (#81).
   * [x] docs index — `docs/COMMANDS.md` is the complete reference, so coverage
     is required in both directions.
+  * [x] README — same contract as help, held by `tests/command-docs-smoke.sh`,
+    which stopped being a hand-maintained list of eleven remembered names (#90).
 
   Held by `tests/registry-consumer-parity-smoke.sh`. It found six commands the
   product advertised and could not run — `tools`, `login`, `shortcuts`, `theme`,
