@@ -6,6 +6,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* Three submenus advertised `x. Exit` and did not implement it. `mq-apps-menu`,
+  `mq-system-menu` and `mq-help-center-menu` each carried
+  `b|B|x|X|exit) return` followed by an `x|X)` branch that printed
+  `Exiting …` and called `exit 0`. The first branch already matched `x`, so the
+  second was unreachable: pressing `x` returned to the parent menu while the
+  panel said it would exit.
+
+  The label was wrong, not the code. Every other submenu in the repo —
+  `mq-dev-menu`, `mq-git-menu`, `mq-ai-menu`, `mq-net-menu`, `mq-tools-menu` —
+  uses the same `b|B|x|X|exit) return` and advertises only `b. Back`. These
+  three were the outliers. The dead branch is removed and the panel row now
+  reads `b. Back` alone, so what is shown matches what happens.
+
+  Behaviour is unchanged, and that is verified rather than asserted: both `b`
+  and `x` were driven through all three menus against `main` and against the
+  branch, and every exit status is identical.
+
+* A duplicated pattern in the main menu's REPL dispatch. `hal\ *|"hal "*)`
+  spelled the same match twice — an escaped space and a quoted one — so the
+  second alternative could never be reached. Collapsed to `"hal "*)`.
+
 ### Removed
 
 * Nine variables that were assigned and never read: `SCRIPT_NAME` in

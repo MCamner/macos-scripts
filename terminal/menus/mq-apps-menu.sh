@@ -21,7 +21,7 @@ render_apps_panel() {
   surface_split_row "13. Restart Finder" "14. Repo in browser" "$width" "$panel_color"
   surface_split_row "15. Excalidraw" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -60,10 +60,6 @@ open_apps_menu() {
       14) open_repo_browser ;;
       15) "$BASE_DIR/tools/scripts/excalidraw.sh"; pause_enter ;;
       b|B|x|X|exit) return ;;
-      x|X)
-        echo "Exiting ${APP_TITLE}..."
-        exit 0
-        ;;
       *)
         echo "${C_ERR}Invalid selection:${C_RESET} $choice"
         pause_enter

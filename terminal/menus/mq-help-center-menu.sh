@@ -50,7 +50,7 @@ render_help_center_panel() {
   surface_split_row "5. Repo in browser" "6. Repo folder" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_split_row "b. Back" "x. Exit" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -78,10 +78,6 @@ open_help_center_menu() {
       5) open_repo_browser ;;
       6) open_base_dir ;;
       b|B|x|X|exit) return ;;
-      x|X)
-        echo "Exiting ${APP_TITLE}..."
-        exit 0
-        ;;
       *)
         echo "${C_ERR}Invalid selection:${C_RESET} $choice"
         pause_enter
