@@ -152,45 +152,39 @@ generate:
 
 Legacy paths must never own or extend that registry.
 
-### Two dispatchers, one surface
+### One dispatcher
 
-`terminal/launchers/mqlaunch.sh` contains a second dispatcher. The registry
-governs one of them:
+`dispatch_cli_command` in `terminal/launchers/mqlaunch-command-mode.sh` is the
+only command dispatcher. It answers whether a word was typed at the shell or
+chosen from the command palette, and the registry governs all of it.
 
-| Function | Answers when | Governed by |
-| --- | --- | --- |
-| `dispatch_cli_command` | a word is typed **or chosen from the palette** | the registry |
-| `run_arg_command` | never — it has no callers | frozen baseline |
+That was not true until v2.0.0. `terminal/launchers/mqlaunch.sh` carried a
+second dispatcher, `run_arg_command`, which answered the palette and accepted 93
+words the registry had never modelled — names that worked when chosen and
+printed `Unknown command` when typed. That is the ambiguity this release exists
+to remove, and the product principle names it directly: a user should never have
+to ask whether a command is shown in one place and missing from another.
 
-They never knew the same words. `run_arg_command` accepts dozens the registry
-has never modelled, and until the palette was rerouted those names worked when
-chosen and printed `Unknown command` when typed. That is the ambiguity v2.0.0
-exists to remove, and the product principle names it directly: a user should
-never have to ask whether a command is shown in one place and missing from
-another.
-
-The gap was 93 words, closed in two steps:
+The gap was closed in three steps:
 
 1. The six the product actually advertised — `tools`, `login`, `shortcuts`,
    `theme`, `guide`, `repo`, all listed by `mqlaunch help` and
    `docs/COMMANDS.md` — moved into the registry and `dispatch_cli_command`. A
    help screen listing a command which does not exist is a defect in the
    command, not in the help.
-2. The palette then switched to `dispatch_cli_command`, so a palette entry and a
-   typed command became the same thing. `run_arg_command` lost its last caller.
+2. The palette switched to `dispatch_cli_command`, so a palette entry and a
+   typed command became the same thing. `run_arg_command` lost its last caller,
+   and what remained in it were unadvertised legacy names reachable from
+   nothing.
+3. The unreachable function was deleted. Its vocabulary is recorded in the
+   history of `mqlaunch/lib/legacy-command-vocabulary.txt`, removed in the same
+   commit.
 
-What remains in it are unadvertised legacy names reachable from nothing.
-
-`run_arg_command` is therefore **compatibility-only and closed for extension**.
-Its vocabulary is recorded in `mqlaunch/lib/legacy-command-vocabulary.txt` and
-held there by `tests/legacy-vocabulary-freeze-smoke.sh`, which requires an exact
-match in both directions: it must not grow, and a word removed from the case
-statement must be removed from the baseline in the same commit. Shrinking is the
-intended direction.
-
-A new command belongs in the registry and in `dispatch_cli_command`. Adding one
-to `run_arg_command` gives it a name that works when selected and fails when
-typed, which is the defect, not the feature.
+A new command belongs in `mqlaunch/lib/command-registry.json` and in
+`dispatch_cli_command`. A second dispatcher reappearing anywhere under
+`terminal/`, `mqlaunch/` or `ui/` fails
+`tests/compat-path-delegation-smoke.sh`: the registry governing the whole
+command surface depends on there being one surface to govern.
 
 ## Output and failure contract
 

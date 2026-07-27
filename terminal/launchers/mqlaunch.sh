@@ -789,10 +789,10 @@ EOF
 
   selected_cmd="${selected%%$'\t'*}"
 
-  # dispatch_cli_command, not run_arg_command: the palette used to route through
-  # the second, older dispatcher, which is what made a palette entry and a typed
-  # command two different things. Every entry here now resolves through the same
-  # function — and the same registry — as the word a user types (#85, #86).
+  # The palette used to route through a second, older dispatcher, which is what
+  # made a palette entry and a typed command two different things. Every entry
+  # here now resolves through the same function — and the same registry — as the
+  # word a user types (#85, #86, #88).
   #
   # `main` stays special. It is not a command; it is the interactive loop this
   # palette was opened from, and the registry does not model it.
@@ -922,19 +922,6 @@ run_demo_mode() {
   row "Demo complete. Run  mqlaunch  to open the full menu."
 }
 
-# Coordinates legacy alias notice behavior.
-legacy_alias_notice() {
-  local old_cmd="$1"
-  local new_cmd="$2"
-  print_header
-  row_bold "LEGACY ALIAS"
-  empty_row
-  row "Redirecting:"
-  row " $old_cmd"
-  row " -> $new_cmd"
-  print_footer
-}
-
 # Keeps the tweaks menu interactive until the user backs out.
 tweaks_menu_loop() {
   local tweaks_script="$BASE_DIR/system/tweaks/macos-tweaks.sh"
@@ -946,154 +933,6 @@ tweaks_menu_loop() {
     pause_enter
     return 1
   fi
-}
-
-# Runs arg command.
-run_arg_command() {
-  local cmd="${1:l}"
-  shift || true
-
-  case "$cmd" in
-    finder) open_app "Finder" ;;
-    safari) open_app "Safari" ;;
-    chrome) open_app "Google Chrome" ;;
-    spotify) open_app "Spotify" ;;
-    xcode) open_app "Xcode" ;;
-    settings) open_app "System Settings" ;;
-    monitor) open_app "Activity Monitor" ;;
-    downloads) open_downloads_folder ;;
-    home) open_home_folder ;;
-    utilities) open_utilities_folder ;;
-    applications) open_applications_folder ;;
-    apps|guide-ai|terminal-guide-ai)
-      if [[ -n "${1:-}" ]]; then
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
-      else
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
-      fi
-      ;;
-    ip|network) show_network_info ;;
-    lock) lock_screen ;;
-    sleep) sleep_display ;;
-    restart|reload|relaunch) restart_mqlaunch "$@" ;;
-    restart-finder|finder-restart) restart_finder ;;
-    date|time) show_date_time ;;
-    repo) open_repo_browser ;;
-    hub|github|ghub|gh-search|gh-pick|10) run_github_repo_picker ;;
-    git-log|gitlog|glog) fzf_git_log ;;
-    git-branch|branch-switch|gbranch) fzf_git_branch ;;
-    kill-process|killp|pkill-fzf) fzf_kill_process ;;
-    kill-port|killport|port-kill) fzf_kill_port ;;
-    snippets|snippet|scripts) fzf_run_snippet ;;
-    recent|recent-files|rf) fzf_recent_files ;;
-    ai) open_ai_menu ;;
-    dev) open_dev_menu ;;
-    tweaks|tweak|tw) open_tweaks_menu ;;
-    tweaks-status) show_tweaks_status ;;
-    tweaks-workstation) run_tweaks_workstation ;;
-    tweaks-dev) run_tweaks_dev ;;
-    tweaks-clean) run_tweaks_clean ;;
-    tweaks-fast) run_tweaks_fast ;;
-    tweaks-all) run_tweaks_all ;;
-    tweaks-revert|revert-tweaks) revert_tweaks_latest ;;
-    dashboard|dash) open_dashboard ;;
-    theme|themes) open_themes_menu ;;
-    theme-current) theme_cmd current ;;
-    theme-reset) theme_cmd reset ;;
-    theme-amber) theme_cmd apply amber ;;
-    theme-green) theme_cmd apply green ;;
-    theme-minimal) theme_cmd apply minimal ;;
-    theme-ice) theme_cmd apply ice ;;
-    theme-macos) theme_cmd apply macos ;;
-    release|rel) open_release_menu ;;
-    agent|mq-agent|g) run_agent_command "$@" ;;
-    obsidian|mqobsidian|memory-menu|mq-memory) mq_obsidian_menu_main ;;
-    workflows|workflow|wf) run_mqworkflows "$@" ;;
-    git|git-menu|gitmenu|menu-git) open_git_menu "${1:-}" ;;
-    gitlaunch)
-      legacy_alias_notice "mqlaunch gitlaunch" "mqlaunch git"
-      open_git_menu "${1:-}"
-      ;;
-    login|boot|session) run_mqlogin "$@" ;;
-    shortcuts|shortcut|sc) run_mqshortcuts "$@" ;;
-    perf|performance) open_performance_menu ;;
-    demo) run_demo_mode ;;
-    version|ver) show_version_info ;;
-    ask) "$BASE_DIR/tools/scripts/ask.sh" "$@" ;;
-    fix) "$BASE_DIR/tools/scripts/fix.sh" "$@" ;;
-    skills|skill) "$BASE_DIR/tools/scripts/mq-skills.py" "$@" ;;
-    repos)
-      case "${1:-}" in
-        ""|menu|hub) "$BASE_DIR/bin/mqlaunch" hub ;;
-        *) "$BASE_DIR/tools/scripts/mq-repos.py" "$@" ;;
-      esac
-      ;;
-    nickname-set|nick-set|nick)
-      if [[ -n "${1:-}" ]]; then
-        printf '%s\n' "$*" > "$HOME/.mqlaunch_nickname"
-        echo "Smeknamn sparat: $*"
-      else
-        echo "Nuvarande smeknamn: $(get_nickname)"
-        echo "Ändra: mqlaunch nickname-set <smeknamn>"
-      fi
-      ;;
-    doctor) "$BASE_DIR/tools/scripts/doctor.sh" "$@" ;;
-    selftest|self-test|self-check) run_self_check ;;
-    check|health) run_self_check ;;
-    bundle|debug-bundle|support) run_debug_bundle ;;
-    notes|changelog|release-notes) show_release_notes ;;
-    about|status) show_about_dashboard ;;
-    commands|index) show_command_index ;;
-    palette|fzf|search) run_command_palette ;;
-    dev-v1|git-v1)
-      legacy_alias_notice "mqlaunch $cmd" "mqlaunch dev"
-      open_dev_menu
-      ;;
-    tools) open_tools_menu ;;
-    docfunc|document-functions) MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc ;;
-    docwrite|document-functions-write|update-comments)
-      MQ_WORK_DIR="$PWD" "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite
-      ;;
-    tools-menu|toolsmenu|menu-tools|tools-v1|menu-tools-v1)
-      legacy_alias_notice "mqlaunch $cmd" "mqlaunch tools"
-      open_tools_menu
-      ;;
-    prompts|prompt-folder) open_ai_prompts_folder ;;
-    prompt-files|files) show_prompt_files ;;
-    edit|edit-mqlaunch) edit_mqlaunch ;;
-    backup-prompts|backup) backup_prompts ;;
-    backup-mqlaunch|backup-launcher) backup_mqlaunch ;;
-    base|macos-scripts) open_base_dir ;;
-    launchers|launcher-folder) open_launcher_folder ;;
-    guide|terminal-guide) open_terminal_guide ;;
-    netlaunch|net) open_net_menu ;;
-    atlas) mq_ai_run_atlas "$@" ;;
-    hal) mq_hal_run "$@" ;;
-    brain|note|sessions|decisions|reviews|learn|verified|systems|memory|stack|roadmap) mq_brain_run "$cmd" "$@" ;;
-    review-brain) _run_agent review repo "${2:-.}" --brain ;;
-    signal-brain) _run_agent signal --brain "${2:-.}" ;;
-    learn-promote|promote-pattern) _run_agent learn promote "${2:-}" --approve ;;
-    prompts) prompts_pick ;;
-    b2tui|b2) shift; PYTHONPATH="$BASE_DIR" python3 -m mqlaunch.b2_tui.main "$@" ;;
-    auto|one|decide|research|root|solve|pdebug|menu) safe_run_ai "$cmd" ;;
-    mc) "$BASE_DIR/tools/scripts/mission-control.sh" ;;
-    ghost) "$BASE_DIR/tools/scripts/network-ghost.sh" ;;
-    pulse) "$BASE_DIR/tools/scripts/pulse.sh" ;;
-    scan) "$BASE_DIR/tools/scripts/vault-scan.sh" ;;
-    reap) "$BASE_DIR/tools/scripts/overseer.sh" ;;
-    guard) "$BASE_DIR/tools/scripts/blackout.sh" ;;
-    help|-h|--help) show_help ;;
-    *)
-      if declare -f print_unknown_command_error >/dev/null; then
-        print_unknown_command_error "$cmd"
-      else
-        printf 'ERROR: Unknown command: %s\n' "$cmd" >&2
-        printf 'For AI help, run explicitly: mqlaunch ask "What does %s mean?"\n' \
-          "$cmd" >&2
-      fi
-      return 2
-      ;;
-  esac
 }
 
 # --- Entry --------------------------------------------------

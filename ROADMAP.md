@@ -286,8 +286,7 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
     make it worse for the human it is written for.
   * [x] command list — same contract as help.
   * [x] palette — routes through `dispatch_cli_command` now, so a palette entry
-    and a typed command are the same thing. `run_arg_command` has no callers
-    left; the freeze gate holds it at zero rather than at one.
+    and a typed command are the same thing.
   * [x] direct dispatch — `tests/command-registry-smoke.sh` (#81).
   * [x] docs index — `docs/COMMANDS.md` is the complete reference, so coverage
     is required in both directions.
@@ -296,14 +295,20 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
   product advertised and could not run — `tools`, `login`, `shortcuts`, `theme`,
   `guide`, `repo` — and 22 commands the reference never mentioned.
 
-* [x] Freeze the legacy vocabulary before generating consumers from the registry.
+* [x] Remove the second dispatcher.
 
-  * `run_arg_command` is compatibility-only and closed for extension, recorded in
-    `mqlaunch/lib/legacy-command-vocabulary.txt`.
-  * Held by `tests/legacy-vocabulary-freeze-smoke.sh`: exact match in both
-    directions, plus a check that the palette stays its only caller.
+  * `run_arg_command` was frozen against a baseline (#85), lost its last caller
+    when the palette was rerouted (#87), and was deleted along with the baseline
+    and its freeze gate (#88).
+  * `dispatch_cli_command` is now the only dispatcher, so the registry governs
+    the whole command surface rather than most of it.
+  * A second dispatcher reappearing fails
+    `tests/compat-path-delegation-smoke.sh`, which also stopped matching the
+    palette's prose and now anchors to the call.
   * `skills/mqlaunch-menu-template` no longer tells contributors to register new
     commands there.
+  * `tools/scripts/mqlaunch_desktop.sh` keeps its own copy. It is a separate
+    live entrypoint with its own dispatch, not a caller of this one.
 
 * [x] Test alias consistency.
 
