@@ -281,14 +281,21 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
 * [ ] Test command inventory consistency.
 
-  * help
-  * command list
-  * palette — the palette runs `run_arg_command`, not `dispatch_cli_command`,
-    and that second vocabulary accepts 93 words the registry never modelled.
-    Consistency here means the palette routing through the registry, not the
-    registry absorbing the legacy list.
-  * direct dispatch
-  * docs index
+  * [x] help — every advertised word must dispatch. Coverage is not required:
+    help is a curated quick index, and forcing all 73 commands into it would
+    make it worse for the human it is written for.
+  * [x] command list — same contract as help.
+  * [ ] palette — the palette runs `run_arg_command`, not `dispatch_cli_command`,
+    and that second vocabulary still accepts 81 words the registry never
+    modelled. Consistency here means the palette routing through the registry,
+    not the registry absorbing the legacy list.
+  * [x] direct dispatch — `tests/command-registry-smoke.sh` (#81).
+  * [x] docs index — `docs/COMMANDS.md` is the complete reference, so coverage
+    is required in both directions.
+
+  Held by `tests/registry-consumer-parity-smoke.sh`. It found six commands the
+  product advertised and could not run — `tools`, `login`, `shortcuts`, `theme`,
+  `guide`, `repo` — and 22 commands the reference never mentioned.
 
 * [x] Freeze the legacy vocabulary before generating consumers from the registry.
 
@@ -299,11 +306,14 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
   * `skills/mqlaunch-menu-template` no longer tells contributors to register new
     commands there.
 
-* [ ] Test alias consistency.
+* [x] Test alias consistency.
 
-  * No duplicate aliases.
-  * No alias points to multiple commands.
-  * Deprecated aliases are marked explicitly.
+  * [x] No duplicate aliases — `validate-command-registry.py` walks every name
+    and alias through one `seen_names` map, so a collision in either direction
+    fails. Fixture [4/11] in `command-registry-smoke.sh` proves it fires.
+  * [x] No alias points to multiple commands — same map.
+  * [ ] Deprecated aliases are marked explicitly — the registry has no
+    deprecation field yet. Open.
 
 * [ ] Test namespace coverage.
 

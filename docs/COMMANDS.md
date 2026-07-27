@@ -12,7 +12,11 @@ mqlaunch help               # command index (terminal)
 mqlaunch commands           # same as help
 mqlaunch demo               # guided interactive demo
 mqlaunch palette            # fuzzy command search (fzf)
+mqlaunch mqlaunch git       # self-referential prefix; re-dispatches the rest
 ```
+
+The `mqlaunch mqlaunch …` form exists so a pasted line that already carries the
+program name still runs.
 
 ---
 
@@ -70,7 +74,14 @@ mqlaunch shortcuts folders          # list shortcut folders
 
 ```bash
 mqlaunch git                        # open git menu
+mqlaunch git-log                    # fuzzy commit browser with diff preview
+mqlaunch git-branch                 # fuzzy branch switcher
+mqlaunch github                     # GitHub repo picker (search, clone, open)
 ```
+
+`git-log`, `git-branch` and `github` need `fzf`, and `github` also needs `gh`.
+Without a terminal they exit with a message rather than blocking on a picker
+nobody can answer.
 
 Supported actions inside the menu: status, diff risk, commit suggestion,
 safe push, pull with rebase, safe merge, open on GitHub, change repo path.
@@ -120,6 +131,7 @@ mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
 mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
+mqlaunch self-check                 # launcher self-check (lighter than selftest)
 ```
 
 JSON output shape:
@@ -322,6 +334,50 @@ mqlaunch mc             # advanced system dashboard
 mqlaunch system                     # open System menu
 mqlaunch system check               # system health check
 mqlaunch system time                # show date and time
+mqlaunch net                        # local network information
+```
+
+---
+
+## Fuzzy pickers
+
+All of these are `fzf` front-ends. They need a terminal; piped or redirected
+they print a message and exit rather than blocking.
+
+```bash
+mqlaunch kill-process               # pick a process and kill it
+mqlaunch kill-port 3000             # kill whatever is listening on a port
+mqlaunch snippets                   # pick and run a script from macos-scripts
+mqlaunch recent                     # pick from recently changed files
+```
+
+---
+
+## Documentation tooling
+
+```bash
+mqlaunch docfunc                    # document shell functions in the current directory
+mqlaunch docwrite                   # write the generated comments back into the sources
+```
+
+`docfunc` reports; `docwrite` edits files in place. Run `docfunc` first and read
+the output before letting `docwrite` touch anything.
+
+---
+
+## Brain bridge
+
+Local memory and review helpers. They route through `mq-agent`; `mqlaunch` owns
+no memory logic of its own.
+
+```bash
+mqlaunch brain                      # brain bridge entrypoint
+mqlaunch chat                       # local chat helper
+mqlaunch note                       # note verbs: sessions, decisions, reviews,
+                                    # learn, verified, systems
+mqlaunch review-brain               # brain-backed review through mq-agent
+mqlaunch signal-brain               # brain-backed signal report through mq-agent
+mqlaunch learn-promote              # promote a learned pattern through mq-agent
 ```
 
 ---
@@ -336,6 +392,8 @@ mqlaunch status --json              # machine-readable status, JSON only
 mqlaunch notes                      # show CHANGELOG
 mqlaunch repo                       # open repo root in Finder
 mqlaunch guide                      # open terminal guide
+mqlaunch apps                       # HAL terminal guide
+mqlaunch apps "how do I rename a branch"   # ask it a question
 ```
 
 `status --json` (and `about --json`) print exactly one JSON document to stdout —
@@ -366,7 +424,13 @@ mqlaunch theme                      # open Themes menu
 mqlaunch theme-macos                # apply macOS theme
 mqlaunch theme-reset                # reset to default theme
 mqlaunch bundle                     # create debug/support bundle
+mqlaunch workspace                  # save, list, show and restore workspace snapshots
+mqlaunch excalidraw                 # open the Excalidraw drawing workflow
+mqlaunch b2tui                      # B2 Atlas Prompt OS terminal interface
 ```
+
+`mqlaunch b2tui` and `mq b2` open the same surface; see
+[B2 Atlas Prompt OS](#b2-atlas-prompt-os) for the full verb list.
 
 ---
 

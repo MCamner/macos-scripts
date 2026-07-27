@@ -1468,6 +1468,110 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null
+    },
+    {
+      "name": "tools",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Open the tools menu",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "login",
+      "aliases": [
+        "boot",
+        "session"
+      ],
+      "namespace": null,
+      "summary": "Open the login / session menu",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "shortcuts",
+      "aliases": [
+        "shortcut",
+        "sc"
+      ],
+      "namespace": null,
+      "summary": "Open the macOS Shortcuts menu",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "theme",
+      "aliases": [
+        "themes"
+      ],
+      "namespace": null,
+      "summary": "Open the themes menu",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "guide",
+      "aliases": [
+        "terminal-guide"
+      ],
+      "namespace": null,
+      "summary": "Open the terminal guide",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
+      "name": "repo",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Open the repository in the browser",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
     }
   ]
 }
