@@ -30,9 +30,7 @@ port_listening() {
 wait_for_url() {
   local url="$1"
   local label="$2"
-  local i
-
-  for i in {1..45}; do
+  for _ in {1..45}; do
     if curl -fsS "$url" >/dev/null 2>&1; then
       printf 'OK: %s ready at %s\n' "$label" "$url"
       return 0

@@ -28,7 +28,7 @@ fi
 
 # Renders the performance panel view for terminal output.
 render_performance_panel() {
-  local width panel_color score perf_status color output warnings
+  local width panel_color score perf_status color output
   width="$(surface_terminal_width)"
   
   if [[ -t 1 ]]; then

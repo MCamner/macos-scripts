@@ -39,6 +39,9 @@ memory_insight() {
 
 # Coordinates memory pressure v4 behavior.
 memory_pressure_v4() {
+  # PAGEOUTS names the third field so the first two land in the right
+  # variables. Dropping it would make `read` append it to COMPRESSED_MB.
+  # shellcheck disable=SC2034
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
   $(vm_stat | awk '
     NR==1 {
@@ -91,10 +94,15 @@ combined_insight_v2() {
   echo
   section "COMBINED INSIGHT"
 
+  # CPU_PID names the first field so CPU and CPU_NAME line up with the awk
+  # output. The pid itself is not displayed.
+  # shellcheck disable=SC2034
   read CPU_PID CPU CPU_NAME <<< \
   $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
   CPU_NAME=$(basename "$CPU_NAME")
 
+  # Same positional role as CPU_PID above.
+  # shellcheck disable=SC2034
   read MEM_PID MEM MEM_RSS MEM_NAME <<< \
   $(ps -Ao pid,pmem,rss,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3, $4}')
   MEM_NAME=$(basename "$MEM_NAME")

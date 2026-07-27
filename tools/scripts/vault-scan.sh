@@ -8,7 +8,6 @@ NC='\033[0m'
 # Function for the "decoding" effect
 decode_text() {
     local text="$1"
-    local delay=0.02
     for ((i=0; i<${#text}; i++)); do
         # Print random characters before showing the real one
         for ((j=0; j<5; j++)); do

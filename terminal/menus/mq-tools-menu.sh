@@ -31,7 +31,6 @@ fi
 SYSTEM_CHECK="$BASE_DIR/tools/scripts/system-check.sh"
 DOCUMENT_FUNCTIONS="$BASE_DIR/tools/scripts/document-functions.sh"
 OLLAMA_DOCUMENT_REVIEW="$BASE_DIR/tools/scripts/ollama-document-review.py"
-MQ_MCP_REVIEW="$BASE_DIR/tools/scripts/mq-mcp-review.py"
 MQ_SKILLS="$BASE_DIR/tools/scripts/mq-skills.py"
 MQ_REPOS="$BASE_DIR/tools/scripts/mq-repos.py"
 MARKDOWNLINT="$BASE_DIR/tools/scripts/markdownlint.sh"
@@ -766,6 +765,10 @@ print_document_functions_menu() {
   local width panel_color
   width="$(surface_terminal_width)"
   panel_color="$(surface_panel_color)"
+  # The prompt-separator contract documented in
+  # .claude/templates/submenu-prompt-separator.sh: the panel renderer publishes
+  # the width it drew at, and the prompt reads it back.
+  # shellcheck disable=SC2034
   MQ_SURFACE_WIDTH="$width"
 
   clear_screen

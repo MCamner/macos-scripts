@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-SCRIPT_NAME="mqshortcuts"
-
 # Prints usage information.
 usage() {
   cat <<'EOF'
