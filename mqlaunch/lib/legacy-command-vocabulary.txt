@@ -6,7 +6,7 @@
 # mqlaunch/lib/command-registry.json, which governs dispatch_cli_command — the
 # function that answers when a word is typed at the shell. run_arg_command is a
 # second, older vocabulary that answers only when a word is chosen from the
-# command palette, and it accepts 90-odd words the registry has never modelled.
+# command palette, and it accepts dozens of words the registry has never modelled.
 #
 # The file is closed for extension. A new command belongs in the registry and in
 # dispatch_cli_command; adding one here would give it a name that works when

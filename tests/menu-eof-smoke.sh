@@ -40,9 +40,17 @@ echo "SMOKE: menus terminate without a terminal"
 #                    suite that runs a process killer to prove a guard works is
 #                    one regression away from killing something.
 #   b2tui            a Python TUI, not a shell menu.
+#   guide, repo      they call `open`, so running them opens a browser window on
+#                    whichever machine the suite happens to be on. Added to
+#                    dispatch alongside tools/login/shortcuts/theme, but their
+#                    termination cannot be asserted without a side effect.
 MENUS=(
   "workflows"
   "workspace"
+  "tools"
+  "login"
+  "shortcuts"
+  "theme"
   "repos"
   "system"
   "release"

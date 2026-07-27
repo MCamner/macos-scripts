@@ -830,6 +830,42 @@ dispatch_cli_command() {
       return 0
       ;;
 
+    # Six names `mqlaunch help` and docs/COMMANDS.md have always advertised, and
+    # that only ever worked when chosen from the palette — it dispatches through
+    # run_arg_command, which knows words this function does not (#85). Typed,
+    # they printed "Unknown command", which is the ambiguity v2.0.0 exists to
+    # remove. They route to the same functions the palette reaches, so this
+    # makes the promise true rather than adding a surface.
+    tools)
+      open_tools_menu
+      return 0
+      ;;
+
+    login|boot|session)
+      run_mqlogin "${@:2}"
+      return 0
+      ;;
+
+    shortcuts|shortcut|sc)
+      run_mqshortcuts "${@:2}"
+      return 0
+      ;;
+
+    theme|themes)
+      open_themes_menu
+      return 0
+      ;;
+
+    guide|terminal-guide)
+      open_terminal_guide
+      return 0
+      ;;
+
+    repo)
+      open_repo_browser
+      return 0
+      ;;
+
     net|network)
       show_network_info
       return 0

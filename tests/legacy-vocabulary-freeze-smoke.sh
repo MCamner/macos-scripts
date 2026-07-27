@@ -12,16 +12,21 @@ set -euo pipefail
 #   run_arg_command        answers when a word is chosen from the command
 #                          palette. Modelled by nothing, until this file.
 #
-# The gap is 93 words. `mqlaunch tools`, `login`, `shortcuts`, `guide` and
-# `repo` all work from the palette and print "Unknown command" when typed. That
-# is exactly the question the roadmap says a user should never have to ask:
-# "is this command shown in one place and missing from another?"
+# The gap was 93 words: names that work from the palette and print "Unknown
+# command" when typed. That is exactly the question the roadmap says a user
+# should never have to ask: "is this command shown in one place and missing from
+# another?"
 #
-# Closing the gap by teaching the registry all 93 would make the registry carry
-# a legacy vocabulary as if it were a product surface. Closing it by deleting
-# palette entries would leave run_arg_command unaddressed. So the decision is
-# neither: the vocabulary is compatibility-only and frozen at its current size.
-# New commands go through the registry. This gate holds the line.
+# Six of them were advertised by `mqlaunch help` and docs/COMMANDS.md, and those
+# moved into the registry and dispatch_cli_command — a help screen listing a
+# command that does not exist is a defect in the command. The rest are
+# unadvertised legacy names. Step 3 prints what is left.
+#
+# Absorbing the remainder the same way would make the registry carry a legacy
+# vocabulary as if it were a product surface. Deleting palette entries instead
+# would leave run_arg_command unaddressed. So neither: what is left is
+# compatibility-only and frozen at its current size. New commands go through the
+# registry. This gate holds the line.
 #
 # Exact match in both directions. Additions fail because the surface must not
 # grow; removals fail because a baseline that silently tolerates drift is not a
@@ -113,11 +118,11 @@ PY
 
 echo "[4/5] the frozen vocabulary is reachable only through the palette"
 # The freeze is about size, not reach. If a menu starts routing choices through
-# run_arg_command, those 93 words become reachable from a new surface and the
+# run_arg_command, the frozen words become reachable from a new surface and the
 # boundary has moved even though the word list did not.
 callers="$(grep -rn 'run_arg_command' --include="*.sh" "$ROOT/terminal" "$ROOT/mqlaunch" "$ROOT/ui" \
   | grep -v 'run_arg_command() {' \
-  | grep -v ':#' \
+  | grep -vE ':[0-9]+:[[:space:]]*#' \
   || true)"
 unexpected="$(printf '%s\n' "$callers" | grep -v 'mqlaunch.sh:.*run_arg_command \${=selected_cmd}' | grep . || true)"
 if [[ -n "$unexpected" ]]; then
