@@ -6,6 +6,38 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+* `run_arg_command`, the second command dispatcher, and the freeze that held it.
+  It answered the command palette and accepted 93 words the registry never
+  modelled — names that worked when chosen and printed `Unknown command` when
+  typed. Rerouting the palette through `dispatch_cli_command` left it with no
+  callers, so this deletes 148 lines of unreachable launcher, the
+  `mqlaunch/lib/legacy-command-vocabulary.txt` baseline that recorded its words,
+  and `tests/legacy-vocabulary-freeze-smoke.sh`, which existed to hold a surface
+  that no longer exists. `legacy_alias_notice` goes with it: its only callers
+  were inside the deleted function. `dispatch_cli_command` is now the only
+  dispatcher, so the registry governs the whole command surface rather than most
+  of it.
+
+  No command changed behaviour — every word in the deleted function had already
+  stopped dispatching. What did change is what the gates prove.
+  `tests/compat-path-delegation-smoke.sh` was matching the word
+  `run_arg_command` in a comment, so it would have stayed green after the call
+  it checks was deleted; it now anchors to the call and fails if a second
+  dispatcher reappears anywhere under `terminal/`, `mqlaunch/` or `ui/`. Four
+  assertions in `tools/scripts/test-mqlaunch.sh` were pointed at case labels
+  inside the dead function: the performance, dev and tools routes moved to
+  `mqlaunch-command-mode.sh`, which is the file that can now be wrong about
+  them, and `restart` moved to `terminal/menus/mq-main-menu.sh`, where it is a
+  menu key rather than a command word. The check for the legacy Tools aliases —
+  `tools-menu`, `toolsmenu`, `menu-tools`, `tools-v1`, `menu-tools-v1` — is gone
+  with them; nothing advertises them, and asserting the strings were still
+  present only proved they were remembered.
+
+  `tools/scripts/mqlaunch_desktop.sh` keeps its own copy. It is a separate live
+  entrypoint that dispatches for itself, not a caller of this one.
+
 ### Added
 
 * Subcommands in the command registry. The nine namespaces that dispatch a

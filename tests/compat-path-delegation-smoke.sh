@@ -4,13 +4,14 @@
 # independent runtimes. Closes the P1 "Single runtime authority" exit gate:
 # compatibility paths are tested as delegation paths, not parallel runtimes.
 #
-#   1. Direct command path — run_arg_command dispatches; delegated commands
-#      preserve the backend exit status (deep behavioural coverage lives in
-#      delegated-exit-code-smoke.sh; asserted structurally here).
+#   1. Direct command path — dispatch_cli_command is the only dispatcher;
+#      delegated commands preserve the backend exit status (deep behavioural
+#      coverage lives in delegated-exit-code-smoke.sh; asserted structurally).
 #   2. Menu path — a live menu routes to the owning repo, not inline business
 #      logic (deep routing coverage lives in mq-agent-routing-smoke.sh).
 #   3. Palette path — run_command_palette forwards the selection to
-#      run_arg_command and guards non-interactive use; no independent runtime.
+#      dispatch_cli_command and guards non-interactive use; no independent
+#      runtime.
 #   4. Legacy shim path — the v1 bridges forward to mqlaunch-v1 as a subprocess
 #      and preserve its exit status, adding no new command behaviour.
 set -euo pipefail
@@ -30,8 +31,24 @@ test -f "$TOOLS_BRIDGE"
 test -f "$PERF_BRIDGE"
 
 # --- Path 1: direct command dispatch --------------------------------------
-echo "[2/8] direct: the single arg dispatcher run_arg_command is defined"
-grep -qE '^run_arg_command\(\) \{' "$LAUNCHER"
+echo "[2/8] direct: dispatch_cli_command is the only dispatcher on this path"
+grep -qE '^dispatch_cli_command\(\) \{' "$COMMAND_MODE"
+
+# mqlaunch had a second dispatcher, `run_arg_command`, which answered the
+# palette and knew 93 words the registry never modelled. Rerouting the palette
+# left it unreachable (#87) and it was deleted (#88). Its absence is what makes
+# the registry the whole command surface rather than most of it, so it is
+# asserted here rather than left to be quietly reintroduced. Comments may name
+# it — the history is worth keeping — so only a definition or a call counts.
+second_dispatcher="$(grep -rn 'run_arg_command' --include="*.sh" \
+  "$ROOT/terminal" "$ROOT/mqlaunch" "$ROOT/ui" \
+  | grep -vE ':[0-9]+:[[:space:]]*#' || true)"
+if [[ -n "$second_dispatcher" ]]; then
+  echo "FAIL: the second dispatcher is back:" >&2
+  printf '%s\n' "$second_dispatcher" >&2
+  echo "Commands belong in command-registry.json and dispatch_cli_command." >&2
+  exit 1
+fi
 
 echo "[3/8] direct: delegated commands preserve the backend exit status"
 # The dispatcher forwards to owning tools and returns their status verbatim.
@@ -50,7 +67,10 @@ echo "[5/8] palette: run_command_palette forwards the selection to the dispatche
 palette_body="$(awk '/^run_command_palette\(\) \{/{f=1} f{print} f&&/^\}/{exit}' "$LAUNCHER")"
 test -n "$palette_body"
 # Non-main selections are handed back to the authority dispatcher, not run inline.
-grep -q 'run_arg_command' <<<"$palette_body"
+# Anchored to the call, not the name: the comment above it explains what the
+# palette used to route through, and a gate that matched prose would stay green
+# after the call was deleted.
+grep -q 'dispatch_cli_command \${=selected_cmd}' <<<"$palette_body"
 echo "[6/8] palette: guards non-interactive use instead of spawning a runtime"
 grep -q 'MQ_NO_TUI' <<<"$palette_body"
 

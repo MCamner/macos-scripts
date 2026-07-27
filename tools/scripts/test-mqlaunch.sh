@@ -3,6 +3,8 @@ set -euo pipefail
 
 PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 LEGACY="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
+COMMAND_MODE="$PROJECT_ROOT/terminal/launchers/mqlaunch-command-mode.sh"
+MAIN_MENU="$PROJECT_ROOT/terminal/menus/mq-main-menu.sh"
 V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 TOOLS_BRIDGE="$PROJECT_ROOT/terminal/bridges/tools-bridge.sh"
 DEV_BRIDGE="$PROJECT_ROOT/terminal/bridges/dev-bridge.sh"
@@ -65,12 +67,28 @@ assert_file "$RELEASE_SCRIPT" "Release script"
 assert_cmd_ok "Legacy launcher help works" zsh "$LEGACY" help
 assert_cmd_ok "V1 launcher help works" bash "$V1" help
 
-assert_grep 'perf\|performance\).*open_performance_menu' "$LEGACY" "Performance route exists in launcher"
-assert_grep 'dev\).*open_dev_menu' "$LEGACY" "Dev route exists in launcher"
+# These routes moved: they used to be asserted against mqlaunch.sh because that
+# is where the second dispatcher lived, and it was deleted in #88. Command words
+# are dispatched by mqlaunch-command-mode.sh, so that is the file that can be
+# wrong about them.
+assert_grep '(perf|performance)\)' "$COMMAND_MODE" "Performance route exists in the dispatcher"
+assert_grep 'open_performance_menu' "$COMMAND_MODE" "Performance route opens the menu"
+assert_grep 'open_dev_menu' "$COMMAND_MODE" "Dev route exists in the dispatcher"
 assert_not_grep 'mqlaunch-v1' "$DEV_BRIDGE" "Dev bridge is decommissioned from v1"
-assert_grep 'tools\) open_tools_menu' "$LEGACY" "Tools route exists in launcher"
-assert_grep 'restart\|reload\|relaunch\).*restart_mqlaunch' "$LEGACY" "mqlaunch restart route exists"
-assert_grep 'tools-menu\|toolsmenu\|menu-tools\|tools-v1\|menu-tools-v1\)' "$LEGACY" "Legacy Tools aliases still exist"
+assert_grep 'open_tools_menu' "$COMMAND_MODE" "Tools route exists in the dispatcher"
+
+# The check for the legacy Tools aliases — tools-menu, toolsmenu, menu-tools,
+# tools-v1, menu-tools-v1 — is gone with them. They only ever existed as case
+# labels in the deleted function, so they stopped dispatching when it lost its
+# last caller (#87) and typing one has printed "Unknown command" since. Nothing
+# advertises them: not the registry, not help, not docs/COMMANDS.md. Asserting
+# that the strings are still present would prove the aliases are remembered, not
+# that they work.
+
+# `restart` is a main-menu key, not a command word: it never dispatched from the
+# shell — typing it printed "Unknown command" while the deleted function held a
+# case label for it. The menu is where the route is real.
+assert_grep 'restart[|]reload[|]relaunch.*restart_mqlaunch' "$MAIN_MENU" "mqlaunch restart route exists"
 assert_grep 'terminal/launchers/gitlaunch\.sh' "$PROJECT_ROOT/mqlaunch/lib/git-menus.sh" "Git route uses gitlaunch"
 assert_grep 'RELEASE_SCRIPT="\$RELEASE_REPO/release\.sh"' "$RELEASE_MENU" "Release menu points at root release script"
 

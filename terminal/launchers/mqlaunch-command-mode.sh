@@ -831,8 +831,8 @@ dispatch_cli_command() {
       ;;
 
     # Six names `mqlaunch help` and docs/COMMANDS.md have always advertised, and
-    # that only ever worked when chosen from the palette — it dispatches through
-    # run_arg_command, which knows words this function does not (#85). Typed,
+    # that only ever worked when chosen from the palette — it dispatched through
+    # a second, older function that knew words this one did not (#85). Typed,
     # they printed "Unknown command", which is the ambiguity v2.0.0 exists to
     # remove. They route to the same functions the palette reaches, so this
     # makes the promise true rather than adding a surface.

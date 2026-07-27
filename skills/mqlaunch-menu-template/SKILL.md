@@ -219,10 +219,9 @@ detta i case-satsen:
   ;;
 ```
 
-`dispatch_cli_command`, inte `run_arg_command`. Den senare är en frusen
-legacy-vokabulär som bara kommandopaletten anropar — se
-`docs/RUNTIME_AUTHORITY.md`. Ett nytt anrop till den fäller
-`tests/legacy-vocabulary-freeze-smoke.sh`.
+`dispatch_cli_command` är den enda dispatchern. Den tidigare andra vägen,
+`run_arg_command`, är borttagen — se `docs/RUNTIME_AUTHORITY.md`. Ett kommando
+som inte går genom registret fäller `tests/compat-path-delegation-smoke.sh`.
 
 ---
 
@@ -252,8 +251,8 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-NAMN-menu.sh" ]]; then
 fi
 ```
 
-**Argument-dispatch** — i registret och i `dispatch_cli_command`, inte i
-`run_arg_command`. Lägg till posten i `mqlaunch/lib/command-registry.json`:
+**Argument-dispatch** — i registret och i `dispatch_cli_command`. Lägg till
+posten i `mqlaunch/lib/command-registry.json`:
 
 ```json
 { "name": "namn", "aliases": ["namn-menu"], "summary": "Öppna NAMN-menyn",
