@@ -33,6 +33,15 @@ OUTPUT_MODES = {"human", "json", "interactive"}
 # distinction a consumer needs before publishing the list as complete.
 UNKNOWN_SUBCOMMAND = {"reject", "forward"}
 
+# A deprecated alias still dispatches — that is the point of deprecating rather
+# than deleting — so it must say what to use instead. Without `replacement` the
+# registry records that a word is on its way out and leaves the person who typed
+# it with nowhere to go.
+DEPRECATED_ALIAS_FIELDS = {
+    "name": str,
+    "replacement": str,
+}
+
 REQUIRED_FIELDS = {
     "name": str,
     "aliases": list,
@@ -309,6 +318,54 @@ def check_subcommands(
             )
 
 
+def check_deprecated_aliases(name: str, entry: dict) -> list[dict]:
+    """Validate an entry's `deprecated_aliases` and return the well-formed ones.
+
+    The field is optional and modelled per alias, not per command: retiring an
+    old spelling says nothing about the command it points at. A flag on the
+    command would say the opposite, and there is no way to write `tools-menu is
+    going away but tools is not` with one.
+
+    Malformed entries are dropped from the returned list so the caller does not
+    have to re-check them. They have already been reported.
+    """
+    raw = entry.get("deprecated_aliases", [])
+    if not isinstance(raw, list):
+        err(f"{name}: field 'deprecated_aliases' must be an array")
+        return []
+
+    valid = []
+    for dep in raw:
+        if not isinstance(dep, dict):
+            err(f"{name}: each deprecated alias must be an object, got {type(dep).__name__}")
+            continue
+
+        label = dep.get("name")
+        label = f"deprecated alias {label!r}" if isinstance(label, str) else "a deprecated alias"
+
+        broken = False
+        for field, expected in DEPRECATED_ALIAS_FIELDS.items():
+            if field not in dep:
+                err(f"{name}: {label}: missing required field {field!r}")
+                broken = True
+            elif not isinstance(dep[field], expected):
+                err(f"{name}: {label}: field {field!r} has wrong type")
+                broken = True
+            elif not dep[field].strip():
+                err(f"{name}: {label}: field {field!r} is empty")
+                broken = True
+        if broken:
+            continue
+
+        if dep["replacement"] == dep["name"]:
+            err(f"{name}: {label}: replacement is the deprecated word itself")
+            continue
+
+        valid.append(dep)
+
+    return valid
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     # An explicit path lets the smoke test point the validator at a deliberately
@@ -333,6 +390,15 @@ def main(argv: list[str] | None = None) -> int:
         fail("registry has no commands array")
 
     seen_names: dict[str, str] = {}
+    # Every word that dispatches is in seen_names. These two split it by whether
+    # a consumer may advertise the word: `active_words` is the surface help and
+    # the palette publish, `deprecated_words` is what still works but must not be
+    # offered. Replacements are resolved against the active set once every entry
+    # has been read, so a deprecation may point forward to a command declared
+    # later in the file.
+    active_words: set[str] = set()
+    deprecated_words: dict[str, str] = {}
+    replacements: list[tuple[str, str, str]] = []
 
     for entry in commands:
         name = entry.get("name", "<unnamed>")
@@ -365,7 +431,10 @@ def main(argv: list[str] | None = None) -> int:
         if safety == "delegating" and not delegates:
             err(f"{name}: safety is 'delegating' but delegates_to is empty")
 
+        deprecated = check_deprecated_aliases(name, entry)
+
         for candidate in [name, *entry.get("aliases", [])]:
+            active_words.add(candidate)
             if candidate in seen_names:
                 err(
                     f"duplicate command name {candidate!r}: "
@@ -373,6 +442,44 @@ def main(argv: list[str] | None = None) -> int:
                 )
             else:
                 seen_names[candidate] = name
+
+        for dep in deprecated:
+            word = dep["name"]
+            # Checked against this entry's own aliases before the global map, so
+            # the contradiction gets named for what it is. The duplicate-name
+            # error below would fire too, but it describes a collision between
+            # two commands, which is a different mistake.
+            if word in entry.get("aliases", []):
+                err(
+                    f"{name}: {word!r} is listed as both an active alias and a "
+                    f"deprecated one — a consumer cannot tell whether to "
+                    f"advertise it"
+                )
+            if word in seen_names:
+                err(
+                    f"duplicate command name {word!r}: "
+                    f"claimed by both {seen_names[word]!r} and {name!r}"
+                )
+            else:
+                seen_names[word] = name
+            deprecated_words[word] = name
+            replacements.append((name, word, dep["replacement"]))
+
+    # Resolved after the loop so a deprecation can point at a command declared
+    # further down the file. The replacement must be a word a consumer is
+    # allowed to advertise: pointing at another deprecated alias would hand the
+    # user a second word that is also on its way out.
+    for owner_name, word, replacement in replacements:
+        if replacement in deprecated_words:
+            err(
+                f"{owner_name}: deprecated alias {word!r}: replacement "
+                f"{replacement!r} is itself deprecated"
+            )
+        elif replacement not in active_words:
+            err(
+                f"{owner_name}: deprecated alias {word!r}: replacement "
+                f"{replacement!r} is not an active command name or alias"
+            )
 
     # --- parity with the dispatcher -------------------------------------------
     branches, subcases = parse_dispatch()
@@ -410,10 +517,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     subcommand_count = sum(len(c.get("subcommands", [])) for c in commands)
+    deprecated_note = (
+        f", {len(deprecated_words)} deprecated" if deprecated_words else ""
+    )
     print(
-        f"OK: {len(commands)} commands, {len(seen_names)} names, "
-        f"{subcommand_count} subcommands in {len(subcases)} namespaces, "
-        f"registry and dispatch agree"
+        f"OK: {len(commands)} commands, {len(seen_names)} names"
+        f"{deprecated_note}, {subcommand_count} subcommands in "
+        f"{len(subcases)} namespaces, registry and dispatch agree"
     )
     return 0
 

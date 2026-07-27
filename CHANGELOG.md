@@ -6,6 +6,43 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `deprecated_aliases` in the command registry. An alias can outlive the reason
+  it was added: deleting it breaks whoever still types it, and leaving it in
+  `aliases` tells every consumer it is a current name. The field is the third
+  state — still dispatched, no longer part of the surface a consumer may
+  advertise.
+
+  It is metadata on the alias, not a flag on the command. Retiring an old
+  spelling says nothing about the command it points at, and `deprecated: true`
+  on the entry could not express the difference. Keeping it out of `aliases`
+  also makes the "not advertised" rule structural rather than enforced: a
+  consumer building its surface from `aliases` excludes it without knowing the
+  field exists.
+
+  `validate-command-registry.py` enforces four rules — a deprecated alias must
+  name a `replacement`; that replacement must be an active command name or alias
+  and must not itself be deprecated; a word must not be listed as both active
+  and deprecated; one word belongs to exactly one command. A deprecated word is
+  still dispatched, so it stays subject to registry-versus-dispatch parity.
+  `tests/registry-consumer-parity-smoke.sh` carries the consumer half: neither
+  `mqlaunch help` nor the palette may offer a deprecated word, while
+  `docs/COMMANDS.md` may still document one — a reference that records the old
+  spelling is doing its job.
+
+  Five fixtures, each asserting the reason and not merely a non-zero exit: a
+  well-formed deprecation still validates, a missing replacement fails, a
+  replacement nothing dispatches fails, a word that is active and deprecated at
+  once fails, and a deprecated word two commands claim fails. The consumer
+  fixture is built from a word `mqlaunch help` actually prints, so it raises
+  rather than quietly testing nothing if help stops advertising aliases.
+
+  Nothing in the registry is deprecated today. The words that would have
+  qualified — `tools-menu`, `dev-v1`, `gitlaunch` — lived in the second
+  dispatcher and went with it. The rules exist so the first real deprecation is
+  stated rather than remembered.
+
 ### Removed
 
 * `run_arg_command`, the second command dispatcher, and the freeze that held it.

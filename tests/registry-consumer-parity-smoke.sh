@@ -132,8 +132,18 @@ def advertised_words(path):
 def main():
     registry = json.load(open(sys.argv[1], encoding="utf-8"))
     commands = registry["commands"]
+    # Two surfaces, because a deprecated alias is dispatchable but is not part of
+    # what a consumer may promote. `surface` drives coverage — a command counts
+    # as documented only under a name it is not retiring — while `known` is every
+    # word that resolves, so documenting a deprecation is not read as a ghost.
     surface = {c["name"]: {c["name"], *c.get("aliases", [])} for c in commands}
-    known = set().union(*surface.values())
+    deprecated = {
+        d["name"]: d.get("replacement", c["name"])
+        for c in commands
+        for d in c.get("deprecated_aliases", [])
+        if isinstance(d, dict) and "name" in d
+    }
+    known = set().union(*surface.values()) | set(deprecated)
 
     docs = documented_words(sys.argv[2])
     help_out = advertised_words(sys.argv[3])
@@ -165,6 +175,17 @@ def main():
         failures.append(
             f"advertised by `mqlaunch help` but not dispatchable "
             f"({len(advertised_ghosts)}): " + " ".join(advertised_ghosts))
+
+    # Deprecating a word and then advertising it is the contradiction the field
+    # exists to prevent. The registry says stop using this; help and the palette
+    # would be telling the user it is the way in. Both must offer the
+    # replacement instead — the word keeps working either way.
+    for label, offered in (("`mqlaunch help`", help_out), ("the command palette", palette)):
+        promoted = sorted(offered & set(deprecated))
+        if promoted:
+            failures.append(
+                f"deprecated but advertised by {label} ({len(promoted)}): "
+                + " ".join(f"{w} (use {deprecated[w]})" for w in promoted))
 
     if failures:
         for line in failures:
@@ -237,12 +258,14 @@ else:
 PY
 
 echo "[5/5] the comparison rejects a consumer that drifts"
-# A gate that has never failed is a comment. One fixture per consumer: a command
-# the docs do not mention, a documented word nothing dispatches, and a palette
-# entry the registry does not know.
+# A gate that has never failed is a comment. One fixture per consumer — a command
+# the docs do not mention, a documented word nothing dispatches, a palette entry
+# the registry does not know — plus one for the rule that spans them: a word the
+# registry retires while a consumer still advertises it.
 python3 - "$REGISTRY" "$DOCS" "$LAUNCHER" "$run_dir" <<'PY'
 import json
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -280,18 +303,52 @@ fixture_launcher.write_text(
 checker = str(run_dir / "consumers.py")
 help_txt = str(run_dir / "help.txt")
 
-for label, args in (
+# 4. A word the registry retires while help still offers it. Built from a word
+# help actually prints, so the fixture cannot go stale silently: if help stops
+# advertising any alias, this raises instead of quietly testing nothing.
+help_words = set(re.findall(r"^ {2}mqlaunch\s+([a-z][a-z0-9-]*)",
+                            pathlib.Path(help_txt).read_text(encoding="utf-8"),
+                            re.M))
+retired = dict(registry)
+retired["commands"] = [dict(c) for c in registry["commands"]]
+for command in retired["commands"]:
+    hit = next((a for a in command.get("aliases", []) if a in help_words), None)
+    if hit:
+        command["aliases"] = [a for a in command["aliases"] if a != hit]
+        command["deprecated_aliases"] = [
+            {"name": hit, "replacement": command["name"]}]
+        break
+else:
+    sys.exit("`mqlaunch help` advertises no alias — nothing to retire in fixture 4")
+fixture_deprecated = run_dir / "registry-deprecated.json"
+fixture_deprecated.write_text(json.dumps(retired), encoding="utf-8")
+
+for label, args, reason in (
     ("an undocumented command",
-     [checker, str(fixture_registry), docs_path, help_txt, launcher_path]),
+     [checker, str(fixture_registry), docs_path, help_txt, launcher_path],
+     "neither name nor alias in docs/COMMANDS.md"),
     ("a documented ghost",
-     [checker, registry_path, str(fixture_docs), help_txt, launcher_path]),
+     [checker, registry_path, str(fixture_docs), help_txt, launcher_path],
+     "documented but not dispatchable"),
     ("a palette entry nothing dispatches",
-     [checker, registry_path, docs_path, help_txt, str(fixture_launcher)]),
+     [checker, registry_path, docs_path, help_txt, str(fixture_launcher)],
+     "offered by the command palette but not dispatchable"),
+    # Retiring the alias also leaves its command documented under a word that is
+    # no longer active, so this fixture reports two problems. The reason check is
+    # what makes it prove the deprecation rule rather than the coverage one.
+    ("a deprecated word help still advertises",
+     [checker, str(fixture_deprecated), docs_path, help_txt, launcher_path],
+     "deprecated but advertised by `mqlaunch help`"),
 ):
     result = subprocess.run([sys.executable, *args], capture_output=True)
     if result.returncode == 0:
         sys.exit(f"{label} did not fail the comparison")
-print("  ok: all three consumers are checked, and each drift is detected")
+    # Exit status alone is not proof: a crashed checker is also non-zero.
+    if reason not in result.stderr.decode():
+        sys.exit(f"{label} failed for the wrong reason:\n"
+                 + result.stderr.decode())
+print("  ok: all three consumers are checked, and each of the four drifts "
+      "is detected for its own reason")
 PY
 
 bash -n "$0"
