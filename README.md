@@ -206,6 +206,7 @@ mqlaunch hal context             # show mqobsidian context-pack status
 mqlaunch obsidian status         # read-only mqobsidian consumer status
 mqlaunch obsidian inbox          # read-only memory inbox listing
 mqlaunch obsidian views          # open a manifest-defined mqobsidian view
+mqlaunch obsidian regenerate-views # option 13 handler; planned until producer exists
 mqlaunch obsidian promote --dry-run # delegate promotion preview to mq-agent
 mqlaunch hal brief               # compact repo status brief
 mqlaunch hal release-brief       # release readiness brief

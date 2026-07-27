@@ -22,9 +22,9 @@ grep -q "mqobsidian and mq-agent own memory, context-pack, and learn logic" "$ME
 
 echo "[4/6] triage is read-only and explicitly review-gated"
 grep -q "mq_obsidian_triage_learning_inbox()" "$MENU"
-grep -q "Learning inbox triage is review-gated" "$MENU"
-grep -q "No promote/reject action is run from mqlaunch" "$MENU"
-grep -q "mq_obsidian_show_inbox" "$MENU"
+grep -q "review gated" "$MENU"
+grep -q "Read-only inbox inspection. No promote/reject action runs here." "$MENU"
+grep -q "mq-agent must own" "$MENU"
 
 echo "[5/6] menu contains no promotion or rejection command routes"
 if grep -Eq '(^|[[:space:];|&])(mq-agent|mqlaunch|python3|bash|zsh)[[:space:]].*(promote|promotion|reject|learn[[:space:]]+promote|promote-from-review|resolve-supersede)' "$MENU"; then
@@ -38,6 +38,6 @@ fi
 
 echo "[6/6] docs and roadmap keep promotion outside mqlaunch"
 grep -q "No writes to the vault. No scoring, promotion/downgrade, inbox or feedback-loop" "$DOC"
-grep -q "Add/verify tests that MQ Obsidian menu actions do not promote memory" "$ROADMAP"
+grep -q "Do not implement memory promotion in shell." "$ROADMAP"
 
 echo "OK: MQ Obsidian menu no-promotion smoke test passed"

@@ -199,16 +199,29 @@ mq_obsidian_run() {
   (cd "$MQ_OBSIDIAN_DIR" && "$@")
 }
 
+# Resolves mqobsidian's Python, preferring its isolated repo environment.
+mq_obsidian_python() {
+  if [[ -x "$MQ_OBSIDIAN_DIR/.venv/bin/python3" ]]; then
+    printf '%s\n' "$MQ_OBSIDIAN_DIR/.venv/bin/python3"
+  else
+    command -v python3
+  fi
+}
+
 # Runs public-safe mqobsidian checks.
 mq_obsidian_public_safe_checks() {
-  mq_obsidian_run python3 scripts/validate-export.py || return
-  mq_obsidian_run python3 scripts/check-sensitive-content.py || return
-  mq_obsidian_run python3 scripts/check-token-budget.py
+  local python
+  python="$(mq_obsidian_python)" || return
+  mq_obsidian_run "$python" scripts/validate-export.py || return
+  mq_obsidian_run "$python" scripts/check-sensitive-content.py || return
+  mq_obsidian_run "$python" scripts/check-token-budget.py
 }
 
 # Runs token budget check.
 mq_obsidian_token_budget() {
-  mq_obsidian_run python3 scripts/check-token-budget.py
+  local python
+  python="$(mq_obsidian_python)" || return
+  mq_obsidian_run "$python" scripts/check-token-budget.py
 }
 
 # Runs a compact mqobsidian doctor.
@@ -231,7 +244,7 @@ mq_obsidian_doctor() {
 
 # Prompts for and generates a context task pack.
 mq_obsidian_generate_task_pack() {
-  local task repo target out
+  local task repo target out python
 
   if command -v print_header >/dev/null 2>&1; then
     print_header
@@ -253,7 +266,8 @@ mq_obsidian_generate_task_pack() {
   out="$MQ_OBSIDIAN_TASK_PACK"
   mkdir -p "$(dirname "$out")"
   printf "\n"
-  mq_obsidian_run python3 scripts/generate-context-pack.py --task "$task" --repo "$repo" --target "$target" --out "$out"
+  python="$(mq_obsidian_python)" || return
+  mq_obsidian_run "$python" scripts/generate-context-pack.py --task "$task" --repo "$repo" --target "$target" --out "$out"
   printf "\nWrote: %s\n" "$out"
   _mq_obsidian_pause_enter
 }
@@ -265,13 +279,16 @@ mq_obsidian_open_latest_task_pack() {
 
 # Exports repo context when a supported script exists.
 mq_obsidian_export_repo_context() {
+  local python
+
   if command -v print_header >/dev/null 2>&1; then
     print_header
   fi
 
   printf "\nExport repo context\n"
   if [[ -x "$MQ_OBSIDIAN_DIR/scripts/export-repo-context.py" || -f "$MQ_OBSIDIAN_DIR/scripts/export-repo-context.py" ]]; then
-    mq_obsidian_run python3 scripts/export-repo-context.py
+    python="$(mq_obsidian_python)" || return
+    mq_obsidian_run "$python" scripts/export-repo-context.py
   else
     printf "No export script found yet. Next route should be mq-agent context pack once wired.\n"
     printf "Current MVP command:\n"
@@ -293,20 +310,61 @@ mq_obsidian_show_inbox() {
 
 # Shows learning inbox triage status without mutating memory.
 mq_obsidian_triage_learning_inbox() {
-  printf "Learning inbox triage is review-gated.\n\n"
+  local separator
+  separator="────────────────────────────────────────────────────────────"
+
+  printf "%s\n" "$separator"
+  printf " mqlaunch · Option 12 · Learning inbox triage\n"
+  printf "%s\n\n" "$separator"
+  printf "Status\n"
+  printf "  review gated\n\n"
+  printf "Scope\n"
+  printf "  Read-only inbox inspection. No promote/reject action runs here.\n\n"
+  printf "Memory inbox\n"
+  printf "  %s/inbox\n\n" "$MQ_OBSIDIAN_DIR"
+  printf "Inbox files\n"
   if [[ -d "$MQ_OBSIDIAN_DIR/inbox" ]]; then
-    mq_obsidian_show_inbox
+    find "$MQ_OBSIDIAN_DIR/inbox" -maxdepth 2 -type f |
+      sed "s#^$MQ_OBSIDIAN_DIR/##" |
+      sort |
+      awk '{ printf "%d. %s\n", NR, $0 }'
+  else
+    printf "  unavailable\n"
   fi
-  printf "\nNo promote/reject action is run from mqlaunch until mq-agent owns that flow.\n"
+  printf "\nWhy this is gated\n"
+  printf "  mqlaunch may list learning inbox items, but mq-agent must own\n"
+  printf "  promotion, rejection, and review decisions.\n\n"
+  printf "Available here\n"
+  printf "  Enter  return to menu\n"
+  printf "  x      exit mqlaunch\n\n"
+  printf "Next owner\n"
+  printf "  mq-agent\n"
 }
 
 # Regenerates memory views when a supported script exists.
 mq_obsidian_regenerate_views() {
+  local python
+
   if [[ -x "$MQ_OBSIDIAN_DIR/scripts/regenerate-memory-views.py" || -f "$MQ_OBSIDIAN_DIR/scripts/regenerate-memory-views.py" ]]; then
-    mq_obsidian_run python3 scripts/regenerate-memory-views.py
+    python="$(mq_obsidian_python)" || return
+    mq_obsidian_run "$python" scripts/regenerate-memory-views.py
   else
-    printf "No regenerate-memory-views script found yet.\n"
-    printf "Expected future owner: mqobsidian script or mq-agent orchestration.\n"
+    printf "────────────────────────────────────────────────────────────\n"
+    printf " mqlaunch · Option 13 · Regenerate memory views\n"
+    printf "────────────────────────────────────────────────────────────\n\n"
+    printf "Status\n"
+    printf "  not implemented yet\n\n"
+    printf "Current state\n"
+    printf "  No regenerate-memory-views script is registered.\n\n"
+    printf "Expected owner\n"
+    printf "  mq-agent orchestration\n\n"
+    printf "Local producer\n"
+    printf "  mqobsidian regenerate-memory-views script\n\n"
+    printf "mqlaunch role\n"
+    printf "  menu entry and read-only status only\n\n"
+    printf "Available here\n"
+    printf "  Enter  return to menu\n"
+    printf "  x      exit mqlaunch\n"
   fi
 }
 
