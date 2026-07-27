@@ -39,16 +39,9 @@ print_status_json() {
 
   [[ -f "$version_file" ]] && version="$(head -n 1 "$version_file")"
 
-  # "dirty" must mean a dirty worktree, not "git is missing" or "not a repo" —
-  # a machine consumer cannot tell those apart from the dashboard's wording.
-  if command -v git >/dev/null 2>&1 &&
-    git -C "$BASE_DIR" rev-parse --git-dir >/dev/null 2>&1; then
-    if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
-      repo_state="clean"
-    else
-      repo_state="dirty"
-    fi
-  fi
+  # Derived by mq_repo_state so this agrees with the dashboard and with
+  # `mqlaunch git` (#66). `dirty` includes untracked files.
+  repo_state="$(mq_repo_state "$BASE_DIR")"
 
   if [[ -d "$bundle_dir" ]]; then
     latest_bundle="$(ls -1t "$bundle_dir" 2>/dev/null | head -n 1)"

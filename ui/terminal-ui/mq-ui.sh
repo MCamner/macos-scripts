@@ -173,6 +173,38 @@ mq_git_status_snapshot() {
     "$staged" "$unstaged" "$untracked" "$changes" "$state" "$severity" "$next_action"
 }
 
+# Returns the repo_state token reported by `mqlaunch status`, the dashboard and
+# `mqlaunch version`: clean | dirty | not-a-git-repo.
+#
+# One derivation, because three surfaces answering "is this tree clean" three
+# ways is the defect (#66). They used to ask `git diff --quiet HEAD`, which sees
+# tracked changes only — so a checkout holding nothing but untracked files read
+# as `clean` from `mqlaunch status` while `mqlaunch git`, which has always gated
+# on `git status --porcelain`, treated the same tree as having changes.
+#
+# The snapshot above already counts untracked files and already distinguishes a
+# non-checkout. This maps its vocabulary onto the reported one rather than
+# deriving the answer a fourth time.
+#
+# `not-a-git-repo` also covers git being unavailable: without it there is no way
+# to tell a checkout from any other directory, and the caller's options are the
+# same either way.
+mq_repo_state() {
+  local repo="${1:-.}" state
+
+  if ! command -v git >/dev/null 2>&1; then
+    printf 'not-a-git-repo'
+    return 0
+  fi
+
+  state="$(mq_git_status_snapshot "$repo" | cut -d'|' -f5)"
+  case "$state" in
+    CLEAN) printf 'clean' ;;
+    DIRTY) printf 'dirty' ;;
+    *) printf 'not-a-git-repo' ;;
+  esac
+}
+
 # Handles surface git state.
 surface_git_state() {
   local repo="${1:-.}"

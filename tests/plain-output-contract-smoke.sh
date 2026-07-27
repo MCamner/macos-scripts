@@ -25,12 +25,12 @@ echo "SMOKE: plain and machine-readable output contract"
 
 DOCTOR="$ROOT/tools/scripts/doctor.sh"
 
-echo "[1/9] files exist"
+echo "[1/10] files exist"
 test -f "$UI"
 test -f "$LAUNCH"
 test -f "$DOCTOR"
 
-echo "[2/9] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
+echo "[2/10] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
 python3 - "$ROOT" <<'PY'
 import os, pty, subprocess, sys
 
@@ -73,13 +73,13 @@ assert ESC not in plain, f"NO_COLOR=1 still emitted ANSI: {plain!r}"
 print("  ok: color on TTY, none under NO_COLOR")
 PY
 
-echo "[3/9] NO_COLOR is honoured in the central colour guard (structural)"
+echo "[3/10] NO_COLOR is honoured in the central colour guard (structural)"
 # Fixed-string match: the guard line is literal, and ERE brace handling differs
 # between BSD (macOS) and GNU (Linux) grep.
 # shellcheck disable=SC2016
 grep -qF 'if [[ -t 1 && -z "${NO_COLOR:-}" ]]' "$UI"
 
-echo "[4/9] JSON mode prints only JSON to stdout — no banner, no ANSI"
+echo "[4/10] JSON mode prints only JSON to stdout — no banner, no ANSI"
 # Test the JSON producer directly: it is deterministic regardless of which tools
 # are installed. A health check may legitimately exit non-zero when tools are
 # missing, so the exit status is captured, not asserted — the contract is that
@@ -95,7 +95,7 @@ json.loads(data)                # must parse as a single JSON document
 print("  ok: valid JSON, no ANSI, no banner")
 '
 
-echo "[5/9] mqlaunch status --json emits JSON only — end-to-end through the launcher"
+echo "[5/10] mqlaunch status --json emits JSON only — end-to-end through the launcher"
 # The producer being clean is not enough: the launcher is what a caller pipes.
 # bin/mqlaunch resolves the repo through BASE_DIR, so pin it at this checkout.
 # MQ_NO_TUI keeps any interactive path from blocking if this ever regresses.
@@ -114,7 +114,7 @@ for key in ("project", "version", "repo_state"):
 print("  ok: status --json is a single clean JSON document")
 '
 
-echo "[6/9] the JSON status path stays side-effect free (structural)"
+echo "[6/10] the JSON status path stays side-effect free (structural)"
 # print_status_json must not fall back into the dashboard renderer: that one runs
 # the full test suite and calls pause_enter, so reusing it here would make a
 # machine-readable command slow, interactive, and (run from test-all) recursive.
@@ -128,7 +128,7 @@ test -n "$json_status_body"
 # Without --json, status must still render the dashboard.
 grep -q 'show_about_dashboard' "$COMMAND_MODE"
 
-echo "[7/9] plain status is clean when piped and when redirected"
+echo "[7/10] plain status is clean when piped and when redirected"
 # The banner was the remaining hole in the contract (#67): the colour guard was
 # doing its job — zero ANSI in a pipe — but ASCII art is not colour, so a caller
 # who did not know about --json got 5.8 KB of dashboard on stdout and exit 0.
@@ -195,7 +195,7 @@ for path in sys.argv[1:]:
 print("  ok: piped and redirected status carry content without decoration")
 PY
 
-echo "[8/9] the header still renders on a terminal (both directions, via pty)"
+echo "[8/10] the header still renders on a terminal (both directions, via pty)"
 # The risk in suppressing the banner is suppressing it everywhere. This asserts
 # the human path in the same breath as the machine path, because a guard that
 # only ever proves the negative would also pass if print_header were deleted.
@@ -231,7 +231,7 @@ assert piped == b"", f"header rendered into a pipe: {piped[:200]!r}"
 print("  ok: header on a terminal, nothing in a pipe")
 PY
 
-echo "[9/9] --no-color disables colour from the command line (both directions, via pty)"
+echo "[9/10] --no-color disables colour from the command line (both directions, via pty)"
 # NO_COLOR is an environment variable; a caller with a command line and no
 # control over the environment needs the flag form. `commands` is the probe
 # because it colours its output and returns without waiting for a keypress.
@@ -293,5 +293,80 @@ assert not SGR.search(plain), \
 assert len(plain) > 1000, f"--no-color suppressed the output itself: {len(plain)} bytes"
 print("  ok: colour on a TTY, none with --no-color, command still runs")
 PY
+
+echo "[10/10] repo_state means the same thing on every surface"
+# #66: `mqlaunch status`, the dashboard and `mqlaunch version` each derived
+# repo_state from `git diff --quiet HEAD`, which sees tracked changes only. A
+# checkout holding nothing but untracked files therefore read as `clean` — while
+# `mqlaunch git`, which has always gated on `git status --porcelain`, treated the
+# same tree as having changes. One repo, two answers to "is this tree clean".
+#
+# Driven against real checkouts rather than read from the sources. The command
+# forms take their repo from BASE_DIR, the install root, so pointing them at a
+# fixture would mean copying the whole tree; the derivation they all now call is
+# exercised directly instead, and the call sites are asserted structurally below.
+repo_probe="$(mktemp -d)"
+repo_plain="$(mktemp -d)"
+git -C "$repo_probe" init -q
+printf 'x\n' > "$repo_probe/tracked.txt"
+git -C "$repo_probe" add tracked.txt
+git -C "$repo_probe" -c user.email=t@t -c user.name=t commit -qm init
+
+state_of() {
+  bash -c 'source "$1/ui/terminal-ui/mq-ui.sh" >/dev/null 2>&1; mq_repo_state "$2"' \
+    _ "$ROOT" "$1"
+}
+
+expect_state() {
+  # expect_state <repo> <expected> <what>
+  local got
+  got="$(state_of "$1")"
+  if [[ "$got" != "$2" ]]; then
+    echo "FAIL: $3 reported '$got', expected '$2'" >&2
+    rm -rf "$repo_probe" "$repo_plain"
+    exit 1
+  fi
+}
+
+expect_state "$repo_probe" "clean" "a committed checkout with nothing pending"
+
+touch "$repo_probe/untracked.txt"
+expect_state "$repo_probe" "dirty" "a checkout holding only an untracked file"
+# The regression this pins: prove the old derivation disagrees, so the fixture
+# cannot quietly start passing for the wrong reason if it is ever reverted.
+if ! git -C "$repo_probe" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
+  echo "FAIL: the untracked-only fixture is also tracked-dirty — it proves nothing" >&2
+  rm -rf "$repo_probe" "$repo_plain"
+  exit 1
+fi
+
+rm "$repo_probe/untracked.txt"
+printf 'y\n' > "$repo_probe/tracked.txt"
+expect_state "$repo_probe" "dirty" "a checkout with a modified tracked file"
+
+expect_state "$repo_plain" "not-a-git-repo" "a directory that is not a checkout"
+
+rm -rf "$repo_probe" "$repo_plain"
+
+# All three reporting surfaces must use that one derivation. Without this, the
+# checks above would keep passing while a surface quietly went back to its own
+# git call — which is exactly how they diverged.
+for surface in \
+  "$ROOT/terminal/launchers/mqlaunch-command-mode.sh" \
+  "$ROOT/terminal/launchers/mqlaunch.sh"; do
+  grep -q 'mq_repo_state' "$surface" || {
+    echo "FAIL: $surface no longer derives repo_state from mq_repo_state" >&2
+    exit 1
+  }
+done
+stale="$(grep -rn 'diff --quiet --ignore-submodules HEAD' \
+  "$ROOT/terminal/launchers/mqlaunch.sh" \
+  "$ROOT/terminal/launchers/mqlaunch-command-mode.sh" || true)"
+if [[ -n "$stale" ]]; then
+  echo "FAIL: a surface derives repo_state from a tracked-only diff again:" >&2
+  printf '%s\n' "$stale" >&2
+  exit 1
+fi
+echo "  ok: clean, dirty (tracked and untracked), and not-a-git-repo"
 
 echo "PASS: output contract holds (no decoration off-TTY, colour opt-out, clean JSON)"
