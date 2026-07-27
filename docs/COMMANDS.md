@@ -409,9 +409,20 @@ no banner, no ANSI, no prompt:
 }
 ```
 
-`repo_state` is `clean`, `dirty`, or `unknown` when the repo root is not a git
-checkout. The JSON form omits the dashboard's smoke-test field on purpose: that
-field runs the full test suite, which a machine-readable call should not do. Use
+`repo_state` is one of three values:
+
+`clean` — the working tree has nothing pending. `dirty` — the working tree has
+changes, **including untracked files**: the question a consumer is asking is
+whether the checkout is safe to act on, and an untracked file is a change even
+though it does not differ from `HEAD`. `not-a-git-repo` — the repo root is not a
+git checkout, or git is unavailable, which the caller cannot act on differently.
+
+The same three values, derived the same way, back `mqlaunch status`, the status
+dashboard and `mqlaunch version`. They agree with `mqlaunch git`, which has
+always counted untracked files.
+
+The JSON form omits the dashboard's smoke-test field on purpose: that field runs
+the full test suite, which a machine-readable call should not do. Use
 `mqlaunch selftest` or `mqlaunch doctor --json` for health.
 
 ---

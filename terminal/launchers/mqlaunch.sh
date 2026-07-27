@@ -680,11 +680,9 @@ show_about_dashboard() {
 
   [[ -f "$version_file" ]] && version="$(head -n 1 "$version_file")"
 
-  if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
-    repo_state="clean"
-  else
-    repo_state="dirty"
-  fi
+  # Same derivation as the JSON form and `mqlaunch version` (#66). The dashboard
+  # used to have no third value at all: a missing checkout read as `dirty`.
+  repo_state="$(mq_repo_state "$BASE_DIR")"
 
   # Running the suite is a thirty-second side effect of asking for status, and
   # it is fine on a terminal where a human chose to wait. Piped, it is not: the
@@ -827,15 +825,7 @@ run_demo_mode() {
     prompt_count="$(find "$prompt_dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  if git -C "$BASE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    if git -C "$BASE_DIR" diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then
-      repo_state="clean"
-    else
-      repo_state="dirty"
-    fi
-  else
-    repo_state="not-a-git-repo"
-  fi
+  repo_state="$(mq_repo_state "$BASE_DIR")"
 
   print_header
   row_bold "DEMO MODE"

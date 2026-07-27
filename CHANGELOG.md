@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `repo_state` reported `clean` for a checkout holding untracked files. All
+  three reporting surfaces — `mqlaunch status --json`, the status dashboard and
+  `mqlaunch version` — derived it from `git diff --quiet --ignore-submodules
+  HEAD`, which sees tracked changes only. `mqlaunch git` has always gated on
+  `git status --porcelain`, which counts untracked files, so the same tree could
+  read `clean` from one command and have changes according to another. One repo
+  should not answer "is this tree clean" two ways (#66).
+
+  `dirty` now means any working-tree change, untracked files included. The
+  question a consumer is asking is whether the checkout is safe to act on, and
+  an untracked file is a change even though it does not differ from `HEAD`.
+
+  The third value is `not-a-git-repo` everywhere. `mqlaunch status --json` said
+  `unknown`, which reads as "could not determine" — a different claim from the
+  one being made. The dashboard had no third value at all: a missing checkout
+  read as `dirty`. The token covers git being unavailable too, since without it
+  a checkout cannot be told from any other directory and the caller's options
+  are the same either way.
+
+  The derivation now lives in one place, `mq_repo_state` in
+  `ui/terminal-ui/mq-ui.sh`, next to `mq_git_status_snapshot` — which already
+  counted untracked files and already distinguished a non-checkout. The
+  divergence was three surfaces re-deriving an answer the shared library was
+  producing correctly. `tests/plain-output-contract-smoke.sh` drives all four
+  states against real checkouts in a temp directory, asserts that the
+  untracked-only fixture is one the old logic would have called clean, and fails
+  if any surface goes back to a tracked-only diff.
+
 ### Changed
 
 * `tests/command-docs-smoke.sh` is a README contract instead of a second,
