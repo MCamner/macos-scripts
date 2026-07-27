@@ -285,10 +285,9 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
     help is a curated quick index, and forcing all 73 commands into it would
     make it worse for the human it is written for.
   * [x] command list — same contract as help.
-  * [ ] palette — the palette runs `run_arg_command`, not `dispatch_cli_command`,
-    and that second vocabulary still accepts 81 words the registry never
-    modelled. Consistency here means the palette routing through the registry,
-    not the registry absorbing the legacy list.
+  * [x] palette — routes through `dispatch_cli_command` now, so a palette entry
+    and a typed command are the same thing. `run_arg_command` has no callers
+    left; the freeze gate holds it at zero rather than at one.
   * [x] direct dispatch — `tests/command-registry-smoke.sh` (#81).
   * [x] docs index — `docs/COMMANDS.md` is the complete reference, so coverage
     is required in both directions.

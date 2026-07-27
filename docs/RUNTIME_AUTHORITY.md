@@ -159,21 +159,27 @@ governs one of them:
 
 | Function | Answers when | Governed by |
 | --- | --- | --- |
-| `dispatch_cli_command` | a word is **typed** | the registry |
-| `run_arg_command` | a word is **chosen from the palette** | frozen baseline |
+| `dispatch_cli_command` | a word is typed **or chosen from the palette** | the registry |
+| `run_arg_command` | never — it has no callers | frozen baseline |
 
-They do not know the same words. `run_arg_command` accepts dozens the registry
-has never modelled, so those names work from the palette and print
-`Unknown command` when typed. That is the ambiguity v2.0.0 exists to remove, and
-the product principle names it directly: a user should never have to ask whether
-a command is shown in one place and missing from another.
+They never knew the same words. `run_arg_command` accepts dozens the registry
+has never modelled, and until the palette was rerouted those names worked when
+chosen and printed `Unknown command` when typed. That is the ambiguity v2.0.0
+exists to remove, and the product principle names it directly: a user should
+never have to ask whether a command is shown in one place and missing from
+another.
 
-The gap was 93 words. The six of them the product actually advertised —
-`tools`, `login`, `shortcuts`, `theme`, `guide`, `repo`, all listed by
-`mqlaunch help` and `docs/COMMANDS.md` — were moved into the registry and
-`dispatch_cli_command`, because a help screen that lists a command which does
-not exist is a defect in the command, not in the help. The remainder are
-unadvertised legacy names and stay where they are.
+The gap was 93 words, closed in two steps:
+
+1. The six the product actually advertised — `tools`, `login`, `shortcuts`,
+   `theme`, `guide`, `repo`, all listed by `mqlaunch help` and
+   `docs/COMMANDS.md` — moved into the registry and `dispatch_cli_command`. A
+   help screen listing a command which does not exist is a defect in the
+   command, not in the help.
+2. The palette then switched to `dispatch_cli_command`, so a palette entry and a
+   typed command became the same thing. `run_arg_command` lost its last caller.
+
+What remains in it are unadvertised legacy names reachable from nothing.
 
 `run_arg_command` is therefore **compatibility-only and closed for extension**.
 Its vocabulary is recorded in `mqlaunch/lib/legacy-command-vocabulary.txt` and
