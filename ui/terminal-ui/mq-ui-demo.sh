@@ -4,9 +4,15 @@ set -euo pipefail
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 
+# Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+# ShellCheck cannot follow a source, so it sees assignments nothing reads.
+# shellcheck disable=SC2034
 APP_TITLE="MQ UI Demo"
+# shellcheck disable=SC2034
 APP_SUBTITLE="Shared UI Preview"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then

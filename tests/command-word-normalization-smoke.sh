@@ -80,6 +80,9 @@ echo "[4/4] normalization does not reach past the command word"
   # shellcheck source=/dev/null
   source "$COMMAND_MODE"
   pause_enter() { return 0; }
+  # Read by the dispatcher sourced above — this is what points it at the stub
+  # tree instead of the real one. ShellCheck cannot follow the source.
+  # shellcheck disable=SC2034
   BASE_DIR="$TMPDIR_TEST"
   mkdir -p "$TMPDIR_TEST/tools/scripts"
   cat > "$TMPDIR_TEST/tools/scripts/srm.sh" <<'STUB'

@@ -7,9 +7,15 @@ THEME_FILE="$BASE_DIR/terminal/themes/mq-zsh-theme-v3.zsh"
 ZSHRC="${HOME}/.zshrc"
 BACKUP_DIR="$HOME/.mq-zsh-theme-backups"
 
+# Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+# ShellCheck cannot follow a source, so it sees assignments nothing reads.
+# shellcheck disable=SC2034
 APP_TITLE="MQ Theme Switcher"
+# shellcheck disable=SC2034
 APP_SUBTITLE="ZSH Theme Manager"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then

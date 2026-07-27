@@ -12,10 +12,16 @@ DRY_RUN=0
 VERBOSE=0
 COMMAND="menu"
 
+# Read by ui/terminal-ui/mq-ui.sh, which this script sources below.
+# ShellCheck cannot follow a source, so it sees assignments nothing reads.
+# shellcheck disable=SC2034
 APP_TITLE="macOS Tweaks Utility"
+# shellcheck disable=SC2034
 APP_SUBTITLE="MQLaunch Module"
+# shellcheck disable=SC2034
 APP_AUTHOR="Author Mattias Camner"
 
+# shellcheck disable=SC2034
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
