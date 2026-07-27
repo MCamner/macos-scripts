@@ -27,6 +27,9 @@ fi
 : "${BASE_DIR:=${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 for _mqobs_lib in errors resolve manifest open; do
   if [[ -f "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh" ]]; then
+    # Path is built per iteration over errors/resolve/manifest/open, so no
+    # single target can be named.
+    # shellcheck source=/dev/null
     source "$BASE_DIR/mqlaunch/lib/mqobsidian/$_mqobs_lib.sh"
   elif command -v mq_debug >/dev/null 2>&1; then
     # Optional lib absent — degrade gracefully, but make it observable so a

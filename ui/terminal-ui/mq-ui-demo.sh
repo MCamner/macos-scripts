@@ -16,6 +16,7 @@ APP_AUTHOR="Author Mattias Camner"
 BOX_INNER=88
 
 if [[ -f "$UI_LIB" ]]; then
+  # shellcheck source=./mq-ui.sh
   source "$UI_LIB"
 else
   echo "Missing UI library: $UI_LIB" >&2

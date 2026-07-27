@@ -5,7 +5,7 @@ open_performance_menu() {
   local v3_perf_menu="$BASE_DIR/terminal/menus/mq-performance-menu.sh"
 
   if [[ -f "$v3_perf_menu" ]]; then
-    # shellcheck disable=SC1091
+    # shellcheck source=../menus/mq-performance-menu.sh
     source "$v3_perf_menu"
     open_performance_menu "$@"
   else
