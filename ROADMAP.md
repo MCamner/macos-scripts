@@ -426,28 +426,85 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 
 ---
 
-## P1 — ShellCheck becomes a real gate
+## P1 — ShellCheck: raise the enforced threshold from error to warning
 
-Status: Planned
+Status: In progress
 Priority: P1
 Risk if delayed: Medium
 Owner: `macos-scripts`
 
 ### Problem
 
-Shell syntax checks are already useful, but ShellCheck must not remain warn-only forever. A launcher repo should be boringly reliable.
+This section used to read "ShellCheck becomes a real gate", planning against a
+premise that was wrong. ShellCheck is **not** warn-only today:
+`tools/scripts/lint.sh` runs `shellcheck -S error` with no `|| true`,
+`test-all.sh` calls it, and CI runs `test-all.sh`. Error severity has been a hard
+gate all along. What is warn-only is the separate `quality.yml` step, which runs
+the same severity over a wider surface and discards the result.
+
+So the work is not switching a gate on. It is choosing the next threshold above
+`error` and paying for it. `warning` is the only reasonable candidate: `info` and
+`style` are 270 and 276 findings of mostly noise, and gating on them would buy
+less than it costs to read.
+
+Two boundaries this section must not blur. ShellCheck cannot parse zsh, so the
+10 zsh entrypoints — `terminal/launchers/mqlaunch.sh` among them — are outside
+its reach entirely and stay covered by `zsh -n`. Raising the ShellCheck
+threshold does not make them safer. And a launcher repo being "boringly
+reliable" is a claim about correctness, not about warning counts: SC2221/SC2222
+are unreachable case branches and worth reading, while SC2034 is an unused
+variable and mostly is not.
 
 ### Tasks
 
-* [ ] Audit current ShellCheck findings.
+* [x] Audit current ShellCheck findings.
 
-  * Classify findings into real bugs, acceptable style exceptions, and intentional shell patterns.
+  * `tools/scripts/shellcheck-report.sh` measures it on demand, so the numbers
+    below can be re-derived rather than trusted.
+
+  | Severity | Findings | Files | Gate cost today |
+  | --- | --- | --- | --- |
+  | error | 0 | 0 | already gated, costs nothing |
+  | warning | 96 | 37 | must be fixed or waived |
+  | info | 270 | 78 | must be fixed or waived |
+  | style | 276 | 79 | must be fixed or waived |
+
+  * The jump is `error` → `warning`, and 51 of those 96 are one rule (SC2034,
+    unused variable). The next four rules account for 36 more. Roughly nine
+    tenths of the warning surface is five rules, which is what makes fixing in
+    groups viable.
+  * 10 zsh scripts are outside ShellCheck entirely — it cannot parse zsh, and
+    `mqlaunch.sh` is one of them. They are covered by `zsh -n`. Hardening
+    ShellCheck does not reach them, and the roadmap should not imply it does.
+  * 34 files are scanned by the warn-only CI step but not by the gate
+    (`tools/legacy/`, `terminal/mqlaunch-v1/`). At error severity they are clean
+    too, so the wider surface currently catches nothing extra.
+
+* [ ] Clear the warning baseline, in groups, by what the rule actually means.
+
+  Three separate passes, because they need different amounts of reading:
+
+  * [ ] **SC2034 — unused variable (51).** Mechanical. Either the variable is
+    dead and goes, or it is read by a sourcing script and gets an export or a
+    directive. Low correctness risk, so this is the one group that tolerates
+    being fixed in bulk.
+  * [ ] **SC2221/SC2222 — unreachable case branch (14).** A correctness signal,
+    not a style complaint: a pattern that never matches is a command that silently
+    does nothing. Read each one and fix the actual defect. Do not silence.
+  * [ ] **SC2046 — unquoted word splitting (9).** Read each one. Some splitting is
+    deliberate, and quoting blindly turns a working expansion into one argument.
+
+  The remaining 22 (SC1090, SC1083, SC2155, SC2154) are handled with the same
+  rule: fix or justify, never silence to reach a number.
 
 * [ ] Add a project-level ShellCheck policy.
 
   * Suggested file: `docs/SHELLCHECK_POLICY.md`
+  * It must state the enforced threshold, the file surface, and that zsh is out
+    of scope by tooling limitation rather than by choice.
 
-* [ ] Remove `|| true` from CI ShellCheck once findings are either fixed or explicitly allowed.
+* [ ] Raise `lint.sh` to `-S warning`, and drop `|| true` from the `quality.yml`
+  step, once the warning baseline is zero or every exception is documented.
 
 * [ ] Add documented suppressions only where justified.
 
@@ -457,7 +514,8 @@ Shell syntax checks are already useful, but ShellCheck must not remain warn-only
 
 ### Exit gate
 
-* [ ] ShellCheck is a required CI gate.
+* [ ] `warning` is the enforced ShellCheck threshold for the bash/sh surface.
+* [ ] zsh entrypoints remain covered by `zsh -n`, and the docs say why.
 * [ ] Remaining suppressions are documented and intentional.
 
 ---
@@ -767,24 +825,28 @@ Exit gate:
 
 ---
 
-### PR 7 — ShellCheck gate
+### PR 7 — ShellCheck threshold
 
 Suggested title:
 
 ```text
-ci(shell): make ShellCheck a required gate
+ci(shell): enforce ShellCheck at warning severity
 ```
+
+`error` is already enforced. This raises the threshold; it does not switch a
+gate on.
 
 Scope:
 
-* [ ] Classify ShellCheck findings
-* [ ] Fix real issues
+* [x] Measure the current surface (#92)
+* [ ] Clear SC2034 in bulk
+* [ ] Triage SC2221/SC2222 and SC2046 by hand
 * [ ] Document intentional suppressions
-* [ ] Remove warn-only behavior
+* [ ] Raise `lint.sh` to `-S warning` and drop `|| true` from `quality.yml`
 
 Exit gate:
 
-* [ ] ShellCheck becomes a real CI gate
+* [ ] `warning` is enforced for bash/sh, and the baseline is zero or documented
 
 ---
 

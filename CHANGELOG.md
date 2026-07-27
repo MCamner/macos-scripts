@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `tools/scripts/shellcheck-report.sh` — measures what a stricter ShellCheck
+  gate would cost, and changes nothing. Deliberately not wired into
+  `test-all.sh`: a measurement that gates is no longer a measurement, and it
+  would slow every suite run for a number nobody is reading that minute.
+
+  It corrected the premise the roadmap was planning against. ShellCheck is not
+  warn-only today — `tools/scripts/lint.sh` runs `shellcheck -S error` with no
+  `|| true`, `test-all.sh` calls it, and CI runs `test-all.sh`. Error severity
+  has been a hard gate all along. What is warn-only is the separate `quality.yml`
+  step, which runs the same severity over a wider surface and discards the
+  result.
+
+  Measured: 0 errors, 96 warnings across 37 files, 270 at info, 276 at style.
+  51 of the 96 warnings are one rule (SC2034, unused variable) and the next four
+  rules account for 36 more, so roughly nine tenths of the warning surface is
+  five rules. 10 zsh scripts — including `mqlaunch.sh` — are outside ShellCheck
+  entirely, since it cannot parse zsh; they are covered by `zsh -n`. 34 files are
+  scanned by the warn-only CI step but not by the gate, and at error severity
+  they are clean too.
+
+  The report verifies its own relevance: it runs `lint.sh` and fails if the file
+  count it scanned differs from the count `lint.sh` gates, so a divergence in
+  exclusions surfaces instead of quietly turning the numbers into a description
+  of something else. Rule descriptions come from ShellCheck's own output rather
+  than a table, so they cannot go stale against the installed version.
+
 ### Fixed
 
 * `repo_state` reported `clean` for a checkout holding untracked files. All
