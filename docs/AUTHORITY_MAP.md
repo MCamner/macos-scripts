@@ -114,12 +114,14 @@ win; growing it must be a conscious, reviewed decision.
 
 ## Dead — DEPRECATED
 
-Nothing is currently classified dead.
+* `terminal/menus/mq-hal-menu.sh.bak.20260519-115142` — an editor backup left in
+  a live menu directory. Nothing references it. Dated after PR #32, which is why
+  that cleanup did not catch it.
 
 `ui/ascii/mq-dashboard.sh`, `ui/ascii/mq-dashboard-v3.sh` and
 `ui/ascii/mq-banner.sh` were listed here as safe-to-delete candidates and have
-been removed. Dashboards `v4`/`v5`/`v6` and stray `*.sh.bak` files went in
-PR #32.
+been removed. Dashboards `v4`/`v5`/`v6` and the stray `*.sh.bak` files that
+existed at the time went in PR #32.
 
 `ui/ascii/mqlaunch-dashboard-v7.1.sh` remains the dashboard authority. The
 deleted files were earlier attempts at the same job that nothing routed to; one
