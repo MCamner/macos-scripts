@@ -120,6 +120,26 @@ The current compatibility exceptions are listed in
 [AUTHORITY_MAP.md](AUTHORITY_MAP.md#the-exact-livelegacy-edges-remove-these-in-step-12)
 and enforced by `scripts/check-runtime-authority.sh`.
 
+### Frozen paths are outside the lint gate
+
+`terminal/mqlaunch-v1/` and `tools/legacy/` are excluded from
+`tools/scripts/lint.sh`, so the enforced ShellCheck threshold does not cover
+them. That is a decision, not an oversight.
+
+They hold 5 warnings, all SC2034. Four are colour variables in
+`terminal/mqlaunch-v1/lib/core.sh` that the scripts sourcing it do read — the
+same across-a-`source` blindness that produced 34 of the findings on the live
+surface. The fifth is in an archived one-shot patch script written against a
+launcher that no longer exists in that form.
+
+Clearing them would mean editing frozen code to satisfy a linter, on paths this
+document forbids doing new work on, for findings that are mostly not defects.
+The freeze is the stronger rule. These paths stay out of the gated surface until
+they are deleted, which is their documented end state.
+
+A path leaving `tools/legacy/` or `terminal/mqlaunch-v1/` for a live location
+enters the gate with it, and must be clean at warning severity to land.
+
 ## Dependency rules
 
 Normal live dependency direction is:

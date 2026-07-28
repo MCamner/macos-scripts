@@ -43,10 +43,6 @@ The current polished branded dashboard for **MQLAUNCH**, featuring:
 * live shortcuts
 * reusable header rendering for launcher and menus
 
-### `mq-skull.txt`
-
-A raw ASCII art asset that can be reused in experimental retro / themed views.
-
 ### `mq-bg-grid.txt`
 
 A retro CRT / neon grid background for splash screens, idle states, or static terminal backdrops.
