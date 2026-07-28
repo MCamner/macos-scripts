@@ -426,9 +426,9 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 
 ---
 
-## P1 — ShellCheck: raise the enforced threshold from error to warning
+## P1 — ShellCheck: raise the enforced threshold from error to warning ✅
 
-Status: In progress
+Status: Done
 Priority: P1
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -439,8 +439,10 @@ This section used to read "ShellCheck becomes a real gate", planning against a
 premise that was wrong. ShellCheck is **not** warn-only today:
 `tools/scripts/lint.sh` runs `shellcheck -S error` with no `|| true`,
 `test-all.sh` calls it, and CI runs `test-all.sh`. Error severity has been a hard
-gate all along. What is warn-only is the separate `quality.yml` step, which runs
-the same severity over a wider surface and discards the result.
+gate all along. What was warn-only is the separate `quality.yml` step, which ran
+the same severity over a wider surface and discarded the result. That step now
+calls `lint.sh` instead of re-deriving the file list, so there is one definition
+of the surface and one of the severity.
 
 So the work is not switching a gate on. It is choosing the next threshold above
 `error` and paying for it. `warning` is the only reasonable candidate: `info` and
@@ -476,26 +478,39 @@ variable and mostly is not.
   * 10 zsh scripts are outside ShellCheck entirely — it cannot parse zsh, and
     `mqlaunch.sh` is one of them. They are covered by `zsh -n`. Hardening
     ShellCheck does not reach them, and the roadmap should not imply it does.
-  * 34 files are scanned by the warn-only CI step but not by the gate
-    (`tools/legacy/`, `terminal/mqlaunch-v1/`). At error severity they are clean
-    too, so the wider surface currently catches nothing extra.
+  * 34 files were scanned by the warn-only CI step but not by the gate
+    (`tools/legacy/`, `terminal/mqlaunch-v1/`). Clean at error severity, but they
+    hold 5 warnings — which is why that step could not simply drop `|| true` and
+    now shares `lint.sh`'s surface instead.
 
-* [ ] Clear the warning baseline, in groups, by what the rule actually means.
+* [x] Clear the warning baseline, in groups, by what the rule actually means.
 
-  Three separate passes, because they need different amounts of reading:
+  96 warnings to zero in seven passes, one rule group per PR:
 
-  * [ ] **SC2034 — unused variable (51).** Mechanical. Either the variable is
-    dead and goes, or it is read by a sourcing script and gets an export or a
-    directive. Low correctness risk, so this is the one group that tolerates
-    being fixed in bulk.
-  * [ ] **SC2221/SC2222 — unreachable case branch (14).** A correctness signal,
-    not a style complaint: a pattern that never matches is a command that silently
-    does nothing. Read each one and fix the actual defect. Do not silence.
-  * [ ] **SC2046 — unquoted word splitting (9).** Read each one. Some splitting is
-    deliberate, and quoting blindly turns a working expansion into one argument.
+  | PR | Group | Left |
+  | --- | --- | --- |
+  | #93 | SC2034 — annotate the 34 that are read across a `source` | 62 |
+  | #94 | SC2034 — the other 17, decided one at a time | 45 |
+  | #95 | SC2221/SC2222 — unreachable `case` branches | 31 |
+  | #96 | SC1090 — `source=` directives | 21 |
+  | #97 | SC2155/SC2154 | 19 |
+  | #98 | SC1083 — literal braces in `@{u}` | 9 |
+  | #99 | SC2046 — word splitting | 0 |
 
-  The remaining 22 (SC1090, SC1083, SC2155, SC2154) are handled with the same
-  rule: fix or justify, never silence to reach a number.
+  Splitting by rule was the decision that made this work. Three of the seven
+  turned up something a bulk fix would have destroyed or missed: 34 SC2034
+  "unused" variables are read by `mq-ui.sh` across a `source` boundary and
+  deleting them would have reset every panel title; SC2154 was a live
+  `bad substitution` that aborted a dashboard halfway, reported for one of its
+  three occurrences; and the SC2046 here-strings are only safe to quote because
+  every one of them emits a single line.
+
+* [ ] Fix the 5 remaining warnings in `terminal/mqlaunch-v1/` and
+  `tools/legacy/`, or state that frozen paths are permanently out of scope.
+
+  They are outside `lint.sh`'s surface, so the gate does not see them. That is
+  defensible for paths closed to new work, but it should be a written decision
+  rather than an exclusion nobody revisits.
 
 * [ ] Add a project-level ShellCheck policy.
 
@@ -503,20 +518,28 @@ variable and mostly is not.
   * It must state the enforced threshold, the file surface, and that zsh is out
     of scope by tooling limitation rather than by choice.
 
-* [ ] Raise `lint.sh` to `-S warning`, and drop `|| true` from the `quality.yml`
+* [x] Raise `lint.sh` to `-S warning`, and drop `|| true` from the `quality.yml`
   step, once the warning baseline is zero or every exception is documented.
 
-* [ ] Add documented suppressions only where justified.
+  The workflow step now calls `lint.sh` instead of re-deriving the file list
+  with its own `find` and its own exclusions. One definition of the surface and
+  the severity. `shellcheck` is installed in CI and its presence asserted,
+  because `lint.sh` exits 0 without it — a convenience for developers that would
+  otherwise make the gate unfailable.
 
-  * Every suppression should explain why it is safe.
+* [x] Add documented suppressions only where justified.
 
-* [ ] Keep syntax checks for all shell files.
+  * Every suppression explains why it is safe, next to the finding rather than
+    at file level. A file-level `disable=SC2034` in `macos-tweaks.sh` would have
+    silenced a genuine finding four lines away.
+
+* [x] Keep syntax checks for all shell files.
 
 ### Exit gate
 
-* [ ] `warning` is the enforced ShellCheck threshold for the bash/sh surface.
-* [ ] zsh entrypoints remain covered by `zsh -n`, and the docs say why.
-* [ ] Remaining suppressions are documented and intentional.
+* [x] `warning` is the enforced ShellCheck threshold for the bash/sh surface.
+* [x] zsh entrypoints remain covered by `zsh -n`, and the docs say why.
+* [x] Remaining suppressions are documented and intentional.
 
 ---
 
@@ -862,7 +885,7 @@ Exit gate:
 * [ ] JSON stdout is clean.
 * [ ] Diagnostics go to stderr.
 * [ ] Delegated exit codes are preserved.
-* [ ] ShellCheck is no longer warn-only.
+* [x] ShellCheck is enforced at warning severity for the bash/sh surface.
 * [ ] `mqlaunch` remains thin.
 * [ ] `mq-agent` still owns orchestration.
 * [ ] `mq-mcp` still owns execution/review tools.

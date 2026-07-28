@@ -532,16 +532,18 @@ agent_menu_loop() {
 }
 
 # Runs the full MQ demo flow: signal → review → release-check, all writing to brain.
+# Runs against the current directory. The parameter this used to accept had no
+# caller in its life; the menu entry means "here", and demo-flow.sh takes a
+# target directly for anything else.
 _run_demo_flow() {
-  local target="${1:-.}"
   local demo_script
   demo_script="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/commands/demo-flow.sh"
   if [[ -x "$demo_script" ]]; then
-    bash "$demo_script" "$target"
+    bash "$demo_script" .
   else
     printf "signal → review → release-check\n"
-    _run_agent signal "$target" --brain
-    _run_agent review repo "$target" --brain
+    _run_agent signal . --brain
+    _run_agent review repo . --brain
     _run_agent release-check --dry-run
   fi
 }
