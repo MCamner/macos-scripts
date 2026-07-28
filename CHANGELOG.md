@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `docs/AUTHORITY_MAP.md` listed
+  `terminal/menus/mq-hal-menu.sh.bak.20260519-115142` under *Dead — DEPRECATED*
+  as a file awaiting deletion. It is not in the repository and never has been.
+  `.gitignore` has matched `terminal/menus/*.bak.*` since 2026-04-12 and the file
+  is dated 2026-05-19, so it could not have been committed: `git log --all` on
+  the path is empty, and the path returns 404 on `main`. It is an untracked
+  editor backup in a local working copy.
+
+  The 2.0.0 entry that introduced the claim stays as written — a published
+  changelog records what was believed then — and this is the correction. The
+  error was reading a working directory and calling it the repository.
+  `git ls-files` answers that question and was not asked.
+
 ## [2.0.0] - 2026-07-28
 
 Runtime authority and command-surface governance. One dispatcher,

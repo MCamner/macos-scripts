@@ -114,9 +114,15 @@ win; growing it must be a conscious, reviewed decision.
 
 ## Dead — DEPRECATED
 
-* `terminal/menus/mq-hal-menu.sh.bak.20260519-115142` — an editor backup left in
-  a live menu directory. Nothing references it. Dated after PR #32, which is why
-  that cleanup did not catch it.
+Empty.
+
+`terminal/menus/mq-hal-menu.sh.bak.20260519-115142` was listed here as an editor
+backup that PR #32 had missed. It is not in the repository and never was.
+`.gitignore` has matched `terminal/menus/*.bak.*` since 2026-04-12 and the file
+is dated 2026-05-19, so it was never trackable: `git log --all` on the path is
+empty, and the path returns 404 on `main`. It exists only in the working copy
+that produced it, where this map has no authority. Listing it was a claim about
+the repository read out of a working directory instead of out of `git ls-files`.
 
 `ui/ascii/mq-dashboard.sh`, `ui/ascii/mq-dashboard-v3.sh` and
 `ui/ascii/mq-banner.sh` were listed here as safe-to-delete candidates and have
