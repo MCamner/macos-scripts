@@ -114,14 +114,21 @@ win; growing it must be a conscious, reviewed decision.
 
 ## Dead — DEPRECATED
 
-Present in the tree, no live reference found. Safe-to-delete candidates:
+Nothing is currently classified dead.
 
-* `ui/ascii/mq-dashboard.sh`
-* `ui/ascii/mq-dashboard-v3.sh`
-* `ui/ascii/mq-banner.sh`
+`ui/ascii/mq-dashboard.sh`, `ui/ascii/mq-dashboard-v3.sh` and
+`ui/ascii/mq-banner.sh` were listed here as safe-to-delete candidates and have
+been removed. Dashboards `v4`/`v5`/`v6` and stray `*.sh.bak` files went in
+PR #32.
 
-(Dashboards `v4`/`v5`/`v6` and stray `*.sh.bak` files were already removed in
-PR #32.)
+`ui/ascii/mqlaunch-dashboard-v7.1.sh` remains the dashboard authority. The
+deleted files were earlier attempts at the same job that nothing routed to; one
+of them had been raising `bad substitution` mid-render for long enough that
+ShellCheck, not a user, was the first to notice.
+
+A path belongs in this section only while something still points at it. Once
+nothing does, the entry is a promise to delete rather than a classification —
+so the list should return to empty each time it is acted on.
 
 ## Test / tooling — TEST-ONLY
 
