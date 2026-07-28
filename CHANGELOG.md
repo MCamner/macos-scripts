@@ -8,6 +8,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* A command must delegate to the repo that owns it. `validate-command-registry.py`
+  already required `delegates_to` to be non-empty when the owner was another
+  repo, but not to *name* that owner — so an entry could declare `mq-agent` as
+  owner while routing to `mq-mcp`, the boundary violation
+  `docs/RUNTIME_AUTHORITY.md` forbids. `delegates_to` holds the whole delegated
+  command (`mq-agent review`, not `mq-agent`), so the rule compares its first
+  word. All 16 delegating commands already satisfied it; the point is that they
+  now have to. Fixture [17/17] proves the gate fires.
+
+  Found by checking the roadmap against the tree rather than trusting its
+  checkboxes: "Test delegation ownership" was true by convention and ungated.
+
+### Added
+
 * `tests/docs-file-inventory-smoke.sh` — a README that documents a file by name
   must not outlive it. Three READMEs describe their directory file by file as
   `###`name`` sections: `ui/ascii`, `terminal/menus` and `automation/workflows`.
