@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install zsh
-        run: sudo apt-get install -y zsh
+      - name: Install zsh and shellcheck
+        run: sudo apt-get install -y zsh shellcheck
 
       - name: Skills are consistent (frontmatter, cross-refs, paths, SKILLS.md)
         run: ./scripts/check-skills.sh
@@ -52,23 +52,22 @@ jobs:
             done
           echo "All .sh files (excl. backups/) pass syntax check"
 
-      - name: shellcheck on bash scripts (warn-only)
+      # Enforced, and delegated to tools/scripts/lint.sh rather than re-deriving
+      # the file list here. The old step had its own `find` with different
+      # exclusions, ran `|| true`, and so reported findings nobody read while
+      # lint.sh — called by the smoke suite below — was already failing on the
+      # same rule. One definition of the surface and the severity.
+      #
+      # lint.sh exits 0 when shellcheck is absent so a developer without it can
+      # still run the suite. That would make this step unfailable, so the binary
+      # is installed above and its presence is asserted here.
+      - name: ShellCheck (warning severity, enforced)
         run: |
-          if command -v shellcheck >/dev/null 2>&1; then
-            find . \
-              -name "*.sh" \
-              -not -path "./.git/*" \
-              -not -path "./backups/*" \
-              -print0 \
-            | while IFS= read -r -d '' f; do
-                shebang="$(head -1 "$f")"
-                if [[ "$shebang" != *zsh* ]]; then
-                  shellcheck --severity=error "$f" || true
-                fi
-              done
-          else
-            echo "shellcheck not available, skipping"
-          fi
+          command -v shellcheck >/dev/null 2>&1 || {
+            echo "shellcheck is missing — this gate cannot pass by skipping" >&2
+            exit 1
+          }
+          MACOS_SCRIPTS_HOME="$GITHUB_WORKSPACE" ./tools/scripts/lint.sh
 
       - name: mqlaunch smoke suite
         run: MACOS_SCRIPTS_HOME="$GITHUB_WORKSPACE" MQ_NO_TUI=1 ./tools/scripts/test-all.sh

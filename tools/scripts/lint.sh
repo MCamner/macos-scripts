@@ -41,5 +41,15 @@ if (( ${#bash_scripts[@]} == 0 )); then
   exit 0
 fi
 
-shellcheck -S error "${bash_scripts[@]}"
-echo "[PASS] Shell lint passed (${#bash_scripts[@]} files)"
+# Warning severity, enforced. `error` was already a hard gate here — this file
+# has never had `|| true` and test-all.sh calls it — so raising the threshold is
+# the actual change, not switching a gate on (#92).
+#
+# The baseline reached zero in #93-#99: 96 warnings, cleared in seven passes by
+# rule rather than in bulk. Keeping it at zero is cheaper than getting back to
+# it, which is the whole reason to enforce rather than report.
+#
+# zsh scripts are filtered out above because ShellCheck cannot parse zsh, not
+# because they are exempt from scrutiny; they are covered by `zsh -n`.
+shellcheck -S warning "${bash_scripts[@]}"
+echo "[PASS] Shell lint passed at warning severity (${#bash_scripts[@]} files)"

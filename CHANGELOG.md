@@ -8,6 +8,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* ShellCheck is enforced at **warning** severity. `tools/scripts/lint.sh` runs
+  `-S warning` instead of `-S error`, which is the actual change — `error` has
+  been a hard gate since before this work, because `lint.sh` has never carried
+  `|| true` and `test-all.sh` calls it. The roadmap said "ShellCheck must not
+  remain warn-only forever" and was planning against a premise that was wrong.
+
+  The warn-only step in `.github/workflows/quality.yml` now calls `lint.sh`
+  rather than re-deriving the file list with its own `find` and its own
+  exclusions. It could not simply drop `|| true`: its wider surface includes
+  `tools/legacy/` and `terminal/mqlaunch-v1/`, which still hold 5 warnings that
+  `lint.sh` deliberately excludes, so removing the safety net would have failed
+  CI on frozen paths that are closed to new work. Sharing one surface fixes that
+  and removes the duplicate definition.
+
+  `shellcheck` is installed in CI and its presence asserted before the gate runs.
+  `lint.sh` exits 0 when the binary is missing so a developer without it can
+  still run the suite; unguarded, that convenience would have made the CI step
+  unfailable.
+
+  Verified by mutation: an unused variable added to a throwaway script fails the
+  gate with SC2034 and exit 1, and removing it returns to green.
+
+### Changed
+
 * The nine unquoted command substitutions ShellCheck flagged for word splitting
   are now quoted (SC2046). Eight are `read A B C <<< $(…)` in
   `tools/scripts/scan.sh`; the ninth passes a default-gateway lookup as an
