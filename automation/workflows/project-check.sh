@@ -95,7 +95,7 @@ fi
 
 if [[ -d ".git" ]]; then
   branch="$(git branch --show-current 2>/dev/null || true)"
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
 
   if [[ -n "$branch" ]]; then
     ok "Current branch: $branch"

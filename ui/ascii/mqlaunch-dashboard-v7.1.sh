@@ -134,7 +134,7 @@ mq_git_ahead_behind() {
   }
 
   local counts ahead behind
-  counts="$(git rev-list --left-right --count HEAD...@{u} 2>/dev/null || true)"
+  counts="$(git rev-list --left-right --count 'HEAD...@{u}' 2>/dev/null || true)"
   if [[ -n "$counts" ]]; then
     ahead="$(printf '%s' "$counts" | awk '{print $1}')"
     behind="$(printf '%s' "$counts" | awk '{print $2}')"
