@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-07-28
+
+Runtime authority and command-surface governance. One dispatcher,
+one command registry with five gated consumers, an enforced output
+contract, and ShellCheck raised from error to warning severity.
+
 ### Added
 
 * A command must delegate to the repo that owns it. `validate-command-registry.py`
@@ -19,8 +25,6 @@ All notable changes to this project will be documented in this file.
 
   Found by checking the roadmap against the tree rather than trusting its
   checkboxes: "Test delegation ownership" was true by convention and ungated.
-
-### Added
 
 * `tests/docs-file-inventory-smoke.sh` — a README that documents a file by name
   must not outlive it. Three READMEs describe their directory file by file as
@@ -42,190 +46,6 @@ All notable changes to this project will be documented in this file.
   that cleanup, referenced by nothing. The claim is corrected and the file is
   listed as dead rather than deleted here, since deletions belong in their own
   diff.
-
-### Changed
-
-* ShellCheck is enforced at **warning** severity. `tools/scripts/lint.sh` runs
-  `-S warning` instead of `-S error`, which is the actual change — `error` has
-  been a hard gate since before this work, because `lint.sh` has never carried
-  `|| true` and `test-all.sh` calls it. The roadmap said "ShellCheck must not
-  remain warn-only forever" and was planning against a premise that was wrong.
-
-  The warn-only step in `.github/workflows/quality.yml` now calls `lint.sh`
-  rather than re-deriving the file list with its own `find` and its own
-  exclusions. It could not simply drop `|| true`: its wider surface includes
-  `tools/legacy/` and `terminal/mqlaunch-v1/`, which still hold 5 warnings that
-  `lint.sh` deliberately excludes, so removing the safety net would have failed
-  CI on frozen paths that are closed to new work. Sharing one surface fixes that
-  and removes the duplicate definition.
-
-  `shellcheck` is installed in CI and its presence asserted before the gate runs.
-  `lint.sh` exits 0 when the binary is missing so a developer without it can
-  still run the suite; unguarded, that convenience would have made the CI step
-  unfailable.
-
-  Verified by mutation: an unused variable added to a throwaway script fails the
-  gate with SC2034 and exit 1, and removing it returns to green.
-
-  The ShellCheck version is pinned in CI rather than taken from apt. The first
-  enforced run failed on two SC2120 findings the version used for the
-  measurement does not report at all — the rule set moves between releases, so
-  an unpinned gate means something different depending on when it runs. Both
-  findings were fixed and the baseline is now zero under 0.9.0 and 0.11.0 alike:
-  `surface_git_state` keeps its repo argument with a directive naming the
-  contract test that passes one, and `_run_demo_flow` lost a parameter no caller
-  had ever supplied.
-
-### Changed
-
-* The nine unquoted command substitutions ShellCheck flagged for word splitting
-  are now quoted (SC2046). Eight are `read A B C <<< $(…)` in
-  `tools/scripts/scan.sh`; the ninth passes a default-gateway lookup as an
-  argument in `tools/scripts/pulse.sh`.
-
-  Quoting a here-string is only safe when the command emits one line — unquoted,
-  word splitting flattens newlines into spaces, so a multi-line result feeds
-  every field to `read`, while quoted it would read the first line and drop the
-  rest. All eight emit exactly one line by construction (`awk 'NR==2 …'` and a
-  single `END { printf }`), which is why quoting them changes nothing.
-
-  Verified against a deterministic stub rather than the live process list:
-  `scan.sh` reads `ps` and `vm_stat`, so its output differs between two runs of
-  the *same* code and whole-output diffing cannot decide the question. With a
-  stubbed `ps` emitting irregular whitespace and a process name containing
-  spaces, both forms produce identical variables, as does the empty-output edge
-  case. `pulse.sh` output is byte-identical before and after.
-
-  With this the ShellCheck warning baseline is **zero**, down from 96 when the
-  measurement started. `tools/scripts/shellcheck-report.sh` now reports
-  `-S warning  already clean — a gate here costs nothing today`.
-
-### Changed
-
-* The five unquoted `@{u}` git refs now match the two the repo already quoted.
-  `@{u}` is git's upstream shorthand, not shell — and the braces have to reach
-  git literally. They already did: neither bash nor zsh expands a single-element
-  brace, which is why `{a,b}` splits and `{u}` does not. So SC1083 was flagging
-  a form that worked, in the two spellings the repo used side by side.
-
-  Quoting is what ShellCheck suggests, is what
-  `ui/ascii/mqlaunch-dashboard-v7.1.sh:131` and
-  `automation/workflows/workspace.sh:100` already did, and states that the braces
-  belong to git. Verified identical against a real upstream (`origin/main`,
-  `1 0`), against a repo with no upstream (exit 128 either way), and through
-  `tests/git-status-contract-smoke.sh`, which drives the live dashboard.
-
-  Everything ShellCheck governs is now quoted. `terminal/launchers/gitlaunch.sh`
-  has five more unquoted, unflagged because it is zsh and outside ShellCheck's
-  reach; it was checked and is not a defect — zsh leaves `@{u}` literal exactly
-  as bash does.
-
-  SC1083 is now zero; the warning count is 19 → 9.
-
-### Fixed
-
-* `ui/ascii/mq-dashboard.sh` aborted halfway through rendering. Three lines wrote
-  `${mq_repeat_char "-" "$width"}` — a parameter expansion of a variable by that
-  name — where `$(mq_repeat_char …)`, a command substitution, was meant. bash
-  raises `bad substitution` at runtime, which `bash -n` cannot catch because it
-  is not a parse error.
-
-  The effect was not a missing separator. The function stopped at the first one,
-  so ten lines never printed: user, host, time, shell, OS, repo, branch and all
-  three rules. Verified by diffing the script's output before and after —
-  `main` emits one line to stderr and 12 lines of dashboard, this emits nothing
-  to stderr and 22.
-
-  ShellCheck reported it as SC2154, "mq_repeat_char is referenced but not
-  assigned", and only for the first of the three occurrences.
-
-  `docs/AUTHORITY_MAP.md` lists this file under "Dead — DEPRECATED … safe-to-delete
-  candidates", alongside `mq-dashboard-v3.sh` and `mq-banner.sh`. Deleting the
-  three is a separate decision and a diff worth seeing on its own; this makes the
-  code correct without presuming it.
-
-* `backup_zshrc` in `terminal/themes/mq-zsh-theme-switcher.sh` declared and
-  assigned in one statement, so `local` masked the exit status of the command
-  substitution (SC2155). Split. Both callers use `$(backup_zshrc)` and read
-  stdout, and the function's status comes from its `echo`, so nothing observable
-  changes — confirmed by driving the function against a temp directory.
-
-### Changed
-
-* The ten dynamic `source` calls ShellCheck could not follow now carry a
-  directive. Four name the real file — `mq-ui.sh` from `macos-tweaks.sh` and
-  `mq-ui-demo.sh`, `mq-ai-prompts.sh` from the release check, and
-  `mq-performance-menu.sh` from the performance bridge, which had a
-  `disable=SC1091` standing in for a path it could simply have named. Six cannot:
-  the mqobsidian and recommendations menus build their paths inside a loop over a
-  list of library names, and `ask`/`chat`/`fix`/`srm` source an operator's
-  `~/.env`, which lives outside the repo and is optional by design. Those get
-  `source=/dev/null` and a comment saying why no target exists.
-
-  Paths are script-relative, which is the form that resolves wherever ShellCheck
-  is invoked from. That matters more than it looks: `source=` resolves against
-  the working directory by default and against the script's directory under
-  `--source-path=SCRIPTDIR`, and `lint.sh` runs from neither predictably. All
-  four were verified to resolve to a file that exists.
-
-  SC1090 is now zero; the warning count is 31 → 21. The diff is comments only —
-  17 lines added, and the single removed line is the `disable=SC1091` a directive
-  replaced.
-
-### Fixed
-
-* Three submenus advertised `x. Exit` and did not implement it. `mq-apps-menu`,
-  `mq-system-menu` and `mq-help-center-menu` each carried
-  `b|B|x|X|exit) return` followed by an `x|X)` branch that printed
-  `Exiting …` and called `exit 0`. The first branch already matched `x`, so the
-  second was unreachable: pressing `x` returned to the parent menu while the
-  panel said it would exit.
-
-  The label was wrong, not the code. Every other submenu in the repo —
-  `mq-dev-menu`, `mq-git-menu`, `mq-ai-menu`, `mq-net-menu`, `mq-tools-menu` —
-  uses the same `b|B|x|X|exit) return` and advertises only `b. Back`. These
-  three were the outliers. The dead branch is removed and the panel row now
-  reads `b. Back` alone, so what is shown matches what happens.
-
-  Behaviour is unchanged, and that is verified rather than asserted: both `b`
-  and `x` were driven through all three menus against `main` and against the
-  branch, and every exit status is identical.
-
-* A duplicated pattern in the main menu's REPL dispatch. `hal\ *|"hal "*)`
-  spelled the same match twice — an escaped space and a quoted one — so the
-  second alternative could never be reached. Collapsed to `"hal "*)`.
-
-### Removed
-
-* Nine variables that were assigned and never read: `SCRIPT_NAME` in
-  `mqshortcuts.sh` (its usage heredoc is quoted, so nothing expanded it),
-  `REPO_ROOT` in `demo-flow.sh`, `MQ_MCP_REVIEW` in the tools menu (a path
-  constant naming a script that menu never invokes), `C_DIM` in `macos-tweaks.sh`
-  and `BOLD` in `env-snap.sh` (the only colours in either palette nothing used),
-  an unused `warnings` local in the performance menu, `top_glow` and `bot_glow`
-  in `mq-dashboard-v3.sh` (built from `═` while the lines the dashboard actually
-  draws use `▄` and `▀` inline), and a `delay` local in `vault-scan.sh`.
-
-  `vault-scan.sh` is worth flagging rather than quietly resolving: the local said
-  `0.02` while the loop below it sleeps `0.01` as a literal. Either the variable
-  was meant to be used or it is a leftover. Wiring it up would double the
-  animation delay, so this removes the dead local and changes no timing. If the
-  intent was `sleep "$delay"`, that is a separate decision about how the effect
-  should look.
-
-  Two loop counters the bodies never read — in `excalidraw.sh` and `watch.sh` —
-  became `_`.
-
-  Six more SC2034 findings stay, each with a directive naming what reads it:
-  three positional `read` fields in `scan.sh` where dropping the name would make
-  `read` append the value to the previous variable, and three dynamic-scope
-  contracts (`THEME_SCRIPT` and `MQ_THEME_ERROR_HEADING_BOLD` read by
-  `mqlaunch/lib/themes.sh`, `MQ_SURFACE_WIDTH` by the prompt-separator pattern
-  documented in `.claude/templates/`).
-
-  SC2034 is now zero; the ShellCheck warning count is 96 → 45.
-
-### Added
 
 * `tools/scripts/shellcheck-report.sh` — measures what a stricter ShellCheck
   gate would cost, and changes nothing. Deliberately not wired into
@@ -252,69 +72,6 @@ All notable changes to this project will be documented in this file.
   exclusions surfaces instead of quietly turning the numbers into a description
   of something else. Rule descriptions come from ShellCheck's own output rather
   than a table, so they cannot go stale against the installed version.
-
-### Fixed
-
-* `repo_state` reported `clean` for a checkout holding untracked files. All
-  three reporting surfaces — `mqlaunch status --json`, the status dashboard and
-  `mqlaunch version` — derived it from `git diff --quiet --ignore-submodules
-  HEAD`, which sees tracked changes only. `mqlaunch git` has always gated on
-  `git status --porcelain`, which counts untracked files, so the same tree could
-  read `clean` from one command and have changes according to another. One repo
-  should not answer "is this tree clean" two ways (#66).
-
-  `dirty` now means any working-tree change, untracked files included. The
-  question a consumer is asking is whether the checkout is safe to act on, and
-  an untracked file is a change even though it does not differ from `HEAD`.
-
-  The third value is `not-a-git-repo` everywhere. `mqlaunch status --json` said
-  `unknown`, which reads as "could not determine" — a different claim from the
-  one being made. The dashboard had no third value at all: a missing checkout
-  read as `dirty`. The token covers git being unavailable too, since without it
-  a checkout cannot be told from any other directory and the caller's options
-  are the same either way.
-
-  The derivation now lives in one place, `mq_repo_state` in
-  `ui/terminal-ui/mq-ui.sh`, next to `mq_git_status_snapshot` — which already
-  counted untracked files and already distinguished a non-checkout. The
-  divergence was three surfaces re-deriving an answer the shared library was
-  producing correctly. `tests/plain-output-contract-smoke.sh` drives all four
-  states against real checkouts in a temp directory, asserts that the
-  untracked-only fixture is one the old logic would have called clean, and fails
-  if any surface goes back to a tracked-only diff.
-
-### Changed
-
-* `tests/command-docs-smoke.sh` is a README contract instead of a second,
-  hand-maintained command registry. It named eleven commands — `palette`,
-  `ghost`, `pulse`, `reap`, `guard`, `mc`, `nickname-set`, `theme-macos`,
-  `theme-reset`, `bundle` — and grepped for each in `docs/COMMANDS.md` and again
-  in the dispatcher. All twenty assertions were strictly weaker than gates that
-  already run: `tests/registry-consumer-parity-smoke.sh` requires COMMANDS.md
-  coverage in both directions for all 73 commands, and
-  `validate-command-registry.py` holds registry-versus-dispatch parity exactly.
-  All eleven words were verified present in the registry and in COMMANDS.md
-  before the assertions were removed, so nothing stopped being checked — it is
-  checked for 73 commands now rather than eleven.
-
-  In their place, README becomes the fifth consumer of the registry, and the
-  first one that was never checked at all. It is the first page anyone reads, it
-  prints commands in runnable blocks, and nothing verified those commands exist.
-  README has the same contract as `mqlaunch help`: curated, so coverage is not
-  required, but every command it shows must dispatch and it must not promote a
-  word the registry is retiring. Extraction reads only fenced runnable blocks,
-  so the product boundary written as prose — `mqlaunch shows the right
-  workflow` — does not contribute a command called `shows`. Two fixtures, each
-  asserting the reason rather than a non-zero exit: a command README shows that
-  nothing dispatches, and a deprecated spelling README still teaches.
-
-  One assertion was dropped rather than moved: nothing now requires README to
-  mention `mqlaunch palette` specifically. Which commands earn a place on the
-  front page is a curation decision, not a contract, and a gate cannot tell the
-  difference between a command being removed from README and a command being
-  removed.
-
-### Added
 
 * `deprecated_aliases` in the command registry. An alias can outlive the reason
   it was added: deleting it breaks whoever still types it, and leaving it in
@@ -351,7 +108,361 @@ All notable changes to this project will be documented in this file.
   dispatcher and went with it. The rules exist so the first real deprecation is
   stated rather than remembered.
 
+* Subcommands in the command registry. The nine namespaces that dispatch a
+  nested `case "$sub" in` — `workspace`, `srm`, `repos`, `system`, `git`,
+  `release`, `dev`, `help`, `obsidian` — now declare their 47 subcommands with
+  aliases and summaries, plus `unknown_subcommand`, which records whether the
+  namespace rejects an unrecognised word itself (exit 2) or forwards it to a
+  delegate. That is the one thing a consumer must know before publishing the
+  list as complete: `system` rejects, so its list is the whole surface; `repos`
+  forwards, so the registry can only speak for what `mqlaunch` routes.
+  `validate-command-registry.py` gates all of it in both directions — a
+  subcommand the dispatcher does not handle, a dispatched subcommand or alias
+  the registry omits, a namespace that grows a nested case and declares
+  nothing, and an `unknown_subcommand` value that contradicts the `*` branch.
+  Five fixtures in `tests/command-registry-smoke.sh` assert the gate fires for
+  the right reason, not merely that it exits non-zero.
+
+* `mqlaunch/lib/command-registry.json` — the canonical inventory of top-level
+  `mqlaunch` commands: 67 entries covering 145 names, each carrying its aliases,
+  namespace, summary, owner repo, safety mode, output modes, JSON support,
+  interactivity, compatibility status and delegation target.
+  `tools/scripts/validate-command-registry.py` is the gate: it rejects duplicate
+  names and alias collisions, empty summaries, unknown owners or safety modes,
+  and JSON claims not backed by a JSON output mode — then walks
+  `dispatch_cli_command` and fails if the registry and the dispatcher disagree in
+  either direction. Registered as `tests/command-registry-smoke.sh`, which also
+  asserts that the gate itself fires rather than passing everything. The registry
+  sits on the authority-owned path required by `docs/RUNTIME_AUTHORITY.md`.
+  Nothing consumes it at runtime yet; help, palette and docs generation come
+  later in the v2.0.0 block.
+
+### Changed
+
+* ShellCheck is enforced at **warning** severity. `tools/scripts/lint.sh` runs
+  `-S warning` instead of `-S error`, which is the actual change — `error` has
+  been a hard gate since before this work, because `lint.sh` has never carried
+  `|| true` and `test-all.sh` calls it. The roadmap said "ShellCheck must not
+  remain warn-only forever" and was planning against a premise that was wrong.
+
+  The warn-only step in `.github/workflows/quality.yml` now calls `lint.sh`
+  rather than re-deriving the file list with its own `find` and its own
+  exclusions. It could not simply drop `|| true`: its wider surface includes
+  `tools/legacy/` and `terminal/mqlaunch-v1/`, which still hold 5 warnings that
+  `lint.sh` deliberately excludes, so removing the safety net would have failed
+  CI on frozen paths that are closed to new work. Sharing one surface fixes that
+  and removes the duplicate definition.
+
+  `shellcheck` is installed in CI and its presence asserted before the gate runs.
+  `lint.sh` exits 0 when the binary is missing so a developer without it can
+  still run the suite; unguarded, that convenience would have made the CI step
+  unfailable.
+
+  Verified by mutation: an unused variable added to a throwaway script fails the
+  gate with SC2034 and exit 1, and removing it returns to green.
+
+  The ShellCheck version is pinned in CI rather than taken from apt. The first
+  enforced run failed on two SC2120 findings the version used for the
+  measurement does not report at all — the rule set moves between releases, so
+  an unpinned gate means something different depending on when it runs. Both
+  findings were fixed and the baseline is now zero under 0.9.0 and 0.11.0 alike:
+  `surface_git_state` keeps its repo argument with a directive naming the
+  contract test that passes one, and `_run_demo_flow` lost a parameter no caller
+  had ever supplied.
+
+* The nine unquoted command substitutions ShellCheck flagged for word splitting
+  are now quoted (SC2046). Eight are `read A B C <<< $(…)` in
+  `tools/scripts/scan.sh`; the ninth passes a default-gateway lookup as an
+  argument in `tools/scripts/pulse.sh`.
+
+  Quoting a here-string is only safe when the command emits one line — unquoted,
+  word splitting flattens newlines into spaces, so a multi-line result feeds
+  every field to `read`, while quoted it would read the first line and drop the
+  rest. All eight emit exactly one line by construction (`awk 'NR==2 …'` and a
+  single `END { printf }`), which is why quoting them changes nothing.
+
+  Verified against a deterministic stub rather than the live process list:
+  `scan.sh` reads `ps` and `vm_stat`, so its output differs between two runs of
+  the *same* code and whole-output diffing cannot decide the question. With a
+  stubbed `ps` emitting irregular whitespace and a process name containing
+  spaces, both forms produce identical variables, as does the empty-output edge
+  case. `pulse.sh` output is byte-identical before and after.
+
+  With this the ShellCheck warning baseline is **zero**, down from 96 when the
+  measurement started. `tools/scripts/shellcheck-report.sh` now reports
+  `-S warning  already clean — a gate here costs nothing today`.
+
+* The five unquoted `@{u}` git refs now match the two the repo already quoted.
+  `@{u}` is git's upstream shorthand, not shell — and the braces have to reach
+  git literally. They already did: neither bash nor zsh expands a single-element
+  brace, which is why `{a,b}` splits and `{u}` does not. So SC1083 was flagging
+  a form that worked, in the two spellings the repo used side by side.
+
+  Quoting is what ShellCheck suggests, is what
+  `ui/ascii/mqlaunch-dashboard-v7.1.sh:131` and
+  `automation/workflows/workspace.sh:100` already did, and states that the braces
+  belong to git. Verified identical against a real upstream (`origin/main`,
+  `1 0`), against a repo with no upstream (exit 128 either way), and through
+  `tests/git-status-contract-smoke.sh`, which drives the live dashboard.
+
+  Everything ShellCheck governs is now quoted. `terminal/launchers/gitlaunch.sh`
+  has five more unquoted, unflagged because it is zsh and outside ShellCheck's
+  reach; it was checked and is not a defect — zsh leaves `@{u}` literal exactly
+  as bash does.
+
+  SC1083 is now zero; the warning count is 19 → 9.
+
+* The ten dynamic `source` calls ShellCheck could not follow now carry a
+  directive. Four name the real file — `mq-ui.sh` from `macos-tweaks.sh` and
+  `mq-ui-demo.sh`, `mq-ai-prompts.sh` from the release check, and
+  `mq-performance-menu.sh` from the performance bridge, which had a
+  `disable=SC1091` standing in for a path it could simply have named. Six cannot:
+  the mqobsidian and recommendations menus build their paths inside a loop over a
+  list of library names, and `ask`/`chat`/`fix`/`srm` source an operator's
+  `~/.env`, which lives outside the repo and is optional by design. Those get
+  `source=/dev/null` and a comment saying why no target exists.
+
+  Paths are script-relative, which is the form that resolves wherever ShellCheck
+  is invoked from. That matters more than it looks: `source=` resolves against
+  the working directory by default and against the script's directory under
+  `--source-path=SCRIPTDIR`, and `lint.sh` runs from neither predictably. All
+  four were verified to resolve to a file that exists.
+
+  SC1090 is now zero; the warning count is 31 → 21. The diff is comments only —
+  17 lines added, and the single removed line is the `disable=SC1091` a directive
+  replaced.
+
+* `tests/command-docs-smoke.sh` is a README contract instead of a second,
+  hand-maintained command registry. It named eleven commands — `palette`,
+  `ghost`, `pulse`, `reap`, `guard`, `mc`, `nickname-set`, `theme-macos`,
+  `theme-reset`, `bundle` — and grepped for each in `docs/COMMANDS.md` and again
+  in the dispatcher. All twenty assertions were strictly weaker than gates that
+  already run: `tests/registry-consumer-parity-smoke.sh` requires COMMANDS.md
+  coverage in both directions for all 73 commands, and
+  `validate-command-registry.py` holds registry-versus-dispatch parity exactly.
+  All eleven words were verified present in the registry and in COMMANDS.md
+  before the assertions were removed, so nothing stopped being checked — it is
+  checked for 73 commands now rather than eleven.
+
+  In their place, README becomes the fifth consumer of the registry, and the
+  first one that was never checked at all. It is the first page anyone reads, it
+  prints commands in runnable blocks, and nothing verified those commands exist.
+  README has the same contract as `mqlaunch help`: curated, so coverage is not
+  required, but every command it shows must dispatch and it must not promote a
+  word the registry is retiring. Extraction reads only fenced runnable blocks,
+  so the product boundary written as prose — `mqlaunch shows the right
+  workflow` — does not contribute a command called `shows`. Two fixtures, each
+  asserting the reason rather than a non-zero exit: a command README shows that
+  nothing dispatches, and a deprecated spelling README still teaches.
+
+  One assertion was dropped rather than moved: nothing now requires README to
+  mention `mqlaunch palette` specifically. Which commands earn a place on the
+  front page is a curation decision, not a contract, and a gate cannot tell the
+  difference between a command being removed from README and a command being
+  removed.
+
+* Added a root `release-check.sh` conforming to the `repo_release_check.v1`
+  contract: `--json` emits the machine-readable verdict (`schema`, `repo`,
+  `status`, `blockers`, `warnings`, `evidence`) on clean stdout and exits 0;
+  human mode prints per-check ok/FAIL. Runs the read-only checks (contract/
+  CHANGELOG/README version surfaces, check-skills, runtime-authority freeze,
+  `bash -n` syntax, mqlaunch smoke suite). Lets mq-agent's `stack release --all
+  --preflight` read the release verdict.
+
+### Fixed
+
+* `ui/ascii/mq-dashboard.sh` aborted halfway through rendering. Three lines wrote
+  `${mq_repeat_char "-" "$width"}` — a parameter expansion of a variable by that
+  name — where `$(mq_repeat_char …)`, a command substitution, was meant. bash
+  raises `bad substitution` at runtime, which `bash -n` cannot catch because it
+  is not a parse error.
+
+  The effect was not a missing separator. The function stopped at the first one,
+  so ten lines never printed: user, host, time, shell, OS, repo, branch and all
+  three rules. Verified by diffing the script's output before and after —
+  `main` emits one line to stderr and 12 lines of dashboard, this emits nothing
+  to stderr and 22.
+
+  ShellCheck reported it as SC2154, "mq_repeat_char is referenced but not
+  assigned", and only for the first of the three occurrences.
+
+  `docs/AUTHORITY_MAP.md` lists this file under "Dead — DEPRECATED … safe-to-delete
+  candidates", alongside `mq-dashboard-v3.sh` and `mq-banner.sh`. Deleting the
+  three is a separate decision and a diff worth seeing on its own; this makes the
+  code correct without presuming it.
+
+* `backup_zshrc` in `terminal/themes/mq-zsh-theme-switcher.sh` declared and
+  assigned in one statement, so `local` masked the exit status of the command
+  substitution (SC2155). Split. Both callers use `$(backup_zshrc)` and read
+  stdout, and the function's status comes from its `echo`, so nothing observable
+  changes — confirmed by driving the function against a temp directory.
+
+* Three submenus advertised `x. Exit` and did not implement it. `mq-apps-menu`,
+  `mq-system-menu` and `mq-help-center-menu` each carried
+  `b|B|x|X|exit) return` followed by an `x|X)` branch that printed
+  `Exiting …` and called `exit 0`. The first branch already matched `x`, so the
+  second was unreachable: pressing `x` returned to the parent menu while the
+  panel said it would exit.
+
+  The label was wrong, not the code. Every other submenu in the repo —
+  `mq-dev-menu`, `mq-git-menu`, `mq-ai-menu`, `mq-net-menu`, `mq-tools-menu` —
+  uses the same `b|B|x|X|exit) return` and advertises only `b. Back`. These
+  three were the outliers. The dead branch is removed and the panel row now
+  reads `b. Back` alone, so what is shown matches what happens.
+
+  Behaviour is unchanged, and that is verified rather than asserted: both `b`
+  and `x` were driven through all three menus against `main` and against the
+  branch, and every exit status is identical.
+
+* A duplicated pattern in the main menu's REPL dispatch. `hal\ *|"hal "*)`
+  spelled the same match twice — an escaped space and a quoted one — so the
+  second alternative could never be reached. Collapsed to `"hal "*)`.
+
+* `repo_state` reported `clean` for a checkout holding untracked files. All
+  three reporting surfaces — `mqlaunch status --json`, the status dashboard and
+  `mqlaunch version` — derived it from `git diff --quiet --ignore-submodules
+  HEAD`, which sees tracked changes only. `mqlaunch git` has always gated on
+  `git status --porcelain`, which counts untracked files, so the same tree could
+  read `clean` from one command and have changes according to another. One repo
+  should not answer "is this tree clean" two ways (#66).
+
+  `dirty` now means any working-tree change, untracked files included. The
+  question a consumer is asking is whether the checkout is safe to act on, and
+  an untracked file is a change even though it does not differ from `HEAD`.
+
+  The third value is `not-a-git-repo` everywhere. `mqlaunch status --json` said
+  `unknown`, which reads as "could not determine" — a different claim from the
+  one being made. The dashboard had no third value at all: a missing checkout
+  read as `dirty`. The token covers git being unavailable too, since without it
+  a checkout cannot be told from any other directory and the caller's options
+  are the same either way.
+
+  The derivation now lives in one place, `mq_repo_state` in
+  `ui/terminal-ui/mq-ui.sh`, next to `mq_git_status_snapshot` — which already
+  counted untracked files and already distinguished a non-checkout. The
+  divergence was three surfaces re-deriving an answer the shared library was
+  producing correctly. `tests/plain-output-contract-smoke.sh` drives all four
+  states against real checkouts in a temp directory, asserts that the
+  untracked-only fixture is one the old logic would have called clean, and fails
+  if any surface goes back to a tracked-only diff.
+
+* `mqlaunch release-check --json` printed the human banner and exited 0. The
+  route forwarded flags to `terminal/release/mq-release-check.sh`, which reads
+  only `--brain` and discards everything else, so a caller asking for JSON got
+  a successful-looking banner to parse. `--json` now reaches `release-check.sh`,
+  which owns the `repo_release_check.v1` contract, and its output is identical
+  to running that script directly. Unknown flags exit 2 with a usage error
+  instead of being ignored. Human mode is unchanged and keeps the wider review
+  the two scripts do not share — secrets scan, mqobsidian manifest contract,
+  changelog versus commits. The registry entry declared `"json": false` and now
+  matches.
+
+* `mqlaunch git help` never returned. It reached `open_git_menu`, which treats
+  its argument as a repo path, so `help` became a failed path lookup and the
+  interactive menu opened and looped on EOF — 12580 bytes and no exit without a
+  terminal. `help`, `-h` and `--help` now resolve before the namespace body for
+  every namespace mqlaunch routes, so `git`, `system`, `release` and `dev` join
+  the seven that already exited 0. `system`, `release` and `dev` previously
+  exited 2 for a successful help request.
+
+* An unknown subcommand now behaves the same across the namespaces mqlaunch
+  routes itself: a diagnostic on stderr, help on stdout, exit 2, and no menu.
+  `obsidian` used to print a hand-written usage string and exit 1, while
+  `system`, `release`, `dev` and `help` exited 2 silently. `git`, `srm`, `repos`
+  and `workspace` are deliberately unchanged — they have no closed subcommand
+  set, and the reasoning is in `docs/plans/P1-command-registry-subcommands.md`.
+
+* `mqlaunch repos LIST` failed while `mqlaunch system TIME` worked. Command
+  words are lowercased into `sub` before routing, but the `srm` and `repos`
+  branches shifted and re-read the raw `"${1:-}"`, so those two namespaces were
+  case-sensitive and nothing else was. Both now route on the normalised word,
+  and `repos` forwards it to `mq-repos.py`, which matches its command word
+  exactly. Only the command word is normalised: arguments keep the case the user
+  typed, an unknown subcommand is still forwarded verbatim so the delegate's
+  error names what was actually typed, and the free-text question that `srm`
+  hands to `srm.sh` is untouched. Implements D1 of
+  `docs/plans/P1-command-registry-subcommands.md`.
+
+* 22 dispatch branches invoked a script under `$BASE_DIR` and then ended in an
+  unconditional `return 0`, so a failing delegate was reported as success:
+  `mqlaunch repos LIST` and `mqlaunch skills no-such-subcommand` both wrote a
+  usage error to stderr and exited 0. Every delegating branch now captures
+  `command_status` and returns it, matching the idiom the agent and HAL routes
+  already used. `pause_enter` no longer overwrites the status on the routes that
+  call it. `tests/delegated-exit-code-smoke.sh` gained the two behavioural cases
+  and a structural check that fails if any delegating branch reverts to an
+  unconditional `return 0`.
+
+* `mqlaunch` dispatched `memory` from two different branches. The
+  `srm|memory|repo-memory` branch claims it first, so the `memory` listed in the
+  brain-bridge branch below it could never match — `mqlaunch memory` has always
+  gone to the SRM surface, never to the brain bridge. Removed the unreachable
+  token; behaviour is unchanged, and the registry gate now fails if a duplicate
+  route is introduced again. Found while mapping the command surface for the
+  registry.
+
+* `docs/RUNTIME_AUTHORITY.md` — the runtime-governance contract for `mqlaunch`.
+  Names the single live authority (`bin/mqlaunch` → `mqlaunch.sh` →
+  `mqlaunch-command-mode.sh`), the allowed and forbidden responsibilities of that
+  path, the LIVE/COMPAT/DEPRECATED/TEST-ONLY classes, the compatibility policy
+  and its removal gate, and the dependency direction that forbids new live edges
+  into `terminal/mqlaunch-v1/`. `AUTHORITY_MAP.md` keeps the path-by-path
+  inventory; this document holds the boundary that must stay true while those
+  paths migrate. Linked from the README documentation map, `COMMAND_SURFACE.md`
+  and `MQ_BOUNDARY.md`. Closes the P1 "Single runtime authority" roadmap block,
+  whose delegation tests already existed in
+  `tests/compat-path-delegation-smoke.sh`.
+
+* `mqlaunch status --json` (and `about --json`) now emit machine-readable JSON
+  only. The `about|status` route ignored its arguments and always rendered the
+  dashboard, so a caller piping `--json` got ~5.9 KB of ASCII banner, no JSON,
+  and exit 0 — a silent failure. `dispatch_cli_command` now branches on
+  `has_json_flag` into `print_status_json`, which prints one JSON document
+  (`project`, `version`, `release_stage`, `repo_state`, `latest_bundle`) on
+  clean stdout. The JSON path also drops the dashboard's smoke-test field, which
+  shelled out to the full test suite: the call went from 20.7 s to 0.1 s and no
+  longer recurses when run from `test-all.sh`. `repo_state` reports `unknown`
+  instead of `dirty` when the repo root is not a git checkout. Proven by two new
+  steps in `tests/plain-output-contract-smoke.sh`.
+
+* The git "auto commit + push" automation no longer leaves the working checkout
+  off-main. After creating and pushing an `mq/...` PR branch,
+  `create_pr_branch_for_push` (in `gitlaunch.sh` and `mq-git-menu.sh`) now calls
+  `tools/scripts/git-restore-to-base.sh`, which restores the checkout to the base
+  branch and rewinds the local base ref to origin — non-destructively, since the
+  commit is already on the pushed PR branch. Runs even when the push or PR step
+  failed; reports repo/branch/dirty/next-command if it cannot restore. Proven by
+  `tests/git-restore-to-base-smoke.sh`.
+
 ### Removed
+
+* Nine variables that were assigned and never read: `SCRIPT_NAME` in
+  `mqshortcuts.sh` (its usage heredoc is quoted, so nothing expanded it),
+  `REPO_ROOT` in `demo-flow.sh`, `MQ_MCP_REVIEW` in the tools menu (a path
+  constant naming a script that menu never invokes), `C_DIM` in `macos-tweaks.sh`
+  and `BOLD` in `env-snap.sh` (the only colours in either palette nothing used),
+  an unused `warnings` local in the performance menu, `top_glow` and `bot_glow`
+  in `mq-dashboard-v3.sh` (built from `═` while the lines the dashboard actually
+  draws use `▄` and `▀` inline), and a `delay` local in `vault-scan.sh`.
+
+  `vault-scan.sh` is worth flagging rather than quietly resolving: the local said
+  `0.02` while the loop below it sleeps `0.01` as a literal. Either the variable
+  was meant to be used or it is a leftover. Wiring it up would double the
+  animation delay, so this removes the dead local and changes no timing. If the
+  intent was `sleep "$delay"`, that is a separate decision about how the effect
+  should look.
+
+  Two loop counters the bodies never read — in `excalidraw.sh` and `watch.sh` —
+  became `_`.
+
+  Six more SC2034 findings stay, each with a directive naming what reads it:
+  three positional `read` fields in `scan.sh` where dropping the name would make
+  `read` append the value to the previous variable, and three dynamic-scope
+  contracts (`THEME_SCRIPT` and `MQ_THEME_ERROR_HEADING_BOLD` read by
+  `mqlaunch/lib/themes.sh`, `MQ_SURFACE_WIDTH` by the prompt-separator pattern
+  documented in `.claude/templates/`).
+
+  SC2034 is now zero; the ShellCheck warning count is 96 → 45.
 
 * `run_arg_command`, the second command dispatcher, and the freeze that held it.
   It answered the command palette and accepted 93 words the registry never
@@ -382,133 +493,6 @@ All notable changes to this project will be documented in this file.
 
   `tools/scripts/mqlaunch_desktop.sh` keeps its own copy. It is a separate live
   entrypoint that dispatches for itself, not a caller of this one.
-
-### Added
-
-* Subcommands in the command registry. The nine namespaces that dispatch a
-  nested `case "$sub" in` — `workspace`, `srm`, `repos`, `system`, `git`,
-  `release`, `dev`, `help`, `obsidian` — now declare their 47 subcommands with
-  aliases and summaries, plus `unknown_subcommand`, which records whether the
-  namespace rejects an unrecognised word itself (exit 2) or forwards it to a
-  delegate. That is the one thing a consumer must know before publishing the
-  list as complete: `system` rejects, so its list is the whole surface; `repos`
-  forwards, so the registry can only speak for what `mqlaunch` routes.
-  `validate-command-registry.py` gates all of it in both directions — a
-  subcommand the dispatcher does not handle, a dispatched subcommand or alias
-  the registry omits, a namespace that grows a nested case and declares
-  nothing, and an `unknown_subcommand` value that contradicts the `*` branch.
-  Five fixtures in `tests/command-registry-smoke.sh` assert the gate fires for
-  the right reason, not merely that it exits non-zero.
-* `mqlaunch/lib/command-registry.json` — the canonical inventory of top-level
-  `mqlaunch` commands: 67 entries covering 145 names, each carrying its aliases,
-  namespace, summary, owner repo, safety mode, output modes, JSON support,
-  interactivity, compatibility status and delegation target.
-  `tools/scripts/validate-command-registry.py` is the gate: it rejects duplicate
-  names and alias collisions, empty summaries, unknown owners or safety modes,
-  and JSON claims not backed by a JSON output mode — then walks
-  `dispatch_cli_command` and fails if the registry and the dispatcher disagree in
-  either direction. Registered as `tests/command-registry-smoke.sh`, which also
-  asserts that the gate itself fires rather than passing everything. The registry
-  sits on the authority-owned path required by `docs/RUNTIME_AUTHORITY.md`.
-  Nothing consumes it at runtime yet; help, palette and docs generation come
-  later in the v2.0.0 block.
-
-### Fixed
-
-* `mqlaunch release-check --json` printed the human banner and exited 0. The
-  route forwarded flags to `terminal/release/mq-release-check.sh`, which reads
-  only `--brain` and discards everything else, so a caller asking for JSON got
-  a successful-looking banner to parse. `--json` now reaches `release-check.sh`,
-  which owns the `repo_release_check.v1` contract, and its output is identical
-  to running that script directly. Unknown flags exit 2 with a usage error
-  instead of being ignored. Human mode is unchanged and keeps the wider review
-  the two scripts do not share — secrets scan, mqobsidian manifest contract,
-  changelog versus commits. The registry entry declared `"json": false` and now
-  matches.
-* `mqlaunch git help` never returned. It reached `open_git_menu`, which treats
-  its argument as a repo path, so `help` became a failed path lookup and the
-  interactive menu opened and looped on EOF — 12580 bytes and no exit without a
-  terminal. `help`, `-h` and `--help` now resolve before the namespace body for
-  every namespace mqlaunch routes, so `git`, `system`, `release` and `dev` join
-  the seven that already exited 0. `system`, `release` and `dev` previously
-  exited 2 for a successful help request.
-* An unknown subcommand now behaves the same across the namespaces mqlaunch
-  routes itself: a diagnostic on stderr, help on stdout, exit 2, and no menu.
-  `obsidian` used to print a hand-written usage string and exit 1, while
-  `system`, `release`, `dev` and `help` exited 2 silently. `git`, `srm`, `repos`
-  and `workspace` are deliberately unchanged — they have no closed subcommand
-  set, and the reasoning is in `docs/plans/P1-command-registry-subcommands.md`.
-* `mqlaunch repos LIST` failed while `mqlaunch system TIME` worked. Command
-  words are lowercased into `sub` before routing, but the `srm` and `repos`
-  branches shifted and re-read the raw `"${1:-}"`, so those two namespaces were
-  case-sensitive and nothing else was. Both now route on the normalised word,
-  and `repos` forwards it to `mq-repos.py`, which matches its command word
-  exactly. Only the command word is normalised: arguments keep the case the user
-  typed, an unknown subcommand is still forwarded verbatim so the delegate's
-  error names what was actually typed, and the free-text question that `srm`
-  hands to `srm.sh` is untouched. Implements D1 of
-  `docs/plans/P1-command-registry-subcommands.md`.
-* 22 dispatch branches invoked a script under `$BASE_DIR` and then ended in an
-  unconditional `return 0`, so a failing delegate was reported as success:
-  `mqlaunch repos LIST` and `mqlaunch skills no-such-subcommand` both wrote a
-  usage error to stderr and exited 0. Every delegating branch now captures
-  `command_status` and returns it, matching the idiom the agent and HAL routes
-  already used. `pause_enter` no longer overwrites the status on the routes that
-  call it. `tests/delegated-exit-code-smoke.sh` gained the two behavioural cases
-  and a structural check that fails if any delegating branch reverts to an
-  unconditional `return 0`.
-* `mqlaunch` dispatched `memory` from two different branches. The
-  `srm|memory|repo-memory` branch claims it first, so the `memory` listed in the
-  brain-bridge branch below it could never match — `mqlaunch memory` has always
-  gone to the SRM surface, never to the brain bridge. Removed the unreachable
-  token; behaviour is unchanged, and the registry gate now fails if a duplicate
-  route is introduced again. Found while mapping the command surface for the
-  registry.
-
-* `docs/RUNTIME_AUTHORITY.md` — the runtime-governance contract for `mqlaunch`.
-  Names the single live authority (`bin/mqlaunch` → `mqlaunch.sh` →
-  `mqlaunch-command-mode.sh`), the allowed and forbidden responsibilities of that
-  path, the LIVE/COMPAT/DEPRECATED/TEST-ONLY classes, the compatibility policy
-  and its removal gate, and the dependency direction that forbids new live edges
-  into `terminal/mqlaunch-v1/`. `AUTHORITY_MAP.md` keeps the path-by-path
-  inventory; this document holds the boundary that must stay true while those
-  paths migrate. Linked from the README documentation map, `COMMAND_SURFACE.md`
-  and `MQ_BOUNDARY.md`. Closes the P1 "Single runtime authority" roadmap block,
-  whose delegation tests already existed in
-  `tests/compat-path-delegation-smoke.sh`.
-
-### Fixed
-
-* `mqlaunch status --json` (and `about --json`) now emit machine-readable JSON
-  only. The `about|status` route ignored its arguments and always rendered the
-  dashboard, so a caller piping `--json` got ~5.9 KB of ASCII banner, no JSON,
-  and exit 0 — a silent failure. `dispatch_cli_command` now branches on
-  `has_json_flag` into `print_status_json`, which prints one JSON document
-  (`project`, `version`, `release_stage`, `repo_state`, `latest_bundle`) on
-  clean stdout. The JSON path also drops the dashboard's smoke-test field, which
-  shelled out to the full test suite: the call went from 20.7 s to 0.1 s and no
-  longer recurses when run from `test-all.sh`. `repo_state` reports `unknown`
-  instead of `dirty` when the repo root is not a git checkout. Proven by two new
-  steps in `tests/plain-output-contract-smoke.sh`.
-
-* The git "auto commit + push" automation no longer leaves the working checkout
-  off-main. After creating and pushing an `mq/...` PR branch,
-  `create_pr_branch_for_push` (in `gitlaunch.sh` and `mq-git-menu.sh`) now calls
-  `tools/scripts/git-restore-to-base.sh`, which restores the checkout to the base
-  branch and rewinds the local base ref to origin — non-destructively, since the
-  commit is already on the pushed PR branch. Runs even when the push or PR step
-  failed; reports repo/branch/dirty/next-command if it cannot restore. Proven by
-  `tests/git-restore-to-base-smoke.sh`.
-
-### Changed
-
-* Added a root `release-check.sh` conforming to the `repo_release_check.v1`
-  contract: `--json` emits the machine-readable verdict (`schema`, `repo`,
-  `status`, `blockers`, `warnings`, `evidence`) on clean stdout and exits 0;
-  human mode prints per-check ok/FAIL. Runs the read-only checks (contract/
-  CHANGELOG/README version surfaces, check-skills, runtime-authority freeze,
-  `bash -n` syntax, mqlaunch smoke suite). Lets mq-agent's `stack release --all
-  --preflight` read the release verdict.
 
 ## [1.0.1] - 2026-07-16
 
