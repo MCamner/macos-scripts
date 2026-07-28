@@ -211,7 +211,7 @@ show_status() {
 
   local branch upstream ahead behind
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
-  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
 
   ahead=0
   behind=0
@@ -355,7 +355,7 @@ next_action() {
   local status branch upstream ahead behind
   status="$(git -C "$CURRENT_REPO" status --short)"
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
-  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
   ahead=0
   behind=0
 
@@ -473,7 +473,7 @@ safe_push() {
 
   local branch upstream ahead behind confirm
   branch="$(git -C "$CURRENT_REPO" branch --show-current)"
-  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git -C "$CURRENT_REPO" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
   ahead=0
   behind=0
 

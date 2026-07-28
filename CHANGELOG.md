@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The five unquoted `@{u}` git refs now match the two the repo already quoted.
+  `@{u}` is git's upstream shorthand, not shell — and the braces have to reach
+  git literally. They already did: neither bash nor zsh expands a single-element
+  brace, which is why `{a,b}` splits and `{u}` does not. So SC1083 was flagging
+  a form that worked, in the two spellings the repo used side by side.
+
+  Quoting is what ShellCheck suggests, is what
+  `ui/ascii/mqlaunch-dashboard-v7.1.sh:131` and
+  `automation/workflows/workspace.sh:100` already did, and states that the braces
+  belong to git. Verified identical against a real upstream (`origin/main`,
+  `1 0`), against a repo with no upstream (exit 128 either way), and through
+  `tests/git-status-contract-smoke.sh`, which drives the live dashboard.
+
+  Everything ShellCheck governs is now quoted. `terminal/launchers/gitlaunch.sh`
+  has five more unquoted, unflagged because it is zsh and outside ShellCheck's
+  reach; it was checked and is not a defect — zsh leaves `@{u}` literal exactly
+  as bash does.
+
+  SC1083 is now zero; the warning count is 19 → 9.
+
 ### Fixed
 
 * `ui/ascii/mq-dashboard.sh` aborted halfway through rendering. Three lines wrote
