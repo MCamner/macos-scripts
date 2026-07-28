@@ -505,12 +505,15 @@ variable and mostly is not.
   three occurrences; and the SC2046 here-strings are only safe to quote because
   every one of them emits a single line.
 
-* [ ] Fix the 5 remaining warnings in `terminal/mqlaunch-v1/` and
+* [x] Fix the 5 remaining warnings in `terminal/mqlaunch-v1/` and
   `tools/legacy/`, or state that frozen paths are permanently out of scope.
 
-  They are outside `lint.sh`'s surface, so the gate does not see them. That is
-  defensible for paths closed to new work, but it should be a written decision
-  rather than an exclusion nobody revisits.
+  Stated, in `docs/RUNTIME_AUTHORITY.md` under the compatibility policy: frozen
+  paths stay outside the gated surface until they are deleted. All 5 are SC2034,
+  four of them colour variables the sourcing scripts do read. Clearing them would
+  mean editing frozen code to satisfy a linter, on paths the policy forbids doing
+  work on, for findings that are mostly not defects. A path moving to a live
+  location joins the gate with it.
 
 * [ ] Add a project-level ShellCheck policy.
 
