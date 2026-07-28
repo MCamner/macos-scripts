@@ -6,6 +6,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `tests/docs-file-inventory-smoke.sh` — a README that documents a file by name
+  must not outlive it. Three READMEs describe their directory file by file as
+  `###`name`` sections: `ui/ascii`, `terminal/menus` and `automation/workflows`.
+  That form is a hand-written inventory, and it had already gone stale:
+  `ui/ascii/README.md` carried a section for `mq-skull.txt` long after PR #32
+  deleted the file. Confirmed the gate catches it — run against the README as it
+  stood before the fix, it reports `mq-skull.txt`.
+
+  One direction only, the same contract `mqlaunch help` and README follow:
+  documented files must exist, coverage is not required. `terminal/menus/README.md`
+  writes up 11 of its 21 files by design, and forcing the rest in would turn it
+  into a directory listing the shell already provides. The uncovered count is
+  printed rather than enforced — a number moving is a prompt to look, not a build
+  break.
+
+  `docs/AUTHORITY_MAP.md` claimed stray `*.sh.bak` files were removed in PR #32.
+  One survives — `terminal/menus/mq-hal-menu.sh.bak.20260519-115142`, dated after
+  that cleanup, referenced by nothing. The claim is corrected and the file is
+  listed as dead rather than deleted here, since deletions belong in their own
+  diff.
+
 ### Changed
 
 * ShellCheck is enforced at **warning** severity. `tools/scripts/lint.sh` runs
