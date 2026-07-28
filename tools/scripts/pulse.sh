@@ -52,7 +52,7 @@ test_ping() {
     fi
 }
 
-test_ping "Local Router:" $(route -n get default | grep gateway | awk '{print $2}')
+test_ping "Local Router:" "$(route -n get default | grep gateway | awk '{print $2}')"
 test_ping "Google DNS:" "8.8.8.8"
 test_ping "Cloudflare:" "1.1.1.1"
 

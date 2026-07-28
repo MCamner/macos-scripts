@@ -43,7 +43,7 @@ memory_pressure_v4() {
   # variables. Dropping it would make `read` append it to COMPRESSED_MB.
   # shellcheck disable=SC2034
   read AVAILABLE_MB COMPRESSED_MB PAGEOUTS <<< \
-  $(vm_stat | awk '
+  "$(vm_stat | awk '
     NR==1 {
       page_size=$8
       gsub(/[^0-9]/, "", page_size)
@@ -65,7 +65,7 @@ memory_pressure_v4() {
 
       printf "%.0f %.0f %d\n", available, compressed, pageouts
     }
-  ')
+  ')"
 
   if [ -z "$AVAILABLE_MB" ] || [ -z "$COMPRESSED_MB" ]; then
     MQ_MEM_SCORE=20
@@ -98,13 +98,13 @@ combined_insight_v2() {
   # output. The pid itself is not displayed.
   # shellcheck disable=SC2034
   read CPU_PID CPU CPU_NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
   CPU_NAME=$(basename "$CPU_NAME")
 
   # Same positional role as CPU_PID above.
   # shellcheck disable=SC2034
   read MEM_PID MEM MEM_RSS MEM_NAME <<< \
-  $(ps -Ao pid,pmem,rss,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3, $4}')
+  "$(ps -Ao pid,pmem,rss,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3, $4}')"
   MEM_NAME=$(basename "$MEM_NAME")
 
   echo "Top CPU: $CPU_NAME ($CPU%)"
@@ -178,7 +178,7 @@ no_action_mode() {
 # Suggests kill.
 suggest_kill() {
   read PID CPU NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
   NAME=$(basename "$NAME")
 
   echo
@@ -200,7 +200,7 @@ suggest_kill() {
 # Coordinates smart kill behavior.
 smart_kill() {
   read PID CPU NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
   NAME=$(basename "$NAME")
   CPU_INT=${CPU%%[.,]*}
 
@@ -228,7 +228,7 @@ track_offender() {
   mkdir -p "$HOME/.mq"
 
   read PID CPU NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
   NAME=$(basename "$NAME")
 
   echo "$NAME" >> "$LOG"
@@ -304,9 +304,9 @@ score_offenders() {
 # Coordinates top weighted action behavior.
 top_weighted_action() {
   read PID CPU MEM NAME <<< \
-  $(ps -Ao pid,pcpu,pmem,comm \
+  "$(ps -Ao pid,pcpu,pmem,comm \
     | sort -k2 -nr \
-    | awk 'NR==2 {print $1, $2, $3, $4}')
+    | awk 'NR==2 {print $1, $2, $3, $4}')"
   NAME=$(basename "$NAME")
   CPU_INT=${CPU%%[.,]*}
 
@@ -337,7 +337,7 @@ track_offender_decay() {
   mkdir -p "$HOME/.mq"
 
   read PID CPU NAME <<< \
-  $(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')
+  "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
 
   NOW=$(date +%s)
 

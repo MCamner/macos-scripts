@@ -8,6 +8,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* The nine unquoted command substitutions ShellCheck flagged for word splitting
+  are now quoted (SC2046). Eight are `read A B C <<< $(…)` in
+  `tools/scripts/scan.sh`; the ninth passes a default-gateway lookup as an
+  argument in `tools/scripts/pulse.sh`.
+
+  Quoting a here-string is only safe when the command emits one line — unquoted,
+  word splitting flattens newlines into spaces, so a multi-line result feeds
+  every field to `read`, while quoted it would read the first line and drop the
+  rest. All eight emit exactly one line by construction (`awk 'NR==2 …'` and a
+  single `END { printf }`), which is why quoting them changes nothing.
+
+  Verified against a deterministic stub rather than the live process list:
+  `scan.sh` reads `ps` and `vm_stat`, so its output differs between two runs of
+  the *same* code and whole-output diffing cannot decide the question. With a
+  stubbed `ps` emitting irregular whitespace and a process name containing
+  spaces, both forms produce identical variables, as does the empty-output edge
+  case. `pulse.sh` output is byte-identical before and after.
+
+  With this the ShellCheck warning baseline is **zero**, down from 96 when the
+  measurement started. `tools/scripts/shellcheck-report.sh` now reports
+  `-S warning  already clean — a gate here costs nothing today`.
+
+### Changed
+
 * The five unquoted `@{u}` git refs now match the two the repo already quoted.
   `@{u}` is git's upstream shorthand, not shell — and the braces have to reach
   git literally. They already did: neither bash nor zsh expands a single-element
