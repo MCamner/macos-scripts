@@ -31,18 +31,6 @@ ASCII modules in this folder should aim for:
 
 ## Current files
 
-### `mq-banner.sh`
-
-A reusable banner-style module for simple branded terminal headers.
-
-### `mq-dashboard.sh`
-
-An early reusable dashboard module focused on dynamic terminal status output.
-
-### `mq-dashboard-v3.sh`
-
-A cyberpunk / CRT-inspired dashboard with stronger visual identity and dynamic system metadata.
-
 ### `mqlaunch-dashboard-v7.1.sh`
 
 The current polished branded dashboard for **MQLAUNCH**, featuring:
