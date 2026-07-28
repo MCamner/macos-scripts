@@ -206,6 +206,10 @@ mq_repo_state() {
 }
 
 # Handles surface git state.
+# The repo argument is exercised by tests/git-status-contract-smoke.sh, which
+# passes a temp checkout. ShellCheck only sees callers in this file, all of
+# which take the default, so it reads the parameter as unused (SC2120).
+# shellcheck disable=SC2120
 surface_git_state() {
   local repo="${1:-.}"
   local snapshot count state

@@ -14,8 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install zsh and shellcheck
-        run: sudo apt-get install -y zsh shellcheck
+      - name: Install zsh
+        run: sudo apt-get install -y zsh
+
+      # Pinned, not apt. ShellCheck's rule set changes between releases, and a
+      # gate whose rules move on their own is not reproducible: the first
+      # enforced run failed on two SC2120 findings that the version used for the
+      # measurement (#92) does not report at all. Bump this deliberately, with
+      # the findings the new version brings.
+      - name: Install ShellCheck (pinned)
+        env:
+          SHELLCHECK_VERSION: v0.11.0
+        run: |
+          tmp="$(mktemp -d)"
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar -xJf - -C "$tmp"
+          sudo install -m 0755 "$tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          rm -rf "$tmp"
+          shellcheck --version
 
       - name: Skills are consistent (frontmatter, cross-refs, paths, SKILLS.md)
         run: ./scripts/check-skills.sh

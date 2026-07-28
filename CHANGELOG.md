@@ -30,6 +30,15 @@ All notable changes to this project will be documented in this file.
   Verified by mutation: an unused variable added to a throwaway script fails the
   gate with SC2034 and exit 1, and removing it returns to green.
 
+  The ShellCheck version is pinned in CI rather than taken from apt. The first
+  enforced run failed on two SC2120 findings the version used for the
+  measurement does not report at all — the rule set moves between releases, so
+  an unpinned gate means something different depending on when it runs. Both
+  findings were fixed and the baseline is now zero under 0.9.0 and 0.11.0 alike:
+  `surface_git_state` keeps its repo argument with a directive naming the
+  contract test that passes one, and `_run_demo_flow` lost a parameter no caller
+  had ever supplied.
+
 ### Changed
 
 * The nine unquoted command substitutions ShellCheck flagged for word splitting
