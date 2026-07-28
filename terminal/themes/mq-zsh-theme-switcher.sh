@@ -66,7 +66,9 @@ theme_source_present() {
 # Backs up zshrc.
 backup_zshrc() {
   mkdir -p "$BACKUP_DIR"
-  local backup_file="$BACKUP_DIR/.zshrc.backup-$(date +%Y%m%d-%H%M%S)"
+  # Split so `local` does not mask the exit status of the substitution.
+  local backup_file
+  backup_file="$BACKUP_DIR/.zshrc.backup-$(date +%Y%m%d-%H%M%S)"
   if [[ -f "$ZSHRC" ]]; then
     cp "$ZSHRC" "$backup_file"
     echo "$backup_file"

@@ -113,7 +113,7 @@ mq_dashboard() {
   echo -e "$line2"
   echo -e "$line3"
   echo -e "$line4"
-  echo -e "${C_CYAN}${mq_repeat_char "-" "$width"}${C_RESET}"
+  echo -e "${C_CYAN}$(mq_repeat_char "-" "$width")${C_RESET}"
 
   info1="${C_BOLD}User:${C_RESET} ${user}"
   info2="${C_BOLD}Host:${C_RESET} ${host}"
@@ -125,12 +125,12 @@ mq_dashboard() {
   echo -e "$(mq_pad_right "$info4" 28)$info5"
 
   if [[ -n "$repo" || -n "$branch" ]]; then
-    echo -e "${C_CYAN}${mq_repeat_char "-" "$width"}${C_RESET}"
+    echo -e "${C_CYAN}$(mq_repeat_char "-" "$width")${C_RESET}"
     [[ -n "$repo" ]] && echo -e "${C_BOLD}Repo:${C_RESET} ${repo}"
     [[ -n "$branch" ]] && echo -e "${C_BOLD}Branch:${C_RESET} ${C_GREEN}${branch}${C_RESET}"
   fi
 
-  echo -e "${C_CYAN}${mq_repeat_char "-" "$width"}${C_RESET}"
+  echo -e "${C_CYAN}$(mq_repeat_char "-" "$width")${C_RESET}"
   echo -e "${C_BOLD}Path:${C_RESET} $(mq_fit_text "$cwd" $((width - 6)))"
   echo -e "${C_RED}${C_BOLD}◢${C_RESET}${C_DIM} old school utility // modular menus // git-aware workflows ${C_RED}${C_BOLD}◣${C_RESET}"
   echo -e "${C_CYAN}${C_BOLD}${top}${C_RESET}"
