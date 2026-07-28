@@ -179,15 +179,17 @@ Legacy paths may remain temporarily, but only as compatibility shims. They must 
 
 ---
 
-## P1 — Authoritative command registry
+## P1 — Authoritative command registry ✅
 
-Status: In progress — registry and validation delivered, consumers open
+Status: Done
 Priority: P1
 Risk if delayed: High
 Owner: `macos-scripts`
 
-Subcommands are not modelled yet, and the consumer work is blocked until they
-are. The reasons and the decisions are in
+73 commands, 157 names, 48 subcommands across 9 namespaces. Five consumers are
+held to it: dispatch, `mqlaunch help`, the command palette, `docs/COMMANDS.md`
+and README. The subcommand modelling this block was once blocked on is done; the
+reasoning is kept in
 [docs/plans/P1-command-registry-subcommands.md](docs/plans/P1-command-registry-subcommands.md).
 
 ### Problem
@@ -238,12 +240,18 @@ Create one canonical command registry used to validate or generate:
   * `tools/scripts/validate-command-registry.py`, gated by
     `tests/command-registry-smoke.sh`.
 
-* [ ] Validate help against the registry.
+* [x] Validate help against the registry.
 
   * `mqlaunch help`
   * `mqlaunch commands`
   * namespace help
   * command palette
+
+  Held by `tests/registry-consumer-parity-smoke.sh` (#86, #87). Every word help
+  advertises must dispatch; coverage is deliberately not required, because help
+  is a curated index and forcing all 73 commands into it would make it worse for
+  the human it is written for. The palette carries the same contract since it
+  started routing through `dispatch_cli_command`.
 
 * [x] Validate dispatch against the registry.
 
@@ -251,22 +259,28 @@ Create one canonical command registry used to validate or generate:
   * Every dispatchable command must appear in help or be marked internal.
   * Parity is enforced in both directions; drift fails the suite.
 
-* [ ] Validate docs against the registry.
+* [x] Validate docs against the registry.
 
   * Public docs should not list commands that do not exist.
   * Existing commands should not be missing from docs unless intentionally hidden.
 
+  `docs/COMMANDS.md` is the complete reference, so the same gate requires
+  coverage in both directions. README is held to the curated contract instead
+  (#90). Finding on delivery: help advertised six commands that printed
+  `Unknown command`, and the reference never mentioned 22 that existed.
+
 ### Exit gate
 
-* [ ] One registry proves that routing, help, palette, and docs agree — routing
-  is proven; help, palette and docs are not yet validated against the registry.
+* [x] One registry proves that routing, help, palette, and docs agree. Five
+  consumers are checked: dispatch, help, the palette, `docs/COMMANDS.md` and
+  README.
 * [x] A CI test fails when command drift appears.
 
 ---
 
-## P1 — Command registry drift tests
+## P1 — Command registry drift tests ✅
 
-Status: Planned
+Status: Done
 Priority: P1
 Risk if delayed: High
 Owner: `macos-scripts`
@@ -277,7 +291,17 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
 
 ### Tasks
 
-* [ ] Add `tests/command-registry-drift-smoke.sh`.
+* [x] Add drift tests. Not under the planned filename — the work landed as two
+  files, split by what they hold rather than into one file named after the
+  problem:
+
+  * `tests/command-registry-smoke.sh` — the registry against itself and against
+    dispatch, with fixtures per rule.
+  * `tests/registry-consumer-parity-smoke.sh` — the registry against the four
+    surfaces that publish it.
+
+  A single `command-registry-drift-smoke.sh` would have to be one or the other,
+  or both and belong to neither. The filename is not the contract.
 
 * [x] Test command inventory consistency.
 
@@ -326,27 +350,41 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
     rule, five fixtures. Nothing is deprecated today: the rules exist so the
     first deprecation is stated rather than remembered.
 
-* [ ] Test namespace coverage.
+* [x] Test namespace coverage.
 
-  * `agent`
-  * `hal`
-  * `obsidian`
-  * `repos`
-  * `skills`
-  * `srm`
-  * `stack`
-  * `workflows`
+  Held by `validate-command-registry.py`, which fails when a namespace grows a
+  nested `case` and declares nothing, and when a declared subcommand is not
+  dispatched. 48 subcommands across 9 namespaces: `workspace`, `srm`, `repos`,
+  `system`, `git`, `release`, `dev`, `help`, `obsidian`.
 
-* [ ] Test delegation ownership.
+  That is a different list from the eight originally written here, and the
+  difference is the point. `agent`, `hal`, `skills`, `stack` and `workflows`
+  have no nested `case` in the dispatcher — they hand the rest of the line to
+  the owning repo. There are no mqlaunch-routed subcommands to model, and
+  modelling the delegate's surface would make the registry claim authority over
+  commands it does not route. Their `unknown_subcommand` records that they
+  forward, which is what a consumer needs to know before publishing a list as
+  complete.
+
+* [x] Test delegation ownership.
 
   * `mq-agent` commands delegate to `mq-agent`.
   * `mq-hal` commands delegate to `mq-hal`.
   * `repo-signal` commands delegate to `repo-signal`.
   * `mq-mcp` is not called directly when `mq-agent` owns the workflow.
 
+  This was true by convention and ungated until the sync checked it. The
+  validator required `delegates_to` to be non-empty for a non-local owner, but
+  not to name that owner — so an entry could declare `mq-agent` as owner while
+  routing to `mq-mcp`, the boundary violation `docs/RUNTIME_AUTHORITY.md`
+  forbids. `delegates_to` holds the whole delegated command, so the rule
+  compares its first word against `owner`. Fixture [17/17] proves it fires.
+
 ### Exit gate
 
-* [ ] CI fails if command help, palette, docs, and dispatch drift apart.
+* [x] CI fails if command help, palette, docs, and dispatch drift apart.
+  `.github/workflows/quality.yml` runs `tools/scripts/test-all.sh`, which runs
+  both the registry gate and the consumer-parity gate.
 
 ---
 
@@ -515,11 +553,16 @@ variable and mostly is not.
   work on, for findings that are mostly not defects. A path moving to a live
   location joins the gate with it.
 
-* [ ] Add a project-level ShellCheck policy.
+* [x] Add a project-level ShellCheck policy — decided against a separate file.
 
-  * Suggested file: `docs/SHELLCHECK_POLICY.md`
-  * It must state the enforced threshold, the file surface, and that zsh is out
-    of scope by tooling limitation rather than by choice.
+  The three things such a file would state are already stated where they are
+  enforced: the threshold and the file surface in `tools/scripts/lint.sh`, the
+  frozen-path exclusion in `docs/RUNTIME_AUTHORITY.md` under the compatibility
+  policy, and the zsh limitation in both. A fourth document would duplicate
+  them, and this release exists to remove duplicate sources of truth rather than
+  add one.
+
+  If a policy file is wanted later it should **move** that text, not copy it.
 
 * [x] Raise `lint.sh` to `-S warning`, and drop `|| true` from the `quality.yml`
   step, once the warning baseline is zero or every exception is documented.

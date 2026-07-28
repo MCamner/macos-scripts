@@ -431,6 +431,21 @@ def main(argv: list[str] | None = None) -> int:
         if safety == "delegating" and not delegates:
             err(f"{name}: safety is 'delegating' but delegates_to is empty")
 
+        # And it must go to the repo that owns it. `delegates_to` is the whole
+        # delegated command — "mq-agent review", not "mq-agent" — so this checks
+        # the first word. Without it, a command could declare mq-agent as owner
+        # while routing to mq-mcp, which is the boundary violation
+        # docs/RUNTIME_AUTHORITY.md forbids and the one an entry can state
+        # plainly enough for a gate to see.
+        if owner != "macos-scripts" and delegates:
+            target = str(delegates).split()[0]
+            if target != owner:
+                err(
+                    f"{name}: owned by {owner!r} but delegates_to names "
+                    f"{target!r} — a command must delegate to the repo that "
+                    f"owns it"
+                )
+
         deprecated = check_deprecated_aliases(name, entry)
 
         for candidate in [name, *entry.get("aliases", [])]:
