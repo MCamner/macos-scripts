@@ -6,6 +6,31 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `tests/manifest.tsv` and `tests/test-inventory-smoke.sh`. Every file under
+  `tests/` must now be classified — `active`, `broken`, `manual`, or
+  `obsolete` — and the gate enforces four things: a new test file with no row
+  fails, a row whose file is gone fails, anything classified `active` must be
+  listed in `tools/scripts/test-all.sh`, and anything not `active` must not be.
+  `broken` and `obsolete` additionally require a written reason.
+
+  Eleven files had sat under `tests/` without ever being listed in the suite.
+  Six of them were red. Nothing reported it, because a test nobody runs cannot
+  fail — the repo looked better covered than it was. The suite now runs 47
+  tests where it ran 40.
+
+  The five still failing are classified `broken` with the specific reason, so
+  they are visible as debt rather than as coverage. Two share the same defect:
+  `grep -q 'a|b'` without `-E`, which matches the literal alternation and never
+  fires. The other three assert text — two in `ROADMAP.md`, one in the command
+  dispatcher — that has since been rewritten.
+
+  The gate was checked by breaking it five ways: an unclassified new file, a
+  row pointing at a deleted file, an `active` test removed from the suite, a
+  `broken` row with its reason stripped, and a `broken` test wired into the
+  suite. All five were caught.
+
 ### Changed
 
 * Terminal width had two implementations: `surface_terminal_width` in
