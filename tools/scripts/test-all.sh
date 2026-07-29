@@ -43,6 +43,13 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/wiki-command-ref-smoke.sh"
 "$PROJECT_ROOT/tests/terminal-width-smoke.sh"
 "$PROJECT_ROOT/tests/mq-git-protected-push-smoke.sh"
+"$PROJECT_ROOT/tests/test-inventory-smoke.sh"
+"$PROJECT_ROOT/tests/markdownlint-routing-smoke.sh"
+"$PROJECT_ROOT/tests/mq-flow-routing-smoke.sh"
+"$PROJECT_ROOT/tests/mq-obsidian-menu-no-promotion-smoke.sh"
+"$PROJECT_ROOT/tests/mq-obsidian-python-smoke.sh"
+"$PROJECT_ROOT/tests/mq-obsidian-regenerate-placeholder-ui-smoke.sh"
+"$PROJECT_ROOT/tests/mq-obsidian-triage-ui-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="

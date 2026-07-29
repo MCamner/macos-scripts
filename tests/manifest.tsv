@@ -1,0 +1,65 @@
+# Every file under tests/ must appear here, classified. tests/test-inventory-smoke.sh
+# enforces it: a new test file without a row fails the suite, and so does a row
+# whose file is gone. This exists because eleven test files sat under tests/ for
+# months without being listed in tools/scripts/test-all.sh — six of them red — and
+# nothing reported it. A test nobody runs is not a gate.
+#
+# class   meaning
+# active  runs in tools/scripts/test-all.sh; must be listed there
+# broken  fails today; must NOT be listed until fixed, and needs a reason
+# manual  needs a human, a device, or credentials; never in the suite
+# obsolete  kept only until deletion is agreed; needs a reason
+#
+# name	class	note
+command-docs-smoke.sh	active	-
+command-registry-smoke.sh	active	-
+command-word-normalization-smoke.sh	active	-
+compat-path-delegation-smoke.sh	active	-
+dashboard-header-cache-smoke.sh	active	-
+delegated-exit-code-smoke.sh	active	-
+docs-file-inventory-smoke.sh	active	-
+document-functions-quality-smoke.sh	active	-
+git-restore-to-base-smoke.sh	active	-
+git-status-contract-smoke.sh	active	-
+gitmerge-safe-smoke.sh	active	-
+hal-args-no-eval-smoke.sh	active	-
+hal-command-surface-smoke.sh	active	-
+hal-format-smoke.sh	active	-
+hal-gallery-smoke.sh	active	-
+hal-menu-layout-smoke.sh	active	-
+hal-menu-smoke.sh	active	-
+hal-pages-smoke.sh	active	-
+hal-screenshot-smoke.sh	active	-
+headless-smoke.sh	active	-
+menu-eof-smoke.sh	active	-
+monolith-delayer-smoke.sh	active	-
+mq-debug-smoke.sh	active	-
+mq-git-protected-push-smoke.sh	active	-
+mq-stack-contract-smoke.sh	active	-
+namespace-help-smoke.sh	active	-
+output-mode-parity-smoke.sh	active	-
+pages-index-smoke.sh	active	-
+plain-output-contract-smoke.sh	active	-
+prompt-lib-smoke.sh	active	-
+registry-consumer-parity-smoke.sh	active	-
+release-check-contract-smoke.sh	active	-
+release-pull-request-mode-smoke.sh	active	-
+runtime-authority-classification-smoke.sh	active	-
+runtime-authority-freeze-smoke.sh	active	-
+terminal-width-smoke.sh	active	-
+theme-lib-smoke.sh	active	-
+unknown-command-contract-smoke.sh	active	-
+wiki-command-ref-smoke.sh	active	-
+workflows-validation-smoke.sh	active	-
+markdownlint-routing-smoke.sh	active	-
+mq-flow-routing-smoke.sh	active	-
+mq-obsidian-menu-no-promotion-smoke.sh	active	-
+mq-obsidian-python-smoke.sh	active	-
+mq-obsidian-regenerate-placeholder-ui-smoke.sh	active	-
+mq-obsidian-triage-ui-smoke.sh	active	-
+brain-bridge-smoke.sh	broken	greps mqlaunch.sh for 'verified|systems' without -E, so the alternation is a literal and never matches
+mq-agent-routing-smoke.sh	broken	asserts ROADMAP.md contains 'Boundary test'; that text predates the roadmap rewrites and is gone
+mq-memory-cochange-routing-smoke.sh	broken	asserts 'run_agent_command memory-cochange' in mqlaunch-command-mode.sh; the routing changed
+mq-obsidian-command-routes-smoke.sh	broken	asserts a verbatim ROADMAP.md table row that no longer exists
+skills-repos-smoke.sh	broken	greps mqlaunch.sh for 'skills|skill' without -E, same literal-alternation bug as brain-bridge
+test-inventory-smoke.sh	active	-
