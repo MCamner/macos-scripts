@@ -8,6 +8,43 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `release.sh` pushed `main` directly while `.mq/repo-contract.json` declared
+  `release_mode: pull_request`. `main` carries no branch protection on GitHub,
+  so nothing outside the contract would have refused the push — and v2.0.0 was
+  in fact released through PR #106 plus a hand-made tag, meaning the script was
+  the one part of the flow that disagreed with how releases actually happen.
+
+  The mode now comes from the contract rather than a flag; a flag would have
+  left `./release.sh <version>` working as a direct-push path in a repo whose
+  contract forbids one. Under `pull_request` the bump lands on a
+  `release/v<version>` branch, the branch is pushed, a PR is opened via `gh`
+  when available, the checkout returns to `main`, and no tag is created —
+  tagging is a printed post-merge step, because the tag belongs on the merge
+  commit. `release_mode: direct` keeps the previous behaviour for repos whose
+  contract asks for it.
+
+  `tests/release-pull-request-mode-smoke.sh` proves it against a real bare
+  origin rather than a command log: `main`'s SHA is unchanged, the release
+  branch exists and carries the bump, no tag was pushed, and the checkout is
+  back on `main`. Dry-run is asserted to leave no branch, no commit, and a
+  clean tree; `direct` is asserted to still advance `main` and push its tag.
+
+* `release.sh` promised in its usage text that "if the script aborts before
+  commit, VERSION, README.md and the contract are restored" — and never did so
+  for any of its gates. Bash does not run an `ERR` trap for an explicit `exit`,
+  and every gate exits rather than failing a command, so the CHANGELOG check,
+  the contract re-gate, and the tag checks all skipped the rollback. Driving
+  `./release.sh --dry-run 2.0.1` against this repo found it: three bumped files
+  left on disk, no rollback line, no failure line.
+
+  An `EXIT` trap now covers what `ERR` could not. It is guarded on a mutation
+  flag rather than running unconditionally: before the first bump the tree still
+  holds the operator's own work, and `git checkout --` there would discard it
+  rather than restore anything — mistyping a flag must not clean the tree. The
+  fix ships with the `release_mode` change rather than after it, because a gate
+  tripping after the release branch is cut would otherwise strand the checkout
+  on that branch.
+
 * `docs/AUTHORITY_MAP.md` listed
   `terminal/menus/mq-hal-menu.sh.bak.20260519-115142` under *Dead — DEPRECATED*
   as a file awaiting deletion. It is not in the repository and never has been.
