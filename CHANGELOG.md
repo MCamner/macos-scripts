@@ -8,6 +8,25 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The wiki Command Reference's banner rule had never fired once. Its grep
+  pattern starts with `--`, so grep read the pattern as an option and exited 2
+  before matching anything — every script whose only title is its header art
+  was published with an em dash. `mission-control` looked like a
+  counterexample, but it takes its title from rule 1's `APP_NAME`.
+
+  Making the rule reachable was one `--`. Making it correct needed more: the
+  pattern also matched inside `--- SECTION ---` separators and
+  `<!-- BEGIN ... -->` markers, which would have published "COLORS (subtle)"
+  for `mqlaunch-repl` and "BEGIN GENERATED SKILLS TABLE" for `check-skills`.
+  Pinning the delimiter to exactly two dashes separates a banner from a
+  separator. The rule's comment also said "banner comment line", but these are
+  `printf`/`echo` calls in the scripts' header art, not comments — the fixtures
+  match what the tree actually contains.
+
+  Measured before and after against the real tree: 11 rows gain a description,
+  all of them genuine banners, and nothing else on the page moves. The loose
+  pattern would have changed 16 rows, 5 of them wrong.
+
 * The published wiki Command Reference carried a literal `$dashboard` as the
   description for `ui/terminal-ui/mq-ui.sh`. `extract_meta` matched
   `print_dashboard_header "$dashboard"` with its `header "` rule and published

@@ -41,8 +41,16 @@ extract_meta() {
     | sed -E 's/.*header "([^"]+)".*/\1/' | xargs || true)
   accept_title "$title" && { printf '%s' "$title"; return; }
 
-  # 3. Banner comment line (-- SOMETHING --)
-  title=$(grep -m1 -E '-- [A-Z].+ --' "$file" 2>/dev/null \
+  # 3. Banner line (-- SOMETHING --), as printed by printf/echo in the script's
+  # own header art. Despite the old wording these are not comments.
+  #
+  # Two things were wrong. `--` terminates the option list: the pattern starts
+  # with two dashes, so without it grep read the pattern as an option, exited 2,
+  # and the rule never fired at all. And the pattern was loose enough to match
+  # inside `--- SECTION ---` separators and `<!-- ... -->` markers, which are
+  # not titles — requiring the delimiter to be exactly two dashes separates the
+  # banner from the separator.
+  title=$(grep -m1 -E -- '(^|[^-])-- [A-Z].+ --([^->]|$)' "$file" 2>/dev/null \
     | sed -E 's/.*-- ([A-Z][^-]+) --.*/\1/' | tr -d '"' | xargs || true)
   accept_title "$title" && { printf '%s' "$title"; return; }
 
