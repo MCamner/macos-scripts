@@ -31,7 +31,10 @@ echo "[4/6] memory subcommand removed (P4 — memory/ avvecklad)"
 echo "[5/6] mqlaunch-command-mode routes verified and systems via brain"
 grep -q "verified|systems" "$COMMAND_MODE"
 
-echo "[6/6] mqlaunch.sh routes verified and systems via brain"
-grep -q "verified|systems" "$MQLAUNCH"
+# The routing table itself lives in command mode (asserted above); mqlaunch.sh
+# reaches it by sourcing that module. Asserting the case arm here instead would
+# assert text that no longer lives in this file.
+echo "[6/6] mqlaunch.sh reaches that routing (sources command mode)"
+grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$MQLAUNCH"
 
 echo "OK: brain-bridge smoke test passed"

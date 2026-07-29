@@ -21,15 +21,31 @@ All notable changes to this project will be documented in this file.
   tests where it ran 40.
 
   The five still failing are classified `broken` with the specific reason, so
-  they are visible as debt rather than as coverage. Two share the same defect:
-  `grep -q 'a|b'` without `-E`, which matches the literal alternation and never
-  fires. The other three assert text — two in `ROADMAP.md`, one in the command
-  dispatcher — that has since been rewritten.
+  they are visible as debt rather than as coverage. All five assert source text
+  that has since been rewritten or moved: two against `ROADMAP.md`, one against
+  the command dispatcher, and two against `terminal/launchers/mqlaunch.sh`.
 
   The gate was checked by breaking it five ways: an unclassified new file, a
   row pointing at a deleted file, an `active` test removed from the suite, a
   `broken` row with its reason stripped, and a `broken` test wired into the
   suite. All five were caught.
+
+### Fixed
+
+* `tests/brain-bridge-smoke.sh` and `tests/skills-repos-smoke.sh` asserted that
+  `terminal/launchers/mqlaunch.sh` still contained the case arms
+  `verified|systems` and `skills|skill`. It contains neither — the command
+  surface moved into `terminal/launchers/mqlaunch-command-mode.sh`, which
+  `mqlaunch.sh` sources at line 166.
+
+  The `|` in those greps is deliberate: the tests match case-arm source text,
+  not a regex alternation, so `-E` was never the missing piece. The file under
+  assertion was the wrong one. Both steps now assert what they meant — the
+  routing lives in command mode, which each test already checks one step
+  earlier, and `mqlaunch.sh` reaches it by sourcing that module.
+
+  Reclassified `active` in `tests/manifest.tsv` and wired into
+  `tools/scripts/test-all.sh`: 49 active tests, three `broken` rows left.
 
 ### Changed
 

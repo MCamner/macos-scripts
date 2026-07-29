@@ -32,9 +32,10 @@ echo "[6/10] command-mode routes skills and repos"
 grep -q "mq-skills.py" "$CMD"
 grep -q "mq-repos.py" "$CMD"
 
-echo "[7/10] main launcher routes skills and repos"
-grep -q "skills|skill" "$LAUNCHER"
-grep -q "mq-repos.py" "$LAUNCHER"
+# Same as brain-bridge: the skills/repos case arms live in command mode (step 6),
+# and mqlaunch.sh reaches them by sourcing that module.
+echo "[7/10] main launcher reaches that routing (sources command mode)"
+grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$LAUNCHER"
 
 echo "[8/10] tools menu exposes ecosystem actions"
 grep -q "Skills audit" "$TOOLS_MENU"
