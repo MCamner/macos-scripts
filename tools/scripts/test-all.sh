@@ -50,6 +50,8 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/mq-obsidian-python-smoke.sh"
 "$PROJECT_ROOT/tests/mq-obsidian-regenerate-placeholder-ui-smoke.sh"
 "$PROJECT_ROOT/tests/mq-obsidian-triage-ui-smoke.sh"
+"$PROJECT_ROOT/tests/brain-bridge-smoke.sh"
+"$PROJECT_ROOT/tests/skills-repos-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="

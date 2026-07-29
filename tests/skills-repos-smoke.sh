@@ -32,9 +32,10 @@ echo "[6/10] command-mode routes skills and repos"
 grep -q "mq-skills.py" "$CMD"
 grep -q "mq-repos.py" "$CMD"
 
-echo "[7/10] main launcher routes skills and repos"
-grep -q "skills|skill" "$LAUNCHER"
-grep -q "mq-repos.py" "$LAUNCHER"
+# Same as brain-bridge: the skills/repos case arms live in command mode (step 6),
+# and mqlaunch.sh reaches them by sourcing that module.
+echo "[7/10] main launcher reaches that routing (sources command mode)"
+grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$LAUNCHER"
 
 echo "[8/10] tools menu exposes ecosystem actions"
 grep -q "Skills audit" "$TOOLS_MENU"
@@ -56,9 +57,17 @@ echo "[10/10] scripts run read-only summaries"
 "$SKILLS" validate --repo mq-ums >/tmp/mq-skills-validate-mq-ums.out
 "$REPOS" diff-summary --repo mq-agent --modified >/tmp/mq-repos-modified.out
 "$REPOS" diff-summary --repo mq-agent --untracked >/tmp/mq-repos-untracked.out
-grep -q "mq-mcp" /tmp/mq-repos-list.out
-grep -q "mq-ums" /tmp/mq-repos-list.out
-grep -q "mq-agent:" /tmp/mq-repos-status.out
-grep -q "mq-ums:" /tmp/mq-repos-status-mq-ums.out
+# The commands above run clean whether or not the sibling MQ repos exist — that
+# part is real coverage everywhere. What follows asserts those repos appear in
+# the output, which needs them checked out next to this one. CI clones
+# macos-scripts alone, so assert it only where there is something to find.
+if [[ -d "$HOME/mq-mcp" && -d "$HOME/mq-ums" && -d "$HOME/mq-agent" ]]; then
+  grep -q "mq-mcp" /tmp/mq-repos-list.out
+  grep -q "mq-ums" /tmp/mq-repos-list.out
+  grep -q "mq-agent:" /tmp/mq-repos-status.out
+  grep -q "mq-ums:" /tmp/mq-repos-status-mq-ums.out
+else
+  echo "  skip: sibling MQ repos not checked out; listing assertions need them"
+fi
 
 echo "OK: skills and repos command surface smoke test passed"

@@ -57,9 +57,9 @@ mq-obsidian-menu-no-promotion-smoke.sh	active	-
 mq-obsidian-python-smoke.sh	active	-
 mq-obsidian-regenerate-placeholder-ui-smoke.sh	active	-
 mq-obsidian-triage-ui-smoke.sh	active	-
-brain-bridge-smoke.sh	broken	greps mqlaunch.sh for 'verified|systems' without -E, so the alternation is a literal and never matches
+brain-bridge-smoke.sh	active	-
 mq-agent-routing-smoke.sh	broken	asserts ROADMAP.md contains 'Boundary test'; that text predates the roadmap rewrites and is gone
 mq-memory-cochange-routing-smoke.sh	broken	asserts 'run_agent_command memory-cochange' in mqlaunch-command-mode.sh; the routing changed
 mq-obsidian-command-routes-smoke.sh	broken	asserts a verbatim ROADMAP.md table row that no longer exists
-skills-repos-smoke.sh	broken	greps mqlaunch.sh for 'skills|skill' without -E, same literal-alternation bug as brain-bridge
+skills-repos-smoke.sh	active	-
 test-inventory-smoke.sh	active	-
