@@ -18,8 +18,40 @@ bash -n "$AGENT_MENU"
 bash -n "$COMMAND_MODE"
 
 echo "[3/7] command mode intercepts 'memory cochange' and routes to the agent bridge"
-grep -q 'cochange' "$COMMAND_MODE"
-grep -q "run_agent_command memory-cochange" "$COMMAND_MODE"
+# Driven, not grepped. This step used to assert the literal string
+# 'run_agent_command memory-cochange' in the source. The dispatcher now resolves
+# the verb through a variable — `cochange) _mem_verb="memory-cochange"` followed
+# by `run_agent_command "$_mem_verb"` — so no string match can prove the routing,
+# and the old grep failed while the routing worked fine.
+#
+# Same harness as tests/delegated-exit-code-smoke.sh: source command mode, stub
+# the bridge, call the dispatcher. Run in a subshell so the sourced definitions
+# do not leak into the assertions below.
+(
+  DELEGATE_DIR="$(mktemp -d)"
+  trap 'rm -rf "$DELEGATE_DIR"' EXIT
+
+  export MACOS_SCRIPTS_HOME="$ROOT"
+  # shellcheck source=/dev/null
+  source "$COMMAND_MODE"
+
+  pause_enter() { return 0; }
+  run_agent_command() { printf '%s\n' "$*" >"$DELEGATE_DIR/call"; return 0; }
+
+  dispatch_cli_command memory cochange >/dev/null 2>&1
+  grep -qx 'memory-cochange' "$DELEGATE_DIR/call" || {
+    echo "expected 'memory cochange' to delegate memory-cochange, got: $(cat "$DELEGATE_DIR/call")" >&2
+    exit 1
+  }
+
+  # Trailing arguments belong to mq-agent and must arrive untouched: mqlaunch owns
+  # no memory logic and so has nothing to interpret them with.
+  dispatch_cli_command memory cochange --dry-run --repo mq-agent >/dev/null 2>&1
+  grep -qx 'memory-cochange --dry-run --repo mq-agent' "$DELEGATE_DIR/call" || {
+    echo "expected arguments forwarded verbatim, got: $(cat "$DELEGATE_DIR/call")" >&2
+    exit 1
+  }
+)
 
 echo "[4/7] agent menu has the cochange delegate and routes it"
 grep -q "_run_agent_memory_cochange()" "$AGENT_MENU"

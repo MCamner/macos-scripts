@@ -10,6 +10,17 @@
 # manual  needs a human, a device, or credentials; never in the suite
 # obsolete  kept only until deletion is agreed; needs a reason
 #
+# A reason on a broken row is a hypothesis, not a diagnosis. Four of the first
+# five written here were checked against a real run and two were wrong. Run the
+# test and read its output before acting on what this file says about it.
+#
+# Do not assert ROADMAP.md text. Three of those five broke on it: the roadmap was
+# rewritten from '| Done | ... |' tables to prose, which is what a roadmap is for.
+# A roadmap row claims something shipped; assert the thing that shipped instead —
+# runtime code, the command registry, a contract doc such as
+# docs/RUNTIME_AUTHORITY.md, the release gate, or behavior via
+# dispatch_cli_command.
+#
 # name	class	note
 command-docs-smoke.sh	active	-
 command-registry-smoke.sh	active	-
@@ -58,8 +69,8 @@ mq-obsidian-python-smoke.sh	active	-
 mq-obsidian-regenerate-placeholder-ui-smoke.sh	active	-
 mq-obsidian-triage-ui-smoke.sh	active	-
 brain-bridge-smoke.sh	active	-
-mq-agent-routing-smoke.sh	broken	asserts ROADMAP.md contains 'Boundary test'; that text predates the roadmap rewrites and is gone
-mq-memory-cochange-routing-smoke.sh	broken	asserts 'run_agent_command memory-cochange' in mqlaunch-command-mode.sh; the routing changed
-mq-obsidian-command-routes-smoke.sh	broken	asserts a verbatim ROADMAP.md table row that no longer exists
+mq-agent-routing-smoke.sh	active	-
+mq-memory-cochange-routing-smoke.sh	active	-
+mq-obsidian-command-routes-smoke.sh	active	-
 skills-repos-smoke.sh	active	-
 test-inventory-smoke.sh	active	-

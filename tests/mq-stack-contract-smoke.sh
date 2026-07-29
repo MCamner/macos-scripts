@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 README="$ROOT/README.md"
-ROADMAP="$ROOT/ROADMAP.md"
 AGENTS="$ROOT/AGENTS.md"
 CONTRACT="$ROOT/.mq/context/repo-contract.json"
 POINTER="$ROOT/.mq/repo-contract.json"
@@ -46,11 +45,15 @@ if [[ "$POINTER_VER" != "$REPO_VER" ]]; then
   exit 1
 fi
 
-echo "[4/10] README and ROADMAP state the MQ delegation boundary"
+# Asserted against the contract doc, not ROADMAP.md. The two prohibitions below
+# were previously matched as roadmap prose, which is the failure mode that took
+# out three other tests when the roadmap was rewritten. MQ_BOUNDARY.md states the
+# same two under 'Must not own', and that document exists to be binding.
+echo "[4/10] README and the boundary contract state the MQ delegation boundary"
 grep -Eq 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$README"
-grep -Eq 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$ROADMAP"
-grep -q 'implement review, risk, or architecture logic itself' "$ROADMAP"
-grep -q 'parse, score, or promote semantic memory in shell scripts' "$ROADMAP"
+grep -Eq 'mqlaunch shows menu.*mq-agent orchestrates.*mq-mcp executes' "$BOUNDARY"
+grep -q 'review cognition' "$BOUNDARY"
+grep -q 'semantic memory engines' "$BOUNDARY"
 
 echo "[5/10] AGENTS uses public-safe mqobsidian indirection"
 grep -q '\$MQ_OBSIDIAN_DIR' "$AGENTS"

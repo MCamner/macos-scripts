@@ -6,7 +6,6 @@ COMMAND_MODE="$ROOT/terminal/launchers/mqlaunch-command-mode.sh"
 AGENT_MENU="$ROOT/terminal/menus/mq-agent-menu.sh"
 README="$ROOT/README.md"
 COMMANDS="$ROOT/docs/COMMANDS.md"
-ROADMAP="$ROOT/ROADMAP.md"
 RELEASE_CHECK="$ROOT/terminal/release/mq-release-check.sh"
 
 echo "SMOKE: mqlaunch obsidian direct command routes"
@@ -16,7 +15,6 @@ test -f "$COMMAND_MODE"
 test -f "$AGENT_MENU"
 test -f "$README"
 test -f "$COMMANDS"
-test -f "$ROADMAP"
 test -f "$RELEASE_CHECK"
 
 echo "[2/5] shell syntax"
@@ -45,9 +43,15 @@ grep -q 'mqlaunch obsidian promote --dry-run' "$COMMANDS"
 grep -q 'do not score, promote, reject, or' "$COMMANDS"
 grep -q 'mq-agent obsidian promote' "$COMMANDS"
 
-echo "[5/5] roadmap marks the status alias step done"
-grep -q '| Done | Add `mqlaunch obsidian status` or documented alias for current menu/status |' "$ROADMAP"
-grep -q '| Done | Release gate detects schema drift before release |' "$ROADMAP"
-grep -q 'check_mqobsidian_manifest_contract' "$RELEASE_CHECK"
+# This step used to assert two verbatim '| Done | ... |' rows in ROADMAP.md — one
+# for the status alias, one for release-time schema drift. ROADMAP.md was
+# rewritten from tables to prose ('Status: Done'), so neither can match again. A
+# roadmap row is a claim that something shipped; the gate is the thing that
+# shipped. Assert the gate. The status alias itself is already covered by step 3
+# ('status|doctor)') and step 4 ('mqlaunch obsidian status' in the README).
+echo "[5/5] release gate enforces the mqobsidian manifest contract"
+grep -q 'check_mqobsidian_manifest_contract()' "$RELEASE_CHECK"
+# Defined is not enough — an uncalled check is not a gate.
+grep -qE '^check_mqobsidian_manifest_contract \|\| exit 1$' "$RELEASE_CHECK"
 
 echo "OK: mqlaunch obsidian command route smoke test passed"
