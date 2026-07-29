@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* `ROADMAP.md` still said `Current version: 1.0.1` two releases later, and the
+  Definition of Done for v2.0.0 stood almost entirely unchecked — after v2.0.0
+  had shipped and every P0 and P1 block below it was marked Done. A roadmap that
+  disagrees with its own blocks is worse than no roadmap: it makes finished work
+  look outstanding.
+
+  The version is now 2.0.0 and the Definition of Done is closed against the tree,
+  each box naming the test or document that proves it so the next reader can
+  re-run the proof instead of trusting a checkmark. Everything cited runs in CI.
+
+  Seven boxes stay unchecked on purpose. Five claim that `mq-agent`, `mq-mcp`,
+  `mqobsidian`, `repo-signal`, and `mq-hal` still own their responsibilities —
+  claims about other repositories' trees, which this one cannot verify and must
+  not assert. Two name `contract-check` and `stack-preflight`, neither of which
+  is a `mqlaunch` command; both return `Unknown command`. The reasons are written
+  into the roadmap next to the boxes rather than left for someone to rediscover.
+
 ### Fixed
 
 * `release.sh` pushed `main` directly while `.mq/repo-contract.json` declared

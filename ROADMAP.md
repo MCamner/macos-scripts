@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 1.0.1
+Current version: 2.0.0
 
 ## Current direction
 
@@ -13,6 +13,8 @@ v2.0.0 — Runtime Authority and Command Surface Governance
 ```
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
+
+v2.0.0 shipped on 2026-07-28. Every P0 and P1 block below is Done and its Definition of Done is closed against the tree, with the two stack-level checks noted as out of this repo's reach. What remains is P2 and P3: delegation polish, operator experience, and compatibility cleanup. None of it is release-blocking.
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -921,27 +923,53 @@ Exit gate:
 
 ## Definition of Done for v2.0.0
 
-* [ ] One runtime authority is documented.
-* [ ] Legacy runtime paths are compatibility-only.
-* [ ] One command registry exists.
-* [ ] Help, commands, palette, docs, and dispatch are validated against the registry.
-* [ ] Command drift fails CI.
+Closed against the tree on 2026-07-29, after the 2.0.0 tag. Each box below names
+what proves it, so the next person can re-run the proof instead of trusting the
+checkmark. Everything named here runs in CI: `tools/scripts/test-all.sh` is a
+step in the `Quality` workflow, so these are gates, not local habits.
+
+* [x] One runtime authority is documented. — `docs/RUNTIME_AUTHORITY.md`
+* [x] Legacy runtime paths are compatibility-only. — `scripts/check-runtime-authority.sh`
+  in CI, plus `tests/runtime-authority-freeze-smoke.sh` and
+  `tests/runtime-authority-classification-smoke.sh`
+* [x] One command registry exists. — `mqlaunch/lib/command-registry.json`
+* [x] Help, commands, palette, docs, and dispatch are validated against the
+  registry. — `tests/registry-consumer-parity-smoke.sh`, `tests/command-docs-smoke.sh`
+* [x] Command drift fails CI. — `tests/command-registry-smoke.sh` runs
+  `tools/scripts/validate-command-registry.py`
 * [x] `NO_COLOR=1` is respected.
 * [x] Piped output does not render dashboards or ANSI noise.
-* [ ] JSON stdout is clean.
-* [ ] Diagnostics go to stderr.
-* [ ] Delegated exit codes are preserved.
+* [x] JSON stdout is clean. — `tests/plain-output-contract-smoke.sh`,
+  `tests/release-check-contract-smoke.sh`
+* [x] Diagnostics go to stderr. — same two tests
+* [x] Delegated exit codes are preserved. — `tests/delegated-exit-code-smoke.sh`
 * [x] ShellCheck is enforced at warning severity for the bash/sh surface.
-* [ ] `mqlaunch` remains thin.
+* [x] `mqlaunch` remains thin. — `tests/mq-stack-contract-smoke.sh`,
+  `docs/architecture/MQ_BOUNDARY.md`
+* [x] Main CI is green. — `Quality` succeeded on `886c346`
+* [x] Release-check is READY. — `mqlaunch release-check --json` returns
+  `status: READY` with no blockers
+
+Deliberately not checked here, because this repo cannot prove them:
+
 * [ ] `mq-agent` still owns orchestration.
 * [ ] `mq-mcp` still owns execution/review tools.
 * [ ] `mqobsidian` still owns durable truth and memory.
 * [ ] `repo-signal` still owns repo readiness.
 * [ ] `mq-hal` still owns local operator summaries.
-* [ ] Main CI is green.
-* [ ] Release-check is READY.
+
+  `macos-scripts` enforces its own side of the boundary — it delegates rather
+  than reimplements, and the boundary tests above fail if that stops being
+  true. Whether each of those repos still holds up its side is a claim about
+  their trees, not this one. Ticking these from here would be asserting
+  something unverified.
+
 * [ ] Contract-check is READY.
 * [ ] Stack-preflight has 0 blockers.
+
+  Neither is a `mqlaunch` command: both return `Unknown command`. They are
+  stack-level checks that belong to whoever owns them, and this repo has no way
+  to run them.
 
 ---
 
