@@ -12,6 +12,11 @@ README_FILE="README.md"
 CHANGELOG_FILE="CHANGELOG.md"
 CONTRACT_FILE=".mq/repo-contract.json"
 
+BASE_BRANCH="main"
+RELEASE_MODE=""
+RELEASE_BRANCH=""
+RELEASE_BRANCH_CREATED=false
+
 
 # Shows usage.
 show_usage() {
@@ -25,22 +30,40 @@ Examples:
   ./release.sh --github-release 0.1.2
   ./release.sh --init-changelog 0.1.2
 
-What it does:
+Release mode:
+  "release_mode" in .mq/repo-contract.json decides how the release lands.
+  There is no flag for it: a flag would leave `./release.sh <version>` as a
+  working direct-push path in a repo whose contract forbids one.
+
+    pull_request  Bump on a release/v<version> branch, push the branch, open
+                  a PR. No tag, no push to main. Tagging happens by hand
+                  after the merge; the script prints the exact commands.
+    direct        Bump on main, tag, push main and the tag (legacy flow).
+
+Shared steps:
   1. Verifies git working tree is clean
   2. Verifies required files exist
-  3. Syncs with origin/main for live releases
-  4. Verifies tag v<version> does not already exist
-  5. Updates VERSION
-  6. Updates README version badge when present
-  7. Syncs .mq/repo-contract.json to the release version
-  8. Verifies CHANGELOG.md contains the version
-  9. Verifies the contract version matches VERSION (post-bump re-gate)
- 10. Shows a diff preview
- 11. Creates a release commit
- 12. Creates annotated tag v<version>
- 13. Pushes main and the new tag to origin
- 14. Regenerates and pushes wiki Command-Reference (warn-only)
- 15. Optionally creates a GitHub Release via gh CLI
+  3. Reads release_mode from .mq/repo-contract.json
+  4. Syncs with origin/main for live releases
+  5. Verifies tag v<version> does not already exist
+  6. Updates VERSION
+  7. Updates README version badge when present
+  8. Syncs .mq/repo-contract.json to the release version
+  9. Verifies CHANGELOG.md contains the version
+ 10. Verifies the contract version matches VERSION (post-bump re-gate)
+ 11. Shows a diff preview
+ 12. Creates a release commit
+
+Then, for pull_request:
+ 13. Pushes release/v<version> to origin
+ 14. Opens a pull request via gh when available (warn-only)
+ 15. Returns the checkout to main and prints the post-merge tag steps
+
+Then, for direct:
+ 13. Creates annotated tag v<version>
+ 14. Pushes main and the new tag to origin
+ 15. Regenerates and pushes wiki Command-Reference (warn-only)
+ 16. Optionally creates a GitHub Release via gh CLI
 
 Special mode:
   --init-changelog
@@ -49,9 +72,9 @@ Special mode:
 
 Safety:
   - --dry-run performs local checks and file updates, shows the diff,
-    then rolls changes back and exits without fetch/commit/tag/push.
+    then rolls changes back and exits without fetch/branch/commit/tag/push.
   - If the script aborts before commit, VERSION, README.md and the contract
-    are restored.
+    are restored, and an unpushed release branch is removed.
 USAGE
 }
 
@@ -71,10 +94,29 @@ rollback_local_changes() {
   log_step "Rolled back local file changes"
 }
 
+# Returns the checkout to the base branch and drops the release branch when it
+# holds nothing. `branch -d` refuses to delete unmerged work, so a branch that
+# already carries the release commit survives — losing that commit would be a
+# worse outcome than leaving a branch behind. Runs after the file rollback, so
+# the tree is clean by the time the checkout switches.
+restore_base_branch() {
+  [[ "${RELEASE_BRANCH_CREATED}" == true ]] || return 0
+
+  if [[ "$(git branch --show-current 2>/dev/null || true)" == "${RELEASE_BRANCH}" ]]; then
+    git checkout "${BASE_BRANCH}" >/dev/null 2>&1 || return 0
+  fi
+
+  if git branch -d "${RELEASE_BRANCH}" >/dev/null 2>&1; then
+    log_step "Removed unused release branch ${RELEASE_BRANCH}"
+  fi
+  RELEASE_BRANCH_CREATED=false
+}
+
 # Handles on error.
 on_error() {
   error "Release command failed with exit code: $?"
   rollback_local_changes || true
+  restore_base_branch || true
 }
 
 trap on_error ERR
@@ -133,6 +175,26 @@ with open(path, "w") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write("\n")
 PY
+}
+
+# Reads the release mode the contract declares. Sets a global instead of echoing
+# it: an `exit` inside a command substitution only kills the subshell, so an
+# unknown mode would be swallowed and the release would carry on.
+read_release_mode() {
+  local mode
+  mode="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('release_mode','direct'))" "${CONTRACT_FILE}")"
+
+  case "${mode}" in
+    pull_request|direct)
+      RELEASE_MODE="${mode}"
+      ;;
+    *)
+      error "Unknown release_mode '${mode}' in ${CONTRACT_FILE} (expected pull_request or direct)"
+      exit 1
+      ;;
+  esac
+
+  log_step "Release mode: ${RELEASE_MODE} (from ${CONTRACT_FILE})"
 }
 
 # Post-bump re-gate: after the version surfaces are written, refuse to commit
@@ -200,11 +262,41 @@ print_summary() {
 Release summary
 ---------------
 Version : ${VERSION}
-Tag     : ${tag}
-Branch  : main
+Tag     : ${tag}$( [[ "${RELEASE_MODE}" == pull_request ]] && echo " (after merge, by hand)" )
+Mode    : ${RELEASE_MODE}
+Branch  : $( [[ "${RELEASE_MODE}" == pull_request ]] && echo "release/${tag} -> ${BASE_BRANCH}" || echo "${BASE_BRANCH}" )
 Files   : ${VERSION_FILE}, ${README_FILE}, ${CHANGELOG_FILE}, ${CONTRACT_FILE}
 GitHub  : $( [[ "${GITHUB_RELEASE}" == true ]] && echo enabled || echo disabled )
 EOF_SUMMARY
+}
+
+# Refuses to reuse a release branch name. A stale local branch would otherwise
+# be checked out and bumped on top of whatever it already held.
+require_release_branch_absent() {
+  if git rev-parse --verify -q "refs/heads/${RELEASE_BRANCH}" >/dev/null 2>&1; then
+    error "Branch ${RELEASE_BRANCH} already exists locally."
+    exit 1
+  fi
+
+  if git ls-remote --heads origin | grep -q "refs/heads/${RELEASE_BRANCH}$"; then
+    error "Branch ${RELEASE_BRANCH} already exists on origin."
+    exit 1
+  fi
+}
+
+# Handles create release branch.
+create_release_branch() {
+  log_step "Creating release branch ${RELEASE_BRANCH}"
+  git switch -c "${RELEASE_BRANCH}" >/dev/null 2>&1 || git checkout -b "${RELEASE_BRANCH}"
+  RELEASE_BRANCH_CREATED=true
+}
+
+# Handles create release commit.
+create_release_commit() {
+  local version="$1"
+
+  git add "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" "${CONTRACT_FILE}"
+  git commit -m "Prepare v${version} release"
 }
 
 # Handles create release commit and tag.
@@ -212,8 +304,7 @@ create_release_commit_and_tag() {
   local version="$1"
   local tag="v${version}"
 
-  git add "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" "${CONTRACT_FILE}"
-  git commit -m "Prepare ${tag} release"
+  create_release_commit "${version}"
   git tag -a "${tag}" -m "${tag}"
 }
 
@@ -224,6 +315,57 @@ push_release() {
 
   git push origin main
   git push origin "${tag}"
+}
+
+# Handles push release branch.
+push_release_branch() {
+  log_step "Pushing ${RELEASE_BRANCH}"
+  git push -u origin "${RELEASE_BRANCH}"
+  # The branch is on origin now; the error trap must not try to delete it.
+  RELEASE_BRANCH_CREATED=false
+}
+
+# Opens the release PR. Warn-only on purpose: the branch is already pushed by
+# this point, so a gh failure must not abort into the rollback path — the work
+# is safe on origin and the operator only needs the command to finish by hand.
+open_release_pull_request() {
+  local version="$1"
+
+  if ! command -v gh >/dev/null 2>&1; then
+    printf '[pr] gh CLI not found. Open the pull request manually:\n'
+    printf '     gh pr create --base %s --head %s --fill\n' "${BASE_BRANCH}" "${RELEASE_BRANCH}"
+    return 0
+  fi
+
+  log_step "Opening pull request for ${RELEASE_BRANCH}"
+  if ! gh pr create \
+    --base "${BASE_BRANCH}" \
+    --head "${RELEASE_BRANCH}" \
+    --title "Prepare v${version} release" \
+    --body "Version surfaces bumped to ${version}. Tag after merge."
+  then
+    printf '[pr] gh pr create failed. Open the pull request manually:\n'
+    printf '     gh pr create --base %s --head %s --fill\n' "${BASE_BRANCH}" "${RELEASE_BRANCH}"
+  fi
+}
+
+# Prints the steps the pull_request mode deliberately does not automate. The tag
+# has to sit on the merge commit, which does not exist until the PR is merged.
+print_post_merge_steps() {
+  local version="$1"
+
+  cat <<EOF_STEPS
+
+Release branch pushed. The tag is not automated — after the PR is merged:
+
+  git checkout ${BASE_BRANCH} && git pull --ff-only origin ${BASE_BRANCH}
+  grep -qx '${version}' ${VERSION_FILE} || echo "${BASE_BRANCH} is missing the bump"
+  git tag -a v${version} -m "v${version}"
+  git push origin v${version}
+
+The wiki Command-Reference and any GitHub Release belong after that tag, not
+before it: until the merge lands, ${BASE_BRANCH} does not carry ${version}.
+EOF_STEPS
 }
 
 # Regenerates Command-Reference.md and pushes to the GitHub Wiki.
@@ -340,15 +482,19 @@ if [[ "${INIT_CHANGELOG}" == true ]]; then
 fi
 
 require_clean_tree
+read_release_mode
 
 print_summary
 printf '\n'
 
 if [[ "${DRY_RUN}" == false ]]; then
-  log_step "Syncing with origin/main"
-  git fetch origin main
-  git checkout main >/dev/null 2>&1 || true
-  git pull --ff-only origin main
+  log_step "Syncing with origin/${BASE_BRANCH}"
+  git fetch origin "${BASE_BRANCH}"
+  # Not `|| true`: a swallowed checkout failure used to mean the bump landed on
+  # whatever branch happened to be out, and it would now mean branching the
+  # release off that branch instead of off the base.
+  git checkout "${BASE_BRANCH}"
+  git pull --ff-only origin "${BASE_BRANCH}"
 fi
 
 if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
@@ -359,6 +505,16 @@ fi
 if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
   error "Tag v${VERSION} already exists on origin."
   exit 1
+fi
+
+if [[ "${RELEASE_MODE}" == "pull_request" ]]; then
+  RELEASE_BRANCH="release/v${VERSION}"
+  require_release_branch_absent
+  if [[ "${DRY_RUN}" == true ]]; then
+    log_step "Would create release branch ${RELEASE_BRANCH}"
+  else
+    create_release_branch
+  fi
 fi
 
 update_version_file "${VERSION}"
@@ -374,8 +530,26 @@ log_step "Showing diff preview"
 git --no-pager diff -- "${VERSION_FILE}" "${README_FILE}" "${CHANGELOG_FILE}" "${CONTRACT_FILE}" || true
 
 if [[ "${DRY_RUN}" == true ]]; then
-  printf '\nDry run complete. No commit, tag, or push performed.\n'
+  printf '\nDry run complete. No branch, commit, tag, or push performed.\n'
   rollback_local_changes
+  restore_base_branch
+  exit 0
+fi
+
+if [[ "${RELEASE_MODE}" == "pull_request" ]]; then
+  log_step "Creating release commit on ${RELEASE_BRANCH}"
+  create_release_commit "${VERSION}"
+
+  push_release_branch
+  open_release_pull_request "${VERSION}"
+
+  log_step "Returning to ${BASE_BRANCH}"
+  git checkout "${BASE_BRANCH}"
+
+  print_post_merge_steps "${VERSION}"
+
+  trap - ERR
+  printf '\nRelease branch prepared successfully.\n'
   exit 0
 fi
 
