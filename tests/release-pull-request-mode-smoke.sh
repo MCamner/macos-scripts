@@ -87,7 +87,7 @@ run_release() {
   )
 }
 
-echo "[1/4] the direct-push line exists only inside push_release()"
+echo "[1/5] the direct-push line exists only inside push_release()"
 # `direct` stays a supported mode, so the string is allowed to exist — but only
 # in the one function the direct path calls. A copy of it anywhere else is the
 # regression this catches.
@@ -100,7 +100,7 @@ in_function="$(awk '/^push_release\(\) \{/{f=1} f&&/push origin main/{c++} f&&/^
 grep -Fq 'release_mode' "$RELEASE" \
   || fail "release.sh never reads release_mode from the contract"
 
-echo "[2/4] pull_request mode pushes a release branch and never touches main"
+echo "[2/5] pull_request mode pushes a release branch and never touches main"
 make_case pr pull_request
 GH_LOG="$WORK/pr/gh.log"
 : > "$GH_LOG"
@@ -138,7 +138,7 @@ pushed_contract="$(git -C "$PR_ORIGIN" show refs/heads/release/v9.9.9:.mq/repo-c
 grep -q 'pr create' "$GH_LOG" \
   || fail "gh pr create was never invoked"
 
-echo "[3/4] dry-run leaves no branch, no commit, and a clean tree"
+echo "[3/5] dry-run leaves no branch, no commit, and a clean tree"
 make_case dry pull_request
 GH_LOG="$WORK/dry/gh.log"
 : > "$GH_LOG"
@@ -165,7 +165,7 @@ run_release "$DRY_REPO" --dry-run 9.9.9 > "$WORK/dry/out.log" 2>&1 || {
 [[ -z "$(cat "$GH_LOG")" ]] \
   || fail "dry-run invoked gh: $(cat "$GH_LOG")"
 
-echo "[4/4] direct mode still releases the old way when the contract asks for it"
+echo "[4/5] direct mode still releases the old way when the contract asks for it"
 make_case direct direct
 GH_LOG="$WORK/direct/gh.log"
 : > "$GH_LOG"
@@ -184,6 +184,34 @@ git -C "$DIRECT_ORIGIN" rev-parse --verify -q refs/tags/v9.9.9 >/dev/null \
   || fail "direct mode did not push tag v9.9.9"
 [[ -z "$(git -C "$DIRECT_ORIGIN" for-each-ref refs/heads/release/)" ]] \
   || fail "direct mode pushed a release branch"
+
+echo "[5/5] a failed gate rewinds the branch, the bump, and the checkout"
+# The gates `exit` rather than failing a command, and bash does not run an ERR
+# trap for that — so the rollback the usage text promises never fired, and the
+# checkout would now be stranded on the release branch as well. 8.8.8 has no
+# CHANGELOG section, which is the gate that trips after the branch was cut.
+make_case gate pull_request
+GH_LOG="$WORK/gate/gh.log"
+: > "$GH_LOG"
+GATE_REPO="$WORK/gate/repo"
+GATE_ORIGIN="$WORK/gate/origin.git"
+gate_main_before="$(git -C "$GATE_ORIGIN" rev-parse refs/heads/main)"
+
+set +e
+run_release "$GATE_REPO" 8.8.8 > "$WORK/gate/out.log" 2>&1
+gate_status=$?
+set -e
+
+[[ "$gate_status" -ne 0 ]] \
+  || fail "release.sh accepted version 8.8.8, which has no CHANGELOG section"
+[[ -z "$(git -C "$GATE_REPO" status --porcelain)" ]] \
+  || fail "failed gate left the bumped files behind: $(git -C "$GATE_REPO" status --porcelain | tr '\n' ' ')"
+[[ "$(git -C "$GATE_REPO" branch --show-current)" == "main" ]] \
+  || fail "failed gate stranded the checkout on $(git -C "$GATE_REPO" branch --show-current)"
+[[ "$(git -C "$GATE_REPO" for-each-ref --format='%(refname:short)' refs/heads/)" == "main" ]] \
+  || fail "failed gate left a release branch behind"
+[[ "$(git -C "$GATE_ORIGIN" rev-parse refs/heads/main)" == "$gate_main_before" ]] \
+  || fail "failed gate moved origin main"
 
 bash -n "$0"
 echo "OK: pull_request mode never pushes main; direct mode still works"

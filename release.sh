@@ -16,6 +16,8 @@ BASE_BRANCH="main"
 RELEASE_MODE=""
 RELEASE_BRANCH=""
 RELEASE_BRANCH_CREATED=false
+MUTATION_STARTED=false
+CLEANUP_DONE=false
 
 
 # Shows usage.
@@ -112,14 +114,39 @@ restore_base_branch() {
   RELEASE_BRANCH_CREATED=false
 }
 
-# Handles on error.
-on_error() {
-  error "Release command failed with exit code: $?"
+# Undoes a half-finished release. Only runs once, and only after the first
+# mutation: before that point the tree still holds whatever the operator had,
+# and `git checkout --` would discard it rather than restore anything.
+cleanup_failed_release() {
+  if [[ "${MUTATION_STARTED}" != true || "${CLEANUP_DONE}" == true ]]; then
+    return 0
+  fi
+
+  CLEANUP_DONE=true
   rollback_local_changes || true
   restore_base_branch || true
 }
 
+# Handles on error.
+on_error() {
+  error "Release command failed with exit code: $?"
+  cleanup_failed_release
+}
+
+# The ERR trap alone never covered the gates. Bash does not run it for an
+# explicit `exit`, and every gate here exits rather than failing a command — so
+# a CHANGELOG or contract mismatch left the bumped files behind, and would now
+# also leave the checkout stranded on the release branch.
+on_exit() {
+  local status=$?
+
+  if [[ "${status}" -ne 0 ]]; then
+    cleanup_failed_release
+  fi
+}
+
 trap on_error ERR
+trap on_exit EXIT
 
 # Handles require clean tree.
 require_clean_tree() {
@@ -513,10 +540,12 @@ if [[ "${RELEASE_MODE}" == "pull_request" ]]; then
   if [[ "${DRY_RUN}" == true ]]; then
     log_step "Would create release branch ${RELEASE_BRANCH}"
   else
+    MUTATION_STARTED=true
     create_release_branch
   fi
 fi
 
+MUTATION_STARTED=true
 update_version_file "${VERSION}"
 update_readme_badge "${VERSION}"
 sync_contract_version "${VERSION}"
