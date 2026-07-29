@@ -44,6 +44,14 @@ All notable changes to this project will be documented in this file.
   routing lives in command mode, which each test already checks one step
   earlier, and `mqlaunch.sh` reaches it by sourcing that module.
 
+  Wiring `skills-repos-smoke.sh` into the suite then exposed a second reason it
+  had never run: its last four assertions expect `mq-mcp`, `mq-ums`, and
+  `mq-agent` to appear in `mq-repos.py list` output, which needs those repos
+  checked out beside this one. CI clones `macos-scripts` alone, so they are now
+  asserted only where there is something to find. The commands themselves still
+  run unconditionally — a crash in `mq-skills.py` or `mq-repos.py` fails the
+  suite everywhere.
+
   Reclassified `active` in `tests/manifest.tsv` and wired into
   `tools/scripts/test-all.sh`: 49 active tests, three `broken` rows left.
 
