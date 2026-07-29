@@ -11,31 +11,46 @@ OUTPUT="$WIKI_DIR/Command-Reference.md"
 
 # ── helpers ────────────────────────────────────────────────────────────────
 
+# Decides whether a candidate is publishable description text.
+#
+# An unexpanded shell variable is never a description: the published page once
+# carried a literal `$dashboard` for ui/terminal-ui/mq-ui.sh, matched out of
+# `print_dashboard_header "$dashboard"`. Rule 1 below was supposed to guard
+# against that for APP_NAME, but its sed only *fails to match* a value like
+# "$title" — and an unmatched sed prints the line unchanged, so the whole
+# `APP_NAME="$title"` line was kept rather than dropped. The check has to be its
+# own step, applied to every rule.
+accept_title() {
+  local candidate="$1"
+
+  [[ -n "$candidate" && ${#candidate} -lt 60 && "$candidate" != *'$'* ]]
+}
+
 # Extracts meta from command or file content.
 extract_meta() {
   local file="$1"
 
-  # 1. APP_NAME / APP_TITLE (skip if value looks like code, e.g. contains $)
+  # 1. APP_NAME / APP_TITLE
   local title
   title=$(grep -m1 -E '^(APP_NAME|APP_TITLE)=' "$file" 2>/dev/null \
     | sed -E 's/^[A-Z_]+="?([^"#$]+)"?.*/\1/' | xargs || true)
-  [[ -n "$title" && ${#title} -lt 60 ]] && { printf '%s' "$title"; return; }
+  accept_title "$title" && { printf '%s' "$title"; return; }
 
   # 2. header "..." call
   title=$(grep -m1 'header "' "$file" 2>/dev/null \
     | sed -E 's/.*header "([^"]+)".*/\1/' | xargs || true)
-  [[ -n "$title" && ${#title} -lt 60 ]] && { printf '%s' "$title"; return; }
+  accept_title "$title" && { printf '%s' "$title"; return; }
 
   # 3. Banner comment line (-- SOMETHING --)
   title=$(grep -m1 -E '-- [A-Z].+ --' "$file" 2>/dev/null \
     | sed -E 's/.*-- ([A-Z][^-]+) --.*/\1/' | tr -d '"' | xargs || true)
-  [[ -n "$title" && ${#title} -lt 60 ]] && { printf '%s' "$title"; return; }
+  accept_title "$title" && { printf '%s' "$title"; return; }
 
   # 4. Usage line (command verb only, not full echo)
   title=$(grep -A1 'Usage:' "$file" 2>/dev/null \
     | grep -m1 'mqlaunch\|mq ' \
     | sed -E 's/^[[:space:]]*//' | xargs || true)
-  [[ -n "$title" && ${#title} -lt 60 && "$title" != echo* ]] && { printf '%s' "$title"; return; }
+  accept_title "$title" && [[ "$title" != echo* ]] && { printf '%s' "$title"; return; }
 
   printf ''
 }
