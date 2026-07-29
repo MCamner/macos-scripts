@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-07-29
+
 ### Changed
 
 * `ROADMAP.md` still said `Current version: 1.0.1` two releases later, and the
