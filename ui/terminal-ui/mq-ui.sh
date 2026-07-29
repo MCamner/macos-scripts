@@ -54,16 +54,17 @@ fi
 # ------------------------------------------------------------
 # Command Surface (v3) styling
 # ------------------------------------------------------------
-surface_terminal_width() {
-  local cols width
-  cols="$(tput cols 2>/dev/null || true)"
-  [[ "$cols" =~ ^[0-9]+$ ]] || cols="${BOX_INNER:-92}"
-
-  width="$cols"
-  (( width > 112 )) && width=112
-  (( width < 60 )) && width=60
-  printf "%s" "$width"
-}
+# surface_terminal_width lives in terminal-width.sh so the zsh gitlaunch
+# launcher can reach the same definition; it used to be duplicated there.
+#
+# BASH_SOURCE is unset under zsh, and mqlaunch.sh — which sources this file —
+# is zsh; $0 carries the sourced path there. Written with `-` rather than `:-`
+# so it survives a caller running under `set -u`.
+_mq_ui_self="${BASH_SOURCE[0]-}"
+[ -n "$_mq_ui_self" ] || _mq_ui_self="$0"
+# shellcheck source=ui/terminal-ui/terminal-width.sh
+source "${_mq_ui_self%/*}/terminal-width.sh"
+unset _mq_ui_self
 
 # Handles surface visible len.
 surface_visible_len() {
