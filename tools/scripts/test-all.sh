@@ -41,6 +41,8 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/release-check-contract-smoke.sh"
 "$PROJECT_ROOT/tests/release-pull-request-mode-smoke.sh"
 "$PROJECT_ROOT/tests/wiki-command-ref-smoke.sh"
+"$PROJECT_ROOT/tests/terminal-width-smoke.sh"
+"$PROJECT_ROOT/tests/mq-git-protected-push-smoke.sh"
 
 echo
 echo "== Running HAL menu checks =="

@@ -6,7 +6,43 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* Terminal width had two implementations: `surface_terminal_width` in
+  `ui/terminal-ui/mq-ui.sh`, used by 23 files, and `gitlaunch_terminal_width` in
+  `terminal/launchers/gitlaunch.sh`, used only by gitlaunch. The comment on the
+  second said it matched the first so nested panels line up.
+
+  It did not. `mq-ui.sh` falls back to `${BOX_INNER:-92}` and also defaults
+  `BOX_INNER` to 88, so the menus fell back to 88 while gitlaunch hardcoded 92 —
+  and which value applied depended on whether `mq-ui.sh` had been sourced yet.
+  The clamp bounds agreed; the fallback did not.
+
+  Both now source `ui/terminal-ui/terminal-width.sh`. The fallback is a
+  constant, so it no longer depends on sourcing order, and `BOX_INNER` is left
+  to mean box width rather than terminal width. The helper is written for both
+  shells because gitlaunch is zsh and everything else is bash. Driven for real:
+  gitlaunch and `mq-git-menu` now render at the same 92 columns under identical
+  conditions.
+
 ### Fixed
+
+* `tests/mq-git-protected-push-smoke.sh` was never listed in
+  `tools/scripts/test-all.sh`, so it had never run. It was also red: one
+  assertion grepped gitlaunch.sh for the word `continue`, which appears in no
+  commit reachable from `HEAD`. A test nobody runs cannot fail, so nothing
+  reported it.
+
+  It is wired in now, the dead assertion is gone, and its four width
+  assertions — which grepped for the function name and the literals
+  `width > 112` and `width < 60` — are replaced by
+  `tests/terminal-width-smoke.sh` driving the clamp. Those four pinned the
+  implementation rather than the behaviour: they passed for code that never ran
+  and would have failed for a correct refactor.
+
+  Eleven further files under `tests/` are still absent from `test-all.sh`, six
+  of them failing when run by hand. That is left as its own piece of work
+  rather than folded in here.
 
 * The wiki Command Reference's banner rule had never fired once. Its grep
   pattern starts with `--`, so grep read the pattern as an option and exited 2
