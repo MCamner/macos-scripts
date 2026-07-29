@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The published wiki Command Reference carried a literal `$dashboard` as the
+  description for `ui/terminal-ui/mq-ui.sh`. `extract_meta` matched
+  `print_dashboard_header "$dashboard"` with its `header "` rule and published
+  the unexpanded variable.
+
+  Rule 1 was meant to prevent exactly this for `APP_NAME`/`APP_TITLE`, and its
+  comment said so — but the guard was written into a `sed` substitution, and on
+  a value like `APP_NAME="$title"` that pattern simply fails to match. An
+  unmatched `sed` prints the line unchanged, so the guard did not drop the
+  value; it kept the entire `APP_NAME="$title"` line as the description. The
+  check is now its own step applied to all four rules.
+
+  `tests/wiki-command-ref-smoke.sh` runs one fixture per rule, asserts real
+  descriptions still survive, and then generates the whole page against the
+  real tree and fails if any description column contains a `$`.
+
+  Found while auditing the regenerated page after the 2.0.1 release, not by a
+  gate — hence the gate.
+
 ## [2.0.1] - 2026-07-29
 
 ### Changed
