@@ -66,6 +66,12 @@ _mq_ui_self="${BASH_SOURCE[0]-}"
 source "${_mq_ui_self%/*}/terminal-width.sh"
 unset _mq_ui_self
 
+# Preserves the shared surface's existing fallback policy. BOX_INNER defaults
+# to 88 above, while gitlaunch deliberately falls back to 92.
+surface_terminal_width() {
+  mq_terminal_width "${BOX_INNER:-92}"
+}
+
 # Handles surface visible len.
 surface_visible_len() {
   local esc stripped

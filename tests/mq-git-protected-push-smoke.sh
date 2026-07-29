@@ -30,9 +30,9 @@ grep -Fq "MQ_GITLAUNCH_BACK_MARKER" "$LEGACY_MENU"
 # and grepped the literals "width > 112" and "width < 60" — pinning the
 # implementation rather than the behaviour, which passes for code that never
 # runs and fails for a correct refactor. tests/terminal-width-smoke.sh drives
-# the clamp instead. What matters here is only that gitlaunch still resizes.
+# the clamp and caller policy instead. What matters here is only that
+# gitlaunch still refreshes its dimensions.
 grep -Fq "update_ui_width" "$LEGACY_MENU"
-grep -Fq "surface_terminal_width" "$LEGACY_MENU"
 grep -Fq "refresh_git_counters" "$LEGACY_MENU"
 grep -Fq "9. Recent log" "$LEGACY_MENU"
 grep -Fq "show_recent_log" "$LEGACY_MENU"

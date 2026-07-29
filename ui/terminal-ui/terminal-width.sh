@@ -3,9 +3,10 @@
 # gitlaunch launcher.
 #
 # This lived in two places — surface_terminal_width in mq-ui.sh and
-# gitlaunch_terminal_width in gitlaunch.sh — with identical logic. Nested
-# gitlaunch panels have to line up with the surface around them, so the two
-# were never free to differ; keeping them apart only risked them drifting.
+# gitlaunch_terminal_width in gitlaunch.sh. Their tput source and clamp were
+# identical, but their fallbacks were caller policy: mq-ui used BOX_INNER
+# (normally 88) while gitlaunch used 92. This helper shares the algorithm
+# without silently changing either policy.
 #
 # Written for both shells: gitlaunch.sh is zsh, everything else is bash. That
 # rules out `print -r --` (zsh-only) and any bashism; `printf`, `local`,
@@ -20,18 +21,15 @@
 # exported by every shell and is not updated for a non-interactive caller,
 # while tput reads terminfo and the tty.
 #
-# The fallback is a constant, which is a deliberate change. mq-ui.sh's version
-# fell back to "${BOX_INNER:-92}", and mq-ui.sh also defaults BOX_INNER to 88 —
-# so the menus fell back to 88 while gitlaunch's copy hardcoded 92, and the
-# value depended on whether mq-ui.sh had been sourced yet. The two were meant
-# to agree: gitlaunch's comment said it matched the surface so nested panels
-# line up. BOX_INNER is a box width anyway, not a terminal width; borrowing it
-# here conflated the two.
-surface_terminal_width() {
+# The required argument is the caller's fallback policy. Keeping it explicit
+# prevents a shared implementation from accidentally converging two distinct
+# existing behaviours.
+mq_terminal_width() {
+  local fallback="${1:?terminal width fallback required}"
   local cols width
 
   cols="$(tput cols 2>/dev/null || true)"
-  [[ "$cols" =~ ^[0-9]+$ ]] || cols=92
+  [[ "$cols" =~ ^[0-9]+$ ]] || cols="$fallback"
 
   width="$cols"
   (( width > 112 )) && width=112

@@ -254,15 +254,14 @@ function repeat_char() {
   printf "%${count}s" "" | tr " " "$char"
 }
 
-# Matches mqlaunch surface width so nested gitlaunch panels align visually.
-# This used to be a local copy of the same clamp; sharing the definition is
-# what makes "matches" true rather than merely intended.
+# Shares mqlaunch's tput and clamp algorithm while preserving gitlaunch's
+# existing fallback of 92.
 # shellcheck source=ui/terminal-ui/terminal-width.sh
 source "${GITLAUNCH_DIR:h:h}/ui/terminal-ui/terminal-width.sh"
 
 # Refreshes frame dimensions before rendering or prompting.
 function update_ui_width() {
-  UI_WIDTH="$(surface_terminal_width)"
+  UI_WIDTH="$(mq_terminal_width 92)"
   UI_INNER=$((UI_WIDTH - 4))
 }
 
