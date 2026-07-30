@@ -19,6 +19,11 @@ set -euo pipefail
 #                      required. But every word it advertises must work. A help
 #                      screen that lists a command that does not exist is worse
 #                      than one that omits it.
+#   mqlaunch commands  the same curated list behind panel chrome, so it carries
+#                      help's contract plus one of its own: the two must offer
+#                      the same commands. They were two hand-maintained copies
+#                      until this test arrived, and they had drifted — `chat`
+#                      reached the index and never reached help.
 #   the palette        a curated picker, same contract as help. Selecting an
 #                      entry now runs dispatch_cli_command, so an entry the
 #                      registry does not know fails in the user's hands rather
@@ -39,7 +44,7 @@ echo "SMOKE: registry consumers do not contradict the registry"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/5] files exist, and the palette is wired to the registry's dispatcher"
+echo "[1/6] files exist, and the palette is wired to the registry's dispatcher"
 test -f "$REGISTRY"
 test -f "$DOCS"
 test -f "$LAUNCH"
@@ -119,14 +124,19 @@ def palette_words(path):
     return words
 
 
-def advertised_words(path):
-    """Command words from a `mqlaunch help` capture.
+def advertised_words(path, indent=r" {2}"):
+    """Command words from a captured help or index screen.
 
-    Anchored to the two-space indent the help screen uses for entries, so
-    headings and the description column cannot contribute words.
+    Anchored to the leading indent entries use, so headings — which start at
+    column 0 — and the description column cannot contribute words.
+
+    The index is read with `indent=" {1,2}"` because it has not always used
+    help's two spaces. Insisting on two would make a one-space index look like a
+    screen advertising nothing, and the comparison would then report every
+    command as missing instead of the one that actually drifted.
     """
     text = open(path, encoding="utf-8").read()
-    return set(re.findall(r"^ {2}mqlaunch\s+([a-z][a-z0-9-]*)", text, re.M))
+    return set(re.findall(rf"^{indent}mqlaunch\s+([a-z][a-z0-9-]*)", text, re.M))
 
 
 def main():
@@ -148,8 +158,23 @@ def main():
     docs = documented_words(sys.argv[2])
     help_out = advertised_words(sys.argv[3])
     palette = palette_words(sys.argv[4])
+    index = advertised_words(sys.argv[5], indent=r" {1,2}")
 
     failures = []
+
+    # Same list, two renderings. Set difference rather than a text diff: the
+    # index adds a banner and a footer, so the two captures are not meant to be
+    # byte-identical — only to advertise the same commands.
+    if help_out != index:
+        detail = []
+        if help_out - index:
+            detail.append("only in help: " + " ".join(sorted(help_out - index)))
+        if index - help_out:
+            detail.append("only in the index: "
+                          + " ".join(sorted(index - help_out)))
+        failures.append(
+            "`mqlaunch help` and `mqlaunch commands` advertise different "
+            "commands — " + "; ".join(detail))
 
     # `main` is the interactive loop the palette was opened from, not a command,
     # and the palette special-cases it before dispatch ever sees it.
@@ -170,17 +195,21 @@ def main():
         failures.append(
             f"documented but not dispatchable ({len(ghosts)}): " + " ".join(ghosts))
 
-    advertised_ghosts = sorted(help_out - known)
-    if advertised_ghosts:
-        failures.append(
-            f"advertised by `mqlaunch help` but not dispatchable "
-            f"({len(advertised_ghosts)}): " + " ".join(advertised_ghosts))
+    for label, offered in (("`mqlaunch help`", help_out),
+                           ("`mqlaunch commands`", index)):
+        advertised_ghosts = sorted(offered - known)
+        if advertised_ghosts:
+            failures.append(
+                f"advertised by {label} but not dispatchable "
+                f"({len(advertised_ghosts)}): " + " ".join(advertised_ghosts))
 
     # Deprecating a word and then advertising it is the contradiction the field
     # exists to prevent. The registry says stop using this; help and the palette
     # would be telling the user it is the way in. Both must offer the
     # replacement instead — the word keeps working either way.
-    for label, offered in (("`mqlaunch help`", help_out), ("the command palette", palette)):
+    for label, offered in (("`mqlaunch help`", help_out),
+                           ("`mqlaunch commands`", index),
+                           ("the command palette", palette)):
         promoted = sorted(offered & set(deprecated))
         if promoted:
             failures.append(
@@ -193,15 +222,15 @@ def main():
         sys.exit(1)
 
     print(f"  ok: {len(commands)} commands, {len(docs)} documented words, "
-          f"{len(help_out)} advertised words, {len(palette)} palette entries, "
-          f"no contradictions")
+          f"{len(help_out)} advertised words in help and the index, "
+          f"{len(palette)} palette entries, no contradictions")
 
 
 if __name__ == "__main__":
     main()
 PY
 
-echo "[2/5] capture what help advertises"
+echo "[2/6] capture what help advertises"
 # Piped, so this also exercises the plain-output contract (#67): if the banner
 # came back the extraction would still work, but the capture would be 5 KB of
 # box drawing around it.
@@ -214,10 +243,23 @@ if grep -q $'\033' "$run_dir/help.txt"; then
 fi
 printf '  ok: %s bytes\n' "$(wc -c <"$run_dir/help.txt" | tr -d ' ')"
 
-echo "[3/5] every command is documented, and nothing documented is a ghost"
-python3 "$run_dir/consumers.py" "$REGISTRY" "$DOCS" "$run_dir/help.txt" "$LAUNCHER"
+echo "[3/6] capture what the command index advertises"
+# The index ends in pause_enter, so stdin is closed rather than left on the
+# terminal — a suite that hangs here would look like a slow test, not a bug.
+BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
+  timeout 30 bash "$LAUNCH" commands >"$run_dir/index.txt" 2>/dev/null </dev/null
+test -s "$run_dir/index.txt"
+if grep -q $'\033' "$run_dir/index.txt"; then
+  echo "FAIL: the command index emitted ANSI into a pipe" >&2
+  exit 1
+fi
+printf '  ok: %s bytes\n' "$(wc -c <"$run_dir/index.txt" | tr -d ' ')"
 
-echo "[4/5] the failure demo in the reference is still a failure demo"
+echo "[4/6] every command is documented, nothing documented is a ghost, and the two curated surfaces agree"
+python3 "$run_dir/consumers.py" "$REGISTRY" "$DOCS" "$run_dir/help.txt" \
+  "$LAUNCHER" "$run_dir/index.txt"
+
+echo "[5/6] the failure demo in the reference is still a failure demo"
 # Step 3 skips blocks containing "Unknown command". That exemption is only sound
 # while such a block exists and still shows a word the registry rejects — the
 # moment it does not, the skip is silently widening what the gate ignores.
@@ -257,11 +299,12 @@ else:
     sys.exit("a failure-demo block no longer demonstrates a rejected word")
 PY
 
-echo "[5/5] the comparison rejects a consumer that drifts"
+echo "[6/6] the comparison rejects a consumer that drifts"
 # A gate that has never failed is a comment. One fixture per consumer — a command
 # the docs do not mention, a documented word nothing dispatches, a palette entry
-# the registry does not know — plus one for the rule that spans them: a word the
-# registry retires while a consumer still advertises it.
+# the registry does not know, an index that has drifted from help — plus one for
+# the rule that spans them: a word the registry retires while a consumer still
+# advertises it.
 python3 - "$REGISTRY" "$DOCS" "$LAUNCHER" "$run_dir" <<'PY'
 import json
 import pathlib
@@ -302,6 +345,27 @@ fixture_launcher.write_text(
 
 checker = str(run_dir / "consumers.py")
 help_txt = str(run_dir / "help.txt")
+index_txt = str(run_dir / "index.txt")
+
+# 3b. An index that advertises a command help does not. This is the drift the
+# single list was introduced to make impossible, so the fixture reintroduces it
+# by hand rather than trusting that it can no longer occur.
+#
+# The extra word has to be one that dispatches, or the ghost rule would fire
+# first and this would prove the wrong thing. It is picked from the registry at
+# runtime instead of hard-coded: if help ever advertises every command, the two
+# captures become equal and the loop below reports that the fixture stopped
+# failing, rather than passing quietly.
+help_only = set(re.findall(r"^ {2}mqlaunch\s+([a-z][a-z0-9-]*)",
+                           pathlib.Path(help_txt).read_text(encoding="utf-8"),
+                           re.M))
+unadvertised = sorted({c["name"] for c in registry["commands"]} - help_only)
+if not unadvertised:
+    sys.exit("help advertises every command — nothing left to drift in fixture 3b")
+fixture_index = run_dir / "index-plus-one.txt"
+fixture_index.write_text(
+    pathlib.Path(index_txt).read_text(encoding="utf-8")
+    + f"  mqlaunch {unadvertised[0]}  only in the index\n", encoding="utf-8")
 
 # 4. A word the registry retires while help still offers it. Built from a word
 # help actually prints, so the fixture cannot go stale silently: if help stops
@@ -325,19 +389,22 @@ fixture_deprecated.write_text(json.dumps(retired), encoding="utf-8")
 
 for label, args, reason in (
     ("an undocumented command",
-     [checker, str(fixture_registry), docs_path, help_txt, launcher_path],
+     [checker, str(fixture_registry), docs_path, help_txt, launcher_path, index_txt],
      "neither name nor alias in docs/COMMANDS.md"),
     ("a documented ghost",
-     [checker, registry_path, str(fixture_docs), help_txt, launcher_path],
+     [checker, registry_path, str(fixture_docs), help_txt, launcher_path, index_txt],
      "documented but not dispatchable"),
     ("a palette entry nothing dispatches",
-     [checker, registry_path, docs_path, help_txt, str(fixture_launcher)],
+     [checker, registry_path, docs_path, help_txt, str(fixture_launcher), index_txt],
      "offered by the command palette but not dispatchable"),
+    ("an index that has drifted from help",
+     [checker, registry_path, docs_path, help_txt, launcher_path, str(fixture_index)],
+     "advertise different commands"),
     # Retiring the alias also leaves its command documented under a word that is
     # no longer active, so this fixture reports two problems. The reason check is
     # what makes it prove the deprecation rule rather than the coverage one.
     ("a deprecated word help still advertises",
-     [checker, str(fixture_deprecated), docs_path, help_txt, launcher_path],
+     [checker, str(fixture_deprecated), docs_path, help_txt, launcher_path, index_txt],
      "deprecated but advertised by `mqlaunch help`"),
 ):
     result = subprocess.run([sys.executable, *args], capture_output=True)
@@ -347,9 +414,9 @@ for label, args, reason in (
     if reason not in result.stderr.decode():
         sys.exit(f"{label} failed for the wrong reason:\n"
                  + result.stderr.decode())
-print("  ok: all three consumers are checked, and each of the four drifts "
+print("  ok: all four consumers are checked, and each of the five drifts "
       "is detected for its own reason")
 PY
 
 bash -n "$0"
-echo "OK: help, the command reference and the palette agree with the registry"
+echo "OK: help, the command index, the command reference and the palette agree with the registry"

@@ -652,37 +652,106 @@ Once runtime authority and command consistency are fixed, the product can become
 
 ### Tasks
 
+Every sub-item is a checkbox, and every box was measured rather than recalled.
+An unchecked box says what is missing and how that was established, so the next
+person starts from a fact instead of repeating the measurement. Measurements
+below are from 2026-07-30 against `2.0.1`.
+
 * [ ] Improve first-run experience.
 
-  * `mqlaunch doctor`
-  * dependency checks
-  * missing tool hints
-  * next recommended setup step
+  * [x] `mqlaunch doctor` — twelve checks, and `--json` is a real machine
+    document held against observed behaviour by
+    `tests/output-mode-parity-smoke.sh`.
+  * [x] dependency checks — ten tools, `OPENAI_API_KEY`, and whether `mqlaunch`
+    resolves on `PATH` (`tools/scripts/doctor.sh`).
+  * [ ] missing tool hints — doctor names what is missing and not what to do
+    about it. The human row is `warn "$cmd missing"` and the JSON detail is the
+    bare string `"missing"`: no install command, and no statement of what the
+    tool is needed for.
+  * [ ] next recommended setup step — absent, and the human summary contradicts
+    the checks above it. `tools/scripts/doctor.sh` ends in an unconditional
+    `ok "MQ operational"`, so the screen reports success no matter what failed.
+    Run with a `PATH` holding only `git`, `python3` and `jq`:
+
+    ```text
+    --json   {"status": "warn", "summary": {"ok": 3, "warn": 9, "fail": 0}}
+    human    SUMMARY
+             ✔ MQ operational            EXIT=0
+    ```
+
+    The JSON is honest and the screen is not, which makes this the exit gate's
+    problem and not a cosmetic one: the surface a new operator reads is the
+    surface that lies.
 
 * [ ] Improve command discovery.
 
-  * clearer namespace groups
-  * shorter summaries
-  * fewer duplicate entries
-  * highlight most useful workflows first
+  * [ ] clearer namespace groups
+  * [ ] shorter summaries
+  * [x] fewer duplicate entries — `mqlaunch help` and `mqlaunch commands` were
+    two hand-maintained copies of one list and had already drifted: `chat` was
+    in the index and not in help. Both now render `command_list` in
+    `terminal/menus/mq-help-menu.sh`, and `tests/registry-consumer-parity-smoke.sh`
+    checks the index as a fourth consumer, so they cannot drift again (#126).
+  * [x] highlight most useful workflows first — `POPULAR FLOWS` moved from the
+    bottom of help to the top of the shared list, which also puts it in the
+    index (#126).
 
 * [ ] Improve stack status entrypoints.
 
-  * show `mq-agent`
-  * show `mq-mcp`
-  * show `mqobsidian`
-  * show `mq-hal`
-  * show `repo-signal`
-  * show clear next action when one is known
+  The five boxes below are checked because `mqlaunch stack` already prints all
+  of them — one table, one row per repo, with `Version`, `Branch`,
+  `Last activity`, `Drift`, `Ready` and `Next`. The work left is not another
+  status screen. It is that the entrypoint is invisible: `stack` is one of the
+  thirty-four registry commands `mqlaunch help` does not advertise, so an
+  operator finds it by reading `docs/COMMANDS.md` or not at all.
+
+  * [x] show `mq-agent`
+  * [x] show `mq-mcp`
+  * [x] show `mqobsidian`
+  * [x] show `mq-hal`
+  * [x] show `repo-signal`
+  * [x] show clear next action when one is known — the `Next` column exists and
+    is `—` for every repo at the time of writing, which is the column working,
+    not the column missing.
+  * [ ] make the entrypoint discoverable — decide whether `stack` belongs on the
+    curated help screen, and if not, where an operator is meant to meet it.
+
+  Ownership note: the table is rendered by `mq-agent`, which `mqlaunch stack`
+  delegates to. What `macos-scripts` owns here is the entrypoint, not the
+  status logic — see `docs/RUNTIME_AUTHORITY.md`.
 
 * [ ] Keep menus focused.
 
-  * Remove or hide low-value duplicated paths.
-  * Prefer fewer, better choices.
+  Measured with `tools/scripts/inventory-command-surfaces.py`: 243 options
+  across 19 menus.
+
+  * [ ] Remove or hide low-value duplicated paths. Three commands are reachable
+    from more than one menu:
+
+    ```text
+    doctor  mq-help-menu.sh, mq-system-menu.sh, mq-tools-menu.sh
+    ghost   mq-help-menu.sh, mq-system-menu.sh
+    review  mq-agent-menu.sh, mq-help-menu.sh
+    ```
+
+    Duplication is not automatically waste — a command can belong in two places
+    — so this needs a decision per row, not a sweep.
+  * [ ] Prefer fewer, better choices. No target has been agreed, so this box has
+    nothing to measure against yet. Deciding what "fewer" means is the task.
+  * [ ] Close the last three dispatcher bypasses: `excalidraw.sh`
+    (`mq-apps-menu.sh:61`), `overseer.sh` and the `test-all.sh` row behind
+    `run_self_check` (`mq-system-menu.sh:56`, `:60`). Pinned at three by
+    `tests/command-discovery-inventory-smoke.sh`; the `test-all.sh` row needs a
+    presentation change rather than a routing one, since `run_self_check` wraps
+    it.
 
 ### Exit gate
 
 * [ ] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
+
+  Blocked on the two unchecked boxes under first-run experience. Today doctor
+  reports `✔ MQ operational` with nine warnings outstanding, so a new operator
+  who reads the screen learns the opposite of what the checks found.
 
 ---
 
