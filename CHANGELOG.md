@@ -8,6 +8,31 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch pulse` wrote `TERM environment variable not set.` to stderr and the
+  four dispatched tools that call `clear` unguarded now guard it:
+  `tools/scripts/pulse.sh`, `blackout.sh`, `chat.sh` and `network-ghost.sh`.
+
+  Same class as the `doctor` defect: a bare `clear` fails in a stripped
+  environment — GUI launch, cron, a CI runner — writing to stderr and exiting
+  non-zero. The repo already had the fix in four other scripts as
+  `clear 2>/dev/null || true`; it simply was not everywhere, so all four adopt the
+  existing idiom rather than a new helper.
+
+  `tests/plain-output-contract-smoke.sh` gained a static step. Step 11 proves
+  `doctor` is quiet by running it, and that does not generalise: `pulse` spends
+  twenty seconds probing the network, so executing every command to check the same
+  property would make the suite unusable. The new step reads the dispatcher for
+  the `tools/scripts/` paths it invokes and rejects a bare `clear` in any of them
+  — 15 tools, expected count zero, so there is no ratchet and no allowance for a
+  wrong row.
+
+  Scoped to dispatched tools because that is the surface a caller reaches through
+  the documented CLI. Menus and TUI internals have a terminal by construction; the
+  eleven remaining unguarded `clear` calls live there and are out of scope. The
+  relation is read from the dispatcher rather than matched on filenames, since a
+  basename heuristic would be exactly the kind of approximation that has produced
+  two wrong attributions in this area already.
+
 * `ghost` was declared `safety: read-only` in the command registry while
   `tools/scripts/network-ghost.sh` ran `sudo ifconfig $INTERFACE ether $NEW_MAC`
   to spoof the machine's MAC address and flushed the DNS cache with

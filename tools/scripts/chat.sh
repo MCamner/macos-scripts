@@ -24,7 +24,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-clear
+clear 2>/dev/null || true
 _chat_sep
 printf " mqlaunch chat  —  Repo Memory Assistant, skriv exit för att avsluta\n"
 _chat_sep

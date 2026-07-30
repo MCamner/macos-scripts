@@ -11,7 +11,7 @@ NC='\033[0m' # No Color (Reset)
 # Temporary file to store the original MAC
 TEMP_MAC_FILE="/tmp/original_mac.txt"
 
-clear
+clear 2>/dev/null || true
 # ASCII Art: GHOST (Font: Tist style)
 echo -e "${BRIGHT_GREEN}"
 echo "      ::::::::   ::::::::  :::    :::  :::::::: ::::::::::: "
