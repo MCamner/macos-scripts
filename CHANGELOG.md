@@ -8,6 +8,23 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* The network signal rows go through the dispatcher: `run_network_pulse` and
+  `run_network_ghost` in `mqlaunch/lib/network.sh`, and the system menu's GHOST
+  row. Unlike `doctor`, the `pulse` and `ghost` routes end in `return $?` with no
+  pause of their own, so these callers keep their `pause_enter` — dropping it
+  would return straight to the menu and repaint over the output.
+
+  The pinned bypass count drops from nine to three, and again only part of that is
+  the rerouting:
+
+  ```text
+  9 → 6   three rows were attributed to pulse.sh that never called it (see Fixed)
+  6 → 3   the two network rows and the system GHOST row now route through mqlaunch
+  ```
+
+  Remaining: `excalidraw.sh`, `overseer.sh`, and the `test-all.sh` row behind
+  `run_self_check`.
+
 * Every menu path to `doctor` goes through the dispatcher instead of running
   `tools/scripts/doctor.sh` itself. `docs/RUNTIME_AUTHORITY.md` names
   `dispatch_cli_command` as the single entry point, and the inventory below found
@@ -35,6 +52,19 @@ All notable changes to this project will be documented in this file.
   like rather than where the call goes. It belongs in its own slice.
 
 ### Fixed
+
+* The command discovery inventory read past the end of a short handler. Function
+  bodies were excerpted as a fixed 60 lines from the definition, so a 9-line
+  handler's excerpt ran on into whichever function followed it in the file.
+
+  That is how `ping_test`, `show_dns_gateway` and `open_network_settings` were all
+  reported as running `pulse.sh`: none of them touch it, but all three sit in
+  `tools/scripts/mqlaunch_desktop.sh` near a neighbour that does. The bypass list
+  claimed four `pulse.sh` rows where there is one. Bodies are now cut at the
+  function's closing brace, with the line count kept only as a safety cap.
+
+  Worth stating plainly, because the slice that followed was scoped from the wrong
+  number: `pulse.sh ×4` was an artifact.
 
 * The command discovery inventory misclassified any arm that opens a submenu.
   `2) open_system_menu` was read by following the handler into its body — which is

@@ -47,7 +47,9 @@ open_system_menu() {
     case "$choice" in
       1) open_performance_menu ;;
       2) show_network_info ;;
-      3) "$BASE_DIR/tools/scripts/network-ghost.sh"; pause_enter ;;
+      # The ghost route returns without pausing, so this arm keeps its pause_enter
+      # — unlike the doctor arm below, where the dispatcher owns it.
+      3) "$BASE_DIR/bin/mqlaunch" ghost; pause_enter ;;
       # Through the dispatcher, not the script. It owns the pause too, so this
       # arm no longer calls pause_enter — doing both would stop twice.
       4) "$BASE_DIR/bin/mqlaunch" doctor ;;

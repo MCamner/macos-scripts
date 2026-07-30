@@ -178,14 +178,19 @@ show_dns_gateway() {
 }
 
 # Runs network pulse diagnostics.
+#
+# Through the dispatcher, not tools/scripts/pulse.sh. Unlike `doctor`, the pulse
+# and ghost routes end in `return $?` without a pause of their own, so the
+# pause_enter stays here — dropping it would return straight to the menu and
+# repaint over the output.
 run_network_pulse() {
-  "$BASE_DIR/tools/scripts/pulse.sh"
+  "$BASE_DIR/bin/mqlaunch" pulse
   pause_enter
 }
 
 # Runs network ghost diagnostics and cloaking actions.
 run_network_ghost() {
-  "$BASE_DIR/tools/scripts/network-ghost.sh"
+  "$BASE_DIR/bin/mqlaunch" ghost
   pause_enter
 }
 
