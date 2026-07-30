@@ -668,20 +668,24 @@ below are from 2026-07-30 against `2.0.1`.
     about it. The human row is `warn "$cmd missing"` and the JSON detail is the
     bare string `"missing"`: no install command, and no statement of what the
     tool is needed for.
-  * [ ] next recommended setup step — absent, and the human summary contradicts
-    the checks above it. `tools/scripts/doctor.sh` ends in an unconditional
-    `ok "MQ operational"`, so the screen reports success no matter what failed.
-    Run with a `PATH` holding only `git`, `python3` and `jq`:
+  * [x] the summary reflects the checks — `tools/scripts/doctor.sh` used to end
+    in an unconditional `ok "MQ operational"` that never read the counters above
+    it, so the screen reported success no matter what failed while `--json`
+    reported `"status": "warn"`. Both modes now reach the same verdict and the
+    same exit status: `0` only when every check passes.
 
     ```text
-    --json   {"status": "warn", "summary": {"ok": 3, "warn": 9, "fail": 0}}
-    human    SUMMARY
-             ✔ MQ operational            EXIT=0
+    before   --json {"status":"warn","summary":{"ok":3,"warn":9,"fail":0}}
+             human  ✔ MQ operational                        EXIT=0
+    after    --json {"status":"warn", ...}                  EXIT=1
+             human  ⚠ 9 of 12 checks need attention         EXIT=1
     ```
 
-    The JSON is honest and the screen is not, which makes this the exit gate's
-    problem and not a cosmetic one: the surface a new operator reads is the
-    surface that lies.
+    Held by `tests/doctor-status-contract-smoke.sh`, which builds a provisioned
+    and a stripped machine from `PATH` so the contract is tested rather than the
+    inventory of whichever machine runs the suite (#127).
+  * [ ] next recommended setup step — still absent. Doctor now says how many
+    checks need attention; it does not say what to do first.
 
 * [ ] Improve command discovery.
 
@@ -749,9 +753,11 @@ below are from 2026-07-30 against `2.0.1`.
 
 * [ ] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
 
-  Blocked on the two unchecked boxes under first-run experience. Today doctor
-  reports `✔ MQ operational` with nine warnings outstanding, so a new operator
-  who reads the screen learns the opposite of what the checks found.
+  Blocked on the two unchecked boxes under first-run experience. Doctor no
+  longer contradicts its own checks (#127), so an operator can now trust what
+  the screen says — but understanding the result is not the same as knowing the
+  next command, and neither the install hints nor the recommended first step
+  exist yet.
 
 ---
 

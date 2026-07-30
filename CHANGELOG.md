@@ -8,6 +8,50 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch doctor` reported success no matter what it found.
+  `tools/scripts/doctor.sh` ended in an unconditional `ok "MQ operational"`, and
+  the counters it might have consulted were only ever updated in JSON mode. On a
+  machine with nine of twelve checks warning, the two modes said opposite things:
+
+  ```text
+  --json   {"status": "warn", "summary": {"ok": 3, "warn": 9, "fail": 0}}
+  human    ✔ MQ operational                                 EXIT=0
+  ```
+
+  The JSON was honest. The screen — the surface a new operator actually reads —
+  was not, which made this ROADMAP P2's exit gate rather than a cosmetic defect.
+
+  Both modes now derive the same verdict from the same counters and exit `0`
+  only when every check passes. The summary branches on the run's status rather
+  than on a warning count, so a `fail` check added later cannot slip past a
+  `warn`-shaped condition and print "operational" again.
+
+  This changes an exit-code contract. No caller gates on it:
+  `terminal/release/mq-release-check.sh` runs doctor without `|| exit 1` — unlike
+  the `validate.sh` line directly below it — and is `set -u`, not `set -e`, so it
+  continues and still exits 0, which was verified by running it against a
+  warning doctor rather than by reading the script.
+
+  Two tests did gate on it, and both were asserting the wrong thing:
+
+  * `tests/headless-smoke.sh` ran doctor bare under `set -e`. It is about
+    pausing and output shape, so it now accepts 0 or 1 — and still rejects 124,
+    which a plain `|| true` would have swallowed along with the hang.
+  * `tests/output-mode-parity-smoke.sh` treated any non-zero exit as a parity
+    problem. A health command reports its verdict that way, so the rule is now
+    that the exit code and the document must agree: non-zero is accepted only
+    when the JSON says something is wrong. A third fixture proves that
+    allowance is not a hole, by replaying an observation that exited 1 while
+    reporting `"status": "ok"`.
+
+  `tests/doctor-status-contract-smoke.sh` is new. It builds a provisioned
+  machine and a stripped one out of `PATH` rather than testing whichever machine
+  runs the suite — a CI runner has no `eza` and a laptop does, and asserting
+  either would have produced a test that passes in one place and fails in the
+  other. It pins that the two modes agree, that the exit status follows the
+  verdict, and that the summary line differs between the two worlds, so it
+  cannot be a constant again.
+
 * `mqlaunch help` and `mqlaunch commands` were two hand-maintained copies of the
   same command list, and they had already drifted: `chat` was in the index and
   not in help. Both now render one list, `command_list` in
