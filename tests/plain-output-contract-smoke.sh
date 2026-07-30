@@ -392,14 +392,32 @@ if [[ -s "$term_err" ]]; then
 fi
 rm -f "$term_err"
 
-# The separators must still be drawn, not silently reduced to blank lines — the
-# failure mode was a rule of width '' rather than a missing rule.
-rule_out="$(env -u TERM -u COLUMNS MACOS_SCRIPTS_HOME="$ROOT" \
+# The separators must still be drawn, and be readable text rather than a run of
+# broken bytes. Two failure modes are pinned here:
+#
+#   * width ''      — the printf defect above left blank lines, not missing lines
+#   * `tr ' ' '─'`  — tr is byte-oriented, so under a C locale it maps each space
+#                     to 0xe2, the first byte of ─, and the rule becomes invalid
+#                     UTF-8. A stripped environment drops LANG along with TERM.
+#
+# Asserted by decoding, not by grepping for the glyph: a grep for '─' depends on
+# the locale of whoever runs the suite, which is the same trap the rule itself
+# fell into. Run under LC_ALL=C deliberately — that is the hostile case.
+rule_out="$(env -u TERM -u COLUMNS LC_ALL=C LANG=C MACOS_SCRIPTS_HOME="$ROOT" \
   bash "$DOCTOR" 2>/dev/null || true)"
-printf '%s\n' "$rule_out" | grep -q '──────' || {
-  echo "FAIL: doctor drew no horizontal rule with TERM unset" >&2
-  exit 1
-}
-echo "  ok: no stderr noise and rules still drawn without TERM"
+printf '%s' "$rule_out" | python3 -c '
+import sys
+raw = sys.stdin.buffer.read()
+try:
+    text = raw.decode("utf-8")
+except UnicodeDecodeError as exc:
+    sys.exit(f"FAIL: doctor output is not valid UTF-8 with TERM unset: {exc}")
+runs = [len(l) for l in text.splitlines() if l and set(l) == {"─"}]
+if not runs:
+    sys.exit("FAIL: doctor drew no horizontal rule with TERM unset")
+if max(runs) < 60:
+    sys.exit(f"FAIL: widest rule was {max(runs)} chars, below the 60-column clamp")
+' || exit 1
+echo "  ok: no stderr noise, rules drawn as valid UTF-8 without TERM or LANG"
 
 echo "PASS: output contract holds (no decoration off-TTY, colour opt-out, clean JSON)"

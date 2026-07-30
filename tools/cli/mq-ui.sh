@@ -52,7 +52,13 @@ unset _mq_cli_ui_self
 
 # Handles hr.
 hr() {
-  printf "%*s\n" "$(surface_terminal_width)" '' | tr ' ' '─'
+  local pad
+  # Not `| tr ' ' '─'`. tr is byte-oriented: in a C locale it maps each space to
+  # 0xe2, the first byte of ─, and the rule arrives as a run of invalid UTF-8. A
+  # stripped environment loses LANG for the same reason it loses TERM, so this is
+  # the same call. Parameter expansion substitutes the whole sequence.
+  printf -v pad '%*s' "$(surface_terminal_width)" ''
+  printf '%s\n' "${pad// /─}"
 }
 
 # Handles header.

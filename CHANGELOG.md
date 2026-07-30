@@ -55,17 +55,29 @@ All notable changes to this project will be documented in this file.
   a wide terminal now stop at 112 instead of spanning it, which is the same bound
   the rest of the surface already uses.
 
-  `tools/scripts/watch.sh` has the same `printf "%*s\n" "$(tput cols)"` line and
-  is deliberately left alone: it also calls `tput civis` and `tput cup`, so it
+  Writing the test surfaced a second defect in the same line. `tr ' ' '─'` is
+  byte-oriented, so under a C locale it mapped each space to `0xe2` — the first
+  byte of `─` — and the separator arrived as 92 bytes of invalid UTF-8. A stripped
+  environment drops `LANG` for the same reason it drops `TERM`, so both defects
+  fire together; CI caught this one because its runner has no UTF-8 locale.
+  `hr()` now builds the rule with parameter expansion, which substitutes the whole
+  sequence.
+
+  `tools/scripts/watch.sh` has the same `printf "%*s\n" "$(tput cols)" | tr` line
+  and is deliberately left alone: it also calls `tput civis` and `tput cup`, so it
   cannot render without a terminal at all. A width fallback there would be
-  unreachable code.
+  unreachable code. The `repeat_char` helpers in `ui/terminal-ui/mq-ui.sh` and
+  `terminal/launchers/gitlaunch.sh` share the `tr` hazard and are out of this
+  slice.
 
 * `tests/plain-output-contract-smoke.sh` could not see the defect above. Every
   check in it either sets `TERM=xterm-256color` or sends stderr to `DEVNULL`, so
   `doctor` could emit a screenful of shell errors and still pass the output
-  contract. A step now runs it with `TERM` and `COLUMNS` unset and requires empty
-  stderr, plus a separator that is actually drawn — the failure mode was a rule of
-  width `''`, not a missing rule.
+  contract. A step now runs it with `TERM` and `COLUMNS` unset, and under
+  `LC_ALL=C`, requiring empty stderr and a separator that decodes as valid UTF-8
+  at no less than the 60-column clamp. It asserts by decoding rather than grepping
+  for `─`, because a grep for that glyph depends on the locale of whoever runs the
+  suite — the same trap the rule itself fell into.
 
 * The last three `broken` rows are closed, and the manifest is at zero. Each was
   run first and diagnosed from its actual output, because two of the first five
