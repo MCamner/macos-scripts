@@ -29,7 +29,7 @@ echo "SMOKE: doctor status contract"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/8] doctor exists and compiles"
+echo "[1/9] doctor exists and compiles"
 test -x "$DOCTOR"
 bash -n "$DOCTOR"
 
@@ -37,7 +37,7 @@ bash -n "$DOCTOR"
 CHECKED=(git gh uv python3 node eza fzf jq gitleaks pbcopy)
 HELPERS=(bash sh cat sed awk tr wc head tail date hostname uname stty tput id)
 
-echo "[2/8] build the worlds this contract is measured in"
+echo "[2/9] build the worlds this contract is measured in"
 
 # A world is a PATH: the helpers, plus a stub for each tool named. Nothing
 # inherits the machine's real PATH, so "eza is missing" means the same thing on
@@ -102,7 +102,7 @@ summary_line() {
   awk '/^SUMMARY$/ {found=1; next} found && NF && $0 !~ /^[─-]+$/ {print; exit}'
 }
 
-echo "[3/8] a provisioned machine reports success in both modes"
+echo "[3/9] a provisioned machine reports success in both modes"
 ok_human_exit="$(doctor_run "$provisioned" key ok-human)"
 ok_json_exit="$(doctor_run "$provisioned" key ok-json --json)"
 
@@ -121,7 +121,7 @@ if [[ "$ok_human_exit" != "0" || "$ok_json_exit" != "0" ]]; then
   exit 1
 fi
 
-echo "[4/8] a stripped machine reports the warnings in both modes"
+echo "[4/9] a stripped machine reports the warnings in both modes"
 warn_human_exit="$(doctor_run "$degraded" nokey warn-human)"
 warn_json_exit="$(doctor_run "$degraded" nokey warn-json --json)"
 
@@ -170,7 +170,7 @@ if [[ "$warn_human_exit" == "0" || "$warn_json_exit" == "0" ]]; then
   exit 1
 fi
 
-echo "[5/8] the two modes agree with each other"
+echo "[5/9] the two modes agree with each other"
 # A person and a script reading the same machine must reach the same verdict.
 if [[ "$ok_human_exit" != "$ok_json_exit" ]]; then
   echo "FAIL: clean run exits differently per mode (human=$ok_human_exit json=$ok_json_exit)" >&2
@@ -183,7 +183,7 @@ fi
 printf '  ok: exit %s clean, exit %s degraded, in both modes\n' \
   "$ok_human_exit" "$warn_human_exit"
 
-echo "[6/8] the summary is derived, not printed"
+echo "[6/9] the summary is derived, not printed"
 # Without this the two checks above could both pass against a summary hard-coded
 # the other way. The line has to change with the machine.
 summary_ok="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/ok-human.out" \
@@ -195,7 +195,7 @@ if [[ "$summary_ok" == "$summary_human" ]]; then
 fi
 printf '  ok: clean reads "%s"\n' "$summary_ok"
 
-echo "[7/8] every warning says what to do about it, in both modes"
+echo "[7/9] every warning says what to do about it, in both modes"
 # Naming what is missing is not the same as saying what to do. This is
 # exhaustive rather than sampled: the degraded world warns on every check, so
 # a check added without a hint fails here instead of shipping a blank line.
@@ -234,7 +234,7 @@ for hint in "${hints[@]}"; do
 done
 printf '  ok: all %s hints appear on the screen too\n' "${#hints[@]}"
 
-echo "[8/8] the next step is the one worth doing first"
+echo "[8/9] the next step is the one worth doing first"
 # A next step that just names whichever check happened to run first would send a
 # new operator to install `eza` while `mqlaunch` is not on PATH. Two worlds,
 # differing by one tool, prove the order is a decision rather than an accident.
@@ -298,6 +298,61 @@ for pair in "next-eza:$step_eza" "next-launcher:$step_launcher"; do
 done
 echo "  ok: the screen names the same next step as the document"
 
+echo "[9/9] a healthy machine is told what to run, not just that it is healthy"
+# ROADMAP P2's exit gate asks that a new operator can find the right next
+# command. A doctor that ends at "12 checks passed" answers half of it: the
+# machine is fine, and now what?
+#
+# The recommendation is held to the surface the launcher advertises, not merely
+# to being non-empty. Pointing a new operator at a command help does not list
+# would send them somewhere they could not find their way back to.
+python3 - "$run_dir/ok-json.out" "$ROOT/mqlaunch/lib/command-registry.json" <<'CHECK'
+import json
+import sys
+
+doc = json.load(open(sys.argv[1], encoding="utf-8"))
+registry = json.load(open(sys.argv[2], encoding="utf-8"))
+
+step = doc.get("next")
+if not step:
+    sys.exit("a clean run carries no 'next' — the operator is told nothing to do")
+
+words = step.split()
+if words[0] != "mqlaunch" or len(words) < 2:
+    sys.exit(f"the recommendation is not a mqlaunch command: {step!r}")
+
+target = words[1]
+entry = next((c for c in registry["commands"]
+              if target == c["name"] or target in c.get("aliases", [])), None)
+if entry is None:
+    sys.exit(f"the recommendation {target!r} is not a registry command")
+if not entry["operator_surface"]:
+    sys.exit(f"the recommendation {target!r} is not advertised by help — "
+             f"a new operator could not find it again")
+print(f"  ok: a clean run recommends {step!r}, a public entrypoint")
+CHECK
+
+# And the screen says it, for the same reason the hints must.
+recommended="$(python3 -c \
+  "import json,sys; print(json.load(open(sys.argv[1]))['next'])" \
+  "$run_dir/ok-json.out")"
+screen_ok="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/ok-human.out")"
+case "$screen_ok" in
+  *"$recommended"*) ;;
+  *)
+    echo "FAIL: --json recommends '$recommended' but the clean screen never says it" >&2
+    exit 1
+    ;;
+esac
+
+# The two verdicts must not collapse into one line. A doctor that recommends the
+# same thing on a broken machine as on a working one has stopped reading it.
+if [[ "$recommended" == "$step_launcher" ]]; then
+  echo "FAIL: the same next step is given whether or not the machine works" >&2
+  exit 1
+fi
+echo "  ok: the clean screen names it too, and it differs from the degraded advice"
+
 bash -n "$0"
 
-echo "OK: doctor's summary reflects its checks, both modes agree, and every warning says what to do"
+echo "OK: doctor's summary reflects its checks, both modes agree, and every run ends in something to do"

@@ -8,6 +8,41 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* A run of `mqlaunch doctor` on a healthy machine ends in something to do:
+
+  ```text
+  ✔ MQ operational — 12 checks passed
+
+    Next: mqlaunch stack
+  ```
+
+  Doctor could already say what to fix (#128); on a machine with nothing to fix
+  it stopped at the count. That answered half of what ROADMAP P2's exit gate
+  asks — the operator learned the machine was fine and nothing about what to
+  run. `mqlaunch stack` is the landing because it is the one command that shows
+  the whole stack, every repo with its readiness and its own next action, rather
+  than a menu to navigate afterwards.
+
+  `next` is no longer null on a clean run. The field now means "one instruction",
+  not "one fix": the highest-priority repair while anything needs attention, the
+  recommended landing once nothing does. It was added yesterday and has not
+  shipped, so nothing external depended on the old meaning.
+
+  The recommendation is held to the advertised surface rather than to being
+  non-empty. `tests/doctor-status-contract-smoke.sh` requires it to be a registry
+  command with `operator_surface` true, so a new operator can find it again in
+  `mqlaunch help`. Three rejections were each proven separately:
+
+  ```text
+  mqlaunch markdownlint   not advertised by help — could not find it again
+  mqlaunch not-a-command  not a registry command
+  open the menu           not a mqlaunch command
+  ```
+
+  With this, P2's exit gate closes: a new operator can run `mqlaunch doctor`,
+  read a verdict that matches its own checks, fix what it names, and be pointed
+  at one command that shows the whole stack.
+
 * `operator_surface` in `mqlaunch/lib/command-registry.json`: whether a command
   is a public operator entrypoint. `mqlaunch help` and `mqlaunch commands` show
   the 48 that are, grouped by `namespace`, and stay quiet about the other 26.

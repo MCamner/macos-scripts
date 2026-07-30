@@ -205,10 +205,27 @@ the run ends with the one to do first:
   Next: run ./install.sh from the repo to install the symlink
 ```
 
+On a machine where everything passes, the same line points at where to go
+instead:
+
+```text
+✔ MQ operational — 12 checks passed
+
+  Next: mqlaunch stack
+```
+
 The same advice is in the document: `hint` on each check that did not pass, and
-a top-level `next` holding the first instruction, or `null` when the status is
-`ok`. The order is the order a machine is worth fixing in — the launcher first,
-then the tools it shells out to — not the order the checks are printed in.
+a top-level `next` holding one instruction. `next` is never null — a run that
+ends without telling the operator what to do is the defect the field exists to
+prevent. While something needs attention it names the fix to do first, in the
+order a machine is worth fixing in: the launcher, then the tools it shells out
+to, and not the order the checks are printed in. Once nothing does, it names
+`mqlaunch stack`, which shows every repo in the stack with its readiness and its
+own next action.
+
+The recommendation is held to the advertised surface by
+`tests/doctor-status-contract-smoke.sh`: it must be a registry command with
+`operator_surface` true, so a new operator can find it again in `mqlaunch help`.
 
 ---
 
