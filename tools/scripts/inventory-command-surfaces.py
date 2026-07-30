@@ -7,9 +7,11 @@ against mqlaunch/lib/command-registry.json, and the registry itself is compared
 against the dispatcher. The interactive menus were the one discovery surface
 with no such comparison, and they are where an operator actually looks.
 
-This tool answers, for every numbered option in terminal/menus/*.sh:
+This tool answers, for every dispatch arm in terminal/menus/*.sh — numbered and
+letter-key alike, since the menus use both:
 
     via-dispatcher     invokes `mqlaunch <command>` — the single authority
+    outside-registry   invokes a word the registry does not declare
     navigation         opens another menu or launcher, not a command
     dispatcher-bypass  runs a script directly that the dispatcher also routes,
                        so the same capability has two entry points
@@ -35,6 +37,7 @@ import argparse
 import collections
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -92,13 +95,28 @@ def strip_comment(line: str) -> str:
 
 
 def shell_sources() -> list[Path]:
-    """Every shell file that can define a menu handler, tests excluded."""
+    """Every tracked shell file that can define a menu handler, tests excluded.
+
+    The list comes from git, not from walking the filesystem. Walking was wrong
+    in a way that only CI could see: a local gitignored backups/scripts/ tree
+    holds old copies of the menus and launchers, and because a handler name can
+    be defined in several files, resolution sometimes landed in a backup. The
+    inventory then reported 9 dispatcher-bypass options on a developer machine
+    and 12 on a clean checkout. Tracked files are the same set everywhere.
+    """
+    listing = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-z", "*.sh"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     out = []
-    for path in ROOT.rglob("*.sh"):
-        text = str(path)
-        if "/.codegraph/" in text or "/.git/" in text or "/tests/" in text:
+    for rel in listing.split("\0"):
+        if not rel or rel.startswith("tests/"):
             continue
-        out.append(path)
+        path = ROOT / rel
+        if path.is_file():
+            out.append(path)
     return sorted(out)
 
 

@@ -5,7 +5,7 @@
 # The registry already has gates for every machine-readable discovery surface:
 # docs/COMMANDS.md, the README, --help and the palette are compared against
 # mqlaunch/lib/command-registry.json, and the registry against the dispatcher.
-# The interactive menus had none, which is why nine menu options turned out to
+# The interactive menus had none, which is why twelve menu options turned out to
 # run a script the dispatcher also routes — two ways into one capability.
 #
 # This does not assert the inventory's individual rows. The classification reads
@@ -23,19 +23,19 @@ REGISTRY="$ROOT/mqlaunch/lib/command-registry.json"
 # Today's count of menu options that bypass the dispatcher. Lower it as the
 # duplicated paths are removed; a rise means a menu gained a second way into a
 # command the dispatcher already routes.
-MAX_BYPASS=9
+MAX_BYPASS=12
 
 echo "SMOKE: command discovery inventory"
 
-echo "[1/6] tool exists and compiles"
+echo "[1/7] tool exists and compiles"
 test -x "$TOOL"
 test -f "$REGISTRY"
 PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/mqlaunch-pycache" python3 -m py_compile "$TOOL"
 
-echo "[2/6] the inventory runs and reports"
+echo "[2/7] the inventory runs and reports"
 "$TOOL" >/dev/null
 
-echo "[3/6] --json is a single valid document with the expected schema"
+echo "[3/7] --json is a single valid document with the expected schema"
 "$TOOL" --json | python3 -c '
 import sys, json
 data = json.load(sys.stdin)
@@ -45,7 +45,7 @@ for key in ("options", "counts", "unclassified", "registry"):
 assert data["options"], "inventory found no menu options at all"
 '
 
-echo "[4/6] every option is classified and counted"
+echo "[4/7] every option is classified and counted"
 # The property that made tests/manifest.tsv useful: nothing invisible. A row that
 # fell outside the known classes, or a class that stopped being counted, would
 # make every headline number in the report quietly wrong.
@@ -66,7 +66,7 @@ if counted != len(data["options"]):
 PY
 "$TOOL" --fail-on-unclassified >/dev/null
 
-echo "[5/6] the output does not depend on filesystem order"
+echo "[5/7] the output does not depend on filesystem order"
 # Handler names are defined in more than one file. An earlier revision picked a
 # winner globally, so the whole inventory shifted with directory order — 4
 # dispatcher calls one run, 17 the next. Resolution is now menu-local first, and
@@ -78,7 +78,31 @@ second="$("$TOOL" --json)"
   exit 1
 }
 
-echo "[6/6] the bypass ratchet holds, and fires when it should"
+echo "[6/7] untracked files in the checkout do not change the answer"
+# The defect this pins was invisible locally and only CI could see it. A
+# gitignored backups/scripts/ tree holds old copies of the menus and launchers,
+# and since a handler name can be defined in several files, resolution sometimes
+# landed in a backup — 9 bypass options on a developer machine, 12 on a clean
+# runner. The source list now comes from `git ls-files`. An untracked file that
+# defines a colliding handler must therefore be ignored entirely.
+probe_dir="$ROOT/.inventory-untracked-probe.$$"
+mkdir -p "$probe_dir"
+trap 'rm -f "$inventory_json"; rm -rf "$probe_dir"' EXIT
+cat >"$probe_dir/collide.sh" <<'PROBE'
+#!/usr/bin/env bash
+# Same handler names the real menus use, wired to the dispatcher instead.
+open_system_menu() { "$BASE_DIR/bin/mqlaunch" system; }
+run_network_ghost() { "$BASE_DIR/bin/mqlaunch" ghost; }
+PROBE
+with_untracked="$("$TOOL" --json)"
+[[ "$with_untracked" == "$first" ]] || {
+  echo "FAIL: an untracked .sh file changed the inventory; the source list is not from git" >&2
+  exit 1
+}
+rm -rf "$probe_dir"
+echo "  ok: untracked shell files are outside the inventory"
+
+echo "[7/7] the bypass ratchet holds, and fires when it should"
 "$TOOL" --max-bypass "$MAX_BYPASS" >/dev/null || {
   echo "FAIL: dispatcher-bypass count rose above the pinned $MAX_BYPASS" >&2
   exit 1

@@ -28,14 +28,14 @@ All notable changes to this project will be documented in this file.
   menu-local         local UI or shell logic with no command equivalent
   ```
 
-  Findings, to be acted on in later slices rather than this one: nine options are
-  `dispatcher-bypass`, giving `doctor.sh`, `network-ghost.sh`, `pulse.sh`,
+  Findings, to be acted on in later slices rather than this one: twelve options
+  are `dispatcher-bypass`, giving `doctor.sh`, `network-ghost.sh`, `pulse.sh`,
   `test-all.sh`, `overseer.sh` and `excalidraw.sh` a second entry point beside
   the dispatcher that runtime authority names as the single one. Fifteen tools are
   menu-only. Of 74 registry commands, 45 are invoked somewhere in menu code and 29
   are CLI-only.
 
-  The nine are pinned, not fixed: `--max-bypass` fails the suite if the count
+  The twelve are pinned, not fixed: `--max-bypass` fails the suite if the count
   rises, and the smoke test proves the ratchet is not vacuous by requiring one
   lower to fail. The classification is heuristic — it reads shell with regexes and
   follows an option one function deep — so the gate asserts the properties that
@@ -43,13 +43,21 @@ All notable changes to this project will be documented in this file.
   the counts summing to the option total, and output independent of filesystem
   order.
 
-  That last one was a real defect during development. Handler names are defined in
-  more than one file, and resolving them globally made the inventory shift with
-  directory order — 4 dispatcher calls on one run, 17 on the next. Resolution is
-  now menu-local first. Two other measurements were wrong before they were right:
-  a numeric-only scan of case arms missed that menus route most commands through
-  letter keys, and an invocation regex that did not strip comments read the menus'
-  own prose about themselves ("mqlaunch owns …") as command calls.
+  Four measurements were wrong before they were right, which is the case for
+  inventorying before polishing:
+
+  * Handler names are defined in more than one file, and resolving them globally
+    made the inventory shift with directory order — 4 dispatcher calls on one run,
+    17 on the next. Resolution is now menu-local first.
+  * The source list walked the filesystem, so a local gitignored
+    `backups/scripts/` tree of old menu copies took part in that resolution. The
+    inventory reported nine bypass options here and twelve on a clean CI runner.
+    It now comes from `git ls-files`, and a step plants an untracked colliding
+    handler to prove untracked files cannot move the numbers.
+  * A numeric-only scan of case arms missed that the menus route most commands
+    through letter keys (`r|R`), not numbers.
+  * An invocation regex that did not strip comments read the menus' own prose
+    about themselves ("mqlaunch owns …") as command calls.
 
 * `tests/manifest.tsv` and `tests/test-inventory-smoke.sh`. Every file under
   `tests/` must now be classified — `active`, `broken`, `manual`, or
