@@ -32,6 +32,42 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The last three `broken` rows are closed, and the manifest is at zero. Each was
+  run first and diagnosed from its actual output, because two of the first five
+  reasons written into the manifest turned out to be wrong.
+
+  All three shared a cause the manifest did not name: `ROADMAP.md` was rewritten
+  from `| Done | ... |` tables to prose sections with `Status: Done`, so
+  `grep -c '^|' ROADMAP.md` is now 0 and every verbatim table-row assertion had
+  become unsatisfiable.
+
+  `mq-agent-routing-smoke.sh` and `mq-obsidian-command-routes-smoke.sh` were
+  rewritten. Their roadmap greps are gone; the live assertions they already
+  carried stay. In the obsidian test the dropped rows claimed the release gate
+  detects schema drift, so the replacement asserts the gate — that
+  `check_mqobsidian_manifest_contract` is both defined and actually called in
+  `terminal/release/mq-release-check.sh`, since a check nobody calls is not a
+  gate either.
+
+  `mq-memory-cochange-routing-smoke.sh` was replaced rather than rewritten. Its
+  failing assertion looked for the literal `run_agent_command memory-cochange`,
+  but the dispatcher resolves the verb through a variable — `cochange)` sets
+  `_mem_verb`, then `run_agent_command "$_mem_verb"` runs it — so the string can
+  never appear no matter how correct the routing is. The step now sources command
+  mode, stubs the bridge, and calls `dispatch_cli_command memory cochange`,
+  asserting the verb that arrives and that trailing arguments are forwarded
+  untouched. Same harness as `tests/delegated-exit-code-smoke.sh`.
+
+  A rule follows from this, written into the manifest header: tests do not assert
+  `ROADMAP.md` text. A roadmap is a plan, and rewriting it is its job. Two active
+  tests were still violating it — `mq-stack-contract-smoke.sh` matched three
+  claims there and `mq-obsidian-menu-no-promotion-smoke.sh` one — so both were
+  repointed at `docs/architecture/MQ_BOUNDARY.md`, which states the same
+  prohibitions under `Must not own` and exists to be binding. No documentation
+  changed; the claims were already there.
+
+  52 active tests, zero classified out.
+
 * `tests/brain-bridge-smoke.sh` and `tests/skills-repos-smoke.sh` asserted that
   `terminal/launchers/mqlaunch.sh` still contained the case arms
   `verified|systems` and `skills|skill`. It contains neither — the command

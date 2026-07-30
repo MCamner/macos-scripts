@@ -4,14 +4,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MENU="$ROOT/terminal/menus/mq-obsidian-menu.sh"
 DOC="$ROOT/mqlaunch/docs/mqobsidian-consumer.md"
-ROADMAP="$ROOT/ROADMAP.md"
+BOUNDARY="$ROOT/docs/architecture/MQ_BOUNDARY.md"
 
 echo "SMOKE: MQ Obsidian menu has no memory promotion path"
 
 echo "[1/6] files exist"
 test -f "$MENU"
 test -f "$DOC"
-test -f "$ROADMAP"
+test -f "$BOUNDARY"
 
 echo "[2/6] shell syntax"
 bash -n "$MENU"
@@ -36,8 +36,12 @@ if grep -Eq '(_run_agent[[:space:]].*(promote|reject)|learn[[:space:]]+promote|p
   exit 1
 fi
 
-echo "[6/6] docs and roadmap keep promotion outside mqlaunch"
+# The second assertion was 'Do not implement memory promotion in shell.' in
+# ROADMAP.md. Same repoint as the rest of this slice: the prohibition belongs in
+# the boundary contract, which lists 'semantic memory engines' under 'Must not
+# own', not in a roadmap that gets rewritten every release.
+echo "[6/6] the consumer doc and the boundary contract keep promotion outside mqlaunch"
 grep -q "No writes to the vault. No scoring, promotion/downgrade, inbox or feedback-loop" "$DOC"
-grep -q "Do not implement memory promotion in shell." "$ROADMAP"
+grep -q 'semantic memory engines' "$BOUNDARY"
 
 echo "OK: MQ Obsidian menu no-promotion smoke test passed"
