@@ -9,7 +9,10 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 echo "SMOKE: Ollama document review"
 
 echo "[1/4] direct mqlaunch route exposes tool help"
-help_out="$(MACOS_SCRIPTS_HOME="$ROOT" "$ROOT/bin/mqlaunch" ollama-review --help)"
+help_out="$(
+  BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
+    "$ROOT/bin/mqlaunch" ollama-review --help
+)"
 grep -q "Review scripts with local Ollama" <<<"$help_out"
 
 echo "[2/4] file selection allows source and rejects secret-like names"
