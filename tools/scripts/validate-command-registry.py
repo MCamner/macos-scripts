@@ -59,6 +59,21 @@ REQUIRED_FIELDS = {
 # Branch patterns in the dispatcher's top-level case that are not commands.
 NON_COMMAND_PATTERNS = {"*", '""|menu'}
 
+# A script this repo owns, invoked from a dispatch branch.
+BRANCH_SCRIPT = re.compile(
+    r"\$BASE_DIR/((?:tools/scripts|mqlaunch/commands|terminal/[a-z]+)/[A-Za-z0-9_./-]+)"
+)
+
+# `sudo` in command position, rather than `sudo` inside a message.
+#
+# The distinction is the whole check. tools/scripts/scan.sh contains the line
+# `echo "- Restart audio if glitching: sudo killall coreaudiod"` — a suggestion
+# printed for the operator, not an escalation — and `scan` is correctly
+# read-only. A plain substring search would have relabelled it. Command position
+# means the start of a line or right after a separator, which is where an
+# executed `sudo` appears and where a quoted one does not.
+EXEC_SUDO = re.compile(r"(?:^|[;&|(]|\b(?:then|do|else)\s)\s*sudo\s")
+
 BRANCH = re.compile(
     r'^\s*((?:"[^"]*"|[A-Za-z0-9_*/.\-])+(?:\|(?:"[^"]*"|[A-Za-z0-9_*/.\-])+)*)\)'
     r"(\s*$|\s+\S.*;;\s*$)"
@@ -318,6 +333,60 @@ def check_subcommands(
             )
 
 
+def script_execs_sudo(rel: str) -> bool:
+    """True when a repo script actually escalates, rather than mentioning sudo."""
+    path = ROOT / rel
+    if not path.is_file():
+        return False
+    for line in path.read_text(errors="replace").splitlines():
+        code = line.split("#", 1)[0]
+        if EXEC_SUDO.search(code):
+            return True
+    return False
+
+
+def check_privilege_safety(
+    commands: list[dict],
+    seen_names: dict[str, str],
+    branches: list[tuple[int, str]],
+) -> None:
+    """A command whose script escalates privilege must not claim to be read-only.
+
+    `safety` exists so a consumer can decide what is safe to run, and `read-only`
+    is the value that invites running something unattended. `ghost` carried it
+    while tools/scripts/network-ghost.sh ran `sudo ifconfig ... ether ...` to
+    spoof the machine's MAC address and flushed the DNS cache with sudo — a false
+    label with a security consequence rather than a cosmetic one.
+
+    The check is deliberately one-directional. It says read-only is wrong when the
+    script escalates; it does not try to decide between local-write and
+    destructive, which is a judgement about blast radius that a regex has no
+    standing to make.
+    """
+    safety_of = {entry.get("name"): entry.get("safety") for entry in commands}
+
+    lines = DISPATCH.read_text().splitlines()
+    ordered = sorted(branches)
+    for index, (line_no, pattern) in enumerate(ordered):
+        if pattern in NON_COMMAND_PATTERNS:
+            continue
+        end = ordered[index + 1][0] - 1 if index + 1 < len(ordered) else len(lines)
+        body = "\n".join(lines[line_no - 1 : end])
+
+        first = pattern.split("|")[0].strip('"')
+        command = seen_names.get(first)
+        if command is None or safety_of.get(command) != "read-only":
+            continue
+
+        for rel in sorted(set(BRANCH_SCRIPT.findall(body))):
+            if script_execs_sudo(rel):
+                err(
+                    f"{command}: safety is 'read-only' but {rel} runs sudo — "
+                    f"use 'local-write' or 'destructive' so a consumer is not "
+                    f"told it is safe to run unattended"
+                )
+
+
 def check_deprecated_aliases(name: str, entry: dict) -> list[dict]:
     """Validate an entry's `deprecated_aliases` and return the well-formed ones.
 
@@ -524,6 +593,7 @@ def main(argv: list[str] | None = None) -> int:
         err(f"registry lists {token!r} but dispatch does not handle it")
 
     check_subcommands(commands, seen_names, subcases)
+    check_privilege_safety(commands, seen_names, branches)
 
     if errors:
         print(f"FAIL: {len(errors)} registry problem(s)", file=sys.stderr)

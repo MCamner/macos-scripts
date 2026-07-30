@@ -12,14 +12,14 @@ VALIDATOR="$ROOT/tools/scripts/validate-command-registry.py"
 
 echo "SMOKE: command registry"
 
-echo "[1/17] registry and validator exist"
+echo "[1/18] registry and validator exist"
 test -f "$REGISTRY"
 test -f "$VALIDATOR"
 
-echo "[2/17] registry is valid and agrees with dispatch"
+echo "[2/18] registry is valid and agrees with dispatch"
 python3 "$VALIDATOR" >/dev/null
 
-echo "[3/17] the registry lives on the authority-owned path"
+echo "[3/18] the registry lives on the authority-owned path"
 # docs/RUNTIME_AUTHORITY.md forbids the registry living in a legacy runtime path.
 case "$REGISTRY" in
   */mqlaunch/lib/*) ;;
@@ -29,7 +29,7 @@ grep -q 'terminal/mqlaunch-v1' "$REGISTRY" && {
   echo "registry references a legacy runtime path" >&2; exit 1
 }
 
-echo "[4/17] the validator rejects a duplicate command name"
+echo "[4/18] the validator rejects a duplicate command name"
 # Proves the gate fires. A registry whose validator passes anything is useless.
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -87,18 +87,18 @@ expect_reject() {
   esac
 }
 
-echo "[5/17] the validator rejects a subcommand the dispatcher does not handle"
+echo "[5/18] the validator rejects a subcommand the dispatcher does not handle"
 mutate "$tmp_dir/extra-sub.json" \
   'entry["subcommands"].append({"name": "not-a-real-subcommand", "aliases": [], "summary": "x"})'
 expect_reject "$tmp_dir/extra-sub.json" "a subcommand dispatch does not handle" \
   "registry lists subcommand 'not-a-real-subcommand'"
 
-echo "[6/17] the validator rejects a dispatch subcommand missing from the registry"
+echo "[6/18] the validator rejects a dispatch subcommand missing from the registry"
 mutate "$tmp_dir/missing-sub.json" 'entry["subcommands"].pop()'
 expect_reject "$tmp_dir/missing-sub.json" "a registry missing a dispatched subcommand" \
   "but the registry does not list it"
 
-echo "[7/17] the validator rejects a missing alias of a dispatched subcommand"
+echo "[7/18] the validator rejects a missing alias of a dispatched subcommand"
 # Aliases are part of the surface: `mqlaunch system performance` is as real as
 # `mqlaunch system perf`, and a consumer that only sees one of them is wrong.
 mutate "$tmp_dir/missing-alias.json" '''
@@ -112,14 +112,14 @@ else:
 expect_reject "$tmp_dir/missing-alias.json" "a subcommand with a dropped alias" \
   "but the registry does not list it"
 
-echo "[8/17] the validator rejects dropping subcommands from a namespace that has them"
+echo "[8/18] the validator rejects dropping subcommands from a namespace that has them"
 # Drift by omission is the easy failure: a namespace grows a nested case and
 # nobody declares it. Silence must fail too.
 mutate "$tmp_dir/no-subs.json" 'entry.pop("subcommands"); entry.pop("unknown_subcommand", None)'
 expect_reject "$tmp_dir/no-subs.json" "a namespace that dropped its subcommands" \
   "but the registry declares none"
 
-echo "[9/17] the validator rejects an unknown_subcommand claim that contradicts dispatch"
+echo "[9/18] the validator rejects an unknown_subcommand claim that contradicts dispatch"
 # `system` rejects unknown words with exit 2, so its list is the whole
 # surface. Claiming it forwards would tell a consumer the list is partial.
 mutate "$tmp_dir/wrong-surface.json" 'entry["unknown_subcommand"] = "forward"'
@@ -141,12 +141,12 @@ if "json" not in sub:
 '''"$2"
 }
 
-echo "[10/17] the validator rejects a subcommand claiming JSON it does not list"
+echo "[10/18] the validator rejects a subcommand claiming JSON it does not list"
 sub_mutate "$tmp_dir/sub-json-modes.json" 'sub["output_modes"] = ["human"]'
 expect_reject "$tmp_dir/sub-json-modes.json" "a subcommand whose json flag and output_modes disagree" \
   "system doctor: json is true but 'json' is not in output_modes"
 
-echo "[11/17] the validator rejects a half-stated subcommand output declaration"
+echo "[11/18] the validator rejects a half-stated subcommand output declaration"
 # One field without the other leaves a consumer guessing which half to trust.
 sub_mutate "$tmp_dir/sub-half.json" 'sub.pop("output_modes")'
 expect_reject "$tmp_dir/sub-half.json" "a subcommand declaring json without output_modes" \
@@ -192,7 +192,7 @@ json.dump(doc, open(sys.argv[2], "w"))
 PY
 }
 
-echo "[12/17] a well-formed deprecation validates"
+echo "[12/18] a well-formed deprecation validates"
 # The rules must leave a correct registry alone. Without this, every check below
 # would still pass if the validator rejected the field outright.
 dep_mutate "$tmp_dir/dep-ok.json" 'pass'
@@ -202,27 +202,27 @@ if ! out="$(python3 "$VALIDATOR" "$tmp_dir/dep-ok.json" 2>&1)"; then
   exit 1
 fi
 
-echo "[13/17] the validator rejects a deprecated alias without a replacement"
+echo "[13/18] the validator rejects a deprecated alias without a replacement"
 # A deprecation that does not say what to use instead is a dead end for the
 # person who typed the old word.
 dep_mutate "$tmp_dir/dep-no-replacement.json" 'dep.pop("replacement")'
 expect_reject "$tmp_dir/dep-no-replacement.json" "a deprecated alias with no replacement" \
   "deprecated alias 'performance': missing required field 'replacement'"
 
-echo "[14/17] the validator rejects a replacement that resolves to nothing"
+echo "[14/18] the validator rejects a replacement that resolves to nothing"
 # Naming a replacement is not enough — it has to be a word that dispatches.
 dep_mutate "$tmp_dir/dep-ghost-replacement.json" 'dep["replacement"] = "not-a-command"'
 expect_reject "$tmp_dir/dep-ghost-replacement.json" "a replacement nothing dispatches" \
   "replacement 'not-a-command' is not an active command name or alias"
 
-echo "[15/17] the validator rejects a word that is active and deprecated at once"
+echo "[15/18] the validator rejects a word that is active and deprecated at once"
 # The contradiction the field exists to prevent: help would advertise it while
 # the registry says it is being retired.
 dep_mutate "$tmp_dir/dep-both.json" 'entry["aliases"] = entry["aliases"] + ["performance"]'
 expect_reject "$tmp_dir/dep-both.json" "a word listed as both an alias and deprecated" \
   "'performance' is listed as both an active alias and a deprecated one"
 
-echo "[16/17] the validator rejects a deprecated alias claimed by another command"
+echo "[16/18] the validator rejects a deprecated alias claimed by another command"
 # Same rule as active names: one word, one command. A collision here would make
 # the replacement advice depend on which entry a consumer read first.
 dep_mutate "$tmp_dir/dep-collision.json" '''
@@ -232,7 +232,7 @@ other["deprecated_aliases"] = [{"name": "performance", "replacement": "net"}]
 expect_reject "$tmp_dir/dep-collision.json" "a deprecated alias claimed by two commands" \
   "duplicate command name 'performance'"
 
-echo "[17/17] the validator rejects a command that delegates outside its owner"
+echo "[17/18] the validator rejects a command that delegates outside its owner"
 # docs/RUNTIME_AUTHORITY.md forbids routing to mq-mcp when mq-agent owns the
 # workflow. An entry can state that violation plainly, so a gate can see it.
 python3 - "$REGISTRY" "$tmp_dir/wrong-owner.json" <<'FIXTURE'
@@ -247,6 +247,43 @@ json.dump(doc, open(sys.argv[2], "w"))
 FIXTURE
 expect_reject "$tmp_dir/wrong-owner.json" "a command delegating outside its owner" \
   "delegates_to names 'mq-mcp'"
+
+echo "[18/18] the validator rejects read-only on a command whose script runs sudo"
+# `ghost` shipped as read-only while tools/scripts/network-ghost.sh spoofed the
+# machine's MAC address with `sudo ifconfig ... ether ...`. read-only is the value
+# that invites running something unattended, so this was a false label with a
+# security consequence rather than a cosmetic one.
+#
+# The fixture puts the old value back rather than inventing a case, so the gate is
+# proved against the mistake it was written for.
+python3 - "$REGISTRY" "$tmp_dir/sudo-read-only.json" <<'FIXTURE'
+import json, sys
+doc = json.load(open(sys.argv[1]))
+entry = next(c for c in doc["commands"] if c["name"] == "ghost")
+entry["safety"] = "read-only"
+json.dump(doc, open(sys.argv[2], "w"))
+FIXTURE
+expect_reject "$tmp_dir/sudo-read-only.json" "read-only on a command that escalates" \
+  "runs sudo"
+
+# And the other direction, which is the part that makes the check usable: a
+# printed suggestion is not an escalation. tools/scripts/scan.sh contains
+# `echo "- Restart audio if glitching: sudo killall coreaudiod"`, and `scan` is
+# correctly read-only. A substring search would have relabelled it.
+scan_safety="$(python3 -c '
+import json, sys
+doc = json.load(open(sys.argv[1]))
+print(next(c["safety"] for c in doc["commands"] if c["name"] == "scan"))
+' "$REGISTRY")"
+[[ "$scan_safety" == "read-only" ]] || {
+  echo "FAIL: scan is $scan_safety; the fixture below no longer proves anything" >&2
+  exit 1
+}
+grep -q 'glitching: sudo killall' "$ROOT/tools/scripts/scan.sh" || {
+  echo "FAIL: scan.sh no longer mentions sudo, so the false-positive guard is moot" >&2
+  exit 1
+}
+echo "  ok: escalation rejected, a printed sudo suggestion is not"
 
 bash -n "$0"
 
