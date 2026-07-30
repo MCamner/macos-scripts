@@ -661,10 +661,16 @@ Once runtime authority and command consistency are fixed, the product can become
 
 * [ ] Improve command discovery.
 
-  * clearer namespace groups
-  * shorter summaries
-  * fewer duplicate entries
-  * highlight most useful workflows first
+  * [ ] clearer namespace groups
+  * [ ] shorter summaries
+  * [x] fewer duplicate entries — `mqlaunch help` and `mqlaunch commands` were
+    two hand-maintained copies of one list and had already drifted: `chat` was
+    in the index and not in help. Both now render `command_list` in
+    `terminal/menus/mq-help-menu.sh`, and `tests/registry-consumer-parity-smoke.sh`
+    checks the index as a fourth consumer, so they cannot drift again (#126).
+  * [x] highlight most useful workflows first — `POPULAR FLOWS` moved from the
+    bottom of help to the top of the shared list, which also puts it in the
+    index (#126).
 
 * [ ] Improve stack status entrypoints.
 

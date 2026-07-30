@@ -8,6 +8,35 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch help` and `mqlaunch commands` were two hand-maintained copies of the
+  same command list, and they had already drifted: `chat` was in the index and
+  not in help. Both now render one list, `command_list` in
+  `terminal/menus/mq-help-menu.sh`, so a command can no longer reach one surface
+  and miss the other.
+
+  `mqlaunch commands` was not checked by anything. `tests/registry-consumer-parity-smoke.sh`
+  held help, `docs/COMMANDS.md` and the palette against the registry; the index
+  was the one advertised surface with no gate on it, which is why the drift
+  survived. It is now a fourth consumer with help's contract — every word it
+  offers must dispatch, and it must not promote a deprecated alias — plus one of
+  its own: help and the index must offer the same commands.
+
+  The comparison is on command words, not on text. The index adds a banner and a
+  footer, so the two captures are not meant to be byte-identical.
+
+  Run against the previous `terminal/menus/mq-help-menu.sh`, the new step names
+  the real defect:
+
+  ```text
+  `mqlaunch help` and `mqlaunch commands` advertise different commands
+    — only in help: mqlaunch; only in the index: chat
+  ```
+
+  The index is read with a one-or-two-space indent while help is read with two.
+  A stricter anchor was tried first and reported all 43 commands as missing,
+  because the old index indented by one — a true failure for a reason that hid
+  the one worth reading.
+
 * `mqlaunch pulse` wrote `TERM environment variable not set.` to stderr and the
   four dispatched tools that call `clear` unguarded now guard it:
   `tools/scripts/pulse.sh`, `blackout.sh`, `chat.sh` and `network-ghost.sh`.
@@ -62,6 +91,10 @@ All notable changes to this project will be documented in this file.
   false-positive guard cannot quietly stop proving anything.
 
 ### Changed
+
+* `POPULAR FLOWS` moved from the bottom of `mqlaunch help` to the top of the
+  shared list, so it is the first thing both surfaces show and the index gets it
+  too. ROADMAP P2 asks for the most useful workflows first; they were last.
 
 * The network signal rows go through the dispatcher: `run_network_pulse` and
   `run_network_ghost` in `mqlaunch/lib/network.sh`, and the system menu's GHOST
