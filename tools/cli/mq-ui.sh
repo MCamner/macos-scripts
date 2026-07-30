@@ -39,9 +39,20 @@ C_RESET="\033[0m"
 # Layout
 # ----------------------------
 
+# Width comes from the shared helper, not a local `tput cols`. With TERM unset —
+# a GUI launch, cron, a nested launcher, a CI runner — tput prints its own
+# complaint and returns nothing, and printf then rejects the empty field width.
+# `mqlaunch doctor` emitted twelve such error pairs while still exiting 0, and
+# drew blank lines where its separators should be. The helper owns the fallback
+# and the clamp; this file should not carry a fourth copy of that decision.
+_mq_cli_ui_self="${BASH_SOURCE[0]-}"
+# shellcheck source=../../ui/terminal-ui/terminal-width.sh
+source "${_mq_cli_ui_self%/*}/../../ui/terminal-ui/terminal-width.sh"
+unset _mq_cli_ui_self
+
 # Handles hr.
 hr() {
-  printf "%*s\n" "$(tput cols)" '' | tr ' ' '─'
+  printf "%*s\n" "$(surface_terminal_width)" '' | tr ' ' '─'
 }
 
 # Handles header.
