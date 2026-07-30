@@ -875,15 +875,18 @@ tools_menu_loop() {
     10) run_tool_script "BOOT MAKER" "$BASE_DIR/tools/cli/boot-maker.sh" ;;
     11) run_tool_script "FOCUS TIMER" "$BASE_DIR/tools/scripts/focus.sh" ;;
     12) document_functions_menu_loop ;;
-    13) run_tool_script "DOCTOR CHECK" "$BASE_DIR/tools/scripts/doctor.sh" ;;
+    # Both doctor rows go through the dispatcher rather than the script. run_tool_script
+    # is still right for tools with no command of their own; doctor has one.
+    13) "$BASE_DIR/bin/mqlaunch" doctor ;;
     14)
-      if [[ -x "$BASE_DIR/tools/scripts/doctor.sh" || -f "$BASE_DIR/tools/scripts/doctor.sh" ]]; then
-        bash "$BASE_DIR/tools/scripts/doctor.sh" --json \
-          | (command -v jq >/dev/null 2>&1 && jq . || cat)
-        pause_enter
-      else
-        run_tool_script "DOCTOR JSON" "$BASE_DIR/tools/scripts/doctor.sh" --json
-      fi
+      # The existence guard and the missing-script panel that used to wrap this
+      # are gone with it: checking whether doctor.sh is there was this menu
+      # duplicating a decision the dispatcher already owns. `--json` keeps its
+      # pause here, because the dispatcher deliberately skips it for --json so a
+      # piped caller is never left waiting on input.
+      "$BASE_DIR/bin/mqlaunch" doctor --json \
+        | (command -v jq >/dev/null 2>&1 && jq . || cat)
+      pause_enter
       ;;
     15)
       if command -v run_self_check >/dev/null 2>&1; then

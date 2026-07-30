@@ -73,6 +73,18 @@ SCRIPT = re.compile(
 # Menu handlers are short; this is a bound, not a parse.
 FUNC_BODY_LINES = 60
 
+# A handler that opens a submenu rather than running anything: open_system_menu,
+# mq_obsidian_menu_main, document_functions_menu_loop.
+#
+# Matched on the name, before the body is read, and that ordering is the point. A
+# submenu opener's body is that submenu's own case statement, so reading into it
+# returned whatever the first 60 lines of the child menu happened to invoke — and
+# the label changed when the child menu was edited. `2) open_system_menu` was
+# reported as dispatcher-bypass because the system menu ran network-ghost.sh
+# nearby, then flipped to via-dispatcher when an unrelated row in that menu was
+# rerouted. Neither was true: the arm opens a menu.
+MENU_OPENER = re.compile(r"^(?:open_.*_menu|.*_menu(?:_main|_loop)?)$")
+
 KINDS = (
     "via-dispatcher",
     "outside-registry",
@@ -168,6 +180,8 @@ def classify(action: str, menu: Path, per_file: dict, context: dict) -> tuple[st
     """Return (kind, target) for one menu option's action."""
     text = action
     token = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\b", action)
+    if token and MENU_OPENER.match(token.group(1)):
+        return "navigation", token.group(1)
     if token:
         body = resolve_body(token.group(1), menu, per_file)
         if body:

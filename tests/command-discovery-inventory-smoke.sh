@@ -6,7 +6,9 @@
 # docs/COMMANDS.md, the README, --help and the palette are compared against
 # mqlaunch/lib/command-registry.json, and the registry against the dispatcher.
 # The interactive menus had none, which is why twelve menu options turned out to
-# run a script the dispatcher also routes — two ways into one capability.
+# run a script the dispatcher also routes — two ways into one capability. Nine are
+# left: both doctor rows now go through the dispatcher, and one of the twelve was
+# a misclassification the inventory has since corrected.
 #
 # This does not assert the inventory's individual rows. The classification reads
 # shell with regexes and follows a menu action one function deep, so a row is a
@@ -23,7 +25,7 @@ REGISTRY="$ROOT/mqlaunch/lib/command-registry.json"
 # Today's count of menu options that bypass the dispatcher. Lower it as the
 # duplicated paths are removed; a rise means a menu gained a second way into a
 # command the dispatcher already routes.
-MAX_BYPASS=12
+MAX_BYPASS=9
 
 echo "SMOKE: command discovery inventory"
 
