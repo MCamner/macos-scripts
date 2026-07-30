@@ -48,7 +48,9 @@ open_system_menu() {
       1) open_performance_menu ;;
       2) show_network_info ;;
       3) "$BASE_DIR/tools/scripts/network-ghost.sh"; pause_enter ;;
-      4) "$BASE_DIR/tools/scripts/doctor.sh"; pause_enter ;;
+      # Through the dispatcher, not the script. It owns the pause too, so this
+      # arm no longer calls pause_enter — doing both would stop twice.
+      4) "$BASE_DIR/bin/mqlaunch" doctor ;;
       5) run_self_check || true; pause_enter ;;
       6) run_debug_bundle || true; pause_enter ;;
       7) system_check; pause_enter ;;

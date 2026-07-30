@@ -6,6 +6,47 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* Every menu path to `doctor` goes through the dispatcher instead of running
+  `tools/scripts/doctor.sh` itself. `docs/RUNTIME_AUTHORITY.md` names
+  `dispatch_cli_command` as the single entry point, and the inventory below found
+  twelve menu options with a second one.
+
+  Three rows changed: the system menu's DOCTOR row, the tools menu's DOCTOR CHECK
+  row, and the tools menu's DOCTOR JSON row. The first dropped its own
+  `pause_enter` because the dispatcher already pauses, and doing both would stop
+  twice. The JSON row keeps its pause, because the dispatcher deliberately skips
+  it for `--json` so a piped caller is never left waiting on input. That row also
+  loses an existence guard and a missing-script panel — the menu duplicating a
+  decision the dispatcher owns.
+
+  The pinned bypass count drops from twelve to nine, and the split is worth
+  stating because only part of it is this change:
+
+  ```text
+  12 → 11   the inventory stopped misclassifying one row (see Fixed)
+  11 →  9   the two pinned doctor rows now route through the dispatcher
+  ```
+
+  `test-all` is deliberately untouched. Its menu row goes through
+  `run_self_check` in `mqlaunch/lib/diagnostics.sh`, a presentation wrapper with
+  its own header, footer and pause, so rerouting it changes what the menu looks
+  like rather than where the call goes. It belongs in its own slice.
+
+### Fixed
+
+* The command discovery inventory misclassified any arm that opens a submenu.
+  `2) open_system_menu` was read by following the handler into its body — which is
+  the system menu's own case statement — so the arm was labelled by whatever the
+  first 60 lines of the child menu happened to invoke. It was reported as
+  `dispatcher-bypass` because `network-ghost.sh` ran nearby, and it flipped to
+  `via-dispatcher` when an unrelated row in that menu was rerouted.
+
+  Neither label was true: the arm opens a menu. Submenu openers are now matched by
+  name before the body is read, which moved 17 arms from `menu-local` to
+  `navigation` and removed one row from the bypass list.
+
 ### Added
 
 * `tools/scripts/inventory-command-surfaces.py` and
