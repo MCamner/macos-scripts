@@ -12,8 +12,9 @@ mqlaunch → 7. Document functions → 8. Ollama review
 Or run directly:
 
 ```bash
+mqlaunch ollama-review tools/scripts/document-functions.sh
+mqlaunch ollama-review terminal/menus/ --model qwen3:4b-instruct
 tools/scripts/ollama-document-review.py tools/scripts/document-functions.sh
-tools/scripts/ollama-document-review.py terminal/menus/ --model qwen3:4b
 ```
 
 ## What it does
@@ -28,13 +29,13 @@ tools/scripts/ollama-document-review.py terminal/menus/ --model qwen3:4b
 ## Default model
 
 ```bash
-qwen3:4b
+qwen3:4b-instruct
 ```
 
 Override with:
 
 ```bash
-MQ_OLLAMA_REVIEW_MODEL=qwen3:4b-instruct mqlaunch
+MQ_OLLAMA_REVIEW_MODEL=another-local-model mqlaunch ollama-review .
 ```
 
 ## Safety
