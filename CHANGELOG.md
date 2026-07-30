@@ -32,6 +32,53 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch doctor` printed shell errors when `TERM` was unset — a GUI launch,
+  cron, a nested launcher, a CI runner. `tools/cli/mq-ui.sh` drew its section
+  separators with a bare `printf "%*s\n" "$(tput cols)"`, and with no terminal to
+  ask, `tput` wrote its own complaint to stderr and returned nothing, leaving
+  `printf` with an empty field width:
+
+  ```text
+  tput: No value for $TERM and no -T specified
+  tools/cli/mq-ui.sh: line 44: printf: : invalid number
+  ```
+
+  Twelve such lines from the first command a new operator is told to run, with
+  blank lines where the six separators belonged — and an exit status of 0
+  throughout, which is why nothing reported it.
+
+  `hr()` now takes its width from `surface_terminal_width` in
+  `ui/terminal-ui/terminal-width.sh`, the helper the surface converged on. This
+  was a fourth copy of that decision and the only one carrying no fallback at
+  all. Verified against a stubbed `tput`: 200 columns clamps to 112, 40 clamps up
+  to 60, 100 passes through, and a failing `tput` falls back to 92. Separators on
+  a wide terminal now stop at 112 instead of spanning it, which is the same bound
+  the rest of the surface already uses.
+
+  Writing the test surfaced a second defect in the same line. `tr ' ' '─'` is
+  byte-oriented, so under a C locale it mapped each space to `0xe2` — the first
+  byte of `─` — and the separator arrived as 92 bytes of invalid UTF-8. A stripped
+  environment drops `LANG` for the same reason it drops `TERM`, so both defects
+  fire together; CI caught this one because its runner has no UTF-8 locale.
+  `hr()` now builds the rule with parameter expansion, which substitutes the whole
+  sequence.
+
+  `tools/scripts/watch.sh` has the same `printf "%*s\n" "$(tput cols)" | tr` line
+  and is deliberately left alone: it also calls `tput civis` and `tput cup`, so it
+  cannot render without a terminal at all. A width fallback there would be
+  unreachable code. The `repeat_char` helpers in `ui/terminal-ui/mq-ui.sh` and
+  `terminal/launchers/gitlaunch.sh` share the `tr` hazard and are out of this
+  slice.
+
+* `tests/plain-output-contract-smoke.sh` could not see the defect above. Every
+  check in it either sets `TERM=xterm-256color` or sends stderr to `DEVNULL`, so
+  `doctor` could emit a screenful of shell errors and still pass the output
+  contract. A step now runs it with `TERM` and `COLUMNS` unset, and under
+  `LC_ALL=C`, requiring empty stderr and a separator that decodes as valid UTF-8
+  at no less than the 60-column clamp. It asserts by decoding rather than grepping
+  for `─`, because a grep for that glyph depends on the locale of whoever runs the
+  suite — the same trap the rule itself fell into.
+
 * The last three `broken` rows are closed, and the manifest is at zero. Each was
   run first and diagnosed from its actual output, because two of the first five
   reasons written into the manifest turned out to be wrong.

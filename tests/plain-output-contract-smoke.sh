@@ -25,12 +25,12 @@ echo "SMOKE: plain and machine-readable output contract"
 
 DOCTOR="$ROOT/tools/scripts/doctor.sh"
 
-echo "[1/10] files exist"
+echo "[1/11] files exist"
 test -f "$UI"
 test -f "$LAUNCH"
 test -f "$DOCTOR"
 
-echo "[2/10] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
+echo "[2/11] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
 python3 - "$ROOT" <<'PY'
 import os, pty, subprocess, sys
 
@@ -73,13 +73,13 @@ assert ESC not in plain, f"NO_COLOR=1 still emitted ANSI: {plain!r}"
 print("  ok: color on TTY, none under NO_COLOR")
 PY
 
-echo "[3/10] NO_COLOR is honoured in the central colour guard (structural)"
+echo "[3/11] NO_COLOR is honoured in the central colour guard (structural)"
 # Fixed-string match: the guard line is literal, and ERE brace handling differs
 # between BSD (macOS) and GNU (Linux) grep.
 # shellcheck disable=SC2016
 grep -qF 'if [[ -t 1 && -z "${NO_COLOR:-}" ]]' "$UI"
 
-echo "[4/10] JSON mode prints only JSON to stdout — no banner, no ANSI"
+echo "[4/11] JSON mode prints only JSON to stdout — no banner, no ANSI"
 # Test the JSON producer directly: it is deterministic regardless of which tools
 # are installed. A health check may legitimately exit non-zero when tools are
 # missing, so the exit status is captured, not asserted — the contract is that
@@ -95,7 +95,7 @@ json.loads(data)                # must parse as a single JSON document
 print("  ok: valid JSON, no ANSI, no banner")
 '
 
-echo "[5/10] mqlaunch status --json emits JSON only — end-to-end through the launcher"
+echo "[5/11] mqlaunch status --json emits JSON only — end-to-end through the launcher"
 # The producer being clean is not enough: the launcher is what a caller pipes.
 # bin/mqlaunch resolves the repo through BASE_DIR, so pin it at this checkout.
 # MQ_NO_TUI keeps any interactive path from blocking if this ever regresses.
@@ -114,7 +114,7 @@ for key in ("project", "version", "repo_state"):
 print("  ok: status --json is a single clean JSON document")
 '
 
-echo "[6/10] the JSON status path stays side-effect free (structural)"
+echo "[6/11] the JSON status path stays side-effect free (structural)"
 # print_status_json must not fall back into the dashboard renderer: that one runs
 # the full test suite and calls pause_enter, so reusing it here would make a
 # machine-readable command slow, interactive, and (run from test-all) recursive.
@@ -128,7 +128,7 @@ test -n "$json_status_body"
 # Without --json, status must still render the dashboard.
 grep -q 'show_about_dashboard' "$COMMAND_MODE"
 
-echo "[7/10] plain status is clean when piped and when redirected"
+echo "[7/11] plain status is clean when piped and when redirected"
 # The banner was the remaining hole in the contract (#67): the colour guard was
 # doing its job — zero ANSI in a pipe — but ASCII art is not colour, so a caller
 # who did not know about --json got 5.8 KB of dashboard on stdout and exit 0.
@@ -195,7 +195,7 @@ for path in sys.argv[1:]:
 print("  ok: piped and redirected status carry content without decoration")
 PY
 
-echo "[8/10] the header still renders on a terminal (both directions, via pty)"
+echo "[8/11] the header still renders on a terminal (both directions, via pty)"
 # The risk in suppressing the banner is suppressing it everywhere. This asserts
 # the human path in the same breath as the machine path, because a guard that
 # only ever proves the negative would also pass if print_header were deleted.
@@ -231,7 +231,7 @@ assert piped == b"", f"header rendered into a pipe: {piped[:200]!r}"
 print("  ok: header on a terminal, nothing in a pipe")
 PY
 
-echo "[9/10] --no-color disables colour from the command line (both directions, via pty)"
+echo "[9/11] --no-color disables colour from the command line (both directions, via pty)"
 # NO_COLOR is an environment variable; a caller with a command line and no
 # control over the environment needs the flag form. `commands` is the probe
 # because it colours its output and returns without waiting for a keypress.
@@ -294,7 +294,7 @@ assert len(plain) > 1000, f"--no-color suppressed the output itself: {len(plain)
 print("  ok: colour on a TTY, none with --no-color, command still runs")
 PY
 
-echo "[10/10] repo_state means the same thing on every surface"
+echo "[10/11] repo_state means the same thing on every surface"
 # #66: `mqlaunch status`, the dashboard and `mqlaunch version` each derived
 # repo_state from `git diff --quiet HEAD`, which sees tracked changes only. A
 # checkout holding nothing but untracked files therefore read as `clean` — while
@@ -368,5 +368,56 @@ if [[ -n "$stale" ]]; then
   exit 1
 fi
 echo "  ok: clean, dirty (tracked and untracked), and not-a-git-repo"
+
+echo "[11/11] reporting surfaces stay quiet when the terminal is unknown"
+# A stripped environment has no TERM: a GUI launch, a cron job, a nested
+# launcher, a CI runner. `tput cols` fails there and prints its own complaint.
+#
+# This step exists because the rest of this file could not see that. Every check
+# above either sets TERM=xterm-256color or sends stderr to DEVNULL, so
+# `mqlaunch doctor` could emit a screenful of 'tput: No value for $TERM' and
+# 'printf: : invalid number' on stderr and still pass the output contract. The
+# first command a new operator runs looked broken while the gate stayed green.
+#
+# stderr is the assertion. Exit status is not: doctor exits 0 through all of it,
+# which is why nothing ever reported it.
+term_err="$(mktemp)"
+env -u TERM -u COLUMNS MACOS_SCRIPTS_HOME="$ROOT" \
+  bash "$DOCTOR" >/dev/null 2>"$term_err" || true
+if [[ -s "$term_err" ]]; then
+  echo "FAIL: doctor writes to stderr when TERM is unset:" >&2
+  sort -u "$term_err" >&2
+  rm -f "$term_err"
+  exit 1
+fi
+rm -f "$term_err"
+
+# The separators must still be drawn, and be readable text rather than a run of
+# broken bytes. Two failure modes are pinned here:
+#
+#   * width ''      — the printf defect above left blank lines, not missing lines
+#   * `tr ' ' '─'`  — tr is byte-oriented, so under a C locale it maps each space
+#                     to 0xe2, the first byte of ─, and the rule becomes invalid
+#                     UTF-8. A stripped environment drops LANG along with TERM.
+#
+# Asserted by decoding, not by grepping for the glyph: a grep for '─' depends on
+# the locale of whoever runs the suite, which is the same trap the rule itself
+# fell into. Run under LC_ALL=C deliberately — that is the hostile case.
+rule_out="$(env -u TERM -u COLUMNS LC_ALL=C LANG=C MACOS_SCRIPTS_HOME="$ROOT" \
+  bash "$DOCTOR" 2>/dev/null || true)"
+printf '%s' "$rule_out" | python3 -c '
+import sys
+raw = sys.stdin.buffer.read()
+try:
+    text = raw.decode("utf-8")
+except UnicodeDecodeError as exc:
+    sys.exit(f"FAIL: doctor output is not valid UTF-8 with TERM unset: {exc}")
+runs = [len(l) for l in text.splitlines() if l and set(l) == {"─"}]
+if not runs:
+    sys.exit("FAIL: doctor drew no horizontal rule with TERM unset")
+if max(runs) < 60:
+    sys.exit(f"FAIL: widest rule was {max(runs)} chars, below the 60-column clamp")
+' || exit 1
+echo "  ok: no stderr noise, rules drawn as valid UTF-8 without TERM or LANG"
 
 echo "PASS: output contract holds (no decoration off-TTY, colour opt-out, clean JSON)"
