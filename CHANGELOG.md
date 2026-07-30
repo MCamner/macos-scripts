@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `ghost` was declared `safety: read-only` in the command registry while
+  `tools/scripts/network-ghost.sh` ran `sudo ifconfig $INTERFACE ether $NEW_MAC`
+  to spoof the machine's MAC address and flushed the DNS cache with
+  `sudo killall -HUP mDNSResponder`. It is now `destructive`.
+
+  `safety` exists so a consumer can decide what is safe to run, and `read-only` is
+  the value that invites running something unattended. This was a false label with
+  a security consequence rather than a cosmetic one — and the truth was already
+  written down one file over, in `docs/COMMANDS.md`:
+  `mqlaunch ghost # network cloaking (MAC/DNS spoof)`.
+
+  `tools/scripts/validate-command-registry.py` now rejects `read-only` on any
+  command whose dispatched script escalates, so the label cannot drift back. The
+  check looks for `sudo` in command position, not anywhere in the file, and that
+  distinction is what makes it usable: `tools/scripts/scan.sh` contains
+  `echo "- Restart audio if glitching: sudo killall coreaudiod"` — a suggestion
+  printed for the operator — and `scan` is correctly `read-only`. A substring
+  search would have relabelled it.
+
+  The gate is one-directional on purpose. It says `read-only` is wrong when a
+  script escalates; it does not choose between `local-write` and `destructive`,
+  which is a judgement about blast radius that a regex has no standing to make.
+
+  Two steps in `tests/command-registry-smoke.sh` cover it: one restores the old
+  `read-only` value and requires the validator to reject it, the other pins that
+  `scan` stays `read-only` and that its printed suggestion is still there, so the
+  false-positive guard cannot quietly stop proving anything.
+
 ### Changed
 
 * The network signal rows go through the dispatcher: `run_network_pulse` and

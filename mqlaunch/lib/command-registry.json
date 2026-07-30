@@ -900,7 +900,7 @@
       "namespace": null,
       "summary": "Run the network ghost workflow",
       "owner": "macos-scripts",
-      "safety": "read-only",
+      "safety": "destructive",
       "output_modes": [
         "human"
       ],
