@@ -511,6 +511,13 @@ dispatch_cli_command() {
       return "$command_status"
       ;;
 
+    ollama-review)
+      shift
+      "$BASE_DIR/tools/scripts/ollama-document-review.py" "$@"
+      command_status=$?
+      return "$command_status"
+      ;;
+
     srm|memory|repo-memory)
       shift
       # The co-change memory loop is delegated to mq-agent (the orchestrator); mqlaunch

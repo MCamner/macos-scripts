@@ -234,6 +234,7 @@ remains machine-readable.
 mqlaunch ask "your question"                    # repo-aware AI answer
 mqlaunch ask quick "your question"             # short answer, no context
 mqlaunch atlas                                  # interactive AI REPL session
+mqlaunch ollama-review path/to/script.sh        # local, read-only documentation review
 mqlaunch fix "error or task description"       # get copy-paste shell commands
 mqlaunch review                                 # review current diff via mq-agent -> mq-mcp
 mqlaunch review file <path> security           # review one file in security mode

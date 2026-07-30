@@ -258,6 +258,21 @@
       "delegates_to": null
     },
     {
+      "name": "ollama-review",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Review local source documentation with Ollama without modifying files",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null
+    },
+    {
       "name": "srm",
       "aliases": [
         "memory",
