@@ -6,6 +6,49 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* `mqlaunch help` takes its descriptions from the registry's `summary` field.
+  They used to be typed beside it — two sources for one sentence, the same shape
+  as the `chat` drift between help and the index, only on the description
+  instead of the name.
+
+  45 summaries were rewritten as short, user-facing text. The technical
+  delegation phrasing goes, since `delegates_to` already records it:
+
+  ```text
+  Delegate stack status and stack operations to mq-agent  ->  Show stack status and operations
+  Delegate a diff review to mq-agent                      ->  Review a diff
+  System namespace: performance, network, doctor, ...     ->  Performance, network, doctor, checks, utilities
+  ```
+
+  `tools/scripts/generate-help-list.py` writes the block in
+  `terminal/menus/mq-help-menu.sh`, and `tests/registry-consumer-parity-smoke.sh`
+  regenerates it and requires the file to be current. It is generated rather
+  than read at runtime because `doctor` reports `python3` as a check that can be
+  missing, and help is the one command that has to keep working on a machine
+  where things are missing — a help screen needing a JSON parser to render is
+  the wrong trade.
+
+  The validator caps a summary at 66 characters and rejects a multi-line one.
+  66 is 92 columns, the clamp in `ui/terminal-ui/terminal-width.sh`, minus the
+  26-character `mqlaunch <name>` row prefix — derived rather than chosen. The
+  widest row help now renders is 73 columns.
+
+  **Three things help lost**, all consequences of having one source:
+
+  * `mqlaunch doctor --json` is no longer shown. An argument is not a command,
+    and the registry does not model one.
+  * the argument hints `ask "fråga"` and `fix "fel"` are now plain
+    `ask` and `fix`.
+  * the AI rows were the only Swedish on the screen and are now English, like
+    the rest of it.
+
+  All three forms are in `docs/COMMANDS.md`, which remains the complete listing.
+  Say the word if any of them should come back — a small declared set of example
+  rows in the generator would do it without reintroducing a second source of
+  descriptions.
+
 ### Added
 
 * A run of `mqlaunch doctor` on a healthy machine ends in something to do:

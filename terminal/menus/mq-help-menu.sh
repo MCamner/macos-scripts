@@ -73,65 +73,64 @@ POPULAR FLOWS
   mqlaunch doctor
   mqlaunch stack
   mqlaunch perf
-  mqlaunch ask "vad gör scan?"
+  mqlaunch ask
   mqlaunch review
 
 CORE
+  mqlaunch about          Status dashboard for the launcher and the repo
+  mqlaunch demo           Run the guided demo
   mqlaunch help           Help, the command index, and namespace help
-  mqlaunch palette        Fuzzy palette over the dispatchable surface
-  mqlaunch about          Status dashboard; --json emits one document
-  mqlaunch version        Launcher and repo version information
   mqlaunch notes          Show the changelog
-  mqlaunch demo           Run the launcher demo mode
+  mqlaunch palette        Fuzzy search across every command
+  mqlaunch version        Show launcher and repo versions
 
 MENUS
-  mqlaunch system         Performance, network, doctor, checks, utilities
-  mqlaunch perf           Performance menu
-  mqlaunch dev            AI helpers, tools, current-project actions
+  mqlaunch dev            AI helpers, tools, and current-project actions
   mqlaunch git            Git menu and git workflows
-  mqlaunch tools          Tools menu
+  mqlaunch login          Session boot and the login menu
+  mqlaunch perf           Open the performance menu
+  mqlaunch release        Release menu, notes, version, and status
+  mqlaunch shortcuts      Open the macOS Shortcuts menu
+  mqlaunch system         Performance, network, doctor, checks, utilities
+  mqlaunch theme          Open the themes menu
+  mqlaunch tools          Open the tools menu
   mqlaunch workflows      Project boot, surface validation, snapshots
-  mqlaunch release        Release menu, notes, version, status
-  mqlaunch login          Login / session menu
-  mqlaunch shortcuts      macOS Shortcuts menu
-  mqlaunch theme          Themes menu
 
 CHECKS
-  mqlaunch doctor         Environment and dependency check
-  mqlaunch doctor --json  The same verdict as one machine document
   mqlaunch check          Run the system check
-  mqlaunch selftest       Smoke suite and shell lint
+  mqlaunch doctor         Check the environment and dependencies
+  mqlaunch selftest       Run the smoke suite and shell lint
 
 OPS
+  mqlaunch ghost          Network cloaking (MAC and DNS spoof)
+  mqlaunch guard          Watch USB and power events
+  mqlaunch mc             Open mission control
   mqlaunch pulse          Network latency and WiFi overview
+  mqlaunch reap           Find and kill heavy processes
   mqlaunch scan           System and port scan
-  mqlaunch ghost          Network cloaking (MAC/DNS spoof)
-  mqlaunch reap           Overseer process reaper
-  mqlaunch guard          Blackout guard (USB/Power monitor)
-  mqlaunch mc             Mission control dashboard
 
 AI
-  mqlaunch ask "fråga"    Fråga om repot — svar i terminalen
-  mqlaunch fix "fel"      Körbara shell-kommandon för fel
-  mqlaunch chat           Konversationsläge med minne
-  mqlaunch atlas          Interaktiv AI-session
-  mqlaunch ui             Kopiera UI-prompt till clipboard
+  mqlaunch ask            Ask a question about the repo
+  mqlaunch atlas          Open an interactive AI session
+  mqlaunch chat           Chat with memory of the conversation
+  mqlaunch fix            Get runnable commands for an error
+  mqlaunch ui             Copy the UI prompt to the clipboard
 
 AGENT
-  mqlaunch stack          Stack status and stack operations
-  mqlaunch review         Diff review
-  mqlaunch risk-review    Risk review
-  mqlaunch architecture   Architecture analysis
-  mqlaunch repo-health    Repo health report
-  mqlaunch flow           Guided flow
-  mqlaunch mcp-status     mq-mcp server status
-  mqlaunch review-brain   Brain-backed review
-  mqlaunch signal-brain   Brain-backed signal report
+  mqlaunch agent          Run orchestration commands
+  mqlaunch architecture   Analyse the repository architecture
+  mqlaunch flow           Run a guided flow
   mqlaunch learn-promote  Promote a learned pattern
-  mqlaunch agent          Everything else mq-agent orchestrates
+  mqlaunch mcp-status     Show mq-mcp server status
+  mqlaunch repo-health    Report on repository health
+  mqlaunch review         Review a diff
+  mqlaunch review-brain   Review a repo and save it to the brain
+  mqlaunch risk-review    Review a diff for risk
+  mqlaunch signal-brain   Repo signal report saved to the brain
+  mqlaunch stack          Show stack status and operations
 
 OBSIDIAN
-  mqlaunch obsidian       Durable memory, backed by mqobsidian
+  mqlaunch obsidian       Durable memory and notes
 
 SRM
   mqlaunch srm            Semantic repo memory and the co-change loop
@@ -143,7 +142,7 @@ REPOS
   mqlaunch repos          Repo status, roadmaps, skills, diff summaries
 
 HAL
-  mqlaunch hal            Operator summaries and audits, via mq-hal
+  mqlaunch hal            Operator summaries and audits
 
 UTILITY
   mqlaunch guide          Open the terminal guide

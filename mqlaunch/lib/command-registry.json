@@ -10,7 +10,7 @@
         "workflow"
       ],
       "namespace": "menus",
-      "summary": "Project boot, command-surface validation, and workspace snapshots",
+      "summary": "Project boot, surface validation, snapshots",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -29,7 +29,7 @@
         "snapshots"
       ],
       "namespace": null,
-      "summary": "Save, list, show, and restore workspace snapshots",
+      "summary": "Save, list, show, and restore snapshots",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -76,7 +76,7 @@
       "name": "demo",
       "aliases": [],
       "namespace": "core",
-      "summary": "Run the launcher demo mode",
+      "summary": "Run the guided demo",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -113,7 +113,7 @@
         "/review"
       ],
       "namespace": "agent",
-      "summary": "Delegate a diff review to mq-agent",
+      "summary": "Review a diff",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -131,7 +131,7 @@
         "/architecture"
       ],
       "namespace": "agent",
-      "summary": "Delegate architecture analysis to mq-agent",
+      "summary": "Analyse the repository architecture",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -149,7 +149,7 @@
         "/risk-review"
       ],
       "namespace": "agent",
-      "summary": "Delegate a risk review to mq-agent",
+      "summary": "Review a diff for risk",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -167,7 +167,7 @@
         "/repo-health"
       ],
       "namespace": "agent",
-      "summary": "Delegate a repo health report to mq-agent",
+      "summary": "Report on repository health",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -185,7 +185,7 @@
         "/stack"
       ],
       "namespace": "agent",
-      "summary": "Delegate stack status and stack operations to mq-agent",
+      "summary": "Show stack status and operations",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -203,7 +203,7 @@
         "/mcp-status"
       ],
       "namespace": "agent",
-      "summary": "Report mq-mcp server status through mq-agent",
+      "summary": "Show mq-mcp server status",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -221,7 +221,7 @@
         "/flow"
       ],
       "namespace": "agent",
-      "summary": "Delegate a guided flow to mq-agent",
+      "summary": "Run a guided flow",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -239,7 +239,7 @@
         "/ui"
       ],
       "namespace": "ai",
-      "summary": "Open the local AI prompt UI",
+      "summary": "Copy the UI prompt to the clipboard",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -258,7 +258,7 @@
         "/ask"
       ],
       "namespace": "ai",
-      "summary": "Ask a question through the local ask helper",
+      "summary": "Ask a question about the repo",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -274,7 +274,7 @@
       "name": "ollama-review",
       "aliases": [],
       "namespace": null,
-      "summary": "Review local source documentation with Ollama without modifying files",
+      "summary": "Review local docs with Ollama, without writing",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -293,7 +293,7 @@
         "repo-memory"
       ],
       "namespace": "srm",
-      "summary": "Semantic repo memory surface; the co-change loop delegates to mq-agent",
+      "summary": "Semantic repo memory and the co-change loop",
       "owner": "macos-scripts",
       "safety": "delegating",
       "output_modes": [
@@ -350,7 +350,7 @@
       "name": "repos",
       "aliases": [],
       "namespace": "repos",
-      "summary": "MQ ecosystem repo status, roadmaps, skills, and diff summaries",
+      "summary": "Repo status, roadmaps, skills, diff summaries",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -409,7 +409,7 @@
         "/fix"
       ],
       "namespace": "ai",
-      "summary": "Run the local fix helper",
+      "summary": "Get runnable commands for an error",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -427,7 +427,7 @@
         "/chat"
       ],
       "namespace": "ai",
-      "summary": "Open the local chat helper",
+      "summary": "Chat with memory of the conversation",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -447,7 +447,7 @@
         "check-release"
       ],
       "namespace": null,
-      "summary": "Release readiness gate backed by repo-signal scoring",
+      "summary": "Release readiness, scored by repo-signal",
       "owner": "repo-signal",
       "safety": "delegating",
       "output_modes": [
@@ -466,7 +466,7 @@
         "/review-brain"
       ],
       "namespace": "agent",
-      "summary": "Run the brain-backed review through mq-agent",
+      "summary": "Review a repo and save it to the brain",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -484,7 +484,7 @@
         "/signal-brain"
       ],
       "namespace": "agent",
-      "summary": "Run the brain-backed signal report through mq-agent",
+      "summary": "Repo signal report saved to the brain",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -503,7 +503,7 @@
         "promote-pattern"
       ],
       "namespace": "agent",
-      "summary": "Promote a learned pattern through mq-agent",
+      "summary": "Promote a learned pattern",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -522,7 +522,7 @@
         "test-all"
       ],
       "namespace": "checks",
-      "summary": "Run the launcher smoke suite and shell lint",
+      "summary": "Run the smoke suite and shell lint",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -540,7 +540,7 @@
         "/doctor"
       ],
       "namespace": "checks",
-      "summary": "Environment and dependency check",
+      "summary": "Check the environment and dependencies",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -559,7 +559,7 @@
         "/scan"
       ],
       "namespace": "ops",
-      "summary": "Run the local scan workflow",
+      "summary": "System and port scan",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -577,7 +577,7 @@
         "/atlas"
       ],
       "namespace": "ai",
-      "summary": "Run the Atlas prompt workflow",
+      "summary": "Open an interactive AI session",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -593,7 +593,7 @@
       "name": "system",
       "aliases": [],
       "namespace": "menus",
-      "summary": "System namespace: performance, network, doctor, checks, and local utilities",
+      "summary": "Performance, network, doctor, checks, utilities",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -685,7 +685,7 @@
       "name": "git",
       "aliases": [],
       "namespace": "menus",
-      "summary": "Git namespace: opens the git menu and git workflows",
+      "summary": "Git menu and git workflows",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -710,7 +710,7 @@
       "name": "release",
       "aliases": [],
       "namespace": "menus",
-      "summary": "Release namespace: release menu, notes, version, and status",
+      "summary": "Release menu, notes, version, and status",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -752,7 +752,7 @@
       "name": "dev",
       "aliases": [],
       "namespace": "menus",
-      "summary": "Dev namespace: AI helpers, tools, and current-project actions",
+      "summary": "AI helpers, tools, and current-project actions",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -795,7 +795,7 @@
         "--help"
       ],
       "namespace": "core",
-      "summary": "Show launcher help, the command index, and namespace help",
+      "summary": "Help, the command index, and namespace help",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -899,7 +899,7 @@
         "search"
       ],
       "namespace": "core",
-      "summary": "Fuzzy command palette over the dispatchable command surface",
+      "summary": "Fuzzy search across every command",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -934,7 +934,7 @@
       "name": "ghost",
       "aliases": [],
       "namespace": "ops",
-      "summary": "Run the network ghost workflow",
+      "summary": "Network cloaking (MAC and DNS spoof)",
       "owner": "macos-scripts",
       "safety": "destructive",
       "output_modes": [
@@ -950,7 +950,7 @@
       "name": "pulse",
       "aliases": [],
       "namespace": "ops",
-      "summary": "Run the pulse system overview",
+      "summary": "Network latency and WiFi overview",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -966,7 +966,7 @@
       "name": "reap",
       "aliases": [],
       "namespace": "ops",
-      "summary": "Run the overseer process reaper",
+      "summary": "Find and kill heavy processes",
       "owner": "macos-scripts",
       "safety": "destructive",
       "output_modes": [
@@ -983,7 +983,7 @@
       "name": "guard",
       "aliases": [],
       "namespace": "ops",
-      "summary": "Run the blackout guard workflow",
+      "summary": "Watch USB and power events",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -1145,7 +1145,7 @@
         "document-functions"
       ],
       "namespace": null,
-      "summary": "Document shell functions in the current working directory",
+      "summary": "Document shell functions in this directory",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -1164,7 +1164,7 @@
         "update-comments"
       ],
       "namespace": null,
-      "summary": "Write generated function documentation back into sources",
+      "summary": "Write generated function docs back into sources",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -1180,7 +1180,7 @@
       "name": "version",
       "aliases": [],
       "namespace": "core",
-      "summary": "Show launcher and repo version information",
+      "summary": "Show launcher and repo versions",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -1216,7 +1216,7 @@
         "status"
       ],
       "namespace": "core",
-      "summary": "Status dashboard; --json emits one machine-readable document",
+      "summary": "Status dashboard for the launcher and the repo",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -1251,7 +1251,7 @@
       "name": "hal",
       "aliases": [],
       "namespace": "hal",
-      "summary": "Delegate operator summaries and audits to mq-hal",
+      "summary": "Operator summaries and audits",
       "owner": "mq-hal",
       "safety": "delegating",
       "output_modes": [
@@ -1269,7 +1269,7 @@
         "mq-agent"
       ],
       "namespace": "agent",
-      "summary": "Delegate orchestration commands to mq-agent",
+      "summary": "Run orchestration commands",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
@@ -1289,7 +1289,7 @@
         "mq-memory"
       ],
       "namespace": "obsidian",
-      "summary": "Durable memory surface backed by mqobsidian",
+      "summary": "Durable memory and notes",
       "owner": "mqobsidian",
       "safety": "delegating",
       "output_modes": [
@@ -1347,7 +1347,7 @@
       "name": "mqlaunch",
       "aliases": [],
       "namespace": null,
-      "summary": "Self-referential prefix; re-dispatches the remaining arguments",
+      "summary": "Self-referential prefix; re-dispatches the rest",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -1529,7 +1529,7 @@
         "systems"
       ],
       "namespace": null,
-      "summary": "Brain-bridge note verbs routed by the invoked name",
+      "summary": "Brain-bridge note verbs, routed by the name used",
       "owner": "macos-scripts",
       "safety": "local-write",
       "output_modes": [
@@ -1584,7 +1584,7 @@
         "session"
       ],
       "namespace": "menus",
-      "summary": "Open the login / session menu",
+      "summary": "Session boot and the login menu",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [

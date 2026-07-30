@@ -693,7 +693,7 @@ below are from 2026-07-30 against `2.0.1`.
     Pinned by two worlds differing by one tool, so the order cannot come out
     right by luck (#128).
 
-* [ ] Improve command discovery.
+* [x] Improve command discovery.
 
   * [x] clearer namespace groups — help is grouped by the registry's `namespace`
     field, and every command carries `operator_surface` saying whether it is a
@@ -702,9 +702,14 @@ below are from 2026-07-30 against `2.0.1`.
     requires help to advertise exactly the public set and to print each command
     under a heading naming its namespace, so the curation lives in the registry
     rather than in whoever last edited the help text (#129).
-  * [ ] shorter summaries — help's descriptions were trimmed to fit one line
-    while regrouping, but they are still written by hand next to the registry's
-    own `summary` field rather than taken from it. Two sources, no gate.
+  * [x] shorter summaries — help takes its descriptions from the registry's
+    `summary` field. The block in `terminal/menus/mq-help-menu.sh` is generated
+    by `tools/scripts/generate-help-list.py`, and the parity test regenerates it
+    and requires the file to be current, so a description is written in one
+    place. 45 summaries were rewritten as short user-facing text; the technical
+    delegation phrasing `delegates_to` already records is gone. The validator
+    caps a summary at 66 characters, which is 92 columns minus the 26-character
+    row prefix rather than a number picked by taste (#131).
   * [x] fewer duplicate entries — `mqlaunch help` and `mqlaunch commands` were
     two hand-maintained copies of one list and had already drifted: `chat` was
     in the index and not in help. Both now render `command_list` in
