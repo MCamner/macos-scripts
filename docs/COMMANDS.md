@@ -154,6 +154,17 @@ Verify:
 mqlaunch doctor --json | jq -e '.summary.fail == 0'
 ```
 
+Exit status is the verdict, and it is the same in both modes: `0` when every
+check passes, `1` when any check warns or fails. A machine without `eza` or
+`gitleaks` is a warning, not a crash, so a caller that only wants the report
+should read the document rather than the status — the pipeline above already
+does, since `jq` supplies the exit code there.
+
+The human screen carries the same verdict in words. It reads
+`MQ operational — N checks passed` only when the status is `ok`; otherwise it
+names how many checks need attention. `tests/doctor-status-contract-smoke.sh`
+holds the two modes to the same answer.
+
 ---
 
 ## Markdown

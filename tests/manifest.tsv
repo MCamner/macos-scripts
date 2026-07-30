@@ -29,6 +29,7 @@ compat-path-delegation-smoke.sh	active	-
 dashboard-header-cache-smoke.sh	active	-
 delegated-exit-code-smoke.sh	active	-
 docs-file-inventory-smoke.sh	active	-
+doctor-status-contract-smoke.sh	active	-
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
 git-restore-to-base-smoke.sh	active	-

@@ -28,6 +28,35 @@ _jc() {
   _J_SEP=","
 }
 
+# Prints a passing row and counts it.
+#
+# The counters were only ever updated in JSON mode, so the screen had nothing to
+# summarise and ended in a constant. These two wrappers give both modes the same
+# arithmetic.
+check_ok() {
+  _J_OK=$((_J_OK+1))
+  ok "$1"
+}
+
+# Prints a warning row and counts it.
+check_warn() {
+  _J_WARN=$((_J_WARN+1))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    _J_STATUS="warn"
+  fi
+  warn "$1"
+}
+
+# Maps the run's status to an exit code: 0 only when nothing needs attention.
+#
+# `warn` counts as non-zero because every check here is a warn — nothing sets
+# `fail` — so treating warnings as success would leave the exit code constant,
+# which is the defect this file just had on the screen.
+status_exit_code() {
+  [[ "$_J_STATUS" == "ok" ]] && return 0
+  return 1
+}
+
 # Runs JSON report mode.
 run_json_mode() {
   local version
@@ -55,6 +84,8 @@ run_json_mode() {
 
   printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}}\n' \
     "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL"
+
+  status_exit_code
 }
 
 # Runs normal interactive mode.
@@ -68,30 +99,39 @@ run_normal_mode() {
   section "TOOLS"
   for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
     if command -v "$cmd" >/dev/null 2>&1; then
-      ok "$cmd"
+      check_ok "$cmd"
     else
-      warn "$cmd missing"
+      check_warn "$cmd missing"
     fi
   done
 
   section "ENV"
   if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    ok "OPENAI_API_KEY set"
+    check_ok "OPENAI_API_KEY set"
   else
-    warn "OPENAI_API_KEY missing"
+    check_warn "OPENAI_API_KEY missing"
   fi
 
   section "MQ SETUP"
   if command -v mqlaunch >/dev/null 2>&1; then
-    ok "mqlaunch available"
+    check_ok "mqlaunch available"
   else
-    warn "mqlaunch not in PATH"
+    check_warn "mqlaunch not in PATH"
   fi
 
   section "SUMMARY"
-  ok "MQ operational"
+  # Branch on the status rather than on a warn count, so a `fail` check added
+  # later cannot slip past a `warn`-shaped condition and print "operational"
+  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "MQ operational — $total checks passed"
+  else
+    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  fi
 
   echo
+  status_exit_code
 }
 
 JSON_MODE=0

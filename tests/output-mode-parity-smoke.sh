@@ -250,7 +250,18 @@ for line in open(sys.argv[2]).read().splitlines():
         # Parsing is not enough for a machine contract: a banner or an escape
         # sequence around the document breaks every caller that pipes it.
         if status != 0:
-            failures.append(f"{invocation!r} declares json:true but exited {status}")
+            # A non-zero exit is not automatically a parity problem. A health
+            # command reports its verdict that way — `doctor` exits 1 when a
+            # check warns, which is the whole point of running it. What must
+            # not happen is the exit code and the document disagreeing about
+            # the same run, so that is what is checked instead of the status
+            # alone.
+            document = json.loads(raw)
+            reported = document.get("status") if isinstance(document, dict) else None
+            if reported in (None, "ok"):
+                failures.append(
+                    f"{invocation!r} declares json:true but exited {status} "
+                    f"while its document reports status {reported!r}")
         if b"\x1b" in raw:
             failures.append(f"{invocation!r}: ANSI escape leaked into --json stdout")
         if raw.lstrip()[:1] not in (b"{", b"["):
@@ -305,9 +316,9 @@ PY
 }
 
 expect_parity_failure() {
-  # expect_parity_failure <fixture> <what> <expected stderr substring>
-  local fixture="$1" what="$2" reason="$3" out
-  if out="$(python3 "$run_dir/compare.py" "$fixture" "$run_dir/observed.txt" 2>&1)"; then
+  # expect_parity_failure <fixture> <what> <expected stderr substring> [observed]
+  local fixture="$1" what="$2" reason="$3" observed="${4:-$run_dir/observed.txt}" out
+  if out="$(python3 "$run_dir/compare.py" "$fixture" "$observed" 2>&1)"; then
     echo "parity check accepted $what" >&2
     exit 1
   fi
@@ -341,7 +352,34 @@ entry["output_modes"] = ["human"]
 '''
 expect_parity_failure "$run_dir/silent-json.json" "undeclared JSON output" \
   "'system doctor' prints JSON under --json but the registry does not declare it"
-echo "  ok: both a false claim and undeclared JSON are rejected"
+
+# Third: the exit code and the document disagreeing. A non-zero exit is allowed
+# above so that `doctor` can report a warning verdict, and an allowance that
+# nothing tests is a hole. This fixture mutates the observation rather than the
+# registry — a run that exited 1 while its document claims everything is ok.
+python3 - "$run_dir/observed.txt" "$run_dir/disagreeing.txt" <<'PY'
+import json
+import sys
+
+rows, patched = [], False
+for line in open(sys.argv[1], encoding="utf-8").read().splitlines():
+    if not line.strip():
+        continue
+    invocation, status, payload = line.split("\t")
+    if invocation == "doctor" and not patched:
+        document = json.loads(bytes.fromhex(payload))
+        document["status"] = "ok"
+        payload = json.dumps(document).encode("utf-8").hex()
+        status, patched = "1", True
+    rows.append("\t".join((invocation, status, payload)))
+if not patched:
+    sys.exit("no 'doctor' observation to mutate")
+open(sys.argv[2], "w", encoding="utf-8").write("\n".join(rows) + "\n")
+PY
+expect_parity_failure "$REGISTRY" "an exit code contradicting its own document" \
+  "exited 1 while its document reports status 'ok'" "$run_dir/disagreeing.txt"
+
+echo "  ok: a false claim, undeclared JSON, and a contradicted exit code are all rejected"
 
 bash -n "$0"
 echo "OK: the registry's output modes match observed behaviour"
