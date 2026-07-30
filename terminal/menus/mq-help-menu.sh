@@ -70,78 +70,84 @@ command_list() {
   cat <<'LIST'
 POPULAR FLOWS
   mqlaunch
-  mqlaunch perf
-  mqlaunch system check
   mqlaunch doctor
+  mqlaunch stack
+  mqlaunch perf
   mqlaunch ask "vad gör scan?"
   mqlaunch review
 
-START
-  mqlaunch                Open main menu
-  mqlaunch demo           Run guided demo mode
-  mqlaunch help           Show help
-  mqlaunch commands       Show command index
-  mqlaunch palette        Open fuzzy command palette
+CORE
+  mqlaunch help           Help, the command index, and namespace help
+  mqlaunch palette        Fuzzy palette over the dispatchable surface
+  mqlaunch about          Status dashboard; --json emits one document
+  mqlaunch version        Launcher and repo version information
+  mqlaunch notes          Show the changelog
+  mqlaunch demo           Run the launcher demo mode
 
-WORKFLOWS
-  mqlaunch system         Open System menu
-  mqlaunch perf           Open Performance menu
-  mqlaunch dev            Open Dev menu
-  mqlaunch git            Open Git menu
-  mqlaunch tools          Open Tools menu
-  mqlaunch workflows      Open Workflows menu
-  mqlaunch release        Open Release menu
-  mqlaunch login          Open Login menu
-  mqlaunch shortcuts      Open Shortcuts menu
+MENUS
+  mqlaunch system         Performance, network, doctor, checks, utilities
+  mqlaunch perf           Performance menu
+  mqlaunch dev            AI helpers, tools, current-project actions
+  mqlaunch git            Git menu and git workflows
+  mqlaunch tools          Tools menu
+  mqlaunch workflows      Project boot, surface validation, snapshots
+  mqlaunch release        Release menu, notes, version, status
+  mqlaunch login          Login / session menu
+  mqlaunch shortcuts      macOS Shortcuts menu
+  mqlaunch theme          Themes menu
 
-PROJECT FLOWS
-  mqlaunch workflows boot        Run project boot
-  mqlaunch workflows check       Run project check
-  mqlaunch login menu            Session boot + full menu
-  mqlaunch login about           Session boot + about screen
-  mqlaunch login check           Session boot + self-check
-  mqlaunch shortcuts list        List shortcuts directly
-  mqlaunch shortcuts search clip Search shortcuts by name
+CHECKS
+  mqlaunch doctor         Environment and dependency check
+  mqlaunch doctor --json  The same verdict as one machine document
+  mqlaunch check          Run the system check
+  mqlaunch selftest       Smoke suite and shell lint
 
-SECURITY & OPS
-  mqlaunch ghost          Run network cloaking (MAC/DNS spoof)
-  mqlaunch pulse          Diagnostic for network latency & WiFi
-  mqlaunch scan           Matrix-style system & port scan
-  mqlaunch reap           Overseer process reaper (CPU/MEM focus)
-  mqlaunch guard          Perimeter watchdog (USB/Power monitor)
-  mqlaunch mc             Open advanced system dashboard
-
-CHECKS & SUPPORT
-  mqlaunch doctor         Run environment and dependency check
-  mqlaunch doctor --json  Machine-readable JSON report
-  mqlaunch selftest       Run internal smoke tests
-  mqlaunch check          Run environment check
-  mqlaunch bundle         Create debug bundle
-  mqlaunch about          Open About / Status
-  mqlaunch version        Show version information
-  mqlaunch notes          Show release notes / changelog
-
-UTILITY
-  mqlaunch repo           Open repo root
-  mqlaunch guide          Open terminal guide
-  mqlaunch system time    Show date and time
-  mqlaunch theme          Open Themes menu
-  mqlaunch theme-macos    Apply macOS theme
-  mqlaunch theme-reset    Reset theme
+OPS
+  mqlaunch pulse          Network latency and WiFi overview
+  mqlaunch scan           System and port scan
+  mqlaunch ghost          Network cloaking (MAC/DNS spoof)
+  mqlaunch reap           Overseer process reaper
+  mqlaunch guard          Blackout guard (USB/Power monitor)
+  mqlaunch mc             Mission control dashboard
 
 AI
-  mqlaunch ask "din fråga"       Fråga om repot — svar direkt i terminalen
-  mqlaunch ask quick "fråga"     Kort svar utan repo-kontext
-  mqlaunch atlas                 Interaktiv AI-session (senior systems engineer)
-  mqlaunch fix "error message"   Få körbara shell-kommandon för fel/uppgifter
-  mqlaunch chat                  Konversationsläge med minne
-  mqlaunch review                Review via mq-agent → mq-mcp
-  mqlaunch risk-review           Risk review via mq-agent → mq-mcp
-  mqlaunch review-brain [path]   Granska repo + spara till brain → reviews/
-  mqlaunch signal-brain [path]   repo-signal + spara till brain → reviews/
-  mqlaunch learn-promote <slug>  Kuraterar learn/<slug> → learn/verified/
-  mqlaunch mcp-status            Visa mq-mcp status och contract health
-  mqlaunch ui                    Kopiera UI-prompt till clipboard
+  mqlaunch ask "fråga"    Fråga om repot — svar i terminalen
+  mqlaunch fix "fel"      Körbara shell-kommandon för fel
+  mqlaunch chat           Konversationsläge med minne
+  mqlaunch atlas          Interaktiv AI-session
+  mqlaunch ui             Kopiera UI-prompt till clipboard
+
+AGENT
+  mqlaunch stack          Stack status and stack operations
+  mqlaunch review         Diff review
+  mqlaunch risk-review    Risk review
+  mqlaunch architecture   Architecture analysis
+  mqlaunch repo-health    Repo health report
+  mqlaunch flow           Guided flow
+  mqlaunch mcp-status     mq-mcp server status
+  mqlaunch review-brain   Brain-backed review
+  mqlaunch signal-brain   Brain-backed signal report
+  mqlaunch learn-promote  Promote a learned pattern
+  mqlaunch agent          Everything else mq-agent orchestrates
+
+OBSIDIAN
+  mqlaunch obsidian       Durable memory, backed by mqobsidian
+
+SRM
+  mqlaunch srm            Semantic repo memory and the co-change loop
+
+SKILLS
+  mqlaunch skills         List and inspect installed skills
+
+REPOS
+  mqlaunch repos          Repo status, roadmaps, skills, diff summaries
+
+HAL
+  mqlaunch hal            Operator summaries and audits, via mq-hal
+
+UTILITY
+  mqlaunch guide          Open the terminal guide
+  mqlaunch repo           Open the repository in the browser
 LIST
 }
 

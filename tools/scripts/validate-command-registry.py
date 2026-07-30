@@ -54,6 +54,10 @@ REQUIRED_FIELDS = {
     "interactive": bool,
     "compat_only": bool,
     "delegates_to": (str, type(None)),
+    # Whether the command is a public operator entrypoint. `mqlaunch help` shows
+    # the true ones and stays silent about the rest, so this is the field that
+    # decides what the product advertises about itself.
+    "operator_surface": bool,
 }
 
 # Branch patterns in the dispatcher's top-level case that are not commands.
@@ -345,6 +349,32 @@ def script_execs_sudo(rel: str) -> bool:
     return False
 
 
+def check_operator_surface(commands) -> None:
+    """Hold the advertised surface to the rule that defines it.
+
+    `mqlaunch help` is curated, and the curation now lives here rather than in
+    whoever last edited the help text. Two things follow from that and are
+    checked, because both are ways the field could quietly stop meaning
+    anything:
+
+    A compatibility-only command is never a public entrypoint. It exists so an
+    old spelling keeps working, and advertising it would invite new callers to
+    depend on the thing being retired.
+
+    A public command must say which group it belongs to. Help is grouped by
+    namespace, so a public command without one has nowhere to be printed, and
+    the omission would show up as a missing row rather than as an error.
+    """
+    for command in commands:
+        name = command["name"]
+        public = command["operator_surface"]
+        if public and command["compat_only"]:
+            err(f"{name}: compat_only commands are not public entrypoints")
+        if public and command["namespace"] is None:
+            err(f"{name}: operator_surface is true but namespace is null — "
+                f"help has no group to print it under")
+
+
 def check_privilege_safety(
     commands: list[dict],
     seen_names: dict[str, str],
@@ -594,6 +624,7 @@ def main(argv: list[str] | None = None) -> int:
 
     check_subcommands(commands, seen_names, subcases)
     check_privilege_safety(commands, seen_names, branches)
+    check_operator_surface(commands)
 
     if errors:
         print(f"FAIL: {len(errors)} registry problem(s)", file=sys.stderr)

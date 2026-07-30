@@ -695,8 +695,16 @@ below are from 2026-07-30 against `2.0.1`.
 
 * [ ] Improve command discovery.
 
-  * [ ] clearer namespace groups
-  * [ ] shorter summaries
+  * [x] clearer namespace groups — help is grouped by the registry's `namespace`
+    field, and every command carries `operator_surface` saying whether it is a
+    public entrypoint at all. 48 of 74 are; the other 26 stay dispatchable and
+    documented but unadvertised. `tests/registry-consumer-parity-smoke.sh`
+    requires help to advertise exactly the public set and to print each command
+    under a heading naming its namespace, so the curation lives in the registry
+    rather than in whoever last edited the help text (#129).
+  * [ ] shorter summaries — help's descriptions were trimmed to fit one line
+    while regrouping, but they are still written by hand next to the registry's
+    own `summary` field rather than taken from it. Two sources, no gate.
   * [x] fewer duplicate entries — `mqlaunch help` and `mqlaunch commands` were
     two hand-maintained copies of one list and had already drifted: `chat` was
     in the index and not in help. Both now render `command_list` in
@@ -706,7 +714,7 @@ below are from 2026-07-30 against `2.0.1`.
     bottom of help to the top of the shared list, which also puts it in the
     index (#126).
 
-* [ ] Improve stack status entrypoints.
+* [x] Improve stack status entrypoints.
 
   The five boxes below are checked because `mqlaunch stack` already prints all
   of them — one table, one row per repo, with `Version`, `Branch`,
@@ -723,8 +731,9 @@ below are from 2026-07-30 against `2.0.1`.
   * [x] show clear next action when one is known — the `Next` column exists and
     is `—` for every repo at the time of writing, which is the column working,
     not the column missing.
-  * [ ] make the entrypoint discoverable — decide whether `stack` belongs on the
-    curated help screen, and if not, where an operator is meant to meet it.
+  * [x] make the entrypoint discoverable — `stack` is a public entrypoint in the
+    registry, appears under the `AGENT` heading in help, and is one of the six
+    rows in `POPULAR FLOWS` (#129).
 
   Ownership note: the table is rendered by `mq-agent`, which `mqlaunch stack`
   delegates to. What `macos-scripts` owns here is the entrypoint, not the
@@ -764,11 +773,16 @@ below are from 2026-07-30 against `2.0.1`.
   (#128) — so a new operator can run it, understand the result, and know the
   next setup step.
 
-  What is still missing is the second half: the *next command*. Doctor tells
-  them how to finish provisioning the machine, not what to run once it works,
-  and `mqlaunch help` advertises 40 of 74 commands with `stack` among the
-  omissions. This gate closes with the command-discovery boxes, not with more
-  work on doctor.
+  The second half — the *next command* — is most of the way there too. Help now
+  advertises the 48 public entrypoints grouped by namespace, `stack` among them
+  and in `POPULAR FLOWS` (#129), so an operator who finishes provisioning has a
+  grouped surface to read rather than a flat list missing a third of itself.
+
+  What is left before this can be checked: doctor's last line stops at the setup
+  step and never points at a command to run once the machine works, and help's
+  descriptions are still hand-written beside the registry's own `summary` field.
+  Neither is large; both are unmeasured until someone decides what doctor should
+  recommend on a healthy machine.
 
 ---
 
