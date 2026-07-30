@@ -9,6 +9,60 @@ _J_WARN=0
 _J_FAIL=0
 _J_SEP=""
 _J_CHECKS=""
+_J_UNRESOLVED=""
+
+# What to do about a check that did not pass.
+#
+# The nine brew formulae are listed by name rather than caught by a `*` arm.
+# A fallback would turn any check added later into `brew install <whatever>`,
+# and a confidently wrong instruction is worse than none — `pbcopy` has no
+# formula at all. Names were confirmed with `brew info`, not from memory.
+# tests/doctor-status-contract-smoke.sh fails when a check has no hint, so the
+# missing arm is caught here rather than printed at an operator.
+hint_for() {
+  case "$1" in
+    git|gh|uv|python3|node|eza|fzf|jq|gitleaks)
+      printf 'brew install %s' "$1" ;;
+    pbcopy)
+      # No em dash inside a hint: the human row already joins message and hint
+      # with one, and two in a line reads as a broken sentence.
+      printf 'ships with macOS; this shell is not on one' ;;
+    OPENAI_API_KEY)
+      printf 'export OPENAI_API_KEY=... in your shell profile' ;;
+    mqlaunch)
+      printf 'run ./install.sh from the repo to install the symlink' ;;
+    *)
+      printf '' ;;
+  esac
+}
+
+# The order a machine is worth fixing in, which is not the order the checks are
+# printed in — those are grouped for reading. The launcher comes first because
+# nothing else here is reachable without it, then the tools the launcher itself
+# shells out to, then the ones only some commands need. `eza` is last of the
+# tools because it only changes how listings look.
+FIX_ORDER=(mqlaunch git python3 jq fzf gh uv node gitleaks pbcopy eza OPENAI_API_KEY)
+
+# Records a check that needs attention, so the next step can be chosen from all
+# of them rather than from whichever one happened to be printed first.
+note_unresolved() {
+  _J_UNRESOLVED="${_J_UNRESOLVED} $1"
+}
+
+# The single thing to do next: the highest-priority unresolved check, as a
+# ready-to-run instruction. Empty when everything passed.
+next_step() {
+  local candidate
+  for candidate in "${FIX_ORDER[@]}"; do
+    case " $_J_UNRESOLVED " in
+      *" $candidate "*)
+        hint_for "$candidate"
+        return 0
+        ;;
+    esac
+  done
+  printf ''
+}
 
 # Appends one check to the checks buffer and updates counters (no subshell).
 _jc() {
@@ -18,12 +72,15 @@ _jc() {
     warn) _J_WARN=$((_J_WARN+1)); [[ "$_J_STATUS" == "ok" ]] && _J_STATUS="warn" ;;
     fail) _J_FAIL=$((_J_FAIL+1)); _J_STATUS="fail" ;;
   esac
-  local obj
-  if [[ -n "$detail" ]]; then
-    obj='{"name":"'"$name"'","status":"'"$st"'","detail":"'"$detail"'"}'
-  else
-    obj='{"name":"'"$name"'","status":"'"$st"'"}'
+  local obj hint=""
+  if [[ "$st" != "ok" ]]; then
+    note_unresolved "$name"
+    hint="$(hint_for "$name")"
   fi
+  obj='{"name":"'"$name"'","status":"'"$st"'"'
+  [[ -n "$detail" ]] && obj="${obj},\"detail\":\"${detail}\""
+  [[ -n "$hint" ]] && obj="${obj},\"hint\":\"${hint}\""
+  obj="${obj}}"
   _J_CHECKS="${_J_CHECKS}${_J_SEP}${obj}"
   _J_SEP=","
 }
@@ -39,12 +96,24 @@ check_ok() {
 }
 
 # Prints a warning row and counts it.
+#
+# Takes the check's name as well as the message: the name is what `hint_for` and
+# the fix order are keyed on, and it is not always a prefix of what is printed
+# ("OPENAI_API_KEY missing" versus "mqlaunch not in PATH").
 check_warn() {
+  local name="$1" message="$2"
   _J_WARN=$((_J_WARN+1))
   if [[ "$_J_STATUS" == "ok" ]]; then
     _J_STATUS="warn"
   fi
-  warn "$1"
+  note_unresolved "$name"
+  local hint
+  hint="$(hint_for "$name")"
+  if [[ -n "$hint" ]]; then
+    warn "$message — $hint"
+  else
+    warn "$message"
+  fi
 }
 
 # Maps the run's status to an exit code: 0 only when nothing needs attention.
@@ -82,8 +151,12 @@ run_json_mode() {
     _jc "mqlaunch" "warn" "not in PATH"
   fi
 
-  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}}\n' \
-    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL"
+  local next
+  next="$(next_step)"
+
+  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
 
   status_exit_code
 }
@@ -101,7 +174,7 @@ run_normal_mode() {
     if command -v "$cmd" >/dev/null 2>&1; then
       check_ok "$cmd"
     else
-      check_warn "$cmd missing"
+      check_warn "$cmd" "$cmd missing"
     fi
   done
 
@@ -109,14 +182,14 @@ run_normal_mode() {
   if [[ -n "${OPENAI_API_KEY:-}" ]]; then
     check_ok "OPENAI_API_KEY set"
   else
-    check_warn "OPENAI_API_KEY missing"
+    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
   fi
 
   section "MQ SETUP"
   if command -v mqlaunch >/dev/null 2>&1; then
     check_ok "mqlaunch available"
   else
-    check_warn "mqlaunch not in PATH"
+    check_warn "mqlaunch" "mqlaunch not in PATH"
   fi
 
   section "SUMMARY"
@@ -128,6 +201,12 @@ run_normal_mode() {
     ok "MQ operational — $total checks passed"
   else
     warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+    # One instruction, not a list. Every warning already carries its own hint
+    # above; this names which of them to do first, so the screen ends in an
+    # action rather than a count.
+    local next
+    next="$(next_step)"
+    [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
   fi
 
   echo

@@ -6,6 +6,50 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch doctor` says what to do about every check that does not pass, and
+  ends in the one thing to do first:
+
+  ```text
+  ⚠ gh missing — brew install gh
+  ⚠ mqlaunch not in PATH — run ./install.sh from the repo to install the symlink
+  ⚠ 9 of 12 checks need attention
+
+    Next: run ./install.sh from the repo to install the symlink
+  ```
+
+  The document carries the same advice — `hint` on each check that did not pass,
+  and a top-level `next` that is `null` when the status is `ok` — so a script and
+  a person reading the same run are told the same thing. Both fields are
+  additive.
+
+  The nine brew formulae are listed by name rather than caught by a `*` arm. A
+  fallback would turn any check added later into `brew install <whatever>`, and a
+  confidently wrong instruction is worse than none: `pbcopy` has no formula, it
+  ships with macOS. The names were confirmed with `brew info` rather than
+  recalled, and the two non-tool checks point at what the repo actually provides
+  — `install.sh` for the symlink, the shell profile for `OPENAI_API_KEY`.
+
+  The next step follows an explicit fix order, not the order the checks print
+  in. Those are grouped for reading, and following them would advise installing
+  `eza` while `mqlaunch` is not on `PATH`. The launcher comes first because
+  nothing else here is reachable without it, then the tools the launcher shells
+  out to, with `eza` last because it only changes how listings look.
+
+  `tests/doctor-status-contract-smoke.sh` grew two steps. Hints are checked
+  exhaustively rather than sampled — the stripped world warns on all twelve, so
+  a check added without a hint fails the suite instead of printing a blank. The
+  order is pinned by two worlds that differ by a single tool: with only `eza`
+  missing the next step is `brew install eza`; with `eza` and the launcher both
+  missing it must not be `eza`. One world could have come out right by luck.
+
+  Found while writing it: the hint step read its input through `< <(python3 …)`,
+  where a process substitution hides the exit status. A python that bailed out
+  left the array empty and every loop below passed over nothing, reporting
+  "0 warnings, each carrying a hint". It writes to a file now, and asserts the
+  hint count equals the warning count.
+
 ### Fixed
 
 * `mqlaunch doctor` reported success no matter what it found.

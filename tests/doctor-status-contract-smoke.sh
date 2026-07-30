@@ -29,42 +29,51 @@ echo "SMOKE: doctor status contract"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/6] doctor exists and compiles"
+echo "[1/8] doctor exists and compiles"
 test -x "$DOCTOR"
 bash -n "$DOCTOR"
 
-# The tools doctor checks. Kept as one list so the two worlds cannot drift apart:
-# the provisioned world stubs exactly what the degraded world withholds.
+# The tools doctor checks, and the utilities every world needs regardless.
 CHECKED=(git gh uv python3 node eza fzf jq gitleaks pbcopy)
+HELPERS=(bash sh cat sed awk tr wc head tail date hostname uname stty tput id)
 
-echo "[2/6] build a provisioned world and a degraded one"
+echo "[2/8] build the worlds this contract is measured in"
 
-# Provisioned: real PATH plus a stub for anything missing, so the run is
-# identical on a laptop and on a runner. Stubs are never executed — doctor only
-# asks `command -v` — but they are made executable so that stays true if it ever
-# does more.
+# A world is a PATH: the helpers, plus a stub for each tool named. Nothing
+# inherits the machine's real PATH, so "eza is missing" means the same thing on
+# a laptop that has eza and on a runner that does not. Stubs are never executed
+# — doctor only asks `command -v` — but they are executable so that stays true
+# if it ever does more.
+build_world() {
+  # build_world <dir> <tool>...
+  local dir="$1"; shift
+  mkdir -p "$dir"
+  local tool resolved
+  for tool in "${HELPERS[@]}"; do
+    resolved="$(command -v "$tool" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] && ln -sf "$resolved" "$dir/$tool"
+  done
+  for tool in "$@"; do
+    printf '#!/usr/bin/env bash\nexit 0\n' >"$dir/$tool"
+    chmod +x "$dir/$tool"
+  done
+}
+
+# A checked tool that is also a helper could never be withheld, and the world
+# would quietly test something other than what it says.
+for tool in "${CHECKED[@]}" mqlaunch; do
+  for helper in "${HELPERS[@]}"; do
+    if [[ "$tool" == "$helper" ]]; then
+      echo "FAIL: '$tool' is both a checked tool and a helper every world needs" >&2
+      exit 1
+    fi
+  done
+done
+
 provisioned="$run_dir/bin-provisioned"
-mkdir -p "$provisioned"
-for tool in "${CHECKED[@]}" mqlaunch; do
-  printf '#!/usr/bin/env bash\nexit 0\n' >"$provisioned/$tool"
-  chmod +x "$provisioned/$tool"
-done
-
-# Degraded: a PATH holding the utilities doctor and the shared UI need, and none
-# of the tools it checks. Built by resolving each helper on the real PATH, so
-# this does not hard-code /bin or /usr/bin.
 degraded="$run_dir/bin-degraded"
-mkdir -p "$degraded"
-for tool in bash sh cat sed awk tr wc head tail date hostname uname stty tput id; do
-  resolved="$(command -v "$tool" 2>/dev/null || true)"
-  [[ -n "$resolved" ]] && ln -sf "$resolved" "$degraded/$tool"
-done
-for tool in "${CHECKED[@]}" mqlaunch; do
-  if [[ -e "$degraded/$tool" ]]; then
-    echo "FAIL: '$tool' is both a checked tool and a helper the degraded world needs" >&2
-    exit 1
-  fi
-done
+build_world "$provisioned" "${CHECKED[@]}" mqlaunch
+build_world "$degraded"
 echo "  ok: ${#CHECKED[@]} checked tools, present in one world and absent in the other"
 
 # doctor is invoked through `env -i` so the caller's OPENAI_API_KEY and PATH
@@ -75,14 +84,10 @@ echo "  ok: ${#CHECKED[@]} checked tools, present in one world and absent in the
 # `OPENAI_API_KEY` is one of the twelve checks, so the provisioned world sets it
 # and the degraded world does not, the same split as the tools.
 doctor_run() {
-  # doctor_run <world-bin> <out-prefix> [args...]
-  local bin="$1" prefix="$2"; shift 2
-  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT")
-  if [[ "$bin" == "$provisioned" ]]; then
-    env_args+=(PATH="$bin:$PATH" OPENAI_API_KEY="stub-key-for-this-test")
-  else
-    env_args+=(PATH="$bin")
-  fi
+  # doctor_run <world-bin> <key|nokey> <out-prefix> [args...]
+  local bin="$1" key="$2" prefix="$3"; shift 3
+  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin")
+  [[ "$key" == "key" ]] && env_args+=(OPENAI_API_KEY="stub-key-for-this-test")
   set +e
   env -i "${env_args[@]}" bash "$DOCTOR" "$@" \
     >"$run_dir/$prefix.out" 2>"$run_dir/$prefix.err"
@@ -97,9 +102,9 @@ summary_line() {
   awk '/^SUMMARY$/ {found=1; next} found && NF && $0 !~ /^[─-]+$/ {print; exit}'
 }
 
-echo "[3/6] a provisioned machine reports success in both modes"
-ok_human_exit="$(doctor_run "$provisioned" ok-human)"
-ok_json_exit="$(doctor_run "$provisioned" ok-json --json)"
+echo "[3/8] a provisioned machine reports success in both modes"
+ok_human_exit="$(doctor_run "$provisioned" key ok-human)"
+ok_json_exit="$(doctor_run "$provisioned" key ok-json --json)"
 
 python3 - "$run_dir/ok-json.out" <<'PY'
 import json
@@ -116,9 +121,9 @@ if [[ "$ok_human_exit" != "0" || "$ok_json_exit" != "0" ]]; then
   exit 1
 fi
 
-echo "[4/6] a stripped machine reports the warnings in both modes"
-warn_human_exit="$(doctor_run "$degraded" warn-human)"
-warn_json_exit="$(doctor_run "$degraded" warn-json --json)"
+echo "[4/8] a stripped machine reports the warnings in both modes"
+warn_human_exit="$(doctor_run "$degraded" nokey warn-human)"
+warn_json_exit="$(doctor_run "$degraded" nokey warn-json --json)"
 
 warn_count="$(python3 - "$run_dir/warn-json.out" <<'PY'
 import json
@@ -165,7 +170,7 @@ if [[ "$warn_human_exit" == "0" || "$warn_json_exit" == "0" ]]; then
   exit 1
 fi
 
-echo "[5/6] the two modes agree with each other"
+echo "[5/8] the two modes agree with each other"
 # A person and a script reading the same machine must reach the same verdict.
 if [[ "$ok_human_exit" != "$ok_json_exit" ]]; then
   echo "FAIL: clean run exits differently per mode (human=$ok_human_exit json=$ok_json_exit)" >&2
@@ -178,7 +183,7 @@ fi
 printf '  ok: exit %s clean, exit %s degraded, in both modes\n' \
   "$ok_human_exit" "$warn_human_exit"
 
-echo "[6/6] the summary is derived, not printed"
+echo "[6/8] the summary is derived, not printed"
 # Without this the two checks above could both pass against a summary hard-coded
 # the other way. The line has to change with the machine.
 summary_ok="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/ok-human.out" \
@@ -190,6 +195,109 @@ if [[ "$summary_ok" == "$summary_human" ]]; then
 fi
 printf '  ok: clean reads "%s"\n' "$summary_ok"
 
+echo "[7/8] every warning says what to do about it, in both modes"
+# Naming what is missing is not the same as saying what to do. This is
+# exhaustive rather than sampled: the degraded world warns on every check, so
+# a check added without a hint fails here instead of shipping a blank line.
+# Written to a file rather than read through `< <(...)`: a process substitution
+# hides the exit status, so a python that bailed out would leave `hints` empty
+# and every loop below would pass over nothing.
+python3 - "$run_dir/warn-json.out" >"$run_dir/hints.txt" <<'PY'
+import json
+import sys
+doc = json.load(open(sys.argv[1], encoding="utf-8"))
+missing = [c for c in doc["checks"] if c["status"] != "ok"]
+blank = [c["name"] for c in missing if not c.get("hint", "").strip()]
+if blank:
+    sys.exit("checks that warn without a hint: " + " ".join(blank))
+for check in missing:
+    print(check["hint"])
+PY
+mapfile -t hints <"$run_dir/hints.txt"
+if (( ${#hints[@]} != warn_count )); then
+  echo "FAIL: $warn_count checks warned but ${#hints[@]} hints came back" >&2
+  exit 1
+fi
+printf '  ok: %s warnings, each carrying a hint\n' "${#hints[@]}"
+
+# The screen has to carry the same advice as the document, or the operator and
+# the script reading the same run are told different things.
+human_plain="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/warn-human.out")"
+for hint in "${hints[@]}"; do
+  case "$human_plain" in
+    *"$hint"*) ;;
+    *)
+      echo "FAIL: --json advises '$hint' but the screen never says it" >&2
+      exit 1
+      ;;
+  esac
+done
+printf '  ok: all %s hints appear on the screen too\n' "${#hints[@]}"
+
+echo "[8/8] the next step is the one worth doing first"
+# A next step that just names whichever check happened to run first would send a
+# new operator to install `eza` while `mqlaunch` is not on PATH. Two worlds,
+# differing by one tool, prove the order is a decision rather than an accident.
+#
+# `eza` is the least urgent thing doctor checks and `mqlaunch` the most, so
+# their relative order is the one worth pinning: it cannot come out right by
+# luck in both runs.
+only_eza="$run_dir/bin-only-eza-missing"
+eza_and_launcher="$run_dir/bin-eza-and-launcher-missing"
+build_world "$only_eza" git gh uv python3 node fzf jq gitleaks pbcopy mqlaunch
+build_world "$eza_and_launcher" git gh uv python3 node fzf jq gitleaks pbcopy
+doctor_run "$only_eza" key next-eza >/dev/null
+doctor_run "$eza_and_launcher" key next-launcher >/dev/null
+
+next_step() {
+  # next_step <json-file>
+  python3 - "$1" <<'PY'
+import json
+import sys
+doc = json.load(open(sys.argv[1], encoding="utf-8"))
+step = doc.get("next")
+if not step:
+    sys.exit("the document carries no 'next' step for a run that is not ok")
+print(step)
+PY
+}
+doctor_run "$only_eza" key next-eza-json --json >/dev/null
+doctor_run "$eza_and_launcher" key next-launcher-json --json >/dev/null
+
+step_eza="$(next_step "$run_dir/next-eza-json.out")"
+step_launcher="$(next_step "$run_dir/next-launcher-json.out")"
+
+case "$step_eza" in
+  *eza*) ;;
+  *)
+    echo "FAIL: with only eza missing, the next step is '$step_eza'" >&2
+    exit 1
+    ;;
+esac
+case "$step_launcher" in
+  *eza*)
+    echo "FAIL: eza is advised before the launcher is even on PATH: '$step_launcher'" >&2
+    exit 1
+    ;;
+esac
+printf '  ok: eza alone -> "%s"; eza and the launcher -> "%s"\n' \
+  "$step_eza" "$step_launcher"
+
+# And the screen says it too, for the same reason the hints must.
+for pair in "next-eza:$step_eza" "next-launcher:$step_launcher"; do
+  prefix="${pair%%:*}"
+  expected="${pair#*:}"
+  screen="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/$prefix.out")"
+  case "$screen" in
+    *"$expected"*) ;;
+    *)
+      echo "FAIL: --json advises '$expected' but the screen never says it" >&2
+      exit 1
+      ;;
+  esac
+done
+echo "  ok: the screen names the same next step as the document"
+
 bash -n "$0"
 
-echo "OK: doctor's summary reflects its checks, and both modes agree"
+echo "OK: doctor's summary reflects its checks, both modes agree, and every warning says what to do"

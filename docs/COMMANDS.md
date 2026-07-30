@@ -165,6 +165,22 @@ The human screen carries the same verdict in words. It reads
 names how many checks need attention. `tests/doctor-status-contract-smoke.sh`
 holds the two modes to the same answer.
 
+Every check that does not pass carries a hint saying what to do about it, and
+the run ends with the one to do first:
+
+```text
+⚠ gh missing — brew install gh
+⚠ mqlaunch not in PATH — run ./install.sh from the repo to install the symlink
+⚠ 9 of 12 checks need attention
+
+  Next: run ./install.sh from the repo to install the symlink
+```
+
+The same advice is in the document: `hint` on each check that did not pass, and
+a top-level `next` holding the first instruction, or `null` when the status is
+`ok`. The order is the order a machine is worth fixing in — the launcher first,
+then the tools it shells out to — not the order the checks are printed in.
+
 ---
 
 ## Markdown
