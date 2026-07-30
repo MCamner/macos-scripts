@@ -69,9 +69,17 @@ SCRIPT = re.compile(
     r"(?:tools/scripts|mqlaunch/commands|terminal/[a-z]+)/([A-Za-z0-9_.-]+)"
 )
 
-# How far to read into a named function when resolving what an option does.
-# Menu handlers are short; this is a bound, not a parse.
-FUNC_BODY_LINES = 60
+# Safety cap on how far to read for a function's closing brace. Reaching it means
+# the body could not be delimited, and the excerpt stops rather than running on.
+FUNC_BODY_LINES = 120
+
+# A function's closing brace at column zero. Bodies are cut here instead of after
+# a fixed line count, which was reading past the end of a short handler and into
+# whichever function came next in the file. That is how `ping_test`,
+# `show_dns_gateway` and `open_network_settings` — none of which touch pulse.sh —
+# were all attributed to it: they are 9 to 15 lines long and share
+# tools/scripts/mqlaunch_desktop.sh with a neighbour that runs it.
+FUNC_END = re.compile(r"^\}")
 
 # A handler that opens a submenu rather than running anything: open_system_menu,
 # mq_obsidian_menu_main, document_functions_menu_loop.
@@ -147,9 +155,11 @@ def index_function_bodies(paths: list[Path]) -> dict[Path, dict[str, str]]:
         for index, line in enumerate(lines):
             match = FUNC_DEF.match(line)
             if match and match.group(1) not in bodies:
-                bodies[match.group(1)] = "\n".join(
-                    lines[index : index + FUNC_BODY_LINES]
-                )
+                end = index + 1
+                limit = min(len(lines), index + FUNC_BODY_LINES)
+                while end < limit and not FUNC_END.match(lines[end]):
+                    end += 1
+                bodies[match.group(1)] = "\n".join(lines[index : end + 1])
         per_file[path] = bodies
     return per_file
 
