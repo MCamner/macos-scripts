@@ -657,17 +657,18 @@ An unchecked box says what is missing and how that was established, so the next
 person starts from a fact instead of repeating the measurement. Measurements
 below are from 2026-07-30 against `2.0.1`.
 
-* [ ] Improve first-run experience.
+* [x] Improve first-run experience.
 
   * [x] `mqlaunch doctor` — twelve checks, and `--json` is a real machine
     document held against observed behaviour by
     `tests/output-mode-parity-smoke.sh`.
   * [x] dependency checks — ten tools, `OPENAI_API_KEY`, and whether `mqlaunch`
     resolves on `PATH` (`tools/scripts/doctor.sh`).
-  * [ ] missing tool hints — doctor names what is missing and not what to do
-    about it. The human row is `warn "$cmd missing"` and the JSON detail is the
-    bare string `"missing"`: no install command, and no statement of what the
-    tool is needed for.
+  * [x] missing tool hints — every check that does not pass now carries a hint
+    on the screen and a `hint` field in the document. The nine brew formulae are
+    listed by name rather than caught by a `*` arm: a fallback would turn any
+    check added later into `brew install <whatever>`, and `pbcopy` has no
+    formula at all. Names were confirmed with `brew info` (#128).
   * [x] the summary reflects the checks — `tools/scripts/doctor.sh` used to end
     in an unconditional `ok "MQ operational"` that never read the counters above
     it, so the screen reported success no matter what failed while `--json`
@@ -684,8 +685,13 @@ below are from 2026-07-30 against `2.0.1`.
     Held by `tests/doctor-status-contract-smoke.sh`, which builds a provisioned
     and a stripped machine from `PATH` so the contract is tested rather than the
     inventory of whichever machine runs the suite (#127).
-  * [ ] next recommended setup step — still absent. Doctor now says how many
-    checks need attention; it does not say what to do first.
+  * [x] next recommended setup step — the run ends in one instruction, and the
+    document carries it as a top-level `next`. It follows an explicit fix order
+    rather than the order the checks print in, which is grouped for reading: the
+    launcher first, since nothing else is reachable without it, then the tools
+    it shells out to, with `eza` last because it only changes how listings look.
+    Pinned by two worlds differing by one tool, so the order cannot come out
+    right by luck (#128).
 
 * [ ] Improve command discovery.
 
@@ -753,11 +759,16 @@ below are from 2026-07-30 against `2.0.1`.
 
 * [ ] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
 
-  Blocked on the two unchecked boxes under first-run experience. Doctor no
-  longer contradicts its own checks (#127), so an operator can now trust what
-  the screen says — but understanding the result is not the same as knowing the
-  next command, and neither the install hints nor the recommended first step
-  exist yet.
+  Half of this is now true. Doctor no longer contradicts its own checks (#127),
+  every warning says what to do about it, and the run ends in one instruction
+  (#128) — so a new operator can run it, understand the result, and know the
+  next setup step.
+
+  What is still missing is the second half: the *next command*. Doctor tells
+  them how to finish provisioning the machine, not what to run once it works,
+  and `mqlaunch help` advertises 40 of 74 commands with `stack` among the
+  omissions. This gate closes with the command-discovery boxes, not with more
+  work on doctor.
 
 ---
 
