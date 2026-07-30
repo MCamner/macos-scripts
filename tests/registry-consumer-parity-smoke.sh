@@ -15,10 +15,11 @@ set -euo pipefail
 #   docs/COMMANDS.md   "Complete command listing" — coverage required in both
 #                      directions. Every command has a documented name or alias,
 #                      and every documented word dispatches.
-#   mqlaunch help      "a quick index" — curated by design, so coverage is not
-#                      required. But every word it advertises must work. A help
-#                      screen that lists a command that does not exist is worse
-#                      than one that omits it.
+#   mqlaunch help      curated, but no longer by whoever last edited the text.
+#                      The registry's `operator_surface` field decides what is
+#                      advertised, so help must show exactly the public
+#                      entrypoints — not a subset, not a superset — and print
+#                      each one under a heading naming its namespace.
 #   mqlaunch commands  the same curated list behind panel chrome, so it carries
 #                      help's contract plus one of its own: the two must offer
 #                      the same commands. They were two hand-maintained copies
@@ -68,6 +69,9 @@ echo "  ok: palette selections resolve through dispatch_cli_command"
 # show the comparison failing. Same discipline as command-registry-smoke.sh.
 cat > "$run_dir/consumers.py" <<'PY'
 """Extract the command words each consumer advertises."""
+
+# The one heading in help that is a selection rather than a namespace.
+HIGHLIGHTS = "POPULAR FLOWS"
 import json
 import re
 import sys
@@ -136,7 +140,34 @@ def advertised_words(path, indent=r" {2}"):
     command as missing instead of the one that actually drifted.
     """
     text = open(path, encoding="utf-8").read()
-    return set(re.findall(rf"^{indent}mqlaunch\s+([a-z][a-z0-9-]*)", text, re.M))
+    # `[ \t]+` rather than `\s+`: the latter crosses newlines, so the bare
+    # `mqlaunch` line under POPULAR FLOWS borrowed the next row's first word and
+    # reported `mqlaunch` as advertised. Harmless while this only looked for
+    # ghosts — `mqlaunch` is a real registry word — but the set is compared for
+    # equality now, and a phantom member would fail every run.
+    return set(re.findall(rf"^{indent}mqlaunch[ \t]+([a-z][a-z0-9-]*)", text, re.M))
+
+
+def advertised_groups(path):
+    """Map each heading in a help capture to the commands printed under it.
+
+    Headings start at column 0 and entries are indented, which is the same
+    shape both renderers in terminal/menus/mq-help-menu.sh depend on.
+    """
+    groups, heading = {}, None
+    for line in open(path, encoding="utf-8").read().splitlines():
+        if not line.strip():
+            continue
+        if not line[0].isspace():
+            heading = line.strip()
+            groups.setdefault(heading, set())
+            continue
+        if heading is None:
+            continue
+        found = re.match(r"^ {1,2}mqlaunch[ \t]+([a-z][a-z0-9-]*)", line)
+        if found:
+            groups[heading].add(found.group(1))
+    return groups
 
 
 def main():
@@ -194,6 +225,57 @@ def main():
     if ghosts:
         failures.append(
             f"documented but not dispatchable ({len(ghosts)}): " + " ".join(ghosts))
+
+    public = {c["name"] for c in commands if c["operator_surface"]}
+    if help_out != public:
+        detail = []
+        if public - help_out:
+            detail.append("public but unadvertised: "
+                          + " ".join(sorted(public - help_out)))
+        if help_out - public:
+            detail.append("advertised but not a public entrypoint: "
+                          + " ".join(sorted(help_out - public)))
+        failures.append(
+            "`mqlaunch help` does not match the registry's operator surface — "
+            + "; ".join(detail))
+
+    # Grouping is part of the contract, not decoration: a command printed under
+    # someone else's heading is as wrong as one that is missing, and only a
+    # reader would notice.
+    grouped = advertised_groups(sys.argv[3])
+    namespace_of = {c["name"]: c["namespace"] for c in commands}
+
+    # POPULAR FLOWS is a highlight reel, not a namespace, so it is exempt from
+    # the heading rule. The exemption is bounded rather than open: every command
+    # it highlights must also appear under its own namespace, so the section can
+    # promote a command but never be the only place it is listed.
+    highlights = grouped.get(HIGHLIGHTS, set())
+    if HIGHLIGHTS not in grouped:
+        failures.append(
+            f"help has no {HIGHLIGHTS} section — the exemption below is unused "
+            f"and should be removed rather than left to widen quietly")
+    hidden_in_highlights = sorted(
+        name for name in highlights
+        if namespace_of.get(name)
+        and name not in grouped.get(namespace_of[name].upper(), set()))
+    if hidden_in_highlights:
+        failures.append(
+            f"only listed under {HIGHLIGHTS}, not under their own namespace "
+            f"({len(hidden_in_highlights)}): " + " ".join(hidden_in_highlights))
+
+    misfiled = sorted(
+        f"{name} under {heading} (namespace {namespace_of[name]})"
+        for heading, names in grouped.items()
+        if heading != HIGHLIGHTS
+        for name in names
+        if name in namespace_of
+        and namespace_of[name] is not None
+        and namespace_of[name].upper() != heading
+    )
+    if misfiled:
+        failures.append(
+            f"advertised under the wrong heading ({len(misfiled)}): "
+            + "; ".join(misfiled))
 
     for label, offered in (("`mqlaunch help`", help_out),
                            ("`mqlaunch commands`", index)):
@@ -323,6 +405,9 @@ mutated["commands"] = registry["commands"] + [{
     "summary": "fixture", "owner": "macos-scripts", "safety": "read-only",
     "output_modes": ["human"], "json": False, "interactive": False,
     "compat_only": False, "delegates_to": None,
+    # Not a public entrypoint: this fixture is about documentation coverage, and
+    # making it advertisable would fail the surface rule instead.
+    "operator_surface": False,
 }]
 fixture_registry = run_dir / "registry-plus-one.json"
 fixture_registry.write_text(json.dumps(mutated), encoding="utf-8")
@@ -367,25 +452,31 @@ fixture_index.write_text(
     pathlib.Path(index_txt).read_text(encoding="utf-8")
     + f"  mqlaunch {unadvertised[0]}  only in the index\n", encoding="utf-8")
 
-# 4. A word the registry retires while help still offers it. Built from a word
-# help actually prints, so the fixture cannot go stale silently: if help stops
-# advertising any alias, this raises instead of quietly testing nothing.
-help_words = set(re.findall(r"^ {2}mqlaunch\s+([a-z][a-z0-9-]*)",
-                            pathlib.Path(help_txt).read_text(encoding="utf-8"),
-                            re.M))
+# 4. A word the registry retires while help still offers it.
+#
+# Help lists canonical names now, never aliases, so the fixture has to build
+# both halves: retire an alias in the registry, and add the row that advertises
+# it. Taking the alias from a command help actually prints keeps the fixture
+# anchored to the real screen rather than to an invented word.
+help_text = pathlib.Path(help_txt).read_text(encoding="utf-8")
+help_words = set(re.findall(r"^ {2}mqlaunch[ \t]+([a-z][a-z0-9-]*)", help_text, re.M))
 retired = dict(registry)
 retired["commands"] = [dict(c) for c in registry["commands"]]
 for command in retired["commands"]:
-    hit = next((a for a in command.get("aliases", []) if a in help_words), None)
-    if hit:
+    if command["name"] in help_words and command.get("aliases"):
+        hit = command["aliases"][0]
         command["aliases"] = [a for a in command["aliases"] if a != hit]
         command["deprecated_aliases"] = [
             {"name": hit, "replacement": command["name"]}]
         break
 else:
-    sys.exit("`mqlaunch help` advertises no alias — nothing to retire in fixture 4")
+    sys.exit("no advertised command carries an alias — nothing to retire in fixture 4")
 fixture_deprecated = run_dir / "registry-deprecated.json"
 fixture_deprecated.write_text(json.dumps(retired), encoding="utf-8")
+
+fixture_help_deprecated = run_dir / "help-deprecated.txt"
+fixture_help_deprecated.write_text(
+    help_text + f"\n  mqlaunch {hit}  the retired spelling\n", encoding="utf-8")
 
 for label, args, reason in (
     ("an undocumented command",
@@ -404,7 +495,8 @@ for label, args, reason in (
     # no longer active, so this fixture reports two problems. The reason check is
     # what makes it prove the deprecation rule rather than the coverage one.
     ("a deprecated word help still advertises",
-     [checker, str(fixture_deprecated), docs_path, help_txt, launcher_path, index_txt],
+     [checker, str(fixture_deprecated), docs_path, str(fixture_help_deprecated),
+      launcher_path, index_txt],
      "deprecated but advertised by `mqlaunch help`"),
 ):
     result = subprocess.run([sys.executable, *args], capture_output=True)

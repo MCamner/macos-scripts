@@ -8,6 +8,45 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `operator_surface` in `mqlaunch/lib/command-registry.json`: whether a command
+  is a public operator entrypoint. `mqlaunch help` and `mqlaunch commands` show
+  the 48 that are, grouped by `namespace`, and stay quiet about the other 26.
+
+  Help was curated by whoever last edited the text. It advertised 40 of 74
+  commands, and the selection did not follow a rule anyone could state — `review`
+  and `risk-review` were listed while `stack`, `architecture` and `repo-health`
+  were not, though all five are the same kind of delegation to mq-agent.
+
+  The rule is now a field, and the field is enforced.
+  `tests/registry-consumer-parity-smoke.sh` requires help to advertise exactly
+  the public set, and to print each command under a heading naming its
+  namespace. `tools/scripts/validate-command-registry.py` rejects a
+  `compat_only` command marked public, and a public command with no namespace —
+  which would have nowhere to be printed and would show up as a missing row
+  rather than an error.
+
+  The 26 unadvertised commands stay dispatchable and stay in `docs/COMMANDS.md`,
+  which remains the complete listing. They are the ones reached through a
+  namespace or menu (`git-log`, `kill-port`, `workspace`, `release-check`),
+  variants and implementation detail (`theme-macos`, `docwrite`, `markdownlint`),
+  and second spellings of something already advertised (`index`, `self-check`,
+  and `mqlaunch`, which is `compat_only` and therefore never advertisable).
+
+  `POPULAR FLOWS` is exempt from the heading rule, since it is a selection
+  rather than a namespace — but the exemption is bounded: every command it
+  highlights must also appear under its own namespace, so the section can
+  promote a command and never be the only place it is listed.
+
+  `stack` is advertised now, under `AGENT` and in `POPULAR FLOWS`. The entrypoint
+  already worked and already showed all five stack repos; it was simply invisible.
+
+  Fixed while making the comparison load-bearing: the help extractor matched
+  `mqlaunch\\s+(\\w+)`, and `\\s` crosses newlines, so the bare `mqlaunch` line
+  under `POPULAR FLOWS` borrowed the next row's first word and reported
+  `mqlaunch` as advertised. Harmless while the set was only searched for ghosts
+  — `mqlaunch` is a real registry word — but a phantom member fails an equality
+  check on every run.
+
 * `mqlaunch doctor` says what to do about every check that does not pass, and
   ends in the one thing to do first:
 

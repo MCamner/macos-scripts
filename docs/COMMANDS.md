@@ -2,6 +2,35 @@
 
 Complete command listing for `mqlaunch`. Run `mqlaunch help` for a quick index.
 
+## What help shows, and what only this page shows
+
+This page is the complete surface: all 74 commands. `mqlaunch help` and
+`mqlaunch commands` show the 48 that are public operator entrypoints, grouped by
+namespace.
+
+The split is a registry field, not an editorial habit. Each entry in
+`mqlaunch/lib/command-registry.json` carries `operator_surface`, and
+`tests/registry-consumer-parity-smoke.sh` requires help to advertise exactly the
+true ones — not a subset, not a superset — each printed under a heading naming
+its `namespace`.
+
+The 26 that help stays quiet about are still dispatchable, still documented
+here, and fall into three kinds:
+
+* reached through a namespace or menu rather than typed — `git-log`,
+  `git-branch`, `github`, `kill-port`, `kill-process`, `snippets`, `recent`,
+  `workspace`, `release-check`, `excalidraw`, `apps`, `net`, `debug`
+* variants and implementation detail — `theme-macos`, `theme-reset`,
+  `nickname-set`, `docfunc`, `docwrite`, `markdownlint`, `ollama-review`,
+  `b2tui`, `brain`, `note`
+* a second spelling of something already advertised — `index` (`help index`),
+  `self-check` (`selftest`), and `mqlaunch`, which is `compat_only` and
+  therefore never advertisable
+
+`POPULAR FLOWS` at the top of help is a selection, not a namespace. A command
+may be highlighted there, but never *only* there — the same test requires every
+highlighted command to appear under its own namespace as well.
+
 ---
 
 ## Start

@@ -9,7 +9,7 @@
       "aliases": [
         "workflow"
       ],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Project boot, command-surface validation, and workspace snapshots",
       "owner": "macos-scripts",
       "safety": "local-write",
@@ -20,7 +20,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "workspace",
@@ -68,12 +69,13 @@
           "aliases": [],
           "summary": "Restore a snapshot; defaults to the latest"
         }
-      ]
+      ],
+      "operator_surface": false
     },
     {
       "name": "demo",
       "aliases": [],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Run the launcher demo mode",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -84,7 +86,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "excalidraw",
@@ -101,7 +104,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "review",
@@ -118,7 +122,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent review"
+      "delegates_to": "mq-agent review",
+      "operator_surface": true
     },
     {
       "name": "architecture",
@@ -135,7 +140,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent architecture"
+      "delegates_to": "mq-agent architecture",
+      "operator_surface": true
     },
     {
       "name": "risk-review",
@@ -152,7 +158,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent risk-review"
+      "delegates_to": "mq-agent risk-review",
+      "operator_surface": true
     },
     {
       "name": "repo-health",
@@ -169,7 +176,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent repo-health"
+      "delegates_to": "mq-agent repo-health",
+      "operator_surface": true
     },
     {
       "name": "stack",
@@ -186,7 +194,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent stack"
+      "delegates_to": "mq-agent stack",
+      "operator_surface": true
     },
     {
       "name": "mcp-status",
@@ -203,7 +212,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent mcp-status"
+      "delegates_to": "mq-agent mcp-status",
+      "operator_surface": true
     },
     {
       "name": "flow",
@@ -220,14 +230,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent flow"
+      "delegates_to": "mq-agent flow",
+      "operator_surface": true
     },
     {
       "name": "ui",
       "aliases": [
         "/ui"
       ],
-      "namespace": null,
+      "namespace": "ai",
       "summary": "Open the local AI prompt UI",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -238,14 +249,15 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "ask",
       "aliases": [
         "/ask"
       ],
-      "namespace": null,
+      "namespace": "ai",
       "summary": "Ask a question through the local ask helper",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -255,7 +267,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "ollama-review",
@@ -270,7 +283,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "srm",
@@ -311,7 +325,8 @@
           "aliases": [],
           "summary": "Accept or reject a supersede proposal"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "skills",
@@ -328,7 +343,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "repos",
@@ -384,14 +400,15 @@
           "aliases": [],
           "summary": "Show the git change summary per repo"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "fix",
       "aliases": [
         "/fix"
       ],
-      "namespace": null,
+      "namespace": "ai",
       "summary": "Run the local fix helper",
       "owner": "macos-scripts",
       "safety": "local-write",
@@ -401,14 +418,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "chat",
       "aliases": [
         "/chat"
       ],
-      "namespace": null,
+      "namespace": "ai",
       "summary": "Open the local chat helper",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -419,7 +437,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "release-check",
@@ -438,14 +457,15 @@
       "json": true,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "repo-signal publish-readiness"
+      "delegates_to": "repo-signal publish-readiness",
+      "operator_surface": false
     },
     {
       "name": "review-brain",
       "aliases": [
         "/review-brain"
       ],
-      "namespace": null,
+      "namespace": "agent",
       "summary": "Run the brain-backed review through mq-agent",
       "owner": "mq-agent",
       "safety": "delegating",
@@ -455,14 +475,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent review-brain"
+      "delegates_to": "mq-agent review-brain",
+      "operator_surface": true
     },
     {
       "name": "signal-brain",
       "aliases": [
         "/signal-brain"
       ],
-      "namespace": null,
+      "namespace": "agent",
       "summary": "Run the brain-backed signal report through mq-agent",
       "owner": "mq-agent",
       "safety": "delegating",
@@ -472,7 +493,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent signal-brain"
+      "delegates_to": "mq-agent signal-brain",
+      "operator_surface": true
     },
     {
       "name": "learn-promote",
@@ -480,7 +502,7 @@
         "/learn-promote",
         "promote-pattern"
       ],
-      "namespace": null,
+      "namespace": "agent",
       "summary": "Promote a learned pattern through mq-agent",
       "owner": "mq-agent",
       "safety": "delegating",
@@ -490,7 +512,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent learn-promote"
+      "delegates_to": "mq-agent learn-promote",
+      "operator_surface": true
     },
     {
       "name": "selftest",
@@ -498,7 +521,7 @@
         "/selftest",
         "test-all"
       ],
-      "namespace": null,
+      "namespace": "checks",
       "summary": "Run the launcher smoke suite and shell lint",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -508,14 +531,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "doctor",
       "aliases": [
         "/doctor"
       ],
-      "namespace": null,
+      "namespace": "checks",
       "summary": "Environment and dependency check",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -526,14 +550,15 @@
       "json": true,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "scan",
       "aliases": [
         "/scan"
       ],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Run the local scan workflow",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -543,14 +568,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "atlas",
       "aliases": [
         "/atlas"
       ],
-      "namespace": null,
+      "namespace": "ai",
       "summary": "Run the Atlas prompt workflow",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -560,12 +586,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "system",
       "aliases": [],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "System namespace: performance, network, doctor, checks, and local utilities",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -651,12 +678,13 @@
           ],
           "summary": "Show the current date and time"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "git",
       "aliases": [],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Git namespace: opens the git menu and git workflows",
       "owner": "macos-scripts",
       "safety": "local-write",
@@ -675,12 +703,13 @@
           "aliases": [],
           "summary": "Open the git menu for the current repo"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "release",
       "aliases": [],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Release namespace: release menu, notes, version, and status",
       "owner": "macos-scripts",
       "safety": "local-write",
@@ -716,12 +745,13 @@
           "aliases": [],
           "summary": "Show release status"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "dev",
       "aliases": [],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Dev namespace: AI helpers, tools, and current-project actions",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -755,7 +785,8 @@
           "aliases": [],
           "summary": "Open the dev menu for the current project"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "help",
@@ -763,7 +794,7 @@
         "-h",
         "--help"
       ],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Show launcher help, the command index, and namespace help",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -821,14 +852,15 @@
           ],
           "summary": "Open the repo in a browser"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "perf",
       "aliases": [
         "performance"
       ],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Open the performance menu",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -839,7 +871,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "net",
@@ -856,7 +889,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "palette",
@@ -864,7 +898,7 @@
         "fzf",
         "search"
       ],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Fuzzy command palette over the dispatchable command surface",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -875,7 +909,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "markdownlint",
@@ -892,12 +927,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "ghost",
       "aliases": [],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Run the network ghost workflow",
       "owner": "macos-scripts",
       "safety": "destructive",
@@ -907,12 +943,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "pulse",
       "aliases": [],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Run the pulse system overview",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -922,12 +959,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "reap",
       "aliases": [],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Run the overseer process reaper",
       "owner": "macos-scripts",
       "safety": "destructive",
@@ -938,12 +976,13 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "guard",
       "aliases": [],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Run the blackout guard workflow",
       "owner": "macos-scripts",
       "safety": "local-write",
@@ -953,12 +992,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "mc",
       "aliases": [],
-      "namespace": null,
+      "namespace": "ops",
       "summary": "Open mission control",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -969,7 +1009,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "nickname-set",
@@ -987,7 +1028,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "theme-macos",
@@ -1002,7 +1044,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "theme-reset",
@@ -1017,14 +1060,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "check",
       "aliases": [
         "health"
       ],
-      "namespace": null,
+      "namespace": "checks",
       "summary": "Run the system check",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1034,7 +1078,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "self-check",
@@ -1051,7 +1096,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "debug",
@@ -1070,7 +1116,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "apps",
@@ -1089,7 +1136,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": "mq-hal terminal-guide"
+      "delegates_to": "mq-hal terminal-guide",
+      "operator_surface": false
     },
     {
       "name": "docfunc",
@@ -1106,7 +1154,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "docwrite",
@@ -1124,12 +1173,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "version",
       "aliases": [],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Show launcher and repo version information",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1139,14 +1189,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "notes",
       "aliases": [
         "release-notes"
       ],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Show the changelog",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1156,14 +1207,15 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "about",
       "aliases": [
         "status"
       ],
-      "namespace": null,
+      "namespace": "core",
       "summary": "Status dashboard; --json emits one machine-readable document",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1174,7 +1226,8 @@
       "json": true,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "index",
@@ -1191,7 +1244,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "hal",
@@ -1206,7 +1260,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-hal"
+      "delegates_to": "mq-hal",
+      "operator_surface": true
     },
     {
       "name": "agent",
@@ -1223,7 +1278,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": "mq-agent"
+      "delegates_to": "mq-agent",
+      "operator_surface": true
     },
     {
       "name": "obsidian",
@@ -1284,7 +1340,8 @@
           "aliases": [],
           "summary": "Promote a memory through mq-agent"
         }
-      ]
+      ],
+      "operator_surface": true
     },
     {
       "name": "mqlaunch",
@@ -1299,7 +1356,8 @@
       "json": false,
       "interactive": false,
       "compat_only": true,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "github",
@@ -1321,7 +1379,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "git-log",
@@ -1340,7 +1399,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "git-branch",
@@ -1359,7 +1419,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "kill-process",
@@ -1378,7 +1439,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "kill-port",
@@ -1397,7 +1459,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "snippets",
@@ -1416,7 +1479,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "recent",
@@ -1435,7 +1499,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "brain",
@@ -1450,7 +1515,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "note",
@@ -1472,7 +1538,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "b2tui",
@@ -1490,12 +1557,13 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": false
     },
     {
       "name": "tools",
       "aliases": [],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Open the tools menu",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1506,7 +1574,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "login",
@@ -1514,7 +1583,7 @@
         "boot",
         "session"
       ],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Open the login / session menu",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1525,7 +1594,8 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "shortcuts",
@@ -1533,7 +1603,7 @@
         "shortcut",
         "sc"
       ],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Open the macOS Shortcuts menu",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1544,14 +1614,15 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "theme",
       "aliases": [
         "themes"
       ],
-      "namespace": null,
+      "namespace": "menus",
       "summary": "Open the themes menu",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1562,14 +1633,15 @@
       "json": false,
       "interactive": true,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "guide",
       "aliases": [
         "terminal-guide"
       ],
-      "namespace": null,
+      "namespace": "utility",
       "summary": "Open the terminal guide",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1579,12 +1651,13 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     },
     {
       "name": "repo",
       "aliases": [],
-      "namespace": null,
+      "namespace": "utility",
       "summary": "Open the repository in the browser",
       "owner": "macos-scripts",
       "safety": "read-only",
@@ -1594,7 +1667,8 @@
       "json": false,
       "interactive": false,
       "compat_only": false,
-      "delegates_to": null
+      "delegates_to": null,
+      "operator_surface": true
     }
   ]
 }
