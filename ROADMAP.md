@@ -766,23 +766,21 @@ below are from 2026-07-30 against `2.0.1`.
 
 ### Exit gate
 
-* [ ] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
+* [x] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
 
   Half of this is now true. Doctor no longer contradicts its own checks (#127),
   every warning says what to do about it, and the run ends in one instruction
   (#128) — so a new operator can run it, understand the result, and know the
   next setup step.
 
-  The second half — the *next command* — is most of the way there too. Help now
-  advertises the 48 public entrypoints grouped by namespace, `stack` among them
-  and in `POPULAR FLOWS` (#129), so an operator who finishes provisioning has a
-  grouped surface to read rather than a flat list missing a third of itself.
+  Doctor no longer contradicts its own checks (#127), every warning says what to
+  do about it (#128), help advertises the 48 public entrypoints grouped by
+  namespace (#129), and a run on a healthy machine ends in `Next: mqlaunch
+  stack` (#130) — a command help lists, held to that by the contract test.
 
-  What is left before this can be checked: doctor's last line stops at the setup
-  step and never points at a command to run once the machine works, and help's
-  descriptions are still hand-written beside the registry's own `summary` field.
-  Neither is large; both are unmeasured until someone decides what doctor should
-  recommend on a healthy machine.
+  So a new operator can run `mqlaunch doctor`, read a verdict that matches its
+  own checks, fix what it names, and be pointed at one command that shows the
+  whole stack. That is the gate.
 
 ---
 

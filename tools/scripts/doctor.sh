@@ -43,14 +43,29 @@ hint_for() {
 # tools because it only changes how listings look.
 FIX_ORDER=(mqlaunch git python3 jq fzf gh uv node gitleaks pbcopy eza OPENAI_API_KEY)
 
+# What to do on a machine where every check passes.
+#
+# Ending at "12 checks passed" answers half of what ROADMAP P2's exit gate asks:
+# the operator learns the machine is fine and nothing about what to run. This is
+# the landing because it is the one command that shows the whole stack — every
+# repo, its readiness, and its own next action — rather than a menu they would
+# then have to navigate.
+#
+# tests/doctor-status-contract-smoke.sh requires this to be a command help
+# advertises: recommending an unadvertised one would send a new operator
+# somewhere they could not find their way back to.
+HEALTHY_NEXT="mqlaunch stack"
+
 # Records a check that needs attention, so the next step can be chosen from all
 # of them rather than from whichever one happened to be printed first.
 note_unresolved() {
   _J_UNRESOLVED="${_J_UNRESOLVED} $1"
 }
 
-# The single thing to do next: the highest-priority unresolved check, as a
-# ready-to-run instruction. Empty when everything passed.
+# The single thing to do next, as a ready-to-run instruction: the
+# highest-priority unresolved check while anything needs attention, and the
+# recommended landing once nothing does. Never empty — a run that ends without
+# telling the operator what to do is the defect this exists to prevent.
 next_step() {
   local candidate
   for candidate in "${FIX_ORDER[@]}"; do
@@ -61,7 +76,7 @@ next_step() {
         ;;
     esac
   done
-  printf ''
+  printf '%s' "$HEALTHY_NEXT"
 }
 
 # Appends one check to the checks buffer and updates counters (no subshell).
@@ -201,13 +216,14 @@ run_normal_mode() {
     ok "MQ operational — $total checks passed"
   else
     warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
-    # One instruction, not a list. Every warning already carries its own hint
-    # above; this names which of them to do first, so the screen ends in an
-    # action rather than a count.
-    local next
-    next="$(next_step)"
-    [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
   fi
+
+  # One instruction, not a list, and on every run rather than only the bad ones.
+  # When something needs attention the warnings above each carry their own hint
+  # and this names which to do first; when nothing does, it names where to go.
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
 
   echo
   status_exit_code
