@@ -90,12 +90,51 @@ PY
   grep -q 'Unknown command: doctro' "$output_file"
 }
 
+run_palette_shortcut_contract() {
+  local output expected
+  output="$(
+    ROOT_UNDER_TEST="$ROOT" bash <<'BASH'
+set -euo pipefail
+BASE_DIR="$ROOT_UNDER_TEST"
+source "$ROOT_UNDER_TEST/terminal/menus/mq-main-menu.sh"
+
+run_command_palette() {
+  printf 'palette\n'
+}
+
+# These are failure sentinels: a recognized shortcut must return before either
+# generic path. They deliberately succeed after printing so the output
+# comparison catches the fallthrough rather than set -e hiding it.
+dispatch_cli_command() {
+  printf 'unknown:%s\n' "$*"
+  return 0
+}
+run_main_shell_command() {
+  printf 'shell:%s\n' "$*"
+  return 0
+}
+
+for original in "/" "/." "/ palette" "/. Palette"; do
+  normalized="$(printf '%s' "$original" | tr '[:upper:]' '[:lower:]')"
+  handle_main_prompt_command "$normalized" "$original"
+done
+BASH
+  )"
+  expected="$(printf 'palette\npalette\npalette\npalette')"
+  [[ "$output" == "$expected" ]] || {
+    echo "palette shortcuts escaped to an unknown-command or shell route:" >&2
+    printf '%s\n' "$output" >&2
+    return 1
+  }
+}
+
 echo "SMOKE: unknown command contract"
 run_unknown redirected
 printf '' | run_unknown headless
 run_unknown nearest-command doctro
 grep -q 'Did you mean: mqlaunch doctor' "$TMPDIR_TEST/nearest-command.stderr"
 run_tty_unknown
+run_palette_shortcut_contract
 
 [[ ! -e "$SIDE_EFFECT_LOG" ]] || {
   echo "unknown command triggered a clipboard or open side effect" >&2
