@@ -33,6 +33,9 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   _MQ_DEFAULT_WARN=$'\033[0;33m'
   _MQ_DEFAULT_INFO=$'\033[0;34m'
   _MQ_DEFAULT_BOLD=$'\033[1m'
+  # 1;37, not 0;37: normal-intensity white renders grey in most terminals, so
+  # the panel border read as dim next to the themed title it framed.
+  _MQ_DEFAULT_PANEL=$'\033[1;37m'
 
   C_RESET="${MQ_COLOR_RESET:-$_MQ_DEFAULT_RESET}"
   C_TITLE="${MQ_COLOR_TITLE:-$_MQ_DEFAULT_TITLE}"
@@ -41,6 +44,7 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_WARN="${MQ_COLOR_WARN:-$_MQ_DEFAULT_WARN}"
   C_INFO="${MQ_COLOR_INFO:-$_MQ_DEFAULT_INFO}"
   C_BOLD="${MQ_COLOR_BOLD:-$_MQ_DEFAULT_BOLD}"
+  C_PANEL="${MQ_COLOR_PANEL:-$_MQ_DEFAULT_PANEL}"
 else
   C_RESET=''
   C_TITLE=''
@@ -49,6 +53,7 @@ else
   C_WARN=''
   C_INFO=''
   C_BOLD=''
+  C_PANEL=''
 fi
 
 # ------------------------------------------------------------
@@ -229,9 +234,10 @@ surface_git_state() {
 
 # Handles surface panel color.
 surface_panel_color() {
-  if [[ -t 1 ]]; then
-    printf '\033[0;37m'
-  fi
+  # Was a hardcoded `\033[0;37m`, which made the panel the one surface element
+  # a theme could not reach. C_PANEL is already empty when stdout is not a
+  # terminal or NO_COLOR is set, so the tty guard lives in one place now.
+  printf '%s' "${C_PANEL:-}"
 }
 
 # Handles surface panel header.

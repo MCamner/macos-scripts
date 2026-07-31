@@ -23,11 +23,7 @@ render_help_center_panel() {
   local width panel_color host user git_state mode
   width="$(surface_terminal_width)"
 
-  if [[ -t 1 ]]; then
-    panel_color=$'\033[0;37m'
-  else
-    panel_color=""
-  fi
+  panel_color="$(surface_panel_color)"
 
   host="$(hostname -s 2>/dev/null || echo unknown)"
   user="${USER:-unknown}"

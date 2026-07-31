@@ -31,11 +31,7 @@ render_performance_panel() {
   local width panel_color score perf_status color output
   width="$(surface_terminal_width)"
   
-  if [[ -t 1 ]]; then
-    panel_color=$'\033[0;37m'
-  else
-    panel_color=""
-  fi
+  panel_color="$(surface_panel_color)"
 
   output="$(perf_health_score)"
   score="$(echo "$output" | sed -n '1p')"

@@ -95,11 +95,7 @@ render_main_menu_panel() {
   local width panel_color host user git_state mode
   width="$(surface_terminal_width)"
 
-  if [[ -t 1 ]]; then
-    panel_color=$'\033[0;37m'
-  else
-    panel_color=""
-  fi
+  panel_color="$(surface_panel_color)"
 
   host="$(hostname -s 2>/dev/null || echo unknown)"
   user="${USER:-unknown}"
@@ -217,12 +213,11 @@ render_command_surface() {
     tip="Run help to see index"
   fi
 
+  SURFACE_COLOR="$(surface_panel_color)"
   if [[ -t 1 ]]; then
-    SURFACE_COLOR=$'\033[0;37m'
     FIGURE_COLOR="$C_OK"
     ALT_FIGURE_COLOR="$C_WARN"
   else
-    SURFACE_COLOR=""
     FIGURE_COLOR=""
     ALT_FIGURE_COLOR=""
   fi
@@ -510,11 +505,7 @@ read_main_choice() {
   prompt_hint=">> option, command, / palette, ? help, !shell, x exit"
   prompt_text="${label} > "
 
-  if [[ -t 1 ]]; then
-    prompt_color=$'\033[0;37m'
-  else
-    prompt_color=""
-  fi
+  prompt_color="$(surface_panel_color)"
 
   if [[ -t 0 && -t 1 ]]; then
     printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
