@@ -61,28 +61,25 @@ render_hal_panel() {
   surface_panel_header "MQ HAL" "HAL" "$width" "$panel_color"
 
   surface_row "OBSERVE" "$width" "$panel_color"
-  surface_split_row "1. Brief" "2. Audit" "$width" "$panel_color"
-  surface_split_row "3. Release Brief" "4. Repo Status" "$width" "$panel_color"
-  surface_split_row "5. CI Status" "6. Doctor Summary" "$width" "$panel_color"
-  surface_split_row "7. Timeline" "8. Timeline + details" "$width" "$panel_color"
-  surface_split_row "9. Context Status" "" "$width" "$panel_color"
+  surface_split_row "1. Brief" "2. Repo status" "$width" "$panel_color"
+  surface_split_row "3. Release readiness" "4. CI status" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
-  surface_row "PLAN" "$width" "$panel_color"
-  surface_split_row "10. Fix Doctor Plan" "" "$width" "$panel_color"
+  surface_row "HEALTH" "$width" "$panel_color"
+  surface_split_row "5. Doctor" "6. Fix plan" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "MEMORY" "$width" "$panel_color"
-  surface_split_row "11. Session Memory" "12. Last Memory Item" "$width" "$panel_color"
-  surface_split_row "13. Remember Note" "" "$width" "$panel_color"
+  surface_split_row "7. Memory" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
-  surface_row "DEBUG" "$width" "$panel_color"
-  surface_split_row "14. Repos" "15. Raw Intent" "$width" "$panel_color"
-  surface_split_row "16. Free Prompt" "17. Memory Path" "$width" "$panel_color"
+  surface_row "DEBUG / ADVANCED" "$width" "$panel_color"
+  surface_split_row "8. Diagnostics" "9. Repos" "$width" "$panel_color"
+  surface_split_row "10. Prompt" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
+  surface_row "Shell needs an explicit prefix:  ! ls -la" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -147,9 +144,117 @@ hal_menu_free_prompt() {
   _hal_pause_enter
 }
 
+
+# The three submenus the grouped front menu opens. Every action that used to sit
+# flat on the front is still here — the menu got shorter, not smaller.
+#
+# `audit` and `context` were not in the grouping brief and are not lost: audit is
+# a primary HAL job and keeps its `a` / `audit` shortcut on the front menu, which
+# costs no visible row, and both are listed under Diagnostics so they can still
+# be found by reading rather than by remembering.
+
+# Renders a HAL submenu panel from a title and its rows.
+_hal_submenu_panel() {
+  local title="$1"; shift
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+
+  if command -v print_header >/dev/null 2>&1; then
+    print_header
+  fi
+  surface_panel_header "$title" "HAL" "$width" "$panel_color"
+  # `tr` rather than `${title^^}`: that expansion is bash 4, and this menu is
+  # sourced into whatever shell mqlaunch runs under — on macOS that can be
+  # /bin/bash 3.2 or zsh, neither of which has it.
+  local heading
+  heading="$(printf '%s' "$title" | tr '[:lower:]' '[:upper:]')"
+  surface_row "$heading" "$width" "$panel_color"
+  local row
+  for row in "$@"; do
+    surface_split_row "$row" "" "$width" "$panel_color"
+  done
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Reads a submenu choice into REPLY, falling back when read_menu_choice is absent.
+_hal_submenu_read() {
+  if command -v read_menu_choice >/dev/null 2>&1; then
+    read_menu_choice "" "$1" || return 1
+    return 0
+  fi
+  printf '\n%s> ' "$1"
+  read -r REPLY || return 1
+  return 0
+}
+
+# Runs the memory submenu.
+hal_menu_memory_loop() {
+  local choice
+  while true; do
+    _hal_submenu_panel "Memory" "1. Session memory" "2. Last memory item" \
+      "3. Remember note" "4. Memory path"
+    _hal_submenu_read "memory" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) "$MQ_HAL_BIN" session;     _hal_pause_enter ;;
+      2) "$MQ_HAL_BIN" last;        _hal_pause_enter ;;
+      3) hal_menu_remember ;;
+      4) "$MQ_HAL_BIN" memory-path; _hal_pause_enter ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown memory choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
+# Runs the diagnostics submenu.
+hal_menu_diagnostics_loop() {
+  local choice
+  while true; do
+    _hal_submenu_panel "Diagnostics" "1. Timeline" "2. Timeline + details" \
+      "3. Context status" "4. Audit"
+    _hal_submenu_read "diagnostics" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) "$MQ_HAL_BIN" timeline;           _hal_pause_enter ;;
+      2) "$MQ_HAL_BIN" timeline --details; _hal_pause_enter ;;
+      3) "$MQ_HAL_BIN" context;            _hal_pause_enter ;;
+      4) "$MQ_HAL_BIN" audit;              _hal_pause_enter ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown diagnostics choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
+# Runs the prompt submenu.
+hal_menu_prompt_loop() {
+  local choice
+  while true; do
+    _hal_submenu_panel "Prompt" "1. Free prompt" "2. Raw intent"
+    _hal_submenu_read "prompt" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) hal_menu_free_prompt ;;
+      2) hal_menu_raw_intent ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown prompt choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
 # Runs the HAL menu loop.
 mq_hal_menu_main() {
-  local choice
+  local choice _hal_shell
 
   if [[ ! -x "$MQ_HAL_BIN" ]]; then
     hal_menu_missing
@@ -169,31 +274,40 @@ mq_hal_menu_main() {
 
     case "$choice" in
       1)  "$MQ_HAL_BIN" brief;              _hal_pause_enter ;;
-      2|a|audit) "$MQ_HAL_BIN" audit;       _hal_pause_enter ;;
+      2)  "$MQ_HAL_BIN" repo-status;        _hal_pause_enter ;;
       3)  "$MQ_HAL_BIN" release-brief;      _hal_pause_enter ;;
-      4)  "$MQ_HAL_BIN" repo-status;        _hal_pause_enter ;;
-      5)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;
-      6)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
-      7)  "$MQ_HAL_BIN" timeline;           _hal_pause_enter ;;
-      8)  "$MQ_HAL_BIN" timeline --details; _hal_pause_enter ;;
-      9)  "$MQ_HAL_BIN" context;           _hal_pause_enter ;;
-      10) "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
-      11) "$MQ_HAL_BIN" session;            _hal_pause_enter ;;
-      12) "$MQ_HAL_BIN" last;               _hal_pause_enter ;;
-      13) hal_menu_remember ;;
-      14) "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
-      15) hal_menu_raw_intent ;;
-      16) hal_menu_free_prompt ;;
-      17) "$MQ_HAL_BIN" memory-path;        _hal_pause_enter ;;
+      4)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;
+      5)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
+      6)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
+      7)  hal_menu_memory_loop ;;
+      8)  hal_menu_diagnostics_loop ;;
+      9)  "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
+      10) hal_menu_prompt_loop ;;
+      a|audit) "$MQ_HAL_BIN" audit;         _hal_pause_enter ;;
       h|help) "$MQ_HAL_BIN" --help;         _hal_pause_enter ;;
       b|B|back) break ;;
       x|X) exit 0 ;;
-      *)
-        if [[ -n "$choice" ]]; then
+      !*)
+        # Shell only when asked for, and only what follows the `!`.
+        #
+        # This arm used to be the `*` fallback: anything the menu did not
+        # recognise went to `/bin/zsh -lc "$choice"`. A typo at the HAL prompt
+        # was a shell command, and `2>/dev/null` meant it failed silently. The
+        # prefix makes running a shell a decision rather than the default
+        # consequence of mistyping.
+        _hal_shell="${choice#!}"
+        _hal_shell="${_hal_shell# }"
+        if [[ -n "$_hal_shell" ]]; then
           printf '\n'
-          /bin/zsh -lc "$choice" 2>/dev/null || true
+          /bin/zsh -lc "$_hal_shell" || true
           _hal_pause_enter
         fi
+        ;;
+      "") ;;
+      *)
+        printf 'Unknown HAL choice: %s\n' "$choice"
+        printf 'Shell needs an explicit prefix:  ! ls -la\n'
+        _hal_pause_enter
         ;;
     esac
   done
