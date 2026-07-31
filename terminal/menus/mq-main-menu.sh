@@ -33,7 +33,6 @@ print_main_menu() {
   print_header
   render_main_menu_panel
   render_command_surface
-  MQ_MAIN_MENU_RENDERED_LINES=65
 }
 
 # Formats action word for the compact terminal surface.
@@ -124,14 +123,13 @@ render_main_menu_panel() {
   surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "COMMANDS" "$width" "$panel_color"
-  surface_split_row "/ask \"your question\"" "/chat" "$width" "$panel_color"
-  surface_split_row "/doctor" "/scan" "$width" "$panel_color"
-  surface_split_row "mcp-start" "mcp-stop" "$width" "$panel_color"
-  surface_split_row "/help" "" "$width" "$panel_color"
+  surface_row "DISCOVER" "$width" "$panel_color"
+  surface_split_row "/  Palette" "?  Help index" "$width" "$panel_color"
+  surface_split_row "<command>  Run mqlaunch" "!<command>  Run shell" "$width" "$panel_color"
+  surface_split_row "more: mqlaunch help" "x. Exit" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "Status: ready" "$width" "$panel_color"
+  surface_row "Ready: choose number, type command, / palette, ? help" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -258,14 +256,46 @@ render_command_surface() {
   surface_bottom "$width" "$SURFACE_COLOR"
 }
 
+# Opens the command palette when available, otherwise falls back to help.
+open_command_palette_or_help() {
+  if command -v run_command_palette >/dev/null 2>&1; then
+    run_command_palette
+  elif command -v open_help_center_menu >/dev/null 2>&1; then
+    open_help_center_menu
+  elif command -v show_command_index >/dev/null 2>&1; then
+    show_command_index
+  else
+    printf 'Command palette not available. Run: mqlaunch help\n' >&2
+    pause_enter
+    return 1
+  fi
+}
+
+# Opens the help center when available, otherwise falls back to command help.
+open_help_or_index() {
+  if command -v open_help_center_menu >/dev/null 2>&1; then
+    open_help_center_menu
+  elif command -v show_command_index >/dev/null 2>&1; then
+    show_command_index
+  elif command -v show_help >/dev/null 2>&1; then
+    show_help
+  else
+    printf 'Help is not available. Run: mqlaunch help\n' >&2
+    pause_enter
+    return 1
+  fi
+}
+
 # Routes the main menu selection to the matching action.
 handle_main_menu_choice() {
   local choice="$1"
-  local normalized
+  local original normalized
 
-  normalized="$(printf '%s' "$choice" | tr '[:upper:]' '[:lower:]')"
-  case "$choice" in
-    # CORE
+  original="$choice"
+  normalized="$(printf '%s' "$choice" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]')"
+
+  case "$normalized" in
+    # CORE — stable numbering. Do not renumber without migration notes.
     1) run_mqworkflows ;;
     2) open_system_menu ;;
     3) open_git_menu ;;
@@ -282,13 +312,16 @@ handle_main_menu_choice() {
     10) recommendations_menu_main ;;
 
     # QUICK ACCESS
-    p|P) open_performance_menu ;;
-    n|N) show_network_info ;;
-    h|H) system_check ;;
-    z|Z) restart_mqlaunch ;;
-    # kept for muscle memory — not shown in menu
-    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
-    a|A)
+    p) open_performance_menu ;;
+    n) show_network_info ;;
+    h) system_check ;;
+    z) restart_mqlaunch ;;
+    /|/.|/\ palette|/.\ palette) open_command_palette_or_help ;;
+    \?|\?.|\?\ help|\?.\ help\ index) open_help_or_index ;;
+
+    # Kept for muscle memory — not shown in the front panel.
+    r) "$BASE_DIR/bin/mqlaunch" repl ;;
+    a)
       "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
       if [[ -f "$HOME/.hal_nav" ]]; then
         local _hal_target
@@ -301,16 +334,16 @@ handle_main_menu_choice() {
         fi
       fi
       ;;
-    g|G) open_agent_menu ;;
+    g) open_agent_menu ;;
 
     # EXIT
-    x|X)
+    x)
       echo "Exiting ${APP_TITLE}..."
       exit 0
       ;;
 
     *)
-      if handle_main_prompt_command "$normalized" "$choice"; then
+      if handle_main_prompt_command "$normalized" "$original"; then
         return 0
       fi
       ;;
@@ -324,25 +357,36 @@ handle_main_prompt_command() {
 
   [[ -z "${normalized// }" ]] && return 0
 
+  if [[ "$original" == "!"* ]]; then
+    local shell_command
+    shell_command="$(printf '%s' "${original#!}" | sed 's/^[[:space:]]*//')"
+
+    if [[ -z "$shell_command" ]]; then
+      echo "ERROR: shell command required after !"
+      pause_enter
+      return 2
+    fi
+
+    run_main_shell_command "$shell_command"
+    return 0
+  fi
+
   case "$normalized" in
     workflows|workflow|wf) run_mqworkflows; return 0 ;;
     system|sys) open_system_menu; return 0 ;;
     git|git-menu|gitmenu) open_git_menu; return 0 ;;
     release|rel) open_release_menu; return 0 ;;
     dev) open_dev_menu; return 0 ;;
-    help|h|\?|commands|index) open_help_center_menu; return 0 ;;
+    palette|find|/|/.|/\ palette|/.\ palette) open_command_palette_or_help; return 0 ;;
+    help|h|\?|\?.|\?\ help|\?.\ help\ index|commands|index) open_help_or_index; return 0 ;;
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
     "hal "*)
-      local _hal_args="${normalized#hal }"
+      local _hal_args="${original#hal }"
       # shellcheck source=/dev/null
       source "$BASE_DIR/terminal/bridges/hal-bridge.sh"
-      # Split into argv without eval (see run_hal in mqlaunch-repl.sh): safe
-      # against globs, command substitution, and ; | & in the request.
-      local -a _hal_argv
-      read -r -a _hal_argv <<< "$_hal_args"
-      mq_hal_main ${_hal_argv[@]+"${_hal_argv[@]}"}
+      mq_hal_main "$_hal_args"
       pause_enter
       return 0
       ;;
@@ -368,7 +412,7 @@ handle_main_prompt_command() {
     agent\ mcp-status|mcp-status) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent mcp status); pause_enter; return 0 ;;
     agent\ mcp-tools|mcp-tools) (cd "$HOME/mq-agent" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$HOME/mq-agent" run mq-agent mcp tools); pause_enter; return 0 ;;
     mcp-start) _mcp_start; pause_enter; return 0 ;;
-    mcp-stop)  _mcp_stop;  pause_enter; return 0 ;;
+    mcp-stop) _mcp_stop; pause_enter; return 0 ;;
     docfunc|document-functions|document\ functions|docs|docs-preview) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docfunc; return 0 ;;
     docwrite|document-functions-write|update-comments|update\ comments) "$BASE_DIR/terminal/menus/mq-tools-menu.sh" docwrite; return 0 ;;
     workspace|snapshots|workspace\ snapshots) run_mqworkflows workspace; return 0 ;;
@@ -434,10 +478,18 @@ handle_main_prompt_command() {
     fi
   fi
 
-  run_main_shell_command "$original"
+  if command -v print_unknown_command_error >/dev/null 2>&1; then
+    print_unknown_command_error "$original"
+  else
+    printf 'ERROR: Unknown command: %s\n' "$original" >&2
+    printf 'Run: mqlaunch help\n' >&2
+  fi
+
+  pause_enter
+  return 127
 }
 
-# Runs main shell command.
+# Runs main shell command. Shell execution is explicit: prefix input with !.
 run_main_shell_command() {
   local command_line="$1"
   local shell_bin="${SHELL:-/bin/zsh}"
@@ -452,159 +504,44 @@ run_main_shell_command() {
 # Reads main choice from user input or stdin.
 read_main_choice() {
   local label="${1:-mqlaunch}"
-  local prompt_line prompt_hint prompt_color prompt_width term_lines prompt_row input_row pin_prompt summary
+  local prompt_line prompt_hint prompt_color prompt_width prompt_text summary
   prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
-  prompt_hint=">> option, mqlaunch command, shell command, or x to exit"
+  prompt_hint=">> option, command, / palette, ? help, !shell, x exit"
+  prompt_text="${label} > "
+
   if [[ -t 1 ]]; then
     prompt_color=$'\033[0;37m'
   else
     prompt_color=""
   fi
 
-  # Pin prompt area to the bottom of the visible terminal window.
-  # Layout (4 rows): separator / input / separator / hint
-  term_lines="$(tput lines 2>/dev/null || echo 24)"
-  prompt_row=$(( term_lines - 3 ))   # row of first separator (1-indexed)
-  input_row=$(( prompt_row + 1 ))    # row of "mqlaunch > " input
-  (( prompt_row < 2 )) && prompt_row=2
-  (( input_row < 3 )) && input_row=3
-  pin_prompt=0
-  if (( term_lines > ${MQ_MAIN_MENU_RENDERED_LINES:-64} + 4 )); then
-    pin_prompt=1
-  fi
-
-  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 && "$pin_prompt" -eq 1 ]]; then
-    local prompt input cursor key old_stty
-    prompt="${label} > "
-    input=""
-    cursor=0
-
-    # Clear from prompt_row to end of screen, then draw fixed prompt block
-    printf "\033[%d;1H\033[J" "$prompt_row"
+  if [[ -t 0 && -t 1 ]]; then
     printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%s" "$prompt"
-    printf "\n%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%b%s%b" "$C_OK" "$prompt_hint" "$C_RESET"
-    # Move cursor to the input line
-    printf "\033[%d;1H" "$input_row"
-
-    old_stty="$(stty -g)"
-    stty -echo -icanon min 1 time 0 2>/dev/null || true
-
-    while true; do
-      printf "\033[%d;1H" "$input_row"
-      printf "\r\033[2K%s%s" "$prompt" "$input"
-      printf "\033[%d;%dH" "$input_row" $(( ${#prompt} + cursor + 1 ))
-
-      IFS= read -r -k 1 key || {
-        stty "$old_stty" 2>/dev/null || true
-        return 1
-      }
-
-      case "$key" in
-        $'\n'|$'\r')
-          break
-          ;;
-        $'\177'|$'\b')
-          if (( cursor > 0 )); then
-            input="${input[1,cursor-1]}${input[cursor+1,-1]}"
-            (( cursor-- ))
-          fi
-          ;;
-        $'\033')
-          IFS= read -r -k 1 key || key=""
-          if [[ "$key" == "[" ]]; then
-            IFS= read -r -k 1 key || key=""
-            case "$key" in
-              C) (( cursor < ${#input} )) && (( cursor++ )) ;;
-              D) (( cursor > 0 )) && (( cursor-- )) ;;
-            esac
-          fi
-          ;;
-        *)
-          input="${input[1,cursor]}${key}${input[cursor+1,-1]}"
-          (( cursor++ ))
-          ;;
-      esac
-    done
-
-    stty "$old_stty" 2>/dev/null || true
-    printf "\033[%d;1H\r\033[2K" "$input_row"
-    summary="$(surface_choice_summary "$label" "${input:-menu}")"
-    surface_accept_scramble "$C_WARN" "${input:-menu}" "$summary"
-    printf "\n"
-    choice="$input"
-    return 0
-  fi
-
-  # Fallback for normal Terminal heights: keep the prompt in flow so it never
-  # clears the lower part of the rendered menu.
-  if [[ -n "${ZSH_VERSION:-}" && -t 0 && -t 1 ]]; then
-    local prompt input cursor key old_stty
-    prompt="${label} > "
-    input=""
-    cursor=0
-
-    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%s\n" "$prompt"
+    printf "%b%s%b\n" "$C_TITLE" "$prompt_text" "$C_RESET"
     printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
     printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-    printf "\033[3A"
-
-    old_stty="$(stty -g)"
-    stty -echo -icanon min 1 time 0 2>/dev/null || true
-
-    while true; do
-      printf "\r\033[2K%s%s" "$prompt" "$input"
-      printf "\r\033[%dC" $(( ${#prompt} + cursor ))
-
-      IFS= read -r -k 1 key || {
-        stty "$old_stty" 2>/dev/null || true
-        return 1
-      }
-
-      case "$key" in
-        $'\n'|$'\r')
-          break
-          ;;
-        $'\177'|$'\b')
-          if (( cursor > 0 )); then
-            input="${input[1,cursor-1]}${input[cursor+1,-1]}"
-            (( cursor-- ))
-          fi
-          ;;
-        $'\033')
-          IFS= read -r -k 1 key || key=""
-          if [[ "$key" == "[" ]]; then
-            IFS= read -r -k 1 key || key=""
-            case "$key" in
-              C) (( cursor < ${#input} )) && (( cursor++ )) ;;
-              D) (( cursor > 0 )) && (( cursor-- )) ;;
-            esac
-          fi
-          ;;
-        *)
-          input="${input[1,cursor]}${key}${input[cursor+1,-1]}"
-          (( cursor++ ))
-          ;;
-      esac
-    done
-
-    stty "$old_stty" 2>/dev/null || true
-    printf "\r\033[2K"
-    summary="$(surface_choice_summary "$label" "${input:-menu}")"
-    surface_accept_scramble "$C_WARN" "${input:-menu}" "$summary"
-    printf "\033[3B\r"
-    choice="$input"
-    return 0
+    printf "\033[3A\r\033[2K%b%s%b" "$C_TITLE" "$prompt_text" "$C_RESET"
+    if ! IFS= read -r choice; then
+      printf "\033[2B\r"
+      return 1
+    fi
+    printf "\033[2B\r"
+  else
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b" "$C_TITLE" "$prompt_text" "$C_RESET"
+    if ! IFS= read -r choice; then
+      return 1
+    fi
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
   fi
 
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-  read_prompt "${C_TITLE}${label} > ${C_RESET}" "${label} > " || return 1
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  choice="$REPLY"
+  summary="$(surface_choice_summary "$label" "${choice:-menu}")"
+  if [[ -n "$choice" ]]; then
+    surface_accept_scramble "$C_WARN" "$choice" "$summary"
+    printf "\n"
+  fi
 }
 
 # Coordinates main loop behavior.

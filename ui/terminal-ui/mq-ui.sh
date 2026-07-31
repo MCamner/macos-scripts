@@ -462,10 +462,14 @@ mq_dashboard_cache_invalidate() {
 # working directory because the dashboard's git status depends on it.
 print_dashboard_header() {
   local dashboard="$1"
-  local ttl now key
+  local ttl now key force_color
   ttl="${MQ_DASHBOARD_CACHE_TTL:-5}"
   now="$(date +%s)"
   key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}"
+  force_color=0
+  if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+    force_color=1
+  fi
 
   if [[ "$ttl" != "0" \
         && -n "$MQ_DASHBOARD_CACHE_OUTPUT" \
@@ -475,7 +479,7 @@ print_dashboard_header() {
     return
   fi
 
-  MQ_DASHBOARD_CACHE_OUTPUT="$(bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
+  MQ_DASHBOARD_CACHE_OUTPUT="$(MQ_DASHBOARD_FORCE_COLOR="$force_color" bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
   MQ_DASHBOARD_CACHE_KEY="$key"
   MQ_DASHBOARD_CACHE_TS="$now"
   printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"

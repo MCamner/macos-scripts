@@ -90,12 +90,61 @@ PY
   grep -q 'Unknown command: doctro' "$output_file"
 }
 
+run_discover_input_contract() {
+  local output expected exit_output
+
+  output="$(
+    ROOT_UNDER_TEST="$ROOT" bash <<'BASH'
+set -euo pipefail
+BASE_DIR="$ROOT_UNDER_TEST"
+APP_TITLE="MQLAUNCH"
+source "$ROOT_UNDER_TEST/terminal/menus/mq-main-menu.sh"
+
+open_command_palette_or_help() { printf 'palette\n'; }
+open_help_or_index() { printf 'help\n'; }
+run_main_shell_command() { printf 'shell:%s\n' "$1"; }
+run_mqworkflows() { printf 'command:workflows\n'; }
+dispatch_cli_command() {
+  printf 'unknown:%s\n' "$*"
+  return 0
+}
+pause_enter() { :; }
+
+for original in "/" "/." "/ Palette" "/. Palette" "?" "?." "? Help" "?. Help index" "!printf contract-shell" "workflows"; do
+  handle_main_menu_choice "$original"
+done
+BASH
+  )"
+
+  expected="$(printf 'palette\npalette\npalette\npalette\nhelp\nhelp\nhelp\nhelp\nshell:printf contract-shell\ncommand:workflows')"
+  [[ "$output" == "$expected" ]] || {
+    echo "DISCOVER input escaped its advertised route:" >&2
+    printf '%s\n' "$output" >&2
+    return 1
+  }
+
+  exit_output="$(
+    ROOT_UNDER_TEST="$ROOT" bash <<'BASH'
+set -euo pipefail
+BASE_DIR="$ROOT_UNDER_TEST"
+APP_TITLE="MQLAUNCH"
+source "$ROOT_UNDER_TEST/terminal/menus/mq-main-menu.sh"
+handle_main_menu_choice "x"
+BASH
+  )"
+  [[ "$exit_output" == "Exiting MQLAUNCH..." ]] || {
+    echo "DISCOVER x shortcut did not exit cleanly" >&2
+    return 1
+  }
+}
+
 echo "SMOKE: unknown command contract"
 run_unknown redirected
 printf '' | run_unknown headless
 run_unknown nearest-command doctro
 grep -q 'Did you mean: mqlaunch doctor' "$TMPDIR_TEST/nearest-command.stderr"
 run_tty_unknown
+run_discover_input_contract
 
 [[ ! -e "$SIDE_EFFECT_LOG" ]] || {
   echo "unknown command triggered a clipboard or open side effect" >&2
