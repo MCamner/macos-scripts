@@ -33,7 +33,6 @@ print_main_menu() {
   print_header
   render_main_menu_panel
   render_command_surface
-  MQ_MAIN_MENU_RENDERED_LINES=42
 }
 
 # Formats action word for the compact terminal surface.
