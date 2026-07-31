@@ -26,22 +26,56 @@ grep -q 'MQ_COLOR_PANEL' "$UI" || {
 
 # Rendered through a pty, because the colour block is guarded by `[[ -t 1 ]]`
 # and every one of these checks would otherwise compare empty strings and pass.
+# Runs a snippet on a pty, because the colour block is guarded by `[[ -t 1 ]]`
+# and off a terminal every check below would compare empty strings and pass.
+#
+# python3 rather than `script`: the two `script` implementations disagree on how
+# a command is passed — macOS takes `script -q /dev/null cmd args`, util-linux
+# needs `-c` and reads the rest as filenames. The BSD form died under `set -e`
+# on the runner before printing anything, so the step failed for the wrong
+# reason. pty.spawn behaves the same on both.
+#
+# MACOS_SCRIPTS_HOME is set and the source is not silenced: without the home the
+# library bails and surface_panel_color prints nothing, which an earlier version
+# of this helper did while the checks quietly compared empty strings.
 panel_colour() {
   local env_line="$1"
-  # MACOS_SCRIPTS_HOME is set, and the source is not silenced: without the home
-  # the library bails, surface_panel_color prints nothing, and every case below
-  # would compare against an empty string. An empty result fails these checks
-  # rather than passing them, which is what caught it.
-  script -q /dev/null /bin/bash -c "
-    export MACOS_SCRIPTS_HOME='$ROOT'
-    $env_line
-    . '$UI'
-    surface_panel_color | od -An -c | tr -d ' \n'
-  " 2>/dev/null | tr -d '\r'
+  python3 - "$ROOT" "$UI" "$env_line" <<'PY' 2>/dev/null | tr -d '\r'
+import os, pty, subprocess, sys
+root, ui, env_line = sys.argv[1], sys.argv[2], sys.argv[3]
+code = (
+    f"export MACOS_SCRIPTS_HOME='{root}'\n"
+    f"{env_line}\n"
+    f". '{ui}'\n"
+    "surface_panel_color | od -An -c | tr -d ' \\n'\n"
+)
+main_fd, child_fd = pty.openpty()
+proc = subprocess.Popen(
+    ["/bin/bash", "-c", code],
+    stdin=subprocess.DEVNULL, stdout=child_fd, stderr=subprocess.DEVNULL,
+    close_fds=True,
+)
+os.close(child_fd)
+chunks = []
+while True:
+    try:
+        data = os.read(main_fd, 1024)
+    except OSError:
+        break
+    if not data:
+        break
+    chunks.append(data)
+proc.wait()
+os.close(main_fd)
+sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
+PY
 }
 
 echo "[3/5] the default is white, not grey"
-default_colour="$(panel_colour 'unset MQ_COLOR_PANEL; unset NO_COLOR')"
+# `|| true` so a broken helper reports below instead of killing the script under
+# `set -e`. The first CI run of this test died here without printing anything,
+# which said "exit 1" and nothing about why.
+default_colour="$(panel_colour 'unset MQ_COLOR_PANEL; unset NO_COLOR')" || true
 case "$default_colour" in
   *'033[1;37m'*) ;;
   *)
@@ -52,7 +86,7 @@ esac
 echo "  ok: default renders 1;37"
 
 echo "[4/5] a theme can override it"
-themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")"
+themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
 case "$themed_colour" in
   *'033[0;35m'*) ;;
   *)
