@@ -53,9 +53,27 @@ test "$status" -eq 7
 cmp -s "$TMPDIR_TEST/expected" "$MARKDOWNLINT_ARGS_FILE"
 
 echo "[6/9] Tools menu exposes lint and guarded fix actions"
-grep -q '23. Markdown lint' "$MENU"
-grep -q '24. Markdown fix' "$MENU"
-grep -q 'run_markdownlint_fix' "$MENU"
+# The numbers are read out of the panel rather than written down here. Pinning
+# "23." made this fail when the Tools menu dropped three duplicated rows and
+# renumbered — a true statement about the old layout, and nothing about whether
+# the rows route correctly, which is what this test is for.
+python3 - "$MENU" <<'ROUTES'
+import pathlib
+import re
+import sys
+
+text = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+for label, handler in (("Markdown lint", "run_markdownlint"),
+                       ("Markdown fix", "run_markdownlint_fix")):
+    shown = re.search(rf'"(\d+)\. {label}"', text)
+    if shown is None:
+        sys.exit(f"the Tools menu no longer offers a {label!r} row")
+    option = shown.group(1)
+    if not re.search(rf"^\s*{option}\) {handler}\b", text, re.M):
+        sys.exit(f"option {option} is shown as {label!r} but does not "
+                 f"route to {handler}")
+    print(f"  ok: {option}. {label} -> {handler}")
+ROUTES
 grep -q 'Fix Markdown files now? \[y/N\]' "$MENU"
 
 echo "[7/9] fix menu action defaults to cancellation"

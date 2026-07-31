@@ -814,6 +814,133 @@ document_functions_menu_loop() {
   done
 }
 
+# The Tools menu keeps ten operator choices. Skills, Repos and Markdown were
+# eight rows spread across two sections; they are three rows and three submenus
+# now, which is the grouping ROADMAP P2 asks for rather than a shorter list of
+# the same flat things.
+#
+# All three follow the prompt-separator contract in
+# .claude/templates/submenu-prompt-separator.sh, the same as
+# print_document_functions_menu above.
+
+# Prints the skills submenu.
+print_tools_skills_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+
+  clear_screen
+  surface_panel_header "Skills" "Tools" "$width" "$panel_color"
+  surface_row "SKILLS" "$width" "$panel_color"
+  surface_split_row "1. Audit" "2. Validate" "$width" "$panel_color"
+  surface_split_row "3. Ecosystem validate" "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the skills submenu loop.
+tools_skills_menu_loop() {
+  local choice
+
+  while true; do
+    print_tools_skills_menu
+    read_menu_choice "" "skills" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      1) run_mq_skills_audit ;;
+      2) run_mq_skills_validate ;;
+      3) run_mq_skills_ecosystem_validate ;;
+      b|B|x|X|exit) ui_ok "Back."; break ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the repos submenu.
+print_tools_repos_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+
+  clear_screen
+  surface_panel_header "Repos" "Tools" "$width" "$panel_color"
+  surface_row "REPOS" "$width" "$panel_color"
+  surface_split_row "1. Summary" "2. Diff summary" "$width" "$panel_color"
+  surface_split_row "3. Status" "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the repos submenu loop.
+tools_repos_menu_loop() {
+  local choice
+
+  while true; do
+    print_tools_repos_menu
+    read_menu_choice "" "repos" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      1) run_mq_repos_summary ;;
+      2) run_mq_repos_diff_summary ;;
+      3) run_mq_repos_status ;;
+      b|B|x|X|exit) ui_ok "Back."; break ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the markdown submenu.
+print_tools_markdown_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+
+  clear_screen
+  surface_panel_header "Markdown" "Tools" "$width" "$panel_color"
+  surface_row "MARKDOWN" "$width" "$panel_color"
+  surface_split_row "1. Markdown lint" "2. Markdown fix" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the markdown submenu loop.
+tools_markdown_menu_loop() {
+  local choice
+
+  while true; do
+    print_tools_markdown_menu
+    read_menu_choice "" "markdown" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      1) run_markdownlint ;;
+      2) run_markdownlint_fix ;;
+      b|B|x|X|exit) ui_ok "Back."; break ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
 # Prints menu.
 print_tools_menu() {
   local width panel_color
@@ -822,29 +949,17 @@ print_tools_menu() {
 
   print_header
   surface_panel_header "Tools Menu" "Tools" "$width" "$panel_color"
-  surface_row "PLACES" "$width" "$panel_color"
-  surface_split_row "1. Run system check" "2. Open repo folder" "$width" "$panel_color"
-  surface_split_row "3. Open launchers folder" "4. Open themes folder" "$width" "$panel_color"
-  surface_split_row "5. Open menus folder" "6. Open dashboard" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
   surface_row "REFERENCE" "$width" "$panel_color"
-  surface_split_row "7. Open terminal guide" "8. Show key paths" "$width" "$panel_color"
-  surface_split_row "9. Show git status" "10. Boot Maker" "$width" "$panel_color"
+  surface_split_row "1. Open dashboard" "2. Open terminal guide" "$width" "$panel_color"
+  surface_split_row "3. Show key paths" "4. Show git status" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "WORKBENCH" "$width" "$panel_color"
-  surface_split_row "11. Focus Timer" "12. Document functions" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
-  surface_row "VERIFY" "$width" "$panel_color"
-  surface_split_row "13. Doctor check" "14. Doctor --json" "$width" "$panel_color"
-  surface_split_row "15. Selftest" "16. Smoke test" "$width" "$panel_color"
+  surface_split_row "5. Boot Maker" "6. Document functions" "$width" "$panel_color"
+  surface_split_row "7. Smoke test" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "ECOSYSTEM" "$width" "$panel_color"
-  surface_split_row "17. Skills audit" "18. Skills validate" "$width" "$panel_color"
-  surface_split_row "19. Repos summary" "20. Repos diff" "$width" "$panel_color"
-  surface_split_row "21. Skills ecosystem" "22. Repos status" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
-  surface_row "MARKDOWN" "$width" "$panel_color"
-  surface_split_row "23. Markdown lint" "24. Markdown fix" "$width" "$panel_color"
+  surface_split_row "8. Skills" "9. Repos" "$width" "$panel_color"
+  surface_split_row "10. Markdown" "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -863,49 +978,23 @@ tools_menu_loop() {
     echo
 
     case "$choice" in
-      1) run_system_check ;;
-      2) open_repo ;;
-      3) open_launchers ;;
-      4) open_themes ;;
-      5) open_menus ;;
-      6) open_dashboard ;;
-      7) open_guide ;;
-      8) show_paths ;;
-      9) show_git_status ;;
-    10) run_tool_script "BOOT MAKER" "$BASE_DIR/tools/cli/boot-maker.sh" ;;
-    11) run_tool_script "FOCUS TIMER" "$BASE_DIR/tools/scripts/focus.sh" ;;
-    12) document_functions_menu_loop ;;
-    # Both doctor rows go through the dispatcher rather than the script. run_tool_script
-    # is still right for tools with no command of their own; doctor has one.
-    13) "$BASE_DIR/bin/mqlaunch" doctor ;;
-    14)
-      # The existence guard and the missing-script panel that used to wrap this
-      # are gone with it: checking whether doctor.sh is there was this menu
-      # duplicating a decision the dispatcher already owns. `--json` keeps its
-      # pause here, because the dispatcher deliberately skips it for --json so a
-      # piped caller is never left waiting on input.
-      "$BASE_DIR/bin/mqlaunch" doctor --json \
-        | (command -v jq >/dev/null 2>&1 && jq . || cat)
-      pause_enter
-      ;;
-    15)
-      if command -v run_self_check >/dev/null 2>&1; then
-        run_self_check
-      else
-        bash "$BASE_DIR/tools/scripts/test-all.sh" 2>/dev/null \
-          || ui_warn "test-all.sh not found or failed"
-        pause_enter
-      fi
-      ;;
-    16) run_tool_script "SMOKE TEST" "$BASE_DIR/tools/scripts/install-smoke.sh" ;;
-    17) run_mq_skills_audit ;;
-    18) run_mq_skills_validate ;;
-    19) run_mq_repos_summary ;;
-    20) run_mq_repos_diff_summary ;;
-    21) run_mq_skills_ecosystem_validate ;;
-    22) run_mq_repos_status ;;
-    23) run_markdownlint ;;
-    24) run_markdownlint_fix ;;
+      1) open_dashboard ;;
+      2) open_guide ;;
+      3) show_paths ;;
+      4) show_git_status ;;
+      5) run_tool_script "BOOT MAKER" "$BASE_DIR/tools/cli/boot-maker.sh" ;;
+      6) document_functions_menu_loop ;;
+    # The two doctor rows and the self-check row are gone. Every one of them was
+    # also on the system menu, which is where checks belong, and a command
+    # reachable from two menus is the duplication ROADMAP P2 asks to remove —
+    # not a convenience. All three still run from the CLI and from SYSTEM.
+    #
+    # Gone with them: the system check and the four folder openers, which are
+    # `mqlaunch check` and `mqlaunch repo` with extra steps, and the Focus Timer.
+      7) run_tool_script "SMOKE TEST" "$BASE_DIR/tools/scripts/install-smoke.sh" ;;
+      8) tools_skills_menu_loop ;;
+      9) tools_repos_menu_loop ;;
+    10) tools_markdown_menu_loop ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac

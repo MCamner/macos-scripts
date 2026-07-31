@@ -746,37 +746,61 @@ below are from 2026-07-30 against `2.0.1`.
 
 * [ ] Keep menus focused.
 
-  Measured with `tools/scripts/inventory-command-surfaces.py`: 243 options
-  across 19 menus.
+  Targets, measured with `tools/scripts/inventory-command-surfaces.py`:
 
-  * [ ] Remove or hide low-value duplicated paths. Three commands are reachable
-    from more than one menu:
+  ```text
+                                  target    now    before #132
+  operator choices per menu       <= 10     29     30
+  undocumented duplications        0         0      1
+  dispatcher bypasses              0         0      3
+  total options across 19 menus   <= 190    242    243
+  ```
 
-    ```text
-    doctor  mq-help-menu.sh, mq-system-menu.sh, mq-tools-menu.sh
-    ghost   mq-help-menu.sh, mq-system-menu.sh
-    review  mq-agent-menu.sh, mq-help-menu.sh
-    ```
+  * [x] 0 dispatcher bypasses — `excalidraw`, `reap` and the two `self-check`
+    rows go through the dispatcher. The pin was a ratchet at three; it is a hard
+    zero now. A ratchet at zero cannot prove itself by "one lower must fail", so
+    `tests/command-discovery-inventory-smoke.sh` plants a bypass in a tracked
+    menu and requires it to be reported (#132).
+  * [x] 0 undocumented duplications — the Tools menu's `doctor`, `doctor --json`
+    and `self-check` rows are gone. All three are on the System menu, which is
+    where checks belong, and all three still run from the CLI. No allow-list was
+    added: nothing needs a documented exception yet, and building the mechanism
+    first would have made the target reachable by writing prose (#132).
 
-    Duplication is not automatically waste — a command can belong in two places
-    — so this needs a decision per row, not a sweep.
-  * [ ] Prefer fewer, better choices. No target has been agreed, so this box has
-    nothing to measure against yet. Deciding what "fewer" means is the task.
-  * [ ] Close the last three dispatcher bypasses: `excalidraw.sh`
-    (`mq-apps-menu.sh:61`), `overseer.sh` and the `test-all.sh` row behind
-    `run_self_check` (`mq-system-menu.sh:56`, `:60`). Pinned at three by
-    `tests/command-discovery-inventory-smoke.sh`; the `test-all.sh` row needs a
-    presentation change rather than a routing one, since `run_self_check` wraps
-    it.
+    The count was 1, not the 3 recorded here before. `ghost`, `review`, `flow`
+    and `srm` looked duplicated because the generated help list contains rows
+    like `mqlaunch doctor`, which the inventory read as menu invocations.
+    Printing a command's name is not a way in; the scanner skips generated list
+    blocks now.
+  * [ ] <= 10 operator choices per menu — eight loops are over, worst first:
+    `hal` 17, `system` 16, `apps` 15, `dev` 14, `git` 12, `release` 12,
+    `performance` 11, `workflows` 11. Tools went 30 to 10 and Agent 21 to 10 by
+    grouping, not by cutting: Skills, Repos and Markdown became Tools submenus,
+    and Repo analysis, Review to brain, Co-change, MCP and Environment became
+    Agent submenus (#133).
+
+    The count is per menu loop, not per file. `mq-tools-menu.sh` holds five
+    loops, so counting per file said 23 choices for a menu showing ten — and
+    splitting a long menu into submenus, which is the fix, could never improve
+    the number.
+
+  * [ ] <= 190 total options — 244 today, up from 243. **This target and the one
+    above pull in opposite directions and cannot both be met by grouping.** Every
+    submenu adds a row in the parent and a Back arm of its own, so restructuring
+    Tools and Agent removed eleven flat rows and added sixteen. Reaching 190 means
+    deleting capability, not regrouping it.
+
+    Worth deciding which target is the real one before the next slice. The
+    per-loop limit is the one an operator feels.
+
+  * [ ] `workflows` is over the limit because Demo flow moved there. It had ten
+    choices and has eleven. The move was right — it is the other full-stack run,
+    beside project boot and check — but it needs a submenu or a different home
+    for something else on that menu.
 
 ### Exit gate
 
 * [x] A new user can run `mqlaunch doctor`, understand the result, and find the right next command without reading the whole repository.
-
-  Half of this is now true. Doctor no longer contradicts its own checks (#127),
-  every warning says what to do about it, and the run ends in one instruction
-  (#128) — so a new operator can run it, understand the result, and know the
-  next setup step.
 
   Doctor no longer contradicts its own checks (#127), every warning says what to
   do about it (#128), help advertises the 48 public entrypoints grouped by

@@ -13,26 +13,16 @@ print_agent_menu() {
 
   print_header
   surface_panel_header "AI Agent Orchestrator" "mq-agent" "$width" "$panel_color"
-  surface_row "REPO ANALYSIS  (no API key required)" "$width" "$panel_color"
-  surface_split_row "${C_WARN}1. Score repository${C_RESET}" "${C_WARN}2. Full signal assessment${C_RESET}" "$width" "$panel_color"
-  surface_split_row "3. Repo summary" "4. List tools" "$width" "$panel_color"
+  surface_row "ANALYSE" "$width" "$panel_color"
+  surface_split_row "1. Repo analysis" "2. Audit repository" "$width" "$panel_color"
+  surface_split_row "3. Release check" "4. Diagnose CI" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "AI COMMANDS  (requires OPENAI_API_KEY)" "$width" "$panel_color"
-  surface_split_row "5. Audit repository" "${C_WARN}6. Signal + save to brain${C_RESET}" "$width" "$panel_color"
-  surface_split_row "7. Release check" "8. Diagnose CI" "$width" "$panel_color"
+  surface_row "STACK  (writes to mqobsidian)" "$width" "$panel_color"
+  surface_split_row "5. Review to brain" "${C_WARN}6. Stack health sweep${C_RESET}" "$width" "$panel_color"
+  surface_split_row "${C_WARN}7. Stack loop plan${C_RESET}" "8. Co-change and memory" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "SECOND BRAIN  (writes to mqobsidian)" "$width" "$panel_color"
-  surface_split_row "15. Review repo → brain" "16. Promote learn pattern" "$width" "$panel_color"
-  surface_split_row "${C_WARN}17. Demo flow (full stack)${C_RESET}" "${C_WARN}18. Stack health sweep${C_RESET}" "$width" "$panel_color"
-  surface_split_row "${C_WARN}19. Stack loop plan${C_RESET}" "20. Co-change intake → memory" "$width" "$panel_color"
-  surface_split_row "21. Co-change review → memory" "" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
-  surface_row "MCP LOCAL TOOLS  (:8765)" "$width" "$panel_color"
-  surface_split_row "11. MCP status" "12. MCP tools list" "$width" "$panel_color"
-  surface_split_row "13. Start MCP server" "14. Stop MCP server" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
-  surface_row "ENVIRONMENT" "$width" "$panel_color"
-  surface_split_row "9. Doctor" "10. TUI dashboard" "$width" "$panel_color"
+  surface_row "LOCAL" "$width" "$panel_color"
+  surface_split_row "9. MCP server (:8765)" "10. Environment" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
@@ -482,31 +472,214 @@ run_agent_command() {
   esac
 }
 
+
+# The five submenus the ten rows above open. Each keeps the actions that used to
+# sit flat in the parent, so nothing became unreachable — only less shouted.
+
+# Prints the repo analysis submenu.
+print_agent_repo_analysis_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+  print_header
+  surface_panel_header "Repo Analysis" "mq-agent" "$width" "$panel_color"
+  surface_row "NO API KEY REQUIRED" "$width" "$panel_color"
+  surface_split_row "1. Score repository" "2. Full signal assessment" "$width" "$panel_color"
+  surface_split_row "3. Repo summary" "4. List tools" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the repo analysis submenu loop.
+agent_repo_analysis_menu_loop() {
+  local choice
+  while true; do
+    print_agent_repo_analysis_menu
+    read_menu_choice "" "analysis" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) _run_agent score .; pause_enter ;;
+      2) _run_agent signal .; pause_enter ;;
+      3) _run_agent repo-summary .; pause_enter ;;
+      4) _run_agent tools; pause_enter ;;
+      b|B|x|X|exit) return ;;
+      *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the review-to-brain submenu.
+print_agent_review_brain_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+  print_header
+  surface_panel_header "Review to Brain" "mq-agent" "$width" "$panel_color"
+  surface_row "WRITES TO mqobsidian" "$width" "$panel_color"
+  surface_split_row "1. Review repo → brain" "2. Signal + save to brain" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the review-to-brain submenu loop.
+agent_review_brain_menu_loop() {
+  local choice
+  while true; do
+    print_agent_review_brain_menu
+    read_menu_choice "" "review" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) _run_agent review repo . --brain; pause_enter ;;
+      2) _run_agent signal --brain .; pause_enter ;;
+      b|B|x|X|exit) return ;;
+      *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the co-change and memory submenu.
+print_agent_cochange_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+  print_header
+  surface_panel_header "Co-change and Memory" "mq-agent" "$width" "$panel_color"
+  surface_row "MEMORY" "$width" "$panel_color"
+  surface_split_row "1. Co-change intake" "2. Co-change review" "$width" "$panel_color"
+  surface_split_row "3. Promote learn pattern" "" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the co-change and memory submenu loop.
+agent_cochange_menu_loop() {
+  local choice
+  while true; do
+    print_agent_cochange_menu
+    read_menu_choice "" "cochange" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) _agent_menu_cochange; pause_enter ;;
+      2) _agent_menu_cochange_review ;;
+      3) _brain_pick_and_promote ;;
+      b|B|x|X|exit) return ;;
+      *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the MCP submenu.
+print_agent_mcp_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+  print_header
+  surface_panel_header "MCP Server" "mq-agent" "$width" "$panel_color"
+  surface_row "LOCAL TOOLS  (:8765)" "$width" "$panel_color"
+  surface_split_row "1. MCP status" "2. MCP tools list" "$width" "$panel_color"
+  surface_split_row "3. Start MCP server" "4. Stop MCP server" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the MCP submenu loop.
+agent_mcp_menu_loop() {
+  local choice
+  while true; do
+    print_agent_mcp_menu
+    read_menu_choice "" "mcp" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) _run_agent mcp status; pause_enter ;;
+      2) _run_agent mcp tools; pause_enter ;;
+      3) _mcp_start; pause_enter ;;
+      4) _mcp_stop; pause_enter ;;
+      b|B|x|X|exit) return ;;
+      *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
+    esac
+  done
+}
+
+# Prints the environment submenu.
+print_agent_environment_menu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+  print_header
+  surface_panel_header "Environment" "mq-agent" "$width" "$panel_color"
+  surface_row "ENVIRONMENT" "$width" "$panel_color"
+  surface_split_row "1. Doctor" "2. TUI dashboard" "$width" "$panel_color"
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Status: ready" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the environment submenu loop.
+agent_environment_menu_loop() {
+  local choice
+  while true; do
+    print_agent_environment_menu
+    read_menu_choice "" "environment" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) _run_agent doctor; pause_enter ;;
+      2) _run_agent tui ;;
+      b|B|x|X|exit) return ;;
+      *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
+    esac
+  done
+}
+
 # Handles agent menu choice.
 handle_agent_menu_choice() {
   local choice="$1"
+  # Ten choices, grouped by what an operator is trying to do rather than by
+  # which backend answers. The twenty-one flat rows this replaces mixed a
+  # one-shot score with starting a server; the detail lives in submenus now.
+  #
+  # Demo flow moved to the Workflows menu, where the other full-stack runs are.
+  # Learn promotion moved into Co-change and memory, which is where the rest of
+  # the memory writes already were.
   case "$choice" in
-    1) _run_agent score .;    pause_enter ;;
-    2) _run_agent signal .;   pause_enter ;;
-    3) _run_agent repo-summary .; pause_enter ;;
-    4) _run_agent tools;      pause_enter ;;
-    5) _run_agent audit .;    pause_enter ;;
-    6) _run_agent signal --brain .; pause_enter ;;
-    7) _run_agent release-check; pause_enter ;;
-    8) _run_agent fix-ci;     pause_enter ;;
-    9) _run_agent doctor;     pause_enter ;;
-    10) _run_agent tui ;;
-    11) _run_agent mcp status;  pause_enter ;;
-    12) _run_agent mcp tools;   pause_enter ;;
-    13) _mcp_start;             pause_enter ;;
-    14) _mcp_stop;              pause_enter ;;
-    15) _run_agent review repo . --brain; pause_enter ;;
-    16) _brain_pick_and_promote ;;
-    17) _run_demo_flow; pause_enter ;;
-    18) _run_agent stack sweep --brain; pause_enter ;;
-    19) _run_agent stack loop; pause_enter ;;
-    20) _agent_menu_cochange; pause_enter ;;
-    21) _agent_menu_cochange_review ;;
+    1) agent_repo_analysis_menu_loop ;;
+    2) _run_agent audit .;    pause_enter ;;
+    3) _run_agent release-check; pause_enter ;;
+    4) _run_agent fix-ci;     pause_enter ;;
+    5) agent_review_brain_menu_loop ;;
+    6) _run_agent stack sweep --brain; pause_enter ;;
+    7) _run_agent stack loop; pause_enter ;;
+    8) agent_cochange_menu_loop ;;
+    9) agent_mcp_menu_loop ;;
+    10) agent_environment_menu_loop ;;
     b|B|x|X|exit) return 1 ;;
     *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
   esac
@@ -531,22 +704,6 @@ agent_menu_loop() {
   done
 }
 
-# Runs the full MQ demo flow: signal → review → release-check, all writing to brain.
-# Runs against the current directory. The parameter this used to accept had no
-# caller in its life; the menu entry means "here", and demo-flow.sh takes a
-# target directly for anything else.
-_run_demo_flow() {
-  local demo_script
-  demo_script="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/commands/demo-flow.sh"
-  if [[ -x "$demo_script" ]]; then
-    bash "$demo_script" .
-  else
-    printf "signal → review → release-check\n"
-    _run_agent signal . --brain
-    _run_agent review repo . --brain
-    _run_agent release-check --dry-run
-  fi
-}
 
 # Opens agent menu.
 open_agent_menu() {
