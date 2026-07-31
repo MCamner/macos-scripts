@@ -134,9 +134,75 @@ render_main_menu_panel() {
   printf '\n'
 }
 
+# Formats dual figure row for the compact terminal surface.
+surface_dual_figure_row() {
+  local left_art="$1"
+  local right_art="$2"
+  local right="$3"
+  local width="$4"
+  local surface_color="$5"
+  local left_color="$6"
+  local right_color="$7"
+  local inner left_width right_width art_width art_col right_pad gap
+  inner=$(( width - 4 ))
+  left_width=$(( inner / 2 ))
+  right_width=$(( inner - left_width - 1 ))
+  gap="  "
+  art_width=$(( ${#left_art} + ${#gap} + ${#right_art} ))
+  art_col=$(( (left_width - art_width) / 2 ))
+  (( art_col < 1 )) && art_col=1
+  right_pad=$(( left_width - art_col - art_width ))
+  (( right_pad < 0 )) && right_pad=0
+
+  printf "%b│ %s%b%s%b%s%b%s%b%s %s │%b\n" \
+    "$surface_color" \
+    "$(repeat_char "$art_col" " ")" \
+    "$left_color" \
+    "$left_art" \
+    "$surface_color" \
+    "$gap" \
+    "$right_color" \
+    "$right_art" \
+    "$surface_color" \
+    "$(repeat_char "$right_pad" " ")" \
+    "$(surface_pad "$right" "$right_width")" \
+    "$C_RESET"
+}
+
+# Formats compact dual figure row for the compact terminal surface.
+surface_compact_dual_figure_row() {
+  local left_art="$1"
+  local right_art="$2"
+  local width="$3"
+  local surface_color="$4"
+  local left_color="$5"
+  local right_color="$6"
+  local inner art_width art_col right_pad gap
+  inner=$(( width - 4 ))
+  gap="  "
+  art_width=$(( ${#left_art} + ${#gap} + ${#right_art} ))
+  art_col=$(( (inner - art_width) / 2 ))
+  (( art_col < 1 )) && art_col=1
+  right_pad=$(( inner - art_col - art_width ))
+  (( right_pad < 0 )) && right_pad=0
+
+  printf "%b│ %s%b%s%b%s%b%s%b%s │%b\n" \
+    "$surface_color" \
+    "$(repeat_char "$art_col" " ")" \
+    "$left_color" \
+    "$left_art" \
+    "$surface_color" \
+    "$gap" \
+    "$right_color" \
+    "$right_art" \
+    "$surface_color" \
+    "$(repeat_char "$right_pad" " ")" \
+    "$C_RESET"
+}
+
 # Renders the command surface view for terminal output.
 render_command_surface() {
-  local USER_NAME HOST_NAME TIME SURFACE_COLOR width git_state tip activity system_state
+  local USER_NAME HOST_NAME TIME SURFACE_COLOR FIGURE_COLOR ALT_FIGURE_COLOR width git_state tip activity system_state
   USER_NAME="${USER:-$(whoami)}"
   HOST_NAME="$(hostname -s)"
   TIME="$(date '+%Y-%m-%d %H:%M:%S')"
@@ -144,25 +210,49 @@ render_command_surface() {
   MQ_SURFACE_WIDTH="$width"
   git_state="$(surface_git_state)"
   system_state="System: Stable"
-  activity="Activity: Ready"
-
+  activity="Activity: Monitoring"
   if [[ "$git_state" == Dirty* ]]; then
     tip="Review git changes"
   else
-    tip="Use / for palette"
+    tip="Run help to see index"
   fi
 
   if [[ -t 1 ]]; then
     SURFACE_COLOR=$'\033[0;37m'
+    FIGURE_COLOR="$C_OK"
+    ALT_FIGURE_COLOR="$C_WARN"
   else
     SURFACE_COLOR=""
+    FIGURE_COLOR=""
+    ALT_FIGURE_COLOR=""
   fi
 
-  surface_top "Command Surface" "$width" "$SURFACE_COLOR"
-  surface_split_row "Mode: Interactive" "Git: $git_state" "$width" "$SURFACE_COLOR"
-  surface_split_row "Host: ${HOST_NAME}" "User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
-  surface_split_row "Time: ${TIME}" "Tip: $tip" "$width" "$SURFACE_COLOR"
-  surface_split_row "$system_state" "$activity" "$width" "$SURFACE_COLOR"
+  surface_top "Command Surface v3" "$width" "$SURFACE_COLOR"
+  if (( width < 56 )); then
+    surface_row "Welcome back ${USER_NAME}!" "$width" "$SURFACE_COLOR"
+    if (( width >= 44 )); then
+      surface_compact_dual_figure_row "▄▄████▄▄" " ▄▄██▄▄ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row "████████" "█▀████▀█" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row "██▄██▄██" "██▀██▀██" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+      surface_compact_dual_figure_row " ▄█▀▀█▄ " " ▀▄██▄▀ " "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    fi
+    surface_row "$system_state | Git: $git_state" "$width" "$SURFACE_COLOR"
+    surface_row "$activity" "$width" "$SURFACE_COLOR"
+    surface_row "Host: ${HOST_NAME} | User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
+    surface_row "Time: ${TIME} | X. Exit launcher" "$width" "$SURFACE_COLOR"
+    surface_row "Tip: $tip" "$width" "$SURFACE_COLOR"
+  else
+    surface_split_row "Welcome back ${USER_NAME}!" "Tips: $tip" "$width" "$SURFACE_COLOR"
+    surface_split_row "Mode: Interactive" "Git: $git_state" "$width" "$SURFACE_COLOR"
+    surface_row "" "$width" "$SURFACE_COLOR"
+    surface_dual_figure_row "▄▄████▄▄" " ▄▄██▄▄ " "" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row "████████" "█▀████▀█" "$system_state" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row "██▄██▄██" "██▀██▀██" "Repo: macos-scripts" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_dual_figure_row " ▄█▀▀█▄ " " ▀▄██▄▀ " "$activity" "$width" "$SURFACE_COLOR" "$FIGURE_COLOR" "$ALT_FIGURE_COLOR"
+    surface_row "" "$width" "$SURFACE_COLOR"
+    surface_split_row "Host: ${HOST_NAME}" "User: ${USER_NAME}" "$width" "$SURFACE_COLOR"
+    surface_split_row "Time: ${TIME}" "X. Exit launcher" "$width" "$SURFACE_COLOR"
+  fi
   surface_bottom "$width" "$SURFACE_COLOR"
 }
 
