@@ -77,3 +77,4 @@ mq-obsidian-command-routes-smoke.sh	active	-
 skills-repos-smoke.sh	active	-
 test-inventory-smoke.sh	active	-
 command-discovery-inventory-smoke.sh	active	-
+panel-color-smoke.sh	active	-

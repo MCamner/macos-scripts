@@ -75,6 +75,22 @@ All notable changes to this project will be documented in this file.
   be spelled. ROADMAP P2 counts what a menu offers to do, not the ways out of it,
   and exit arms are classified as navigation now. That took `performance` off the
   over-limit list without touching the menu.
+* The panel border and its host/mode row are now themeable, and white by
+  default. `surface_panel_color()` printed a literal `\033[0;37m` — ANSI white
+  at normal intensity, which terminals render grey — so the box around every
+  menu was the one surface element no theme could reach, while the title it
+  framed took `MQ_COLOR_TITLE`.
+
+  It now reads `MQ_COLOR_PANEL`, defaulting to `1;37`. Four menus
+  (`mq-main-menu.sh` twice, `mq-help-center-menu.sh`, `mq-performance-menu.sh`)
+  assigned the same grey escape themselves behind their own `[[ -t 1 ]]` guard;
+  they call the library now, so the tty and `NO_COLOR` checks live in one place.
+
+  `tests/panel-color-smoke.sh` pins the colour as themeable and single-sourced
+  rather than pinning a shade: the default may change, but the panel has to keep
+  reading it from one place. Its render checks run through a pty, since the
+  colour block is guarded by `[[ -t 1 ]]` and would otherwise compare empty
+  strings and pass.
 
 ### Added
 
