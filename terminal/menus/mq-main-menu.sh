@@ -200,10 +200,12 @@ open_help_or_index() {
 # Routes the main menu selection to the matching action.
 handle_main_menu_choice() {
   local choice="$1"
-  local normalized
+  local original normalized
 
-  normalized="$(printf '%s' "$choice" | tr '[:upper:]' '[:lower:]')"
-  case "$choice" in
+  original="$choice"
+  normalized="$(printf '%s' "$choice" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]')"
+
+  case "$normalized" in
     # CORE — stable numbering. Do not renumber without migration notes.
     1) run_mqworkflows ;;
     2) open_system_menu ;;
@@ -221,16 +223,16 @@ handle_main_menu_choice() {
     10) recommendations_menu_main ;;
 
     # QUICK ACCESS
-    p|P) open_performance_menu ;;
-    n|N) show_network_info ;;
-    h|H) system_check ;;
-    z|Z) restart_mqlaunch ;;
+    p) open_performance_menu ;;
+    n) show_network_info ;;
+    h) system_check ;;
+    z) restart_mqlaunch ;;
     /) open_command_palette_or_help ;;
     \?) open_help_or_index ;;
 
     # Kept for muscle memory — not shown in the front panel.
-    r|R) "$BASE_DIR/bin/mqlaunch" repl ;;
-    a|A)
+    r) "$BASE_DIR/bin/mqlaunch" repl ;;
+    a)
       "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
       if [[ -f "$HOME/.hal_nav" ]]; then
         local _hal_target
@@ -243,16 +245,16 @@ handle_main_menu_choice() {
         fi
       fi
       ;;
-    g|G) open_agent_menu ;;
+    g) open_agent_menu ;;
 
     # EXIT
-    x|X)
+    x)
       echo "Exiting ${APP_TITLE}..."
       exit 0
       ;;
 
     *)
-      if handle_main_prompt_command "$normalized" "$choice"; then
+      if handle_main_prompt_command "$normalized" "$original"; then
         return 0
       fi
       ;;
@@ -413,11 +415,10 @@ run_main_shell_command() {
 # Reads main choice from user input or stdin.
 read_main_choice() {
   local label="${1:-mqlaunch}"
-  local prompt_line prompt_hint prompt_color prompt_width prompt summary
+  local prompt_line prompt_hint prompt_color prompt_width summary
   prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> option, command, / palette, ? help, !shell, x exit"
-  prompt="${label} > "
 
   if [[ -t 1 ]]; then
     prompt_color=$'\033[0;37m'
@@ -425,25 +426,14 @@ read_main_choice() {
     prompt_color=""
   fi
 
-  if [[ -t 0 && -t 1 ]]; then
-    # Draw the prompt as a framed terminal control: top line / input / bottom line / hint.
-    # This keeps the first-screen action area readable while avoiding the heavier old
-    # pinned-prompt implementation.
-    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%s\n" "$prompt"
-    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-    printf "\033[3A\r%s" "$prompt"
-    IFS= read -r REPLY || return 1
-    printf "\033[2B\r"
-  else
-    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
-    read_prompt "${C_TITLE}${label} > ${C_RESET}" "${label} > " || return 1
-    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+  printf "${C_TITLE}${label} > ${C_RESET}"
+  if ! IFS= read -r choice; then
+    return 1
   fi
+  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+  printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
 
-  choice="$REPLY"
   summary="$(surface_choice_summary "$label" "${choice:-menu}")"
   if [[ -n "$choice" ]]; then
     surface_accept_scramble "$C_WARN" "$choice" "$summary"
