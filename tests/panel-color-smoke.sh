@@ -15,10 +15,10 @@ UI="$ROOT/ui/terminal-ui/mq-ui.sh"
 
 echo "SMOKE: panel colour"
 
-echo "[1/7] the ui library exists"
+echo "[1/8] the ui library exists"
 test -f "$UI"
 
-echo "[2/7] the panel colour is a theme variable"
+echo "[2/8] the panel colour is a theme variable"
 grep -q 'MQ_COLOR_PANEL' "$UI" || {
   echo "FAIL: mq-ui.sh does not read MQ_COLOR_PANEL" >&2
   exit 1
@@ -69,7 +69,7 @@ sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
 PY
 }
 
-echo "[3/7] the default names white rather than a palette index"
+echo "[3/8] the default names white rather than a palette index"
 # `|| true` so a broken helper reports below instead of killing the script under
 # `set -e`. The first CI run of this test died here without printing anything,
 # which said "exit 1" and nothing about why.
@@ -83,7 +83,7 @@ case "$default_colour" in
 esac
 echo "  ok: default names white outright"
 
-echo "[4/7] a theme can override it"
+echo "[4/8] a theme can override it"
 themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
 case "$themed_colour" in
   *'033[0;35m'*) ;;
@@ -94,7 +94,7 @@ case "$themed_colour" in
 esac
 echo "  ok: MQ_COLOR_PANEL wins over the default"
 
-echo "[5/7] no menu hardcodes a panel colour past the theme"
+echo "[5/8] no menu hardcodes a panel colour past the theme"
 # Static, so it fails on any machine. The render checks above only prove the
 # library; a menu assigning its own escape defeats the theme without touching
 # surface_panel_color at all — which is exactly how four of them drifted grey.
@@ -104,7 +104,7 @@ if grep -rn "panel_color=\$'\\\\033\[" "$ROOT/terminal/menus/" 2>/dev/null; then
 fi
 echo "  ok: menus take the colour from the library"
 
-echo "[6/7] no panel is drawn with an empty colour"
+echo "[6/8] no panel is drawn with an empty colour"
 # The step above catches a menu that picks its own colour. It does not catch a
 # menu that passes `""` and gets no colour at all — which is how the HAL and
 # Obsidian "not found" panels drew in the terminal default while every other
@@ -116,7 +116,7 @@ if grep -rnE 'surface_(top|row|split_row|bottom|panel_header) .*"\$width" ""' \
 fi
 echo "  ok: no panel opts out of the colour"
 
-echo "[7/7] the stack has one white"
+echo "[7/8] the stack has one white"
 # C_WHITE meant two different things: 1;97 in gitlaunch, the zsh theme and the
 # prompt preview, but 37 — grey — in the dashboards. The READY banner sits
 # directly above a panel, so the disagreement was visible as two shades of
@@ -163,5 +163,31 @@ then
   exit 1
 fi
 echo "  ok: every C_WHITE names white outright or is deliberately empty"
+
+echo "[8/8] the dashboard header keeps its colour through a command substitution"
+# print_dashboard_header runs the dashboard inside `$( )`, so its stdout is a
+# pipe. The dashboard sets its own colours behind a guard that accepts
+# MQ_DASHBOARD_FORCE_COLOR, then sources mq-ui.sh — whose guard was `-t 1`
+# alone, so it reset every colour to empty and the READY banner printed with no
+# escape at all. The panel below it was white; the banner was whatever the
+# terminal happened to be.
+#
+# Checked by rendering the banner the way print_dashboard_header does, not by
+# reading the guard: the two files have to agree, and only running it shows that.
+dashboard_banner="$(MQ_DASHBOARD_FORCE_COLOR=1 bash \
+  "$ROOT/ui/ascii/mqlaunch-dashboard-v7.1.sh" "MQ" "test" "ONLINE" 2>/dev/null \
+  | grep -a "READY //" || true)"
+if [[ -z "$dashboard_banner" ]]; then
+  echo "FAIL: the dashboard printed no READY banner to check" >&2
+  exit 1
+fi
+case "$dashboard_banner" in
+  *$'\033['*) ;;
+  *)
+    echo "FAIL: the READY banner carries no colour through a pipe" >&2
+    exit 1
+    ;;
+esac
+echo "  ok: the banner keeps its colour when captured"
 
 echo "OK: panel colour smoke test passed"

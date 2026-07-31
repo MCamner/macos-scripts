@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The READY banner printed with no colour at all, while the panel directly below
+  it was white.
+
+  `print_dashboard_header` captures the dashboard with `$( )`. Inside a command
+  substitution stdout is a pipe, so the dashboard set its colours behind a guard
+  that accepts `MQ_DASHBOARD_FORCE_COLOR`, then sourced `mq-ui.sh` — whose guard
+  was `-t 1` alone. That reset every colour to empty *after* the dashboard had
+  set them, so the banner carried no escape sequence whatsoever. Both guards
+  accept the flag now.
+
+  This is why picking a brighter white twice did not fix the banner: the value
+  was never the problem there, the sequence was being discarded.
+
 * Two panels were drawn with no colour at all, and the stack disagreed about
   what white meant.
 
