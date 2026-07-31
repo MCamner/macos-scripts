@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ -t 1 ]]; then
+if [[ ( -t 1 || "${MQ_DASHBOARD_FORCE_COLOR:-0}" == "1" ) && -z "${NO_COLOR:-}" ]]; then
   : "${C_RESET:=$'\033[0m'}"
   : "${C_BOLD:=$'\033[1m'}"
   : "${C_DIM:=$'\033[2m'}"
