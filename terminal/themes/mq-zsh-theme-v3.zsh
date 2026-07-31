@@ -349,8 +349,17 @@ mq_build_prompt() {
     git_part=" ${MQC_DIM}•%f ${MQC_GIT} ${git_info}%f"
   fi
 
-  PROMPT="$(starship prompt --status=$exit_code)"
-  RPROMPT=""
+  # This file owns the MQ variants. Delegating the final render to
+  # Starship discarded every palette value above, so amber, green, minimal,
+  # ice and macos all produced the same prompt.
+  PROMPT="${user_host} ${path_part}${git_part}"}
+
+# Hook prompt
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd mq_build_prompt
+
+\n'"${status_icon} "
+  RPROMPT="$(mq_prompt_right "$exit_code")"
 }
 
 # Hook prompt
