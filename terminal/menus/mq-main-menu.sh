@@ -125,8 +125,8 @@ render_main_menu_panel() {
 
   surface_row "" "$width" "$panel_color"
   surface_row "DISCOVER" "$width" "$panel_color"
-  surface_split_row "/. Palette" "?. Help index" "$width" "$panel_color"
-  surface_split_row "type command name" "!shell command" "$width" "$panel_color"
+  surface_split_row "/  Palette" "?  Help index" "$width" "$panel_color"
+  surface_split_row "<command>  Run mqlaunch" "!<command>  Run shell" "$width" "$panel_color"
   surface_split_row "more: mqlaunch help" "x. Exit" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
@@ -227,8 +227,8 @@ handle_main_menu_choice() {
     n) show_network_info ;;
     h) system_check ;;
     z) restart_mqlaunch ;;
-    /) open_command_palette_or_help ;;
-    \?) open_help_or_index ;;
+    /|/.|/\ palette|/.\ palette) open_command_palette_or_help ;;
+    \?|\?.|\?\ help|\?.\ help\ index) open_help_or_index ;;
 
     # Kept for muscle memory — not shown in the front panel.
     r) "$BASE_DIR/bin/mqlaunch" repl ;;
@@ -288,8 +288,8 @@ handle_main_prompt_command() {
     git|git-menu|gitmenu) open_git_menu; return 0 ;;
     release|rel) open_release_menu; return 0 ;;
     dev) open_dev_menu; return 0 ;;
-    palette|find|/) open_command_palette_or_help; return 0 ;;
-    help|h|\?|commands|index) open_help_or_index; return 0 ;;
+    palette|find|/|/.|/\ palette|/.\ palette) open_command_palette_or_help; return 0 ;;
+    help|h|\?|\?.|\?\ help|\?.\ help\ index|commands|index) open_help_or_index; return 0 ;;
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
