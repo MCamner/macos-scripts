@@ -8,6 +8,48 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The READY banner printed with no colour at all, while the panel directly below
+  it was white.
+
+  `print_dashboard_header` captures the dashboard with `$( )`. Inside a command
+  substitution stdout is a pipe, so the dashboard set its colours behind a guard
+  that accepts `MQ_DASHBOARD_FORCE_COLOR`, then sourced `mq-ui.sh` — whose guard
+  was `-t 1` alone. That reset every colour to empty *after* the dashboard had
+  set them, so the banner carried no escape sequence whatsoever. Both guards
+  accept the flag now.
+
+  This is why picking a brighter white twice did not fix the banner: the value
+  was never the problem there, the sequence was being discarded.
+
+* Two panels were drawn with no colour at all, and the stack disagreed about
+  what white meant.
+
+  `hal_menu_missing` and `mq_obsidian_missing` passed `""` as the colour on
+  every row, so the one panel an operator meets when something is already wrong
+  was also the only one that ignored the theme. #139 made the colour themeable
+  but only caught menus that set their *own* escape — passing an empty string is
+  the same defect with the opposite symptom.
+
+  `C_WHITE` meant `1;97` in `gitlaunch.sh`, the zsh theme and the prompt
+  preview, but `37` — grey — in both dashboards and the miami background. The
+  READY banner sits directly above a panel, so the disagreement showed up as two
+  shades of almost-white on one screen. `mq-ui.sh` defines `C_WHITE` now
+  (`MQ_COLOR_WHITE`), and the panel reads the same value, so the stack has one
+  white rather than two that nearly match.
+
+  That white is `38;2;255;255;255`, not a palette index. `0;37`, `1;37` and
+  `1;97` are all names the terminal profile resolves, and on this machine the
+  border still read as dim after two of them; naming the colour outright takes
+  the profile out of the decision. `97` is emitted first so terminals without
+  truecolor get bright white instead of falling back to the default foreground.
+
+  `tests/panel-color-smoke.sh` gained both rules. Step 7 was first written as
+  three piped greps, one holding an empty alternation that BSD grep rejects —
+  the middle stage errored, the pipeline returned non-zero, and the step printed
+  "ok" having checked nothing. It is python now.
+
+### Fixed
+
 * The HAL submenus drew a header and then died on `bad substitution`. The panel
   built its section heading with `${title^^}` — a bash 4 expansion. macOS ships
   `/bin/bash` 3.2, and the menu is sourced into whatever shell mqlaunch runs

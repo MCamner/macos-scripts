@@ -25,7 +25,14 @@ fi
 # ------------------------------------------------------------
 # Honour NO_COLOR (https://no-color.org): any non-empty value disables color,
 # even on a TTY. Colors stay off when stdout is not a terminal.
-if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+#
+# MQ_DASHBOARD_FORCE_COLOR is the exception, and it exists because
+# print_dashboard_header captures the dashboard with `$( )`. Inside a command
+# substitution stdout is a pipe, so `-t 1` alone was false here — this block
+# then reset every colour to empty *after* the dashboard had set its own, and
+# the READY banner printed with no escape at all while the panel under it was
+# white. The two guards have to agree, so this one accepts the same flag.
+if [[ ( -t 1 || "${MQ_DASHBOARD_FORCE_COLOR:-0}" == "1" ) && -z "${NO_COLOR:-}" ]]; then
   _MQ_DEFAULT_RESET=$'\033[0m'
   _MQ_DEFAULT_TITLE=$'\033[1;33m'
   _MQ_DEFAULT_ERR=$'\033[0;31m'
@@ -33,9 +40,21 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   _MQ_DEFAULT_WARN=$'\033[0;33m'
   _MQ_DEFAULT_INFO=$'\033[0;34m'
   _MQ_DEFAULT_BOLD=$'\033[1m'
-  # 1;37, not 0;37: normal-intensity white renders grey in most terminals, so
-  # the panel border read as dim next to the themed title it framed.
-  _MQ_DEFAULT_PANEL=$'\033[1;37m'
+  # White, spelled so the terminal cannot reinterpret it.
+  #
+  # This started at 0;37 — normal-intensity white, which terminals render grey —
+  # then moved to 1;97. Both are palette indices, and a profile is free to map
+  # them to whatever it likes; on this machine the border still read as dim.
+  # 38;2;255;255;255 names the colour outright and skips the palette.
+  #
+  # 97 is emitted first for terminals that do not do truecolor: they apply
+  # bright white and ignore the sequence they do not understand, rather than
+  # falling through to the default foreground.
+  _MQ_DEFAULT_PANEL=$'\033[97m\033[38;2;255;255;255m'
+  # The stack disagreed about what white meant: 1;97 in gitlaunch, the zsh theme
+  # and the prompt preview, but 37 — grey — in both dashboards, which is what
+  # drew the READY banner. One answer, and it is the same one the panel uses.
+  _MQ_DEFAULT_WHITE=$'\033[97m\033[38;2;255;255;255m'
 
   C_RESET="${MQ_COLOR_RESET:-$_MQ_DEFAULT_RESET}"
   C_TITLE="${MQ_COLOR_TITLE:-$_MQ_DEFAULT_TITLE}"
@@ -45,6 +64,8 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_INFO="${MQ_COLOR_INFO:-$_MQ_DEFAULT_INFO}"
   C_BOLD="${MQ_COLOR_BOLD:-$_MQ_DEFAULT_BOLD}"
   C_PANEL="${MQ_COLOR_PANEL:-$_MQ_DEFAULT_PANEL}"
+  # shellcheck disable=SC2034  # read by the dashboards, which source this file
+  C_WHITE="${MQ_COLOR_WHITE:-$_MQ_DEFAULT_WHITE}"
 else
   C_RESET=''
   C_TITLE=''
@@ -54,6 +75,8 @@ else
   C_INFO=''
   C_BOLD=''
   C_PANEL=''
+  # shellcheck disable=SC2034  # read by the dashboards, which source this file
+  C_WHITE=''
 fi
 
 # ------------------------------------------------------------

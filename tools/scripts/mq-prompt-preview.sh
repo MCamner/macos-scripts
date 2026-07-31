@@ -6,7 +6,7 @@ C_BORDER=$'\e[38;5;136m'
 C_GOLD=$'\e[1;38;5;178m'
 C_AMBER=$'\e[38;5;178m'
 C_DIM=$'\e[38;5;244m'
-C_WHITE=$'\e[1;97m'
+C_WHITE=$'\e[97m\e[38;2;255;255;255m'
 C_FIG1=$'\e[38;5;76m'    # green — C_OK in mqlaunch
 C_FIG2=$'\e[38;5;221m'   # amber — ALT_FIGURE_COLOR in mqlaunch
 

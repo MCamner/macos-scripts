@@ -144,7 +144,7 @@ mq_print_session_header() {
   local C_RESET=$'\e[0m'
   local C_GOLD=$'\e[1;38;5;178m'
   local C_AMBER=$'\e[38;5;178m'
-  local C_WHITE=$'\e[1;97m'
+  local C_WHITE=$'\e[97m\e[38;2;255;255;255m'
   local C_FIG1=$'\e[38;5;76m'
   local C_FIG2=$'\e[38;5;221m'
 

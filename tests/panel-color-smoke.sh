@@ -15,17 +15,15 @@ UI="$ROOT/ui/terminal-ui/mq-ui.sh"
 
 echo "SMOKE: panel colour"
 
-echo "[1/5] the ui library exists"
+echo "[1/8] the ui library exists"
 test -f "$UI"
 
-echo "[2/5] the panel colour is a theme variable"
+echo "[2/8] the panel colour is a theme variable"
 grep -q 'MQ_COLOR_PANEL' "$UI" || {
   echo "FAIL: mq-ui.sh does not read MQ_COLOR_PANEL" >&2
   exit 1
 }
 
-# Rendered through a pty, because the colour block is guarded by `[[ -t 1 ]]`
-# and every one of these checks would otherwise compare empty strings and pass.
 # Runs a snippet on a pty, because the colour block is guarded by `[[ -t 1 ]]`
 # and off a terminal every check below would compare empty strings and pass.
 #
@@ -71,21 +69,21 @@ sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
 PY
 }
 
-echo "[3/5] the default is white, not grey"
+echo "[3/8] the default names white rather than a palette index"
 # `|| true` so a broken helper reports below instead of killing the script under
 # `set -e`. The first CI run of this test died here without printing anything,
 # which said "exit 1" and nothing about why.
 default_colour="$(panel_colour 'unset MQ_COLOR_PANEL; unset NO_COLOR')" || true
 case "$default_colour" in
-  *'033[1;37m'*) ;;
+  *'[38;2;255;255;255m'*) ;;
   *)
     echo "FAIL: default panel colour is not bright white: $default_colour" >&2
     exit 1
     ;;
 esac
-echo "  ok: default renders 1;37"
+echo "  ok: default names white outright"
 
-echo "[4/5] a theme can override it"
+echo "[4/8] a theme can override it"
 themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
 case "$themed_colour" in
   *'033[0;35m'*) ;;
@@ -96,7 +94,7 @@ case "$themed_colour" in
 esac
 echo "  ok: MQ_COLOR_PANEL wins over the default"
 
-echo "[5/5] no menu hardcodes a panel colour past the theme"
+echo "[5/8] no menu hardcodes a panel colour past the theme"
 # Static, so it fails on any machine. The render checks above only prove the
 # library; a menu assigning its own escape defeats the theme without touching
 # surface_panel_color at all — which is exactly how four of them drifted grey.
@@ -105,5 +103,91 @@ if grep -rn "panel_color=\$'\\\\033\[" "$ROOT/terminal/menus/" 2>/dev/null; then
   exit 1
 fi
 echo "  ok: menus take the colour from the library"
+
+echo "[6/8] no panel is drawn with an empty colour"
+# The step above catches a menu that picks its own colour. It does not catch a
+# menu that passes `""` and gets no colour at all — which is how the HAL and
+# Obsidian "not found" panels drew in the terminal default while every other
+# panel followed the theme. Same class of defect, opposite symptom.
+if grep -rnE 'surface_(top|row|split_row|bottom|panel_header) .*"\$width" ""' \
+  "$ROOT/terminal/menus/" 2>/dev/null; then
+  echo "FAIL: a panel passes an empty colour; call surface_panel_color" >&2
+  exit 1
+fi
+echo "  ok: no panel opts out of the colour"
+
+echo "[7/8] the stack has one white"
+# C_WHITE meant two different things: 1;97 in gitlaunch, the zsh theme and the
+# prompt preview, but 37 — grey — in the dashboards. The READY banner sits
+# directly above a panel, so the disagreement was visible as two shades of
+# almost-white on one screen. Both were palette indices, which a terminal
+# profile is free to remap; white is named outright now so it cannot be.
+#
+# Written in python, not as piped greps. The first version chained three greps
+# and one of them held an empty alternation, which BSD grep rejects outright —
+# so the middle stage errored, the pipeline returned non-zero, the `if` took the
+# false branch, and the step printed "ok" having checked nothing.
+if ! python3 - "$ROOT" <<'PY'
+import pathlib, re, sys
+
+root = pathlib.Path(sys.argv[1])
+assign = re.compile(r"C_WHITE:?=(?P<value>.*)")
+# Empty is deliberate: it is how every one of these files spells "no colour".
+allowed_empty = {"", '""', "''", '}"', "}"}
+
+offenders = []
+for directory in ("ui", "terminal", "tools"):
+    for path in sorted((root / directory).rglob("*")):
+        if path.suffix not in {".sh", ".zsh"} or not path.is_file():
+            continue
+        for number, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
+            found = assign.search(line)
+            if not found:
+                continue
+            value = found.group("value").strip()
+            if "38;2;255;255;255" in value or value in allowed_empty:
+                continue
+            # The library reads a theme variable rather than naming a shade.
+            if "MQ_COLOR_WHITE" in value:
+                continue
+            offenders.append(f"{path.relative_to(root)}:{number}: {line.strip()}")
+
+if offenders:
+    print("FAIL: C_WHITE does not name white outright here:", file=sys.stderr)
+    for line in offenders:
+        print(f"  {line}", file=sys.stderr)
+    sys.exit(1)
+print(f"  checked {sum(1 for _ in (root / 'ui').rglob('*.sh'))} ui scripts and their peers")
+PY
+then
+  exit 1
+fi
+echo "  ok: every C_WHITE names white outright or is deliberately empty"
+
+echo "[8/8] the dashboard header keeps its colour through a command substitution"
+# print_dashboard_header runs the dashboard inside `$( )`, so its stdout is a
+# pipe. The dashboard sets its own colours behind a guard that accepts
+# MQ_DASHBOARD_FORCE_COLOR, then sources mq-ui.sh — whose guard was `-t 1`
+# alone, so it reset every colour to empty and the READY banner printed with no
+# escape at all. The panel below it was white; the banner was whatever the
+# terminal happened to be.
+#
+# Checked by rendering the banner the way print_dashboard_header does, not by
+# reading the guard: the two files have to agree, and only running it shows that.
+dashboard_banner="$(MQ_DASHBOARD_FORCE_COLOR=1 bash \
+  "$ROOT/ui/ascii/mqlaunch-dashboard-v7.1.sh" "MQ" "test" "ONLINE" 2>/dev/null \
+  | grep -a "READY //" || true)"
+if [[ -z "$dashboard_banner" ]]; then
+  echo "FAIL: the dashboard printed no READY banner to check" >&2
+  exit 1
+fi
+case "$dashboard_banner" in
+  *$'\033['*) ;;
+  *)
+    echo "FAIL: the READY banner carries no colour through a pipe" >&2
+    exit 1
+    ;;
+esac
+echo "  ok: the banner keeps its colour when captured"
 
 echo "OK: panel colour smoke test passed"

@@ -30,7 +30,7 @@ if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/nul
   C_DARK_YELLOW=$'\e[38;5;100m'
   C_PINK=$'\e[95m'
   C_MAGENTA=$'\e[35m'
-  C_WHITE=$'\e[1;97m'
+  C_WHITE=$'\e[97m\e[38;2;255;255;255m'
   C_BLINK=$'\e[5m'
 else
   C_RESET=""
