@@ -217,13 +217,13 @@ mq_box_top() {
   local width="$2"
   local inner=$(( width - 5 - ${#title} ))
   (( inner < 0 )) && inner=0
-  printf "┌─ %s %s┐\n" "$title" "$(mq_repeat "─" "$inner")"
+  printf "%b┌─ %s %s┐%b\n" "$C_WHITE" "$title" "$(mq_repeat "─" "$inner")" "$C_RESET"
 }
 
 # Handles mq box bottom.
 mq_box_bottom() {
   local width="$1"
-  printf "└%s┘\n" "$(mq_repeat "─" $(( width - 2 )))"
+  printf "%b└%s┘%b\n" "$C_WHITE" "$(mq_repeat "─" $(( width - 2 )))" "$C_RESET"
 }
 
 # Handles mq box row.
@@ -243,9 +243,13 @@ mq_box_row() {
   left="$(mq_truncate "$left" "$left_width")"
   right="$(mq_truncate "$right" "$right_width")"
 
-  printf "│ %s │ %s │\n" \
+  printf "%b│ %s%b │ %s%b │%b\n" \
+    "$C_WHITE" \
     "$(mq_pad_right "$left" "$left_width")" \
-    "$(mq_pad_right "$right" "$right_width")"
+    "$C_WHITE" \
+    "$(mq_pad_right "$right" "$right_width")" \
+    "$C_WHITE" \
+    "$C_RESET"
 }
 
 # Handles mq box single.
@@ -254,7 +258,7 @@ mq_box_single() {
   local width="$2"
   local inner=$(( width - 4 ))
   text="$(mq_truncate "$text" "$inner")"
-  printf "│ %s │\n" "$(mq_pad_right "$text" "$inner")"
+  printf "%b│ %s%b │%b\n" "$C_WHITE" "$(mq_pad_right "$text" "$inner")" "$C_WHITE" "$C_RESET"
 }
 
 # Handles mq bar.
@@ -507,19 +511,10 @@ mqlaunch_dashboard_v71() {
   ready_pad=$(( width - 2 - ${#ready_text} ))
   (( ready_pad < 0 )) && ready_pad=0
 
-  echo -e "${ACCENT_CYAN}${C_BOLD}╔$(mq_repeat "═" $(( width - 2 )))╗${C_RESET}"
-  printf "%b║%b %bREADY%b %b// polished branded command surface stable%b" \
-    "$ACCENT_CYAN$C_BOLD" \
-    "$C_RESET" \
-    "$ACCENT_GREEN$C_BOLD" \
-    "$C_RESET" \
-    "$C_DIM" \
-    "$C_RESET"
-  printf "%s%b║%b\n" \
-    "$(mq_repeat " " "$ready_pad")" \
-    "$ACCENT_CYAN$C_BOLD" \
-    "$C_RESET"
-  echo -e "${ACCENT_CYAN}${C_BOLD}╚$(mq_repeat "═" $(( width - 2 )))╝${C_RESET}"
+  echo -e "${C_WHITE}${C_BOLD}╔$(mq_repeat "═" $(( width - 2 )))╗${C_RESET}"
+  printf "%b║ READY // polished branded command surface stable" "$C_WHITE$C_BOLD"
+  printf "%s║%b\n" "$(mq_repeat " " "$ready_pad")" "$C_RESET"
+  echo -e "${C_WHITE}${C_BOLD}╚$(mq_repeat "═" $(( width - 2 )))╝${C_RESET}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
