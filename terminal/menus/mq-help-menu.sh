@@ -145,6 +145,7 @@ HAL
   mqlaunch hal            Operator summaries and audits
 
 UTILITY
+  mqlaunch focus          Pomodoro focus timer with a session log
   mqlaunch guide          Open the terminal guide
   mqlaunch repo           Open the repository in the browser
 LIST

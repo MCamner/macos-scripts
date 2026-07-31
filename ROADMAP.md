@@ -793,6 +793,10 @@ below are from 2026-07-30 against `2.0.1`.
     Worth deciding which target is the real one before the next slice. The
     per-loop limit is the one an operator feels.
 
+  * [x] `focus.sh` is no longer orphaned — it has a command, `mqlaunch focus`,
+    and appears in help under `UTILITY`. It was routed rather than deleted
+    because it works, which was checked before deciding (#134).
+
   * [ ] `workflows` is over the limit because Demo flow moved there. It had ten
     choices and has eleven. The move was right — it is the other full-stack run,
     beside project boot and check — but it needs a submenu or a different home

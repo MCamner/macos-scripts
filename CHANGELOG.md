@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch focus` — the Pomodoro timer in `tools/scripts/focus.sh` now has a
+  command. #132 removed its Tools menu row, and since it had no dispatcher route
+  that left the script orphaned rather than demoted: 169 lines of working tool
+  reachable by nothing.
+
+  It works, which is why it was routed rather than deleted. Checked before
+  deciding, not after:
+
+  ```text
+  focus.sh log            read-only, prints the session log
+  focus.sh not-a-thing    exit 1
+  focus.sh (no args)      interactive menu, quits cleanly on q
+  ```
+
+  Arguments are forwarded rather than enumerated. `focus.sh` owns `start`, `deep`
+  and `log` and rejects anything else itself, so declaring them in the dispatcher
+  would be a second vocabulary to keep in step with the first.
+
+  `local-write` rather than `read-only`: it appends to
+  `~/.local/share/mq-focus/sessions.log`.
+
+  It is a public entrypoint, so it appears in `mqlaunch help` under `UTILITY`. It
+  did not go back on the Tools menu — that menu is at exactly ten choices, and
+  adding an eleventh to restore a row would undo #132 for a command that now has
+  a better home.
+
 ### Changed
 
 * The Tools menu shows ten choices instead of thirty, and the Agent menu ten

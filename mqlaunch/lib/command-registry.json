@@ -1669,6 +1669,22 @@
       "compat_only": false,
       "delegates_to": null,
       "operator_surface": true
+    },
+    {
+      "name": "focus",
+      "aliases": [],
+      "namespace": "utility",
+      "summary": "Pomodoro focus timer with a session log",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": true
     }
   ]
 }
