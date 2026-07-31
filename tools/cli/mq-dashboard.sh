@@ -19,7 +19,7 @@ C_GREEN=$'\033[32m'
 C_YELLOW=$'\033[33m'
 C_RED=$'\033[31m'
 C_MAGENTA=$'\033[35m'
-C_WHITE=$'\033[1;97m'
+C_WHITE=$'\033[97m\033[38;2;255;255;255m'
 
 # Sets terminal title.
 set_terminal_title() {

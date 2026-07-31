@@ -21,8 +21,14 @@ All notable changes to this project will be documented in this file.
   preview, but `37` — grey — in both dashboards and the miami background. The
   READY banner sits directly above a panel, so the disagreement showed up as two
   shades of almost-white on one screen. `mq-ui.sh` defines `C_WHITE` now
-  (`MQ_COLOR_WHITE`, default `1;97`), and the panel default moved from `1;37` to
-  the same value so the stack has one white rather than two that nearly match.
+  (`MQ_COLOR_WHITE`), and the panel reads the same value, so the stack has one
+  white rather than two that nearly match.
+
+  That white is `38;2;255;255;255`, not a palette index. `0;37`, `1;37` and
+  `1;97` are all names the terminal profile resolves, and on this machine the
+  border still read as dim after two of them; naming the colour outright takes
+  the profile out of the decision. `97` is emitted first so terminals without
+  truecolor get bright white instead of falling back to the default foreground.
 
   `tests/panel-color-smoke.sh` gained both rules. Step 7 was first written as
   three piped greps, one holding an empty alternation that BSD grep rejects —

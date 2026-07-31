@@ -69,19 +69,19 @@ sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
 PY
 }
 
-echo "[3/7] the default is white, not grey"
+echo "[3/7] the default names white rather than a palette index"
 # `|| true` so a broken helper reports below instead of killing the script under
 # `set -e`. The first CI run of this test died here without printing anything,
 # which said "exit 1" and nothing about why.
 default_colour="$(panel_colour 'unset MQ_COLOR_PANEL; unset NO_COLOR')" || true
 case "$default_colour" in
-  *'033[1;97m'*) ;;
+  *'[38;2;255;255;255m'*) ;;
   *)
     echo "FAIL: default panel colour is not bright white: $default_colour" >&2
     exit 1
     ;;
 esac
-echo "  ok: default renders 1;97"
+echo "  ok: default names white outright"
 
 echo "[4/7] a theme can override it"
 themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
@@ -120,7 +120,8 @@ echo "[7/7] the stack has one white"
 # C_WHITE meant two different things: 1;97 in gitlaunch, the zsh theme and the
 # prompt preview, but 37 — grey — in the dashboards. The READY banner sits
 # directly above a panel, so the disagreement was visible as two shades of
-# almost-white on one screen.
+# almost-white on one screen. Both were palette indices, which a terminal
+# profile is free to remap; white is named outright now so it cannot be.
 #
 # Written in python, not as piped greps. The first version chained three greps
 # and one of them held an empty alternation, which BSD grep rejects outright —
@@ -144,7 +145,7 @@ for directory in ("ui", "terminal", "tools"):
             if not found:
                 continue
             value = found.group("value").strip()
-            if "1;97" in value or value in allowed_empty:
+            if "38;2;255;255;255" in value or value in allowed_empty:
                 continue
             # The library reads a theme variable rather than naming a shade.
             if "MQ_COLOR_WHITE" in value:
@@ -152,7 +153,7 @@ for directory in ("ui", "terminal", "tools"):
             offenders.append(f"{path.relative_to(root)}:{number}: {line.strip()}")
 
 if offenders:
-    print("FAIL: C_WHITE is not 1;97 here:", file=sys.stderr)
+    print("FAIL: C_WHITE does not name white outright here:", file=sys.stderr)
     for line in offenders:
         print(f"  {line}", file=sys.stderr)
     sys.exit(1)
@@ -161,6 +162,6 @@ PY
 then
   exit 1
 fi
-echo "  ok: every C_WHITE is 1;97 or deliberately empty"
+echo "  ok: every C_WHITE names white outright or is deliberately empty"
 
 echo "OK: panel colour smoke test passed"

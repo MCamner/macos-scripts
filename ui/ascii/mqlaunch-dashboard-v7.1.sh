@@ -12,7 +12,7 @@ if [[ ( -t 1 || "${MQ_DASHBOARD_FORCE_COLOR:-0}" == "1" ) && -z "${NO_COLOR:-}" 
   : "${C_CYAN:=$'\033[36m'}"
   # 1;97, matching C_WHITE in mq-ui.sh. This was 37 — grey — which is what the
   # READY banner rendered in, directly above a panel drawn in white.
-  : "${C_WHITE:=$'\033[1;97m'}"
+  : "${C_WHITE:=$'\033[97m\033[38;2;255;255;255m'}"
   MQ_PINK="${MQ_PINK:-$'\033[95m'}"
   LAUNCH_PINK="${LAUNCH_PINK:-$'\033[35m'}"
 else
