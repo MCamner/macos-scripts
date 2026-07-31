@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The System menu shows ten choices instead of sixteen, grouped by what an
+  operator is trying to find out: Performance, Network, Processes, Doctor,
+  Checks, Debug bundle, Maintenance, Desktop, Repo folder, Repo in browser.
+
+  Checks, Maintenance and Desktop are submenus. Nothing was dropped —
+  `tests/system-menu-smoke.sh` lists every original handler by name, so a
+  regrouping cannot quietly become a deletion.
+
+  Doctor stays on the front menu although it is a check: it is the exit gate and
+  the command doctor itself recommends on a healthy machine. Debug bundle stays
+  because it is reached when something is already wrong and the evidence has to
+  go somewhere, which is the wrong moment to add a keystroke.
+
+  The two network rows were removed rather than moved. `show_network_info` and
+  the ghost route are options 1 and 8 of the network menu, so the System menu
+  offered two ways to reach two of its functions and no way to reach the other
+  seven. One row opens that menu instead.
+
+### Fixed
+
+* The System menu numbered its rows 1-13, 16, 17, 14, 15 — MAINTENANCE was
+  printed above NAVIGATION while keeping its later numbers, so anyone picking by
+  position rather than by label got the wrong command. It is 1-10 now, and a
+  test compares the numbers the panel prints against the numbers the case arms
+  answer, failing on a gap, a duplicate, or an option with no arm.
+
 ### Fixed
 
 * The READY banner printed with no colour at all, while the panel directly below
