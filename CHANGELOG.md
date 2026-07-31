@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The Performance menu executed anything it did not recognise. Its last case arm
+  was `*) /bin/zsh -lc "$choice"`, so mistyping a menu number ran the typo as a
+  login-shell command — the pattern #137 removed from the HAL menu, left in the
+  one menu that was not part of that change, and here without even `|| true`.
+
+  Shell is still reachable, behind the explicit `!` prefix the main prompt
+  already advertises. Unrecognised input is reported instead.
+
+  `tests/menu-shell-guard-smoke.sh` holds the rule for every menu, not just this
+  one: a static check that no menu hands its choice to a shell, plus a run of
+  the real menu, because copying the choice into another variable first would
+  pass the static check. Both were proven against planted defects.
+
+* The Performance menu never returned when its input ran out. The fallback
+  `read -r choice` discarded the EOF, so the panel redrew as fast as it could
+  render, forever. `tests/menu-eof-smoke.sh` covers `mqlaunch perf` and passed:
+  on that path `read_main_choice` is defined and its call site does act on the
+  return. The defect was in the branch the file takes when it is executed
+  directly, which is a supported entry point that no test drove.
+
 ### Changed
 
 * The System menu shows ten choices instead of sixteen, grouped by what an
