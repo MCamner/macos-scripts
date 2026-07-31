@@ -60,7 +60,7 @@ nearest_cli_command() {
 
   printf '%s\n' \
     about agent architecture ask brain bundle check commands demo dev doctor \
-    excalidraw fix flow ghost git guard hal help index learn mc mcp-status \
+    excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory network notes obsidian palette perf pulse release release-check \
     repo-health repos review risk-review scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
@@ -402,6 +402,15 @@ dispatch_cli_command() {
 
     excalidraw|draw)
       "$BASE_DIR/tools/scripts/excalidraw.sh"
+      return $?
+      ;;
+
+    focus)
+      # Arguments forwarded rather than enumerated: focus.sh owns start, deep
+      # and log, and rejects anything else with exit 1. Declaring them here too
+      # would be a second vocabulary to keep in step with the first.
+      shift
+      "$BASE_DIR/tools/scripts/focus.sh" "$@"
       return $?
       ;;
 

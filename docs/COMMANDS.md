@@ -526,6 +526,19 @@ mqlaunch excalidraw                 # open the Excalidraw drawing workflow
 mqlaunch b2tui                      # B2 Atlas Prompt OS terminal interface
 ```
 
+### Focus timer
+
+```bash
+mqlaunch focus                      # interactive menu
+mqlaunch focus start                # 25/5 Pomodoro
+mqlaunch focus deep                 # 50/10 deep work
+mqlaunch focus log                  # recent sessions
+```
+
+Sessions are appended to `~/.local/share/mq-focus/sessions.log`. Arguments are
+forwarded to the script rather than enumerated in the dispatcher, so its own
+verbs stay the only list — an unknown one exits `1`.
+
 `mqlaunch b2tui` and `mq b2` open the same surface; see
 [B2 Atlas Prompt OS](#b2-atlas-prompt-os) for the full verb list.
 
