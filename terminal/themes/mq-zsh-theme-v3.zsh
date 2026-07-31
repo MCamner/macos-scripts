@@ -9,8 +9,14 @@
 #   ice
 #   macos
 
-[[ -n "${MQ_ZSH_THEME_V3_LOADED:-}" ]] && return 0
-export MQ_ZSH_THEME_V3_LOADED=1
+# Older versions exported this guard, so `exec zsh` inherited it and skipped
+# loading a newly selected palette. Treat an exported value as stale process
+# state, then keep the replacement guard local to this shell.
+if [[ -n "${MQ_ZSH_THEME_V3_LOADED:-}" ]]; then
+  [[ "${parameters[MQ_ZSH_THEME_V3_LOADED]:-}" != *-export* ]] && return 0
+  unset MQ_ZSH_THEME_V3_LOADED
+fi
+typeset -g MQ_ZSH_THEME_V3_LOADED=1
 
 autoload -Uz colors vcs_info add-zsh-hook
 colors

@@ -4,6 +4,7 @@ set -euo pipefail
 BASE_DIR="${HOME}/macos-scripts"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_FILE="$BASE_DIR/terminal/themes/mq-zsh-theme-v3.zsh"
+UI_THEME_SCRIPT="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
 ZSHRC="${HOME}/.zshrc"
 BACKUP_DIR="$HOME/.mq-zsh-theme-backups"
 
@@ -46,6 +47,16 @@ theme_description() {
     ice)     echo "Cool cyan / blue look" ;;
     macos)   echo "Clean Apple-inspired blue/gray theme" ;;
     *)       return 1 ;;
+  esac
+}
+
+# Maps Zsh prompt variants to the closest shared MQ UI palette.
+ui_theme_for_variant() {
+  case "$1" in
+    minimal) echo "classic" ;;
+    macos)   echo "ice" ;;
+    amber|green|ice) echo "$1" ;;
+    *) return 1 ;;
   esac
 }
 
@@ -94,6 +105,7 @@ clean_existing_theme_lines() {
 # Handles apply theme.
 apply_theme() {
   local variant="$1"
+  local ui_theme
 
   if ! theme_description "$variant" >/dev/null 2>&1; then
     ui_err "Unknown theme: $variant"
@@ -105,6 +117,13 @@ apply_theme() {
     return 1
   fi
 
+  if [[ ! -f "$UI_THEME_SCRIPT" ]]; then
+    ui_err "Missing UI theme manager: $UI_THEME_SCRIPT"
+    return 1
+  fi
+
+  ui_theme="$(ui_theme_for_variant "$variant")"
+
   local backup_file
   backup_file="$(backup_zshrc)"
   clean_existing_theme_lines
@@ -115,10 +134,16 @@ apply_theme() {
     echo 'source "$HOME/macos-scripts/terminal/themes/mq-zsh-theme-v3.zsh"'
   } >> "$ZSHRC"
 
+  if ! bash "$UI_THEME_SCRIPT" apply "$ui_theme" >/dev/null; then
+    ui_err "Could not apply MQ UI theme: $ui_theme"
+    return 1
+  fi
+
   print_header
   row_bold "THEME APPLIED"
   empty_row
   row "Theme: $variant"
+  row "MQ UI theme: $ui_theme"
   row "Description: $(theme_description "$variant")"
   row "Backup:"
   row " $backup_file"
@@ -135,10 +160,14 @@ reset_theme() {
   backup_file="$(backup_zshrc)"
   clean_existing_theme_lines
 
+  if [[ -f "$UI_THEME_SCRIPT" ]]; then
+    bash "$UI_THEME_SCRIPT" reset >/dev/null
+  fi
+
   print_header
   row_bold "THEME RESET"
   empty_row
-  row "Removed MQ_ZSH_VARIANT and theme source line from .zshrc."
+  row "Removed managed Zsh and MQ UI theme settings."
   row "Backup:"
   row " $backup_file"
   empty_row
