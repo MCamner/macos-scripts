@@ -261,7 +261,16 @@ def build() -> dict:
     reached: dict[str, set[str]] = collections.defaultdict(set)
     for menu in sorted(MENUS.glob("*.sh")):
         lines = menu.read_text(encoding="utf-8", errors="replace").splitlines()
+        # A file is not a menu. mq-tools-menu.sh holds five loops, so counting
+        # options per file said "23 choices" for a menu showing ten, and
+        # splitting a long menu into submenus — the fix ROADMAP P2 asks for —
+        # could never improve the number. Each arm is attributed to the loop
+        # that contains it instead, which is what an operator actually faces.
+        loop = None
         for number, line in enumerate(lines, 1):
+            defined = FUNC_DEF.match(line)
+            if defined:
+                loop = defined.group(1)
             match = ARM.match(line)
             if not match:
                 continue
@@ -269,6 +278,7 @@ def build() -> dict:
             options.append(
                 {
                     "menu": menu.name,
+                    "loop": loop,
                     "line": number,
                     "option": match.group(1),
                     "action": match.group(2),

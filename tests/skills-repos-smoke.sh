@@ -38,8 +38,17 @@ echo "[7/10] main launcher reaches that routing (sources command mode)"
 grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$LAUNCHER"
 
 echo "[8/10] tools menu exposes ecosystem actions"
-grep -q "Skills audit" "$TOOLS_MENU"
-grep -q "Repos diff" "$TOOLS_MENU"
+# Asserted as reachable actions rather than as label text. The labels were
+# "Skills audit" and "Repos diff" while those sat flat in the Tools menu; they
+# are "Audit" and "Diff summary" inside the Skills and Repos submenus now, and
+# the menu exposes them exactly as much as it did. A grep for the old wording
+# would have failed on a regrouping that changed nothing about what is reachable.
+for handler in run_mq_skills_audit run_mq_repos_diff_summary; do
+  grep -qE "^[[:space:]]*[0-9]+\) $handler\b" "$TOOLS_MENU" || {
+    echo "FAIL: no Tools menu option runs $handler" >&2
+    exit 1
+  }
+done
 
 echo "[9/10] docs mention commands"
 grep -q "mqlaunch skills audit" "$DOC"

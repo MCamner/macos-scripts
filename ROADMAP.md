@@ -772,12 +772,31 @@ below are from 2026-07-30 against `2.0.1`.
     like `mqlaunch doctor`, which the inventory read as menu invocations.
     Printing a command's name is not a way in; the scanner skips generated list
     blocks now.
-  * [ ] <= 10 operator choices per menu — ten menus are over, worst first:
-    `tools` 29, `agent` 22, `main` 18, `hal` 17, `system` 16, `apps` 15, `dev`
-    14, `git` 12, `release` 12, `performance` 11. Navigation rows are excluded.
-  * [ ] <= 190 total options — 242 today, so about 52 to remove. Same work as
-    the box above, and it should follow the same order: the menus furthest over
-    the limit first.
+  * [ ] <= 10 operator choices per menu — eight loops are over, worst first:
+    `hal` 17, `system` 16, `apps` 15, `dev` 14, `git` 12, `release` 12,
+    `performance` 11, `workflows` 11. Tools went 30 to 10 and Agent 21 to 10 by
+    grouping, not by cutting: Skills, Repos and Markdown became Tools submenus,
+    and Repo analysis, Review to brain, Co-change, MCP and Environment became
+    Agent submenus (#133).
+
+    The count is per menu loop, not per file. `mq-tools-menu.sh` holds five
+    loops, so counting per file said 23 choices for a menu showing ten — and
+    splitting a long menu into submenus, which is the fix, could never improve
+    the number.
+
+  * [ ] <= 190 total options — 244 today, up from 243. **This target and the one
+    above pull in opposite directions and cannot both be met by grouping.** Every
+    submenu adds a row in the parent and a Back arm of its own, so restructuring
+    Tools and Agent removed eleven flat rows and added sixteen. Reaching 190 means
+    deleting capability, not regrouping it.
+
+    Worth deciding which target is the real one before the next slice. The
+    per-loop limit is the one an operator feels.
+
+  * [ ] `workflows` is over the limit because Demo flow moved there. It had ten
+    choices and has eleven. The move was right — it is the other full-stack run,
+    beside project boot and check — but it needs a submenu or a different home
+    for something else on that menu.
 
 ### Exit gate
 

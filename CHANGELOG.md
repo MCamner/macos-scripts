@@ -8,6 +8,42 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* The Tools menu shows ten choices instead of thirty, and the Agent menu ten
+  instead of twenty-one. Grouped, not cut:
+
+  ```text
+  Tools   Skills, Repos and Markdown became submenus; System check and the four
+          folder openers went, being `mqlaunch check` and `mqlaunch repo` with
+          extra steps; Focus Timer went.
+  Agent   Repo analysis, Review to brain, Co-change and memory, MCP and
+          Environment became submenus. Demo flow moved to Workflows, beside the
+          other full-stack run. Learn promotion moved into Co-change and memory,
+          where the rest of the memory writes already were.
+  ```
+
+  Nothing in the submenus became unreachable; the rows are one level down.
+  `focus.sh` is the exception — the Tools menu was its only entry point, and it
+  has no dispatcher route, so it is now orphaned rather than merely demoted.
+
+* **The per-menu count was measured per file, and a file is not a menu.**
+  `mq-tools-menu.sh` holds five loops, so the inventory reported 23 choices for a
+  menu showing ten — and splitting a long menu into submenus, which is the fix
+  ROADMAP P2 asks for, could never have improved the number. Each option is
+  attributed to the loop containing it now.
+
+* **The two remaining menu targets pull against each other.** Restructuring
+  removed eleven flat rows and added sixteen, because every submenu costs a row
+  in the parent and a Back arm of its own. Per-loop counts fell; the total rose
+  from 243 to 244. Reaching the 190 target means deleting capability rather than
+  regrouping it, which is a different decision and is recorded as one.
+
+* Three tests pinned menu layout rather than menu behaviour and broke on the
+  regrouping: `skills-repos-smoke.sh` grepped for the labels `Skills audit` and
+  `Repos diff`, and `mq-memory-cochange-routing-smoke.sh` required
+  `20) _agent_menu_cochange` by number. Both now assert that some option reaches
+  the handler, which is what they were for — the same correction
+  `markdownlint-routing-smoke.sh` needed.
+
 * No menu option runs a script the dispatcher also routes. `excalidraw` in the
   Apps menu, `reap` in the System menu, and the `self-check` rows in the System
   and Tools menus go through `bin/mqlaunch`. The pin was a ratchet at three while

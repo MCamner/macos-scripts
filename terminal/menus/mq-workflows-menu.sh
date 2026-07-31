@@ -288,12 +288,24 @@ print_workflows_menu() {
   surface_split_row "9. Save workspace" "10. Restore workspace" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "HEALTH" "$width" "$panel_color"
-  surface_split_row "11. Validate workflows" "" "$width" "$panel_color"
+  surface_split_row "11. Validate workflows" "12. Demo flow (full stack)" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
+}
+
+
+# Runs the full MQ demo flow: signal -> review -> release-check.
+run_demo_flow() {
+  local demo_script="$BASE_DIR/mqlaunch/commands/demo-flow.sh"
+  if [[ -x "$demo_script" ]]; then
+    bash "$demo_script" .
+  else
+    ui_err "demo-flow.sh not found or not executable: $demo_script"
+  fi
+  pause_enter
 }
 
 # Runs the menu loop.
@@ -318,6 +330,9 @@ workflows_menu_loop() {
       9) save_workspace_snapshot ;;
       10) restore_workspace_snapshot ;;
       11) run_workflows_validation ;;
+      # Moved off the Agent menu, which was twenty-one rows deep. This is the
+      # other full-stack run, so it belongs beside project boot and check.
+      12) run_demo_flow ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac

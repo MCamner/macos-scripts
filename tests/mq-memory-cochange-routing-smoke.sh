@@ -63,9 +63,15 @@ grep -q "_run_agent memory inbox-cochange" "$AGENT_MENU"
 ! grep -qiE "memory-score|promotion-event|learn-writeback|emit_observation|derive_observation|build_observation" "$AGENT_MENU"
 
 echo "[5b] interactive menu row exposes co-change intake and routes via the delegate"
+# The row used to be option 20 in a flat twenty-one-row menu and is option 1 of
+# the Co-change and Memory submenu now. Pinning the number tested the layout;
+# what matters is that a menu option reaches the delegate, which is what the
+# routing boundary is about.
 grep -q "Co-change intake" "$AGENT_MENU"
-grep -q "_agent_menu_cochange" "$AGENT_MENU"
-grep -Eq "^\s*20\) _agent_menu_cochange" "$AGENT_MENU"
+grep -Eq "^\s*[0-9]+\) _agent_menu_cochange;" "$AGENT_MENU" || {
+  echo "FAIL: no agent menu option routes to _agent_menu_cochange" >&2
+  exit 1
+}
 
 echo "[6/7] the local SRM surface is preserved for non-cochange memory commands"
 grep -q "srm|memory|repo-memory)" "$COMMAND_MODE"
