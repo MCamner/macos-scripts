@@ -1,11 +1,6 @@
 ---
 name: mqlaunch-menu-template
-description: >
-  Mall för att bygga mqlaunch-menyer med korrekt box-rendering, separator-prompt
-  och konsekvent UI-mönster. Använd när Codex, Claude Code eller Claude ska skapa
-  en ny mqlaunch-meny (t.ex. mq-workflows-menu.sh, mq-system-menu.sh). Triggas av
-  fraser som "bygg en ny mqlaunch-meny", "lägg till ett menyval", "skapa submeny
-  för X i mqlaunch", eller "ny menu-modul i macos-scripts".
+description: Mall för att bygga nya mqlaunch-menyer med korrekt box-rendering, separator-prompt och konsekvent UI-mönster. Använd när Codex eller Claude ska skapa en ny mqlaunch-meny eller submeny i macos-scripts.
 ---
 
 # mqlaunch-menu-template

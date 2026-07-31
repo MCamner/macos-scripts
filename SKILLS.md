@@ -17,9 +17,10 @@ it documents actually live.
 | ----- | ----------- |
 | [docs-maintainer](skills/docs-maintainer/SKILL.md) | Use when keeping repository documentation consistent after code, CLI, release, workflow, README, wiki, or GitHub Pages changes. Helps update docs surfaces without inventing behavior. |
 | [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Use when changing macos-scripts mqlaunch commands, terminal GUI menus, HAL routing, command aliases, help text, or CLI/TUI command-surface behavior. |
-| [mqlaunch-menu-template](skills/mqlaunch-menu-template/SKILL.md) | > |
+| [mqlaunch-menu-template](skills/mqlaunch-menu-template/SKILL.md) | Mall för att bygga nya mqlaunch-menyer med korrekt box-rendering, separator-prompt och konsekvent UI-mönster. Använd när Codex eller Claude ska skapa en ny mqlaunch-meny eller submeny i macos-scripts. |
 | [release-readiness](skills/release-readiness/SKILL.md) | Use when preparing a macos-scripts release. Validates git state, version sync, changelog, docs, smoke tests, the mqlaunch release-check gate, and the MQ stack contract. |
 | [repo-health-brief](skills/repo-health-brief/SKILL.md) | Use when asked for a quick health check, daily repo status, or before deciding what to work on next. Runs repo-signal brief and interprets the output. |
+| [shell-script-auditor](skills/shell-script-auditor/SKILL.md) | Audit changed Bash, Zsh, and POSIX shell scripts for syntax errors, unsafe patterns, portability problems, and missing smoke-test coverage. Use when shell files are created or modified, before committing shell changes, or when asked for a shell safety review. |
 | [terminal-ui-polisher](skills/terminal-ui-polisher/SKILL.md) | Improve terminal GUI menus, CLI, TUI, ASCII, ANSI, and command-surface interfaces with focus on clarity, hierarchy, keyboard flow, spacing, status feedback, and product-level polish. |
 | [vector-store-maintainer](skills/vector-store-maintainer/SKILL.md) | Use when maintaining OpenAI vector stores, knowledge packs, indexed markdown, file_search sources, or repo memory freshness across projects. Distinct from mq-mcp's semantic-memory-maintainer, which owns repo packs. |
 <!-- END GENERATED SKILLS TABLE -->

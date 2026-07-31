@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shell Script Auditor"
+  short_description: "Audit changed shell scripts safely"
+  default_prompt: "Use $shell-script-auditor to audit my changed shell scripts before commit."

@@ -7,6 +7,7 @@
 #   3. skill cross-references ("use `<skill>`") point to existing skills
 #   4. backticked file paths in SKILL.md files exist in the repo
 #   5. the SKILLS.md table between the GENERATED markers matches frontmatter
+#   6. every built-in skill is discoverable through .agents/skills/
 #
 # Usage:
 #   ./scripts/check-skills.sh          # check only
@@ -121,6 +122,22 @@ else
     ok "SKILLS.md table matches skill frontmatter"
   fi
 fi
+
+# --- 6: Codex discovery ------------------------------------------------------
+
+DISCOVERY_FAIL=0
+for skill_md in skills/*/SKILL.md; do
+  name="$(basename "$(dirname "$skill_md")")"
+  discovered=".agents/skills/$name/SKILL.md"
+  if [[ ! -f "$discovered" ]]; then
+    fail "$name is not discoverable at $discovered"
+    DISCOVERY_FAIL=1
+  elif ! cmp -s "$skill_md" "$discovered"; then
+    fail "$discovered differs from canonical $skill_md"
+    DISCOVERY_FAIL=1
+  fi
+done
+[[ $DISCOVERY_FAIL -eq 0 ]] && ok "Codex skill discovery"
 
 if [[ $FAIL -ne 0 ]]; then
   echo "check-skills: FAILED"
