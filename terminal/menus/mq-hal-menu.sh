@@ -86,16 +86,20 @@ render_hal_panel() {
 
 # Shows the missing mq-hal message.
 hal_menu_missing() {
-  local width
+  local width panel_color
   width="$(surface_terminal_width)"
+  # Was `""` on every row, so the one panel an operator meets when something is
+  # already wrong was also the one drawn in whatever colour the terminal
+  # happened to be using.
+  panel_color="$(surface_panel_color)"
   if command -v print_header >/dev/null 2>&1; then
     print_header
   fi
-  surface_panel_header "MQ HAL" "HAL" "$width" ""
-  surface_row "HAL backend not found: $MQ_HAL_BIN" "$width" ""
-  surface_row "" "$width" ""
-  surface_row "Check: ls -l ~/mq-hal/bin/mq-hal" "$width" ""
-  surface_bottom "$width" ""
+  surface_panel_header "MQ HAL" "HAL" "$width" "$panel_color"
+  surface_row "HAL backend not found: $MQ_HAL_BIN" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Check: ls -l ~/mq-hal/bin/mq-hal" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
   _hal_pause_enter
 }
 

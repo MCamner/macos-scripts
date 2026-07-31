@@ -8,6 +8,29 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* Two panels were drawn with no colour at all, and the stack disagreed about
+  what white meant.
+
+  `hal_menu_missing` and `mq_obsidian_missing` passed `""` as the colour on
+  every row, so the one panel an operator meets when something is already wrong
+  was also the only one that ignored the theme. #139 made the colour themeable
+  but only caught menus that set their *own* escape — passing an empty string is
+  the same defect with the opposite symptom.
+
+  `C_WHITE` meant `1;97` in `gitlaunch.sh`, the zsh theme and the prompt
+  preview, but `37` — grey — in both dashboards and the miami background. The
+  READY banner sits directly above a panel, so the disagreement showed up as two
+  shades of almost-white on one screen. `mq-ui.sh` defines `C_WHITE` now
+  (`MQ_COLOR_WHITE`, default `1;97`), and the panel default moved from `1;37` to
+  the same value so the stack has one white rather than two that nearly match.
+
+  `tests/panel-color-smoke.sh` gained both rules. Step 7 was first written as
+  three piped greps, one holding an empty alternation that BSD grep rejects —
+  the middle stage errored, the pipeline returned non-zero, and the step printed
+  "ok" having checked nothing. It is python now.
+
+### Fixed
+
 * The HAL submenus drew a header and then died on `bad substitution`. The panel
   built its section heading with `${title^^}` — a bash 4 expansion. macOS ships
   `/bin/bash` 3.2, and the menu is sourced into whatever shell mqlaunch runs

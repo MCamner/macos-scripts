@@ -33,9 +33,15 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   _MQ_DEFAULT_WARN=$'\033[0;33m'
   _MQ_DEFAULT_INFO=$'\033[0;34m'
   _MQ_DEFAULT_BOLD=$'\033[1m'
-  # 1;37, not 0;37: normal-intensity white renders grey in most terminals, so
-  # the panel border read as dim next to the themed title it framed.
-  _MQ_DEFAULT_PANEL=$'\033[1;37m'
+  # 1;97, not 0;37: normal-intensity white renders grey in most terminals, so
+  # the panel border read as dim next to the themed title it framed. 1;97 rather
+  # than 1;37 so it is the same white as C_WHITE below — the READY banner sits
+  # directly above a panel, and two almost-whites on one screen read as a bug.
+  _MQ_DEFAULT_PANEL=$'\033[1;97m'
+  # The stack disagreed about what white meant: 1;97 in gitlaunch, the zsh theme
+  # and the prompt preview, but 37 — grey — in both dashboards, which is what
+  # drew the READY banner. Defined here so there is one answer.
+  _MQ_DEFAULT_WHITE=$'\033[1;97m'
 
   C_RESET="${MQ_COLOR_RESET:-$_MQ_DEFAULT_RESET}"
   C_TITLE="${MQ_COLOR_TITLE:-$_MQ_DEFAULT_TITLE}"
@@ -45,6 +51,8 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_INFO="${MQ_COLOR_INFO:-$_MQ_DEFAULT_INFO}"
   C_BOLD="${MQ_COLOR_BOLD:-$_MQ_DEFAULT_BOLD}"
   C_PANEL="${MQ_COLOR_PANEL:-$_MQ_DEFAULT_PANEL}"
+  # shellcheck disable=SC2034  # read by the dashboards, which source this file
+  C_WHITE="${MQ_COLOR_WHITE:-$_MQ_DEFAULT_WHITE}"
 else
   C_RESET=''
   C_TITLE=''
@@ -54,6 +62,8 @@ else
   C_INFO=''
   C_BOLD=''
   C_PANEL=''
+  # shellcheck disable=SC2034  # read by the dashboards, which source this file
+  C_WHITE=''
 fi
 
 # ------------------------------------------------------------

@@ -95,16 +95,17 @@ render_mq_obsidian_panel() {
 
 # Shows missing mqobsidian repo message.
 mq_obsidian_missing() {
-  local width
+  local width panel_color
   width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
   if command -v print_header >/dev/null 2>&1; then
     print_header
   fi
-  surface_panel_header "MQ Obsidian / Memory" "MEMORY" "$width" ""
-  surface_row "Repo not found: $MQ_OBSIDIAN_DIR" "$width" ""
-  surface_row "" "$width" ""
-  surface_row "Expected local repo: ~/mqobsidian" "$width" ""
-  surface_bottom "$width" ""
+  surface_panel_header "MQ Obsidian / Memory" "MEMORY" "$width" "$panel_color"
+  surface_row "Repo not found: $MQ_OBSIDIAN_DIR" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Expected local repo: ~/mqobsidian" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
   _mq_obsidian_pause_enter
 }
 

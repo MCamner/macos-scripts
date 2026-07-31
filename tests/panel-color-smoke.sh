@@ -15,17 +15,15 @@ UI="$ROOT/ui/terminal-ui/mq-ui.sh"
 
 echo "SMOKE: panel colour"
 
-echo "[1/5] the ui library exists"
+echo "[1/7] the ui library exists"
 test -f "$UI"
 
-echo "[2/5] the panel colour is a theme variable"
+echo "[2/7] the panel colour is a theme variable"
 grep -q 'MQ_COLOR_PANEL' "$UI" || {
   echo "FAIL: mq-ui.sh does not read MQ_COLOR_PANEL" >&2
   exit 1
 }
 
-# Rendered through a pty, because the colour block is guarded by `[[ -t 1 ]]`
-# and every one of these checks would otherwise compare empty strings and pass.
 # Runs a snippet on a pty, because the colour block is guarded by `[[ -t 1 ]]`
 # and off a terminal every check below would compare empty strings and pass.
 #
@@ -71,21 +69,21 @@ sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
 PY
 }
 
-echo "[3/5] the default is white, not grey"
+echo "[3/7] the default is white, not grey"
 # `|| true` so a broken helper reports below instead of killing the script under
 # `set -e`. The first CI run of this test died here without printing anything,
 # which said "exit 1" and nothing about why.
 default_colour="$(panel_colour 'unset MQ_COLOR_PANEL; unset NO_COLOR')" || true
 case "$default_colour" in
-  *'033[1;37m'*) ;;
+  *'033[1;97m'*) ;;
   *)
     echo "FAIL: default panel colour is not bright white: $default_colour" >&2
     exit 1
     ;;
 esac
-echo "  ok: default renders 1;37"
+echo "  ok: default renders 1;97"
 
-echo "[4/5] a theme can override it"
+echo "[4/7] a theme can override it"
 themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
 case "$themed_colour" in
   *'033[0;35m'*) ;;
@@ -96,7 +94,7 @@ case "$themed_colour" in
 esac
 echo "  ok: MQ_COLOR_PANEL wins over the default"
 
-echo "[5/5] no menu hardcodes a panel colour past the theme"
+echo "[5/7] no menu hardcodes a panel colour past the theme"
 # Static, so it fails on any machine. The render checks above only prove the
 # library; a menu assigning its own escape defeats the theme without touching
 # surface_panel_color at all — which is exactly how four of them drifted grey.
@@ -105,5 +103,64 @@ if grep -rn "panel_color=\$'\\\\033\[" "$ROOT/terminal/menus/" 2>/dev/null; then
   exit 1
 fi
 echo "  ok: menus take the colour from the library"
+
+echo "[6/7] no panel is drawn with an empty colour"
+# The step above catches a menu that picks its own colour. It does not catch a
+# menu that passes `""` and gets no colour at all — which is how the HAL and
+# Obsidian "not found" panels drew in the terminal default while every other
+# panel followed the theme. Same class of defect, opposite symptom.
+if grep -rnE 'surface_(top|row|split_row|bottom|panel_header) .*"\$width" ""' \
+  "$ROOT/terminal/menus/" 2>/dev/null; then
+  echo "FAIL: a panel passes an empty colour; call surface_panel_color" >&2
+  exit 1
+fi
+echo "  ok: no panel opts out of the colour"
+
+echo "[7/7] the stack has one white"
+# C_WHITE meant two different things: 1;97 in gitlaunch, the zsh theme and the
+# prompt preview, but 37 — grey — in the dashboards. The READY banner sits
+# directly above a panel, so the disagreement was visible as two shades of
+# almost-white on one screen.
+#
+# Written in python, not as piped greps. The first version chained three greps
+# and one of them held an empty alternation, which BSD grep rejects outright —
+# so the middle stage errored, the pipeline returned non-zero, the `if` took the
+# false branch, and the step printed "ok" having checked nothing.
+if ! python3 - "$ROOT" <<'PY'
+import pathlib, re, sys
+
+root = pathlib.Path(sys.argv[1])
+assign = re.compile(r"C_WHITE:?=(?P<value>.*)")
+# Empty is deliberate: it is how every one of these files spells "no colour".
+allowed_empty = {"", '""', "''", '}"', "}"}
+
+offenders = []
+for directory in ("ui", "terminal", "tools"):
+    for path in sorted((root / directory).rglob("*")):
+        if path.suffix not in {".sh", ".zsh"} or not path.is_file():
+            continue
+        for number, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
+            found = assign.search(line)
+            if not found:
+                continue
+            value = found.group("value").strip()
+            if "1;97" in value or value in allowed_empty:
+                continue
+            # The library reads a theme variable rather than naming a shade.
+            if "MQ_COLOR_WHITE" in value:
+                continue
+            offenders.append(f"{path.relative_to(root)}:{number}: {line.strip()}")
+
+if offenders:
+    print("FAIL: C_WHITE is not 1;97 here:", file=sys.stderr)
+    for line in offenders:
+        print(f"  {line}", file=sys.stderr)
+    sys.exit(1)
+print(f"  checked {sum(1 for _ in (root / 'ui').rglob('*.sh'))} ui scripts and their peers")
+PY
+then
+  exit 1
+fi
+echo "  ok: every C_WHITE is 1;97 or deliberately empty"
 
 echo "OK: panel colour smoke test passed"
