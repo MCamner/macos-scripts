@@ -331,6 +331,10 @@ handle_main_prompt_command() {
     release|rel) open_release_menu; return 0 ;;
     dev) open_dev_menu; return 0 ;;
     help|h|\?|commands|index) open_help_center_menu; return 0 ;;
+    # The prompt advertises `/` as the palette shortcut. Accept both the bare
+    # key and the animated label captured from the screen; neither may fall
+    # through to the CLI unknown-command route or the shell fallback.
+    /|/.|/\ palette|/.\ palette) run_command_palette; return 0 ;;
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
