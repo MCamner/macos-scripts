@@ -415,10 +415,11 @@ run_main_shell_command() {
 # Reads main choice from user input or stdin.
 read_main_choice() {
   local label="${1:-mqlaunch}"
-  local prompt_line prompt_hint prompt_color prompt_width summary
+  local prompt_line prompt_hint prompt_color prompt_width prompt_text summary
   prompt_width="${MQ_SURFACE_WIDTH:-$(surface_terminal_width)}"
   prompt_line="$(repeat_char "$prompt_width" "─")"
   prompt_hint=">> option, command, / palette, ? help, !shell, x exit"
+  prompt_text="${label} > "
 
   if [[ -t 1 ]]; then
     prompt_color=$'\033[0;37m'
@@ -426,13 +427,26 @@ read_main_choice() {
     prompt_color=""
   fi
 
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  printf "${C_TITLE}${label} > ${C_RESET}"
-  if ! IFS= read -r choice; then
-    return 1
+  if [[ -t 0 && -t 1 ]]; then
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n" "$C_TITLE" "$prompt_text" "$C_RESET"
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
+    printf "\033[3A\r\033[2K%b%s%b" "$C_TITLE" "$prompt_text" "$C_RESET"
+    if ! IFS= read -r choice; then
+      printf "\033[2B\r"
+      return 1
+    fi
+    printf "\033[2B\r"
+  else
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b" "$C_TITLE" "$prompt_text" "$C_RESET"
+    if ! IFS= read -r choice; then
+      return 1
+    fi
+    printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
+    printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
   fi
-  printf "%b%s%b\n" "$prompt_color" "$prompt_line" "$C_RESET"
-  printf "%b%s%b\n" "$C_OK" "$prompt_hint" "$C_RESET"
 
   summary="$(surface_choice_summary "$label" "${choice:-menu}")"
   if [[ -n "$choice" ]]; then
