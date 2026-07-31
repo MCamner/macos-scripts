@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The main prompt's advertised palette shortcut now opens the command palette.
+  Bare `/`, the compact `/.` form, and the displayed forms `/ palette` and
+  `/. Palette` are handled before generic CLI dispatch. They can no longer
+  produce duplicate unknown-command diagnostics or fall through to the shell.
+  `tests/unknown-command-contract-smoke.sh` exercises the exact displayed input
+  and installs sentinels on both fallback paths.
+
 ### Changed
 
 * `mqlaunch help` takes its descriptions from the registry's `summary` field.
