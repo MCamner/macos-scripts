@@ -5,25 +5,25 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "SMOKE: HAL menu"
 
-echo "[1/11] menu file exists"
+echo "[1/12] menu file exists"
 test -f "$ROOT/terminal/menus/mq-hal-menu.sh"
 
-echo "[2/11] menu is executable"
+echo "[2/12] menu is executable"
 test -x "$ROOT/terminal/menus/mq-hal-menu.sh"
 
-echo "[3/11] menu syntax check"
+echo "[3/12] menu syntax check"
 bash -n "$ROOT/terminal/menus/mq-hal-menu.sh"
 
-echo "[4/11] bridge syntax check"
+echo "[4/12] bridge syntax check"
 bash -n "$ROOT/terminal/bridges/hal-bridge.sh"
 
-echo "[5/11] bridge routes audit"
+echo "[5/12] bridge routes audit"
 grep -q "audit)" "$ROOT/terminal/bridges/hal-bridge.sh"
 
-echo "[6/11] bridge routes release-brief"
+echo "[6/12] bridge routes release-brief"
 grep -q "release-brief|release)" "$ROOT/terminal/bridges/hal-bridge.sh"
 
-echo "[7/11] audit and release readiness are reachable from the menu"
+echo "[7/12] audit and release readiness are reachable from the menu"
 # Asserted as reachable actions rather than as label text. The rows were "Audit"
 # and "Release Brief" while seventeen choices sat flat on the front menu; audit
 # is in the Diagnostics submenu now, with `a` and `audit` still typed straight
@@ -39,7 +39,7 @@ for backend_cmd in audit release-brief; do
   }
 done
 
-echo "[8/11] hal json commands do not add launcher pause text"
+echo "[8/12] hal json commands do not add launcher pause text"
 tmp_hal="$(mktemp -d)"
 trap 'rm -rf "$tmp_hal"' EXIT
 cat > "$tmp_hal/mq-hal" <<'FAKE_HAL'
@@ -59,7 +59,7 @@ MQ_HAL_BIN="$tmp_hal/mq-hal" "$ROOT/terminal/launchers/mqlaunch.sh" hal release-
 python3 -m json.tool /tmp/mqlaunch-hal-release-brief.json >/dev/null
 ! grep -q "Press Enter" /tmp/mqlaunch-hal-release-brief.json
 
-echo "[9/11] unknown input is not run as a shell command"
+echo "[9/12] unknown input is not run as a shell command"
 # The front menu used to end in `*) /bin/zsh -lc "$choice" 2>/dev/null || true`,
 # so mistyping at the HAL prompt executed the typo — silently, because stderr
 # went to /dev/null. This drives the real menu with a command that would leave a
@@ -79,7 +79,7 @@ if [[ -e "$probe" ]]; then
 fi
 echo "  ok: a typo at the HAL prompt stays a typo"
 
-echo "[10/11] an explicit ! prefix still reaches the shell"
+echo "[10/12] an explicit ! prefix still reaches the shell"
 # The guard above is only worth having while the deliberate route still works,
 # or the next person removes the prefix rather than the risk.
 printf '! touch %s\nb\n' "$probe" | timeout 30 bash "$MENU" >/dev/null 2>&1 || true
@@ -90,7 +90,23 @@ fi
 rm -f "$probe"
 echo "  ok: ! runs what follows it"
 
-echo "[11/11] submenu panels render under the shells this machine actually has"
+echo "[11/12] the menu uses no bash 4 case expansion"
+# Static, because the render check below is only as strong as the shells the
+# machine happens to have. A Linux runner has bash 5 — where `${x^^}` works —
+# and usually no zsh at all, so on CI that check would have passed on the very
+# code that broke here. This one fails the same commit anywhere it runs.
+# Comment lines are blanked first, keeping the line count so numbers stay true.
+# Without that this rule failed the fixed file: the comment on the fix names the
+# expansion it replaced, and a gate that trips on its own explanation is one the
+# next person deletes rather than reads.
+if sed 's/^[[:space:]]*#.*//' "$MENU" \
+  | grep -nE '\$\{[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?(\^\^|,,)\}'; then
+  echo "FAIL: ^^ / ,, is bash 4; /bin/bash on macOS is 3.2 and zsh lacks it" >&2
+  exit 1
+fi
+echo "  ok: no ^^ or ,, in the menu code"
+
+echo "[12/12] submenu panels render under the shells this machine actually has"
 # The grouped menu shipped with `${title^^}` in the submenu panel. That is a
 # bash 4 expansion, and this is macOS: /bin/bash is 3.2, and the menu is sourced
 # into whatever shell mqlaunch is running under. CI runs bash 5, where it works,
