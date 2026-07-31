@@ -25,19 +25,18 @@ REGISTRY="$ROOT/mqlaunch/lib/command-registry.json"
 # Today's count of menu options that bypass the dispatcher. Lower it as the
 # duplicated paths are removed; a rise means a menu gained a second way into a
 # command the dispatcher already routes.
-MAX_BYPASS=3
 
 echo "SMOKE: command discovery inventory"
 
-echo "[1/7] tool exists and compiles"
+echo "[1/8] tool exists and compiles"
 test -x "$TOOL"
 test -f "$REGISTRY"
 PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/mqlaunch-pycache" python3 -m py_compile "$TOOL"
 
-echo "[2/7] the inventory runs and reports"
+echo "[2/8] the inventory runs and reports"
 "$TOOL" >/dev/null
 
-echo "[3/7] --json is a single valid document with the expected schema"
+echo "[3/8] --json is a single valid document with the expected schema"
 "$TOOL" --json | python3 -c '
 import sys, json
 data = json.load(sys.stdin)
@@ -47,7 +46,7 @@ for key in ("options", "counts", "unclassified", "registry"):
 assert data["options"], "inventory found no menu options at all"
 '
 
-echo "[4/7] every option is classified and counted"
+echo "[4/8] every option is classified and counted"
 # The property that made tests/manifest.tsv useful: nothing invisible. A row that
 # fell outside the known classes, or a class that stopped being counted, would
 # make every headline number in the report quietly wrong.
@@ -68,7 +67,7 @@ if counted != len(data["options"]):
 PY
 "$TOOL" --fail-on-unclassified >/dev/null
 
-echo "[5/7] the output does not depend on filesystem order"
+echo "[5/8] the output does not depend on filesystem order"
 # Handler names are defined in more than one file. An earlier revision picked a
 # winner globally, so the whole inventory shifted with directory order — 4
 # dispatcher calls one run, 17 the next. Resolution is now menu-local first, and
@@ -80,7 +79,7 @@ second="$("$TOOL" --json)"
   exit 1
 }
 
-echo "[6/7] untracked files in the checkout do not change the answer"
+echo "[6/8] untracked files in the checkout do not change the answer"
 # The defect this pins was invisible locally and only CI could see it. A
 # gitignored backups/scripts/ tree holds old copies of the menus and launchers,
 # and since a handler name can be defined in several files, resolution sometimes
@@ -104,17 +103,65 @@ with_untracked="$("$TOOL" --json)"
 rm -rf "$probe_dir"
 echo "  ok: untracked shell files are outside the inventory"
 
-echo "[7/7] the bypass ratchet holds, and fires when it should"
-"$TOOL" --max-bypass "$MAX_BYPASS" >/dev/null || {
-  echo "FAIL: dispatcher-bypass count rose above the pinned $MAX_BYPASS" >&2
+echo "[7/8] no menu option bypasses the dispatcher"
+# The pin was a ratchet at three while the count came down. It is zero now, so
+# the ratchet's own proof — "one lower must fail" — has nowhere to go: there is
+# no -1. The gate is proven by planting a bypass instead, which is a stronger
+# claim than an off-by-one anyway.
+"$TOOL" --max-bypass 0 >/dev/null || {
+  echo "FAIL: a menu option runs a script the dispatcher also routes" >&2
+  "$TOOL" | sed -n '/DISPATCHER BYPASS/,/^$/p' >&2
   exit 1
 }
-# Prove the ratchet is not vacuous: one lower must fail. Without this the pin
-# could be set above any real count and never fire.
-if "$TOOL" --max-bypass "$((MAX_BYPASS - 1))" >/dev/null 2>&1; then
-  echo "FAIL: --max-bypass $((MAX_BYPASS - 1)) passed, so the ratchet proves nothing" >&2
+
+echo "[8/8] the inventory still notices a bypass and a duplication"
+# Both gates are at zero, so nothing in the repo exercises them. Each is proven
+# by reintroducing the defect in a tracked menu and taking it out again. The
+# trap restores the file even when an assertion below exits.
+PLANT_MENU="$ROOT/terminal/menus/mq-net-menu.sh"
+PLANT_BACKUP="$(mktemp)"
+cp "$PLANT_MENU" "$PLANT_BACKUP"
+restore_plant() { cp "$PLANT_BACKUP" "$PLANT_MENU"; rm -f "$PLANT_BACKUP"; }
+trap restore_plant EXIT
+
+# A bypass: a script the dispatcher also routes, run directly from a menu
+# option. It has to be a case arm — the classifier reads menu options, and a
+# loose function would be scanned for invocations but never classified, which is
+# how the first version of this fixture passed while proving nothing.
+python3 - "$PLANT_MENU" <<'PLANT'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+anchor = "    9) open_network_settings ;;\n"
+if anchor not in text:
+    sys.exit(f"{path.name} no longer has the arm this fixture inserts after")
+path.write_text(
+    text.replace(anchor, anchor + '    99) "$BASE_DIR/tools/scripts/overseer.sh" ;;\n', 1),
+    encoding="utf-8")
+PLANT
+if "$TOOL" --max-bypass 0 >/dev/null 2>&1; then
+  echo "FAIL: a planted dispatcher bypass was not reported" >&2
   exit 1
 fi
-echo "  ok: $MAX_BYPASS pinned, one lower rejected"
+cp "$PLANT_BACKUP" "$PLANT_MENU"
+
+# A duplication: a command another menu already offers.
+printf '\n# planted by %s\nplanted_duplicate() { "$BASE_DIR/bin/mqlaunch" doctor; }\n' \
+  "$(basename "$0")" >>"$PLANT_MENU"
+if ! "$TOOL" | grep -q "exposed in several menus"; then
+  echo "FAIL: a planted cross-menu duplication was not reported" >&2
+  exit 1
+fi
+cp "$PLANT_BACKUP" "$PLANT_MENU"
+
+# And with both taken out, the repo reports neither.
+if "$TOOL" | grep -q "exposed in several menus"; then
+  echo "FAIL: a command is offered by more than one menu" >&2
+  "$TOOL" | sed -n '/exposed in several menus/,$p' >&2
+  exit 1
+fi
+echo "  ok: both defects are detected when planted, and neither is present"
 
 echo "OK: command discovery inventory smoke test passed"

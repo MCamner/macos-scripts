@@ -8,6 +8,43 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* No menu option runs a script the dispatcher also routes. `excalidraw` in the
+  Apps menu, `reap` in the System menu, and the `self-check` rows in the System
+  and Tools menus go through `bin/mqlaunch`. The pin was a ratchet at three while
+  the count came down; it is a hard zero now.
+
+  A ratchet at zero cannot prove itself the way the others do — "one lower must
+  fail" has nowhere to go. `tests/command-discovery-inventory-smoke.sh` plants a
+  bypass in a tracked menu instead and requires it to be reported, restoring the
+  file through a trap. The first version of that fixture appended a *function*
+  and passed while proving nothing: the classifier reads menu options, so the
+  plant has to be a case arm.
+
+* The Tools menu drops its `doctor`, `doctor --json` and `self-check` rows, and
+  renumbers. All three are on the System menu, which is where checks belong, and
+  all three still run from the CLI. That takes cross-menu duplication to zero
+  without adding an allow-list: nothing yet needs a documented exception, and
+  building the mechanism first would have made the target reachable by writing
+  prose.
+
+* **The duplication count was wrong, and it was wrong because of a change made
+  two commits earlier.** The inventory reported five commands offered by more
+  than one menu. Four were the generated help list: its rows read
+  `mqlaunch doctor  Check the environment`, which the invocation scanner matched
+  exactly like a call, so `mq-help-menu.sh` looked like a menu reaching half the
+  registry. Printing a command's name is not a way in. The scanner skips
+  generated list blocks now, and the real count was 1.
+
+  This also corrects the "three duplications" figure reported while planning
+  this work.
+
+* `tests/markdownlint-routing-smoke.sh` asserted `23. Markdown lint` and
+  `24. Markdown fix` by number, so renumbering the Tools menu broke it — a true
+  statement about the old layout and nothing about whether the rows route
+  correctly, which is what the test is for. It now reads the number out of the
+  panel and requires that option to reach `run_markdownlint`, so the rows can
+  move without the gate going red or, worse, being loosened.
+
 * `mqlaunch help` takes its descriptions from the registry's `summary` field.
   They used to be typed beside it — two sources for one sentence, the same shape
   as the `chat` drift between help and the index, only on the description

@@ -103,6 +103,29 @@ KINDS = (
 )
 
 
+# The help screen's command list is generated text, not menu code. Its rows read
+# `  mqlaunch doctor  Check the environment`, which INVOKE matches exactly like a
+# call, so the list made `mq-help-menu.sh` look like a menu that reaches half the
+# registry — and every command it lists looked duplicated with the menu that
+# really offers it. Printing a command's name is not a way in.
+LIST_OPEN = re.compile(r"^\s*cat <<'LIST'\s*$")
+LIST_CLOSE = re.compile(r"^LIST$")
+
+
+def menu_code_lines(path):
+    """Lines of a menu file with generated list blocks left out."""
+    inside = False
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if inside:
+            if LIST_CLOSE.match(line):
+                inside = False
+            continue
+        if LIST_OPEN.match(line):
+            inside = True
+            continue
+        yield line
+
+
 def strip_comment(line: str) -> str:
     """Drop a trailing `#` comment.
 
@@ -265,7 +288,7 @@ def build() -> dict:
     # command, only that some menu code does.
     invoked_in_menu_code: dict[str, set[str]] = collections.defaultdict(set)
     for menu in sorted(MENUS.glob("*.sh")):
-        for line in menu.read_text(encoding="utf-8", errors="replace").splitlines():
+        for line in menu_code_lines(menu):
             for match in INVOKE.finditer(strip_comment(line)):
                 word = match.group(1)
                 if word in words:
