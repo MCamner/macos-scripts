@@ -79,3 +79,4 @@ test-inventory-smoke.sh	active	-
 command-discovery-inventory-smoke.sh	active	-
 panel-color-smoke.sh	active	-
 system-menu-smoke.sh	active	-
+dev-menu-smoke.sh	active	-
