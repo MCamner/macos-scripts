@@ -772,12 +772,14 @@ below are from 2026-07-30 against `2.0.1`.
     like `mqlaunch doctor`, which the inventory read as menu invocations.
     Printing a command's name is not a way in; the scanner skips generated list
     blocks now.
-  * [ ] <= 10 operator choices per menu — eight loops are over, worst first:
-    `hal` 17, `system` 16, `apps` 15, `dev` 14, `git` 12, `release` 12,
-    `performance` 11, `workflows` 11. Tools went 30 to 10 and Agent 21 to 10 by
-    grouping, not by cutting: Skills, Repos and Markdown became Tools submenus,
-    and Repo analysis, Review to brain, Co-change, MCP and Environment became
-    Agent submenus (#133).
+  * [ ] <= 10 operator choices per menu — six loops are over, worst first:
+    `system` 16, `apps` 15, `dev` 14, `git` 12, `release` 12, `workflows` 11.
+    Tools went 30 to 10, Agent 21 to 10 and HAL 17 to 10 by grouping rather than
+    cutting (#132, #136).
+
+    Back and quit are excluded, as the target says — they were half-counted
+    before, since `x|X)` matched the arm pattern and `b|B|back)` did not.
+    Correcting that took `performance` off the list without touching the menu.
 
     The count is per menu loop, not per file. `mq-tools-menu.sh` holds five
     loops, so counting per file said 23 choices for a menu showing ten — and

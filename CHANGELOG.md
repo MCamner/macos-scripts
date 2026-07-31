@@ -6,6 +6,53 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+* The HAL menu ran unrecognised input through a shell. Its front loop ended in
+  `*) /bin/zsh -lc "$choice" 2>/dev/null || true`, so a typo at the `hal>` prompt
+  was a shell command — and `2>/dev/null` meant it failed silently when it was
+  not one.
+
+  Measured rather than reasoned about. Typing a `touch` line at the prompt on the
+  previous menu created the file; on this one it does not, and `! touch …` still
+  does:
+
+  ```text
+  before   touch <path>     the file appeared
+  after    touch <path>     "Unknown HAL choice", nothing ran
+  after    ! touch <path>   the file appeared
+  ```
+
+  Shell now needs an explicit `!`, the panel says so, and `2>/dev/null` is gone
+  so a failing command is visible. Two steps in `tests/hal-menu-smoke.sh` drive
+  the real menu and check for the file either way, so neither half can be
+  removed quietly.
+
+  The same fallback is still in `terminal/menus/mq-performance-menu.sh:98`,
+  without even the `|| true`. Out of scope here and reported rather than fixed
+  quietly.
+
+### Changed
+
+* The HAL menu shows ten choices instead of seventeen, grouped by what an
+  operator wants rather than by backend command name: Brief, Repo status,
+  Release readiness, CI status, Doctor, Fix plan, Memory, Diagnostics, Repos,
+  Prompt.
+
+  Memory, Diagnostics and Prompt are submenus. Every action that was on the flat
+  menu is still reachable.
+
+  Two of the seventeen were not in the grouping brief: `audit` and `context`.
+  Neither is dropped — both are in Diagnostics, and `audit` also keeps its `a` /
+  `audit` shortcut typed straight into the front loop, which costs no visible row.
+
+* **Back and quit were half-counted.** The inventory treated `x|X) exit 0` as an
+  operator choice while `b|B|back)` never matched its arm pattern at all, so
+  whether a menu's exit row reached the total depended on how the arm happened to
+  be spelled. ROADMAP P2 counts what a menu offers to do, not the ways out of it,
+  and exit arms are classified as navigation now. That took `performance` off the
+  over-limit list without touching the menu.
+
 ### Added
 
 * `mqlaunch focus` — the Pomodoro timer in `tools/scripts/focus.sh` now has a

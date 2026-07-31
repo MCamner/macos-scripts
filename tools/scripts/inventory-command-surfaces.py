@@ -126,6 +126,19 @@ def menu_code_lines(path):
         yield line
 
 
+# Back and quit are not operator choices — ROADMAP P2 counts what a menu offers
+# to do, not the two ways out of it. They were half-counted before: `b|B|back)`
+# never matched ARM because of the multi-letter alternative, while `x|X)` did, so
+# whether an exit row showed up in the total depended on how the arm happened to
+# be spelled.
+EXIT_TOKENS = {"b", "back", "x", "q", "quit", "exit", "0"}
+
+
+def is_exit_option(option: str) -> bool:
+    parts = [part.strip().lower() for part in option.split("|")]
+    return bool(parts) and all(part in EXIT_TOKENS for part in parts)
+
+
 def strip_comment(line: str) -> str:
     """Drop a trailing `#` comment.
 
@@ -275,6 +288,8 @@ def build() -> dict:
             if not match:
                 continue
             kind, target = classify(match.group(2), menu, per_file, context)
+            if is_exit_option(match.group(1)):
+                kind, target = "navigation", None
             options.append(
                 {
                     "menu": menu.name,
