@@ -58,7 +58,9 @@ open_apps_menu() {
       12) sleep_display ;;
       13) restart_finder ;;
       14) open_repo_browser ;;
-      15) "$BASE_DIR/tools/scripts/excalidraw.sh"; pause_enter ;;
+      # The dispatcher routes this script too. Its route does not pause, so this
+      # arm keeps pause_enter.
+      15) "$BASE_DIR/bin/mqlaunch" excalidraw; pause_enter ;;
       b|B|x|X|exit) return ;;
       *)
         echo "${C_ERR}Invalid selection:${C_RESET} $choice"

@@ -53,11 +53,16 @@ open_system_menu() {
       # Through the dispatcher, not the script. It owns the pause too, so this
       # arm no longer calls pause_enter — doing both would stop twice.
       4) "$BASE_DIR/bin/mqlaunch" doctor ;;
-      5) run_self_check || true; pause_enter ;;
+      # Through the dispatcher, which owns run_self_check and its pause. Calling
+      # the function here reached test-all.sh without passing the dispatcher and
+      # then paused a second time.
+      5) "$BASE_DIR/bin/mqlaunch" self-check ;;
       6) run_debug_bundle || true; pause_enter ;;
       7) system_check; pause_enter ;;
       8) "$BASE_DIR/tools/scripts/vault-scan.sh"; pause_enter ;;
-      9) "$BASE_DIR/tools/scripts/overseer.sh"; pause_enter ;;
+      # `reap` is the dispatcher's name for overseer.sh. That route ends in
+      # `return $?` with no pause of its own, so this arm keeps pause_enter.
+      9) "$BASE_DIR/bin/mqlaunch" reap; pause_enter ;;
       10) lock_screen ;;
       11) sleep_display ;;
       12) restart_finder ;;

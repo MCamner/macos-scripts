@@ -835,16 +835,15 @@ print_tools_menu() {
   surface_split_row "11. Focus Timer" "12. Document functions" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "VERIFY" "$width" "$panel_color"
-  surface_split_row "13. Doctor check" "14. Doctor --json" "$width" "$panel_color"
-  surface_split_row "15. Selftest" "16. Smoke test" "$width" "$panel_color"
+  surface_split_row "13. Smoke test" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "ECOSYSTEM" "$width" "$panel_color"
-  surface_split_row "17. Skills audit" "18. Skills validate" "$width" "$panel_color"
-  surface_split_row "19. Repos summary" "20. Repos diff" "$width" "$panel_color"
-  surface_split_row "21. Skills ecosystem" "22. Repos status" "$width" "$panel_color"
+  surface_split_row "14. Skills audit" "15. Skills validate" "$width" "$panel_color"
+  surface_split_row "16. Repos summary" "17. Repos diff" "$width" "$panel_color"
+  surface_split_row "18. Skills ecosystem" "19. Repos status" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "MARKDOWN" "$width" "$panel_color"
-  surface_split_row "23. Markdown lint" "24. Markdown fix" "$width" "$panel_color"
+  surface_split_row "20. Markdown lint" "21. Markdown fix" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -875,37 +874,19 @@ tools_menu_loop() {
     10) run_tool_script "BOOT MAKER" "$BASE_DIR/tools/cli/boot-maker.sh" ;;
     11) run_tool_script "FOCUS TIMER" "$BASE_DIR/tools/scripts/focus.sh" ;;
     12) document_functions_menu_loop ;;
-    # Both doctor rows go through the dispatcher rather than the script. run_tool_script
-    # is still right for tools with no command of their own; doctor has one.
-    13) "$BASE_DIR/bin/mqlaunch" doctor ;;
-    14)
-      # The existence guard and the missing-script panel that used to wrap this
-      # are gone with it: checking whether doctor.sh is there was this menu
-      # duplicating a decision the dispatcher already owns. `--json` keeps its
-      # pause here, because the dispatcher deliberately skips it for --json so a
-      # piped caller is never left waiting on input.
-      "$BASE_DIR/bin/mqlaunch" doctor --json \
-        | (command -v jq >/dev/null 2>&1 && jq . || cat)
-      pause_enter
-      ;;
-    15)
-      if command -v run_self_check >/dev/null 2>&1; then
-        run_self_check
-      else
-        bash "$BASE_DIR/tools/scripts/test-all.sh" 2>/dev/null \
-          || ui_warn "test-all.sh not found or failed"
-        pause_enter
-      fi
-      ;;
-    16) run_tool_script "SMOKE TEST" "$BASE_DIR/tools/scripts/install-smoke.sh" ;;
-    17) run_mq_skills_audit ;;
-    18) run_mq_skills_validate ;;
-    19) run_mq_repos_summary ;;
-    20) run_mq_repos_diff_summary ;;
-    21) run_mq_skills_ecosystem_validate ;;
-    22) run_mq_repos_status ;;
-    23) run_markdownlint ;;
-    24) run_markdownlint_fix ;;
+    # The two doctor rows and the self-check row are gone. Every one of them was
+    # also on the system menu, which is where checks belong, and a command
+    # reachable from two menus is the duplication ROADMAP P2 asks to remove —
+    # not a convenience. All three still run from the CLI and from SYSTEM.
+    13) run_tool_script "SMOKE TEST" "$BASE_DIR/tools/scripts/install-smoke.sh" ;;
+    14) run_mq_skills_audit ;;
+    15) run_mq_skills_validate ;;
+    16) run_mq_repos_summary ;;
+    17) run_mq_repos_diff_summary ;;
+    18) run_mq_skills_ecosystem_validate ;;
+    19) run_mq_repos_status ;;
+    20) run_markdownlint ;;
+    21) run_markdownlint_fix ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
