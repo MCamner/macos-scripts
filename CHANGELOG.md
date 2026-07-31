@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The HAL submenus drew a header and then died on `bad substitution`. The panel
+  built its section heading with `${title^^}` — a bash 4 expansion. macOS ships
+  `/bin/bash` 3.2, and the menu is sourced into whatever shell mqlaunch runs
+  under, so opening *Memory* produced a half-drawn box and no menu.
+
+  The pipeline was green throughout: CI runs bash 5, where the expansion works,
+  and `bash -n` does not evaluate substitutions. The smoke test drove only the
+  front loop, so no submenu was ever entered by anything.
+
+  `tests/hal-menu-smoke.sh` now renders all three submenus under every shell
+  present on the machine and requires the heading to appear — a panel that fails
+  to render prints no heading either, so the check cannot pass on nothing.
+
 ### Security
 
 * The HAL menu ran unrecognised input through a shell. Its front loop ended in

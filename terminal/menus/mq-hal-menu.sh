@@ -166,7 +166,12 @@ _hal_submenu_panel() {
     print_header
   fi
   surface_panel_header "$title" "HAL" "$width" "$panel_color"
-  surface_row "${title^^}" "$width" "$panel_color"
+  # `tr` rather than `${title^^}`: that expansion is bash 4, and this menu is
+  # sourced into whatever shell mqlaunch runs under — on macOS that can be
+  # /bin/bash 3.2 or zsh, neither of which has it.
+  local heading
+  heading="$(printf '%s' "$title" | tr '[:lower:]' '[:upper:]')"
+  surface_row "$heading" "$width" "$panel_color"
   local row
   for row in "$@"; do
     surface_split_row "$row" "" "$width" "$panel_color"
