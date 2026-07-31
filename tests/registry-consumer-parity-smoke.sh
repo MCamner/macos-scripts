@@ -45,7 +45,7 @@ echo "SMOKE: registry consumers do not contradict the registry"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/6] files exist, and the palette is wired to the registry's dispatcher"
+echo "[1/7] files exist, and the palette is wired to the registry's dispatcher"
 test -f "$REGISTRY"
 test -f "$DOCS"
 test -f "$LAUNCH"
@@ -312,7 +312,20 @@ if __name__ == "__main__":
     main()
 PY
 
-echo "[2/6] capture what help advertises"
+echo "[2/7] the help list is generated from the registry, not typed beside it"
+# The descriptions used to be written next to the registry rather than taken
+# from it — two sources for one sentence, the same shape as the `chat` drift
+# #126 fixed between help and the index. The block in mq-help-menu.sh is a
+# build artifact now, so this asks the generator whether the file is current.
+#
+# It is generated rather than read at runtime because `doctor` reports python3
+# as a check that can be missing, and help is the command that has to work on a
+# machine where things are missing.
+GENERATOR="$ROOT/tools/scripts/generate-help-list.py"
+test -x "$GENERATOR"
+python3 "$GENERATOR" --check
+
+echo "[3/7] capture what help advertises"
 # Piped, so this also exercises the plain-output contract (#67): if the banner
 # came back the extraction would still work, but the capture would be 5 KB of
 # box drawing around it.
@@ -325,7 +338,7 @@ if grep -q $'\033' "$run_dir/help.txt"; then
 fi
 printf '  ok: %s bytes\n' "$(wc -c <"$run_dir/help.txt" | tr -d ' ')"
 
-echo "[3/6] capture what the command index advertises"
+echo "[4/7] capture what the command index advertises"
 # The index ends in pause_enter, so stdin is closed rather than left on the
 # terminal — a suite that hangs here would look like a slow test, not a bug.
 BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
@@ -337,11 +350,11 @@ if grep -q $'\033' "$run_dir/index.txt"; then
 fi
 printf '  ok: %s bytes\n' "$(wc -c <"$run_dir/index.txt" | tr -d ' ')"
 
-echo "[4/6] every command is documented, nothing documented is a ghost, and the two curated surfaces agree"
+echo "[5/7] every command is documented, nothing documented is a ghost, and the two curated surfaces agree"
 python3 "$run_dir/consumers.py" "$REGISTRY" "$DOCS" "$run_dir/help.txt" \
   "$LAUNCHER" "$run_dir/index.txt"
 
-echo "[5/6] the failure demo in the reference is still a failure demo"
+echo "[6/7] the failure demo in the reference is still a failure demo"
 # Step 3 skips blocks containing "Unknown command". That exemption is only sound
 # while such a block exists and still shows a word the registry rejects — the
 # moment it does not, the skip is silently widening what the gate ignores.
@@ -381,7 +394,7 @@ else:
     sys.exit("a failure-demo block no longer demonstrates a rejected word")
 PY
 
-echo "[6/6] the comparison rejects a consumer that drifts"
+echo "[7/7] the comparison rejects a consumer that drifts"
 # A gate that has never failed is a comment. One fixture per consumer — a command
 # the docs do not mention, a documented word nothing dispatches, a palette entry
 # the registry does not know, an index that has drifted from help — plus one for

@@ -349,6 +349,36 @@ def script_execs_sudo(rel: str) -> bool:
     return False
 
 
+# `mqlaunch help` prints one row per public command as
+# `  mqlaunch <name padded to 14>  <summary>`, a 26-character prefix, and
+# ui/terminal-ui/terminal-width.sh clamps the surface to 92 columns. 92 - 26 is
+# what a summary may occupy before the row wraps, which is where this number
+# comes from rather than from taste.
+SUMMARY_LIMIT = 66
+
+
+def check_summaries(commands) -> None:
+    """Keep every summary to one printable line.
+
+    Help takes its descriptions from this field now — there is no second copy to
+    trim — so a summary that does not fit is a wrapped row on the help screen
+    rather than a lint opinion. The rule covers unadvertised commands too: the
+    field has one register, and a command promoted to the surface later should
+    not need rewriting to be printable.
+
+    An empty summary is already reported by the required-field pass, so this
+    only adds the two shape rules that pass does not cover.
+    """
+    for command in commands:
+        summary = command["summary"]
+        name = command["name"]
+        if "\n" in summary:
+            err(f"{name}: summary spans more than one line")
+        if len(summary) > SUMMARY_LIMIT:
+            err(f"{name}: summary is {len(summary)} characters, over the "
+                f"{SUMMARY_LIMIT} a help row has room for")
+
+
 def check_operator_surface(commands) -> None:
     """Hold the advertised surface to the rule that defines it.
 
@@ -625,6 +655,7 @@ def main(argv: list[str] | None = None) -> int:
     check_subcommands(commands, seen_names, subcases)
     check_privilege_safety(commands, seen_names, branches)
     check_operator_surface(commands)
+    check_summaries(commands)
 
     if errors:
         print(f"FAIL: {len(errors)} registry problem(s)", file=sys.stderr)
