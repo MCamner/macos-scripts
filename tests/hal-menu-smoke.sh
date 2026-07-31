@@ -64,6 +64,12 @@ echo "[9/10] unknown input is not run as a shell command"
 # so mistyping at the HAL prompt executed the typo — silently, because stderr
 # went to /dev/null. This drives the real menu with a command that would leave a
 # file behind, and requires that it does not.
+# Driven against a stub backend, not the one on this machine. `mq_hal_menu_main`
+# returns 127 before reading a single line when $MQ_HAL_BIN is missing, so on a
+# runner with no ~/mq-hal this step passed by never running the menu at all — it
+# reported "a typo stays a typo" while proving nothing. The step below caught it
+# because a vacuous run cannot create the file either.
+export MQ_HAL_BIN="$tmp_hal/mq-hal"
 probe="$(mktemp -u)"
 printf 'touch %s\nb\n' "$probe" | timeout 30 bash "$MENU" >/dev/null 2>&1 || true
 if [[ -e "$probe" ]]; then

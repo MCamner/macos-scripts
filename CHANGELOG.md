@@ -28,6 +28,14 @@ All notable changes to this project will be documented in this file.
   the real menu and check for the file either way, so neither half can be
   removed quietly.
 
+  The first version of the guard step passed on CI while proving nothing.
+  `mq_hal_menu_main` returns 127 before reading a line when `$MQ_HAL_BIN` is
+  missing, and a runner has no `~/mq-hal` — so the menu never ran, no file was
+  created, and the step reported "a typo stays a typo". The step after it caught
+  that, because a run which never happened cannot execute `! touch` either. Both
+  steps drive a stub backend now, and reintroducing the fallback was checked to
+  make the guard fail.
+
   The same fallback is still in `terminal/menus/mq-performance-menu.sh:98`,
   without even the `|| true`. Out of scope here and reported rather than fixed
   quietly.
