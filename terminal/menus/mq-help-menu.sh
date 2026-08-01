@@ -92,7 +92,7 @@ MENUS
   mqlaunch release        Release menu, notes, version, and status
   mqlaunch shortcuts      Open the macOS Shortcuts menu
   mqlaunch system         Performance, network, doctor, checks, utilities
-  mqlaunch theme          Open the themes menu
+  mqlaunch theme          Show, apply, or reset the terminal theme
   mqlaunch tools          Open the tools menu
   mqlaunch workflows      Project boot, surface validation, snapshots
 

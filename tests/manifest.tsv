@@ -60,6 +60,7 @@ release-pull-request-mode-smoke.sh	active	-
 runtime-authority-classification-smoke.sh	active	-
 runtime-authority-freeze-smoke.sh	active	-
 terminal-width-smoke.sh	active	-
+theme-command-surface-smoke.sh	active	-
 theme-lib-smoke.sh	active	-
 unknown-command-contract-smoke.sh	active	-
 wiki-command-ref-smoke.sh	active	-
