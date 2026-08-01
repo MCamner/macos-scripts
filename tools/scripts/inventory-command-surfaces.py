@@ -47,6 +47,33 @@ DISPATCH = ROOT / "terminal" / "launchers" / "mqlaunch-command-mode.sh"
 MENUS = ROOT / "terminal" / "menus"
 LAUNCHERS = ROOT / "terminal" / "launchers"
 
+# Menu loops that live outside terminal/menus/. Each is a panel an operator
+# reads and answers, so leaving them out made the per-loop numbers describe a
+# subset of the product rather than the product.
+#
+# gitlaunch.sh is the clearest case: `mqlaunch git` opens it, not
+# mq-git-menu.sh. The git surface the roadmap measured was not the git surface
+# anyone reaches by typing the git command, and nothing would have reported it
+# crossing ten.
+#
+# tools/scripts/mqlaunch_desktop.sh is deliberately absent. It holds 63 arms and
+# its own dispatch, and docs/RUNTIME_AUTHORITY.md classifies it as a separate
+# live entrypoint rather than a caller of this one. Counting its loops here
+# would mix two products in one total. It needs its own measurement, not a place
+# in this one.
+EXTRA_MENUS = (
+    ROOT / "terminal" / "launchers" / "gitlaunch.sh",
+    ROOT / "terminal" / "themes" / "mq-zsh-theme-switcher.sh",
+    ROOT / "automation" / "workflows" / "workspace.sh",
+    ROOT / "ui" / "dashboards" / "mq-dashboard.sh",
+)
+
+
+def menu_files() -> list[Path]:
+    """Every file holding an operator-facing menu loop, in a stable order."""
+    return sorted(MENUS.glob("*.sh")) + [p for p in EXTRA_MENUS if p.is_file()]
+
+
 SCHEMA = "mq-command-discovery-inventory.v1"
 
 # A dispatch arm in a menu's case statement. Both key styles count: `  3) ... ;;`
@@ -55,6 +82,19 @@ SCHEMA = "mq-command-discovery-inventory.v1"
 # dispatcher calls where there are dozens. Two leading spaces keeps it to indented
 # case arms rather than any line that happens to start with a word.
 ARM = re.compile(r"^\s{2,}([0-9]+|[A-Za-z](?:\|[A-Za-z])*)\)\s*(.+?)\s*;;\s*$")
+
+# A case arm whose key sits alone on its line, with the body following until
+# `;;`. gitlaunch.sh and ui/dashboards/mq-dashboard.sh are written entirely this
+# way, so a one-line-only scan saw nothing in either — including the menu that
+# `mqlaunch git` actually opens. The key had to be on the same line as its body
+# to be counted, which is a fact about shell formatting, not about how many
+# choices a panel offers.
+ARM_OPEN = re.compile(r"^\s{2,}([0-9]+|[A-Za-z](?:\|[A-Za-z])*)\)\s*$")
+ARM_CLOSE = re.compile(r"^\s*;;\s*$")
+
+# How far to read for an arm's `;;`. An arm longer than this is not a dispatch
+# line, and stopping keeps a malformed case from swallowing the rest of a file.
+ARM_BODY_LINES = 40
 
 # A shell function definition, in either accepted form.
 FUNC_DEF = re.compile(r"^\s*(?:function\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{")
@@ -222,6 +262,23 @@ def registry_words() -> tuple[dict[str, str], list[str]]:
     return words, sorted({entry["name"] for entry in data["commands"]})
 
 
+# Bypasses that are the shell's fault, not the menu's. Each entry names the file,
+# the script, and why routing it through the dispatcher would break it.
+#
+# #132 deliberately shipped no allow-list: "nothing needs a documented exception
+# yet, and building the mechanism first would have made the target reachable by
+# writing prose." That held while the bypass count was already zero. Reading
+# multi-line case arms surfaced one that had been invisible, and it has a real
+# reason rather than a prose one, so the mechanism is built now — for one entry,
+# with the reason next to it.
+BYPASS_EXCEPTIONS = {
+    # The guide writes a directory to ~/.hal_nav and the menu cd's there
+    # afterwards. `mqlaunch guide` runs in a subprocess, so the cd would apply to
+    # a shell that exits immediately. The bypass is what makes the feature work.
+    ("mq-main-menu.sh", "hal-terminal-guide.sh"): "cd must happen in this shell",
+}
+
+
 def classify(action: str, menu: Path, per_file: dict, context: dict) -> tuple[str, str | None]:
     """Return (kind, target) for one menu option's action."""
     text = action
@@ -255,6 +312,8 @@ def classify(action: str, menu: Path, per_file: dict, context: dict) -> tuple[st
     if target in context["menu_files"] or target in context["launcher_files"]:
         return "navigation", target
     if target in context["dispatch_text"]:
+        if (menu.name, target) in BYPASS_EXCEPTIONS:
+            return "menu-local", target
         return "dispatcher-bypass", target
     return "menu-only-tool", target
 
@@ -272,7 +331,7 @@ def build() -> dict:
 
     options = []
     reached: dict[str, set[str]] = collections.defaultdict(set)
-    for menu in sorted(MENUS.glob("*.sh")):
+    for menu in menu_files():
         lines = menu.read_text(encoding="utf-8", errors="replace").splitlines()
         # A file is not a menu. mq-tools-menu.sh holds five loops, so counting
         # options per file said "23 choices" for a menu showing ten, and
@@ -284,19 +343,40 @@ def build() -> dict:
             defined = FUNC_DEF.match(line)
             if defined:
                 loop = defined.group(1)
+
             match = ARM.match(line)
-            if not match:
-                continue
-            kind, target = classify(match.group(2), menu, per_file, context)
-            if is_exit_option(match.group(1)):
+            if match:
+                option, action = match.group(1), match.group(2)
+            else:
+                # The key alone on its line: collect the body up to `;;` and
+                # classify the joined text, so a multi-line arm is read the same
+                # way as the single-line form.
+                opened = ARM_OPEN.match(line)
+                if not opened:
+                    continue
+                body = []
+                for ahead in lines[number : number + ARM_BODY_LINES]:
+                    if ARM_CLOSE.match(ahead):
+                        break
+                    body.append(strip_comment(ahead).strip())
+                else:
+                    # No `;;` within reach — not a dispatch arm.
+                    continue
+                option = opened.group(1)
+                action = " ".join(part for part in body if part)
+                if not action:
+                    continue
+
+            kind, target = classify(action, menu, per_file, context)
+            if is_exit_option(option):
                 kind, target = "navigation", None
             options.append(
                 {
                     "menu": menu.name,
                     "loop": loop,
                     "line": number,
-                    "option": match.group(1),
-                    "action": match.group(2),
+                    "option": option,
+                    "action": action,
                     "kind": kind,
                     "target": target,
                 }
