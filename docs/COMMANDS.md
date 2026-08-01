@@ -540,8 +540,12 @@ the full test suite, which a machine-readable call should not do. Use
 ```bash
 mqlaunch nickname-set "name"        # set name shown in menu headers
 mqlaunch theme                      # open Themes menu
-mqlaunch theme-macos                # apply macOS theme
-mqlaunch theme-reset                # reset to default theme
+mqlaunch theme list                 # list the available variants
+mqlaunch theme current              # show the active variant
+mqlaunch theme apply amber          # amber, green, minimal, ice, macos
+mqlaunch theme reset                # reset to default theme
+mqlaunch theme-macos                # compatibility spelling of `theme apply macos`
+mqlaunch theme-reset                # compatibility spelling of `theme reset`
 mqlaunch bundle                     # create debug/support bundle
 mqlaunch workspace                  # save, list, show and restore workspace snapshots
 mqlaunch excalidraw                 # open the Excalidraw drawing workflow
