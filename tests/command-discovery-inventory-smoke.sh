@@ -28,15 +28,15 @@ REGISTRY="$ROOT/mqlaunch/lib/command-registry.json"
 
 echo "SMOKE: command discovery inventory"
 
-echo "[1/8] tool exists and compiles"
+echo "[1/9] tool exists and compiles"
 test -x "$TOOL"
 test -f "$REGISTRY"
 PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/mqlaunch-pycache" python3 -m py_compile "$TOOL"
 
-echo "[2/8] the inventory runs and reports"
+echo "[2/9] the inventory runs and reports"
 "$TOOL" >/dev/null
 
-echo "[3/8] --json is a single valid document with the expected schema"
+echo "[3/9] --json is a single valid document with the expected schema"
 "$TOOL" --json | python3 -c '
 import sys, json
 data = json.load(sys.stdin)
@@ -46,7 +46,7 @@ for key in ("options", "counts", "unclassified", "registry"):
 assert data["options"], "inventory found no menu options at all"
 '
 
-echo "[4/8] every option is classified and counted"
+echo "[4/9] every option is classified and counted"
 # The property that made tests/manifest.tsv useful: nothing invisible. A row that
 # fell outside the known classes, or a class that stopped being counted, would
 # make every headline number in the report quietly wrong.
@@ -67,7 +67,7 @@ if counted != len(data["options"]):
 PY
 "$TOOL" --fail-on-unclassified >/dev/null
 
-echo "[5/8] the output does not depend on filesystem order"
+echo "[5/9] the output does not depend on filesystem order"
 # Handler names are defined in more than one file. An earlier revision picked a
 # winner globally, so the whole inventory shifted with directory order — 4
 # dispatcher calls one run, 17 the next. Resolution is now menu-local first, and
@@ -79,7 +79,7 @@ second="$("$TOOL" --json)"
   exit 1
 }
 
-echo "[6/8] untracked files in the checkout do not change the answer"
+echo "[6/9] untracked files in the checkout do not change the answer"
 # The defect this pins was invisible locally and only CI could see it. A
 # gitignored backups/scripts/ tree holds old copies of the menus and launchers,
 # and since a handler name can be defined in several files, resolution sometimes
@@ -103,7 +103,7 @@ with_untracked="$("$TOOL" --json)"
 rm -rf "$probe_dir"
 echo "  ok: untracked shell files are outside the inventory"
 
-echo "[7/8] no menu option bypasses the dispatcher"
+echo "[7/9] no menu option bypasses the dispatcher"
 # The pin was a ratchet at three while the count came down. It is zero now, so
 # the ratchet's own proof — "one lower must fail" — has nowhere to go: there is
 # no -1. The gate is proven by planting a bypass instead, which is a stronger
@@ -114,7 +114,30 @@ echo "[7/8] no menu option bypasses the dispatcher"
   exit 1
 }
 
-echo "[8/8] the inventory still notices a bypass and a duplication"
+echo "[8/9] no menu loop offers more than ten choices"
+# ROADMAP P2's per-loop target, enforced rather than measured on demand. It went
+# unenforced longest of the three, which is exactly why four menus drifted past
+# ten and gitlaunch.sh sat at eleven until the scan was widened to see it.
+#
+# Ten menus were brought under the limit to make this gate landable: #132, #136,
+# #137, #141, #142, #143, #144, #146, #147, #148, #149. Adding it earlier would
+# have failed the suite on arrival, which is the only reason it comes last.
+"$TOOL" --max-loop 10 >/dev/null || {
+  echo "FAIL: a menu loop grew past ten operator choices" >&2
+  "$TOOL" --max-loop 10 2>&1 >/dev/null | head -6 >&2
+  exit 1
+}
+
+# And the gate must be able to fail. Three loops sit exactly at ten, so a limit
+# of nine has to report them — an off-by-one that costs nothing to check and
+# proves the comparison is live rather than a flag that always returns 0.
+if "$TOOL" --max-loop 9 >/dev/null 2>&1; then
+  echo "FAIL: --max-loop 9 passed; the per-loop gate is not comparing anything" >&2
+  exit 1
+fi
+echo "  ok: no loop over ten, and the limit is enforced rather than recorded"
+
+echo "[9/9] the inventory still notices a bypass and a duplication"
 # Both gates are at zero, so nothing in the repo exercises them. Each is proven
 # by reintroducing the defect in a tracked menu and taking it out again. The
 # trap restores the file even when an assertion below exits.

@@ -494,6 +494,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="exit non-zero if dispatcher-bypass options exceed this count",
     )
+    parser.add_argument(
+        "--max-loop",
+        type=int,
+        default=None,
+        help="exit non-zero if any single menu loop offers more choices than this",
+    )
     args = parser.parse_args(argv)
 
     data = build()
@@ -518,6 +524,34 @@ def main(argv: list[str] | None = None) -> int:
                 "A menu gained a second way into a command the dispatcher already routes.",
                 file=sys.stderr,
             )
+            status = 1
+    if args.max_loop is not None:
+        # Per loop, not per file, and excluding back/quit — the same definition
+        # ROADMAP P2 is sized by. A file can hold several loops; what an operator
+        # faces is one panel at a time.
+        #
+        # This is the target that went unenforced longest. The roadmap measured
+        # it on demand and nothing failed when it slipped, which is how four
+        # menus drifted past ten and how gitlaunch.sh sat at eleven unremarked
+        # until the scan was widened to see it at all.
+        per_loop: dict[tuple[str, str], int] = collections.Counter()
+        for option in data["options"]:
+            if option["kind"] == "navigation":
+                continue
+            per_loop[(option["menu"], option["loop"])] += 1
+        over = sorted(
+            ((count, menu, loop) for (menu, loop), count in per_loop.items()
+             if count > args.max_loop),
+            reverse=True,
+        )
+        if over:
+            print(
+                f"FAIL: {len(over)} menu loop(s) offer more than {args.max_loop} "
+                "choices. Group the extras into a submenu rather than deleting them.",
+                file=sys.stderr,
+            )
+            for count, menu, loop in over:
+                print(f"  {count:3}  {menu}  {loop}", file=sys.stderr)
             status = 1
     return status
 
