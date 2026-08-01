@@ -31,8 +31,30 @@ print_agent_menu() {
   printf '\n'
 }
 
+# Reports a missing mq-agent checkout.
+#
+# Mirrors mq_hal_missing() in terminal/bridges/hal-bridge.sh: name the binary,
+# name the path, give runnable next steps, exit 127. Without this the operator
+# got the shell's own diagnostic — `_run_agent:cd:1: no such file or directory`
+# under zsh — which names an internal function and says nothing about mq-agent
+# being a separate repo that has to be installed.
+_mq_agent_missing() {
+  echo "ERROR: mq-agent not found: $MQ_AGENT_BIN" >&2
+  echo >&2
+  echo "mqlaunch delegates orchestration to mq-agent; it is a separate repo." >&2
+  echo >&2
+  echo "Check:" >&2
+  echo "  ls -l $MQ_AGENT_BIN" >&2
+  echo "  git clone https://github.com/MCamner/mq-agent $MQ_AGENT_BIN" >&2
+  echo >&2
+  echo "Or point mqlaunch at an existing checkout:" >&2
+  echo "  export MQ_AGENT_BIN=/path/to/mq-agent" >&2
+  return 127
+}
+
 # Runs an mq-agent command inside the mq-agent project dir.
 _run_agent() {
+  [[ -d "$MQ_AGENT_BIN" ]] || { _mq_agent_missing; return $?; }
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
