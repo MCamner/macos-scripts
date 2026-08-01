@@ -87,3 +87,4 @@ system-menu-smoke.sh	active	-
 dev-menu-smoke.sh	active	-
 menu-shell-guard-smoke.sh	active	-
 release-menu-smoke.sh	active	-
+install-contract-smoke.sh	active	-

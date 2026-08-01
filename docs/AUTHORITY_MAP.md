@@ -30,7 +30,14 @@ live→legacy edge appears.
 | --- | --- |
 | `bin/mqlaunch` | Official entrypoint → `terminal/launchers/mqlaunch.sh`; `mqlaunch repl` → `mqlaunch-repl.sh` |
 | `bin/mq` → `tools/cli/mq` | Secondary CLI entrypoint |
+| `bin/gitlaunch` | Wrapper, not an entrypoint: `exec bin/mqlaunch git "$@"` |
 | `tools/scripts/mqlaunch_desktop.sh` | Desktop launch variant (alternate live entry) |
+
+Everything executable under `bin/` is what `install.sh` symlinks onto `PATH`,
+and the links point *at* `bin/` rather than past it — `mqlaunch repl` is routed
+in `bin/mqlaunch` and nowhere else, so a link straight to
+`terminal/launchers/mqlaunch.sh` loses it. Held by
+`tests/install-contract-smoke.sh`.
 
 ## Runtime coordinator — LIVE
 
