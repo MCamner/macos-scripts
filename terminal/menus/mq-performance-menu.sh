@@ -18,12 +18,15 @@ if ! command -v surface_top >/dev/null 2>&1; then
   [[ -f "$BASE_DIR/ui/terminal-ui/mq-ui.sh" ]] && source "$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 fi
 
-# Compatibility with v1 commands
+# The perf_* readings this menu renders. They lived under the frozen v1 tree
+# until 2026-08-02, which is the whole reason that tree counted as live: it was
+# supplying working code, not keeping a legacy route open. PROJECT_ROOT is what
+# the data layer reads for its report and disk paths.
 : "${PROJECT_ROOT:=$BASE_DIR}"
 
 if ! command -v perf_health_score >/dev/null 2>&1; then
   BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
-  [[ -f "$BASE_DIR/terminal/mqlaunch-v1/commands/performance.sh" ]] && source "$BASE_DIR/terminal/mqlaunch-v1/commands/performance.sh"
+  [[ -f "$BASE_DIR/mqlaunch/lib/performance.sh" ]] && source "$BASE_DIR/mqlaunch/lib/performance.sh"
 fi
 
 # Renders the performance panel view for terminal output.

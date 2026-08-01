@@ -5,7 +5,6 @@ PROJECT_ROOT="${PROJECT_ROOT:-$HOME/macos-scripts}"
 BUNDLE_DIR="$PROJECT_ROOT/backups/debug-bundles"
 VERSION_FILE="$PROJECT_ROOT/VERSION"
 LEGACY="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
-V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 GUIDE_HTML="$PROJECT_ROOT/docs/mac-terminal-guide.html"
 TEST_ALL="$PROJECT_ROOT/tools/scripts/test-all.sh"
 
@@ -26,14 +25,12 @@ version="unknown"
   echo "=== PATHS ==="
   echo "Project root: $PROJECT_ROOT"
   echo "Legacy launcher: $LEGACY"
-  echo "V1 launcher: $V1"
   echo "Guide HTML: $GUIDE_HTML"
   echo "Bundle output: $outfile"
   echo
 
   echo "=== FILE CHECKS ==="
   [[ -f "$LEGACY" ]] && echo "[OK] Legacy launcher exists" || echo "[FAIL] Legacy launcher missing"
-  [[ -f "$V1" ]] && echo "[OK] V1 launcher exists" || echo "[FAIL] V1 launcher missing"
   [[ -f "$GUIDE_HTML" ]] && echo "[OK] Guide HTML exists" || echo "[FAIL] Guide HTML missing"
   [[ -x "$TEST_ALL" ]] && echo "[OK] test-all.sh executable" || echo "[FAIL] test-all.sh missing or not executable"
   echo
@@ -71,7 +68,6 @@ version="unknown"
 
   echo "=== LAUNCHER HELP CHECKS ==="
   zsh "$LEGACY" help >/dev/null 2>&1 && echo "[OK] Legacy help works" || echo "[FAIL] Legacy help failed"
-  bash "$V1" help >/dev/null 2>&1 && echo "[OK] V1 help works" || echo "[FAIL] V1 help failed"
   echo
 
   echo "=== SMOKE TESTS ==="

@@ -100,36 +100,54 @@ DEPRECATED section — `mqlaunch git` opens `terminal/launchers/gitlaunch.sh`.
 | --- | --- | --- |
 | `terminal/bridges/hal-bridge.sh` | **LIVE** | routes to `mq-hal`; no `mqlaunch-v1` reach |
 | `terminal/bridges/brain-bridge.sh` | **LIVE** | routes to the mqobsidian brain surface; no v1 reach |
-| `terminal/bridges/performance-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` as a subprocess |
+| `terminal/bridges/performance-bridge.sh` | **LIVE** | loads `mq-performance-menu.sh`; the v1 fallback is gone |
 | `terminal/bridges/dev-bridge.sh` | **DEPRECATED** | inert tombstone; v1 routing retired in Step 12.1 |
-| `terminal/bridges/tools-bridge.sh` | **COMPAT** | invokes `terminal/mqlaunch-v1/mqlaunch.sh` |
 
-## Legacy runtime — COMPAT
+`terminal/bridges/tools-bridge.sh` was here as **COMPAT**. Neither
+`open_v1_tools_menu` nor `run_v1_tools_command` had a caller anywhere in the
+tree, so it was deleted rather than kept working.
+
+## Legacy runtime — DEPRECATED
 
 | Path | Class | Reachability |
 | --- | --- | --- |
-| `terminal/mqlaunch-v1/**` (24 files, 1629 shell LOC) | **COMPAT** | Reachable only through the compat edges below |
-| `terminal/menus/mq-performance-menu.sh` | **COMPAT** | Live menu, but sources v1 directly (see edges) — a compat wrapper until migrated |
+| `terminal/mqlaunch-v1/**` (23 files, 1125 shell LOC) | **DEPRECATED** | Nothing live reaches it; `tools/scripts/test-mqlaunch-v1.sh` is the only consumer |
 
-### The exact live→legacy edges (remove these in Step 12)
+### The live→legacy edges are gone (2026-08-02)
 
-These four edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
-them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
+There were four. None of them is left, and none was retired by weakening a
+gate:
 
-* `terminal/bridges/performance-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
-* `terminal/bridges/tools-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
-* `terminal/menus/mq-performance-menu.sh:26` → **sources** `terminal/mqlaunch-v1/commands/performance.sh` (the only direct live-menu → v1 `source`)
-* `tools/scripts/create-debug-bundle.sh:74` → runs `bash terminal/mqlaunch-v1/mqlaunch.sh help` as a health probe, reached from `mq-system-menu.sh` option 6
+* `terminal/menus/mq-performance-menu.sh:26` sourced
+  `commands/performance.sh` out of the frozen tree — the only direct live-menu →
+  v1 `source`, and the one real dependency. That file was 504 lines of working
+  `perf_*` readings, so the tree was classified live in order to supply code
+  rather than to keep a legacy route open. It moved verbatim to
+  `mqlaunch/lib/performance.sh`.
+* `terminal/bridges/tools-bridge.sh` forwarded `tools` to the v1 launcher as a
+  subprocess. Deleted: no callers.
+* `terminal/bridges/performance-bridge.sh` fell back to the v1 launcher when
+  `mq-performance-menu.sh` was missing. A missing menu is a broken checkout, and
+  answering it by running a frozen launcher hid that; it reports and returns 1
+  now. `run_performance_command`, `open_v1_performance_menu` and
+  `run_v1_performance_command` went with the fallback — none had a caller.
+* `tools/scripts/create-debug-bundle.sh` ran `bash v1/mqlaunch.sh help` as a
+  health probe from `mq-system-menu.sh` option 6. A bundle reporting on a tree
+  nothing routes to is noise.
 
-The fourth was listed as three until 2026-08-01. It is diagnostics rather than a
-functional dependency — the bundle reports whether the compat tree still answers
-`help` — but it executes v1 from a live menu row, which is what the list is for.
-Deleting v1 edits this file; it breaks the other three.
+`automation/login/mqlogin.sh` was a fifth, fixed a day earlier: it preferred the
+frozen launcher over the current runtime in `detect_mqlaunch_base` and now falls
+back to `bin/mqlaunch`.
 
-`automation/login/mqlogin.sh` was a fifth. `detect_mqlaunch_base` tried
-`command -v mqlaunch` first and the frozen v1 launcher **second**, so a machine
-without `mqlaunch` on `PATH` booted its login flow into the compat tree ahead of
-the current runtime. It now falls back to `bin/mqlaunch` and reaches v1 nowhere.
+The dependency now runs the other way. `terminal/mqlaunch-v1/mqlaunch.sh:22`
+sources `mqlaunch/lib/performance.sh` from its new home — legacy depending on
+live, which is the allowed direction — so the tree stays runnable while its
+deletion is decided on its own terms rather than forced by a move.
+
+**Deleting the tree is the remaining step**, and it is now only a decision: 23
+files and 1125 lines that no runtime path reaches. What still touches it is
+`tools/scripts/test-mqlaunch-v1.sh` in the suite, and the `TOOLING` entries that
+name it to exclude or test it.
 
 ### Enforcement (Step 10 freeze)
 
@@ -141,15 +159,14 @@ working tree can neither add an edge nor hide one.
 
 Scope was `terminal/`, `ui/` and `mqlaunch/` until 2026-08-01 — narrower than
 "live runtime shell", which is how the `create-debug-bundle.sh` and `mqlogin.sh`
-edges above went unrecorded. A gate that does not scan a directory makes no
-claim about it.
+edges went unrecorded. A gate that does not scan a directory makes no claim
+about it.
 
 Two lists, because widening the scan pulled in files that name v1 without
 depending on it:
 
-* `COMPAT_EDGES` — live code that reaches v1 at runtime: exactly the four edges
-  above. Shrinking it is a Step 12 win; growing it must be a conscious, reviewed
-  decision.
+* `COMPAT_EDGES` — live code that reaches v1 at runtime. **Empty since
+  2026-08-02.** Growing it again must be a conscious, reviewed decision.
 * `TOOLING` — build, lint and documentation scripts that name v1 to exclude it,
   test it, or police it (`lint.sh`, `shellcheck-report.sh`,
   `generate-wiki-command-ref.sh`, the `test-*` harnesses, and the gate itself).

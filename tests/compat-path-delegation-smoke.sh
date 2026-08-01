@@ -12,22 +12,23 @@
 #   3. Palette path — run_command_palette forwards the selection to
 #      dispatch_cli_command and guards non-interactive use; no independent
 #      runtime.
-#   4. Legacy shim path — the v1 bridges forward to mqlaunch-v1 as a subprocess
-#      and preserve its exit status, adding no new command behaviour.
+#   4. Legacy shim path — there is no longer one. The v1 bridges forwarded to
+#      mqlaunch-v1 as a subprocess; both are gone, and what is asserted now is
+#      that the performance route reaches the current menu with no fallback into
+#      the frozen tree.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"
 COMMAND_MODE="$ROOT/terminal/launchers/mqlaunch-command-mode.sh"
-TOOLS_BRIDGE="$ROOT/terminal/bridges/tools-bridge.sh"
 PERF_BRIDGE="$ROOT/terminal/bridges/performance-bridge.sh"
+TOOLS_BRIDGE="$ROOT/terminal/bridges/tools-bridge.sh"
 
 echo "SMOKE: compatibility/command-surface paths delegate to the runtime authority"
 
 echo "[1/8] files exist"
 test -f "$LAUNCHER"
 test -f "$COMMAND_MODE"
-test -f "$TOOLS_BRIDGE"
 test -f "$PERF_BRIDGE"
 
 # --- Path 1: direct command dispatch --------------------------------------
@@ -74,35 +75,46 @@ grep -q 'dispatch_cli_command \${=selected_cmd}' <<<"$palette_body"
 echo "[6/8] palette: guards non-interactive use instead of spawning a runtime"
 grep -q 'MQ_NO_TUI' <<<"$palette_body"
 
-# --- Path 4: legacy shim path (behavioural) -------------------------------
-echo "[7/8] legacy shim: v1 bridge forwards to mqlaunch-v1 and preserves exit status"
-SHIM_TMP="$(mktemp -d)"
-trap 'rm -rf "$SHIM_TMP"' EXIT
-mkdir -p "$SHIM_TMP/terminal/mqlaunch-v1"
-cat >"$SHIM_TMP/terminal/mqlaunch-v1/mqlaunch.sh" <<'FAKE'
-#!/usr/bin/env bash
-# Fake v1 launcher: echoes the forwarded subcommand, exits with a marker code.
-printf 'v1 got: %s\n' "$1"
-exit 42
-FAKE
-chmod +x "$SHIM_TMP/terminal/mqlaunch-v1/mqlaunch.sh"
+# --- Path 4: the legacy shim path is gone ------------------------------------
+echo "[7/8] legacy shim: the v1 tools bridge no longer exists"
+# It forwarded `tools` to mqlaunch-v1 as a subprocess and preserved its exit
+# status, which this test proved behaviourally with a fake v1 launcher. Neither
+# of its two functions had a caller anywhere in the tree, so it was deleted
+# rather than kept working. Asserted as an absence, because a shim that comes
+# back is a second runtime coming back.
+if [[ -e "$TOOLS_BRIDGE" ]]; then
+  echo "FAIL: the v1 tools bridge is back: $TOOLS_BRIDGE" >&2
+  echo "Commands belong in command-registry.json and dispatch_cli_command." >&2
+  exit 1
+fi
 
-# shellcheck source=/dev/null
-source "$TOOLS_BRIDGE"
-# BASE_DIR is read by the sourced bridge functions, not directly here.
-# shellcheck disable=SC2034
-BASE_DIR="$SHIM_TMP"
-rc=0
-out="$(run_v1_tools_command tools 2>&1)" || rc=$?
-test "$rc" -eq 42 || { echo "FAIL: shim did not preserve exit status (got $rc)"; exit 1; }
-grep -q 'v1 got: tools' <<<"$out" || { echo "FAIL: shim did not forward the subcommand"; exit 1; }
+echo "[8/8] performance: the route reaches the current menu, with no v1 fallback"
+# performance-bridge.sh used to fall back to the frozen launcher when the
+# current menu file was missing. A missing menu is a broken checkout; answering
+# it by running a frozen launcher hid that. It now reports and returns 1.
+grep -q 'terminal/menus/mq-performance-menu.sh' "$PERF_BRIDGE" || {
+  echo "FAIL: the performance bridge no longer loads the current menu" >&2
+  exit 1
+}
+if grep -q 'mqlaunch-v1' "$PERF_BRIDGE"; then
+  echo "FAIL: the performance bridge reaches the frozen tree again" >&2
+  grep -n 'mqlaunch-v1' "$PERF_BRIDGE" >&2
+  exit 1
+fi
 
-echo "[8/8] legacy shim: bridges only forward a subcommand, add no new command logic"
-# Each bridge's live path is exactly a forward of "$subcmd" to the v1 launcher.
-# The pattern is a literal (single-quoted on purpose); it must not expand here.
-for bridge in "$TOOLS_BRIDGE" "$PERF_BRIDGE"; do
-  # shellcheck disable=SC2016
-  grep -q '"\$v1_launcher" "\$subcmd"' "$bridge"
-done
+# And it must actually fail rather than fall through when the menu is absent.
+shim_status=0
+(
+  # Read by the sourced bridge, not by anything in this subshell.
+  # shellcheck disable=SC2034
+  BASE_DIR="$(mktemp -d)"
+  # shellcheck source=/dev/null
+  source "$PERF_BRIDGE"
+  open_performance_menu
+) >/dev/null 2>&1 || shim_status=$?
+if [[ "$shim_status" -eq 0 ]]; then
+  echo "FAIL: a missing performance menu was not reported" >&2
+  exit 1
+fi
 
-echo "PASS: all four command-surface paths delegate to the single authority"
+echo "PASS: three command-surface paths delegate to the single authority, and the fourth is gone"

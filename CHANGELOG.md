@@ -6,6 +6,52 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* Nothing live reaches `terminal/mqlaunch-v1/` any more. The freeze gate reports
+  **0** compat edges, where it reported four.
+
+  The one that mattered was not a legacy route. `mq-performance-menu.sh:26`
+  sourced `commands/performance.sh` out of the frozen tree — 504 lines of
+  working `perf_*` readings behind the Performance Hub's health score, signals
+  line and ten rows. The tree was classified live in order to supply code, not
+  to keep an old path open, which is why "delete the compat tree" was never the
+  small job P3's Status line implied. The file moved verbatim to
+  `mqlaunch/lib/performance.sh`; it sources nothing and reads only
+  `$PROJECT_ROOT`, so it was a move rather than a port. Verified by driving
+  `mqlaunch perf` before and after — same score, same signals.
+
+  The other three were retired rather than relocated:
+
+  * `terminal/bridges/tools-bridge.sh` forwarded `tools` to the v1 launcher as
+    a subprocess. Deleted — neither `open_v1_tools_menu` nor
+    `run_v1_tools_command` had a caller anywhere in the tree.
+  * `terminal/bridges/performance-bridge.sh` fell back to the v1 launcher when
+    the current menu was missing. A missing menu is a broken checkout, and
+    answering it by running a frozen launcher hid that; it reports and returns 1
+    now. `run_performance_command`, `open_v1_performance_menu` and
+    `run_v1_performance_command` went with it, none of them called.
+  * `tools/scripts/create-debug-bundle.sh` ran `bash v1/mqlaunch.sh help` as a
+    health probe from `mq-system-menu.sh` option 6. A bundle reporting on a tree
+    nothing routes to is noise.
+
+  The dependency runs the other way now: `terminal/mqlaunch-v1/mqlaunch.sh:22`
+  sources the data layer from its new home. Legacy depending on live is the
+  allowed direction, and it keeps the tree runnable so that deleting it stays a
+  decision rather than a consequence of a move.
+
+  `tests/compat-path-delegation-smoke.sh` no longer proves the legacy shim
+  forwards correctly and preserves its exit status — there is no shim. It proves
+  the shim is absent, that the performance bridge does not name the frozen tree,
+  and that it fails rather than falling through when its menu is missing.
+  `tests/runtime-authority-classification-smoke.sh` asserted the performance
+  menu *is* COMPAT; it now asserts the menu reaches `mqlaunch/lib` and not the
+  frozen tree, checked against the menu rather than the map's prose about it.
+
+  `COMPAT_EDGES` in the freeze gate is an empty array, which needed the
+  `${arr[@]+"${arr[@]}"}` guard: under `set -u`, bash 3.2 — `/bin/bash` on
+  macOS — aborts on an empty `"${arr[@]}"`. Verified under both 3.2 and 5.3.
+
 ### Fixed
 
 * `gitlaunch` reported a bad repo argument and then succeeded. Found by driving
