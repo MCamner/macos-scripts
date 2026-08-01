@@ -8,6 +8,36 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `gitlaunch` reported a bad repo argument and then succeeded. Found by driving
+  the command on a real machine after #156 put it on `PATH`.
+
+  `gitlaunch` takes a repo path, not a subcommand — the registry's contract for
+  `git` is `unknown_subcommand: forward` — so `gitlaunch status` forwarded
+  `status` as a path. It printed `Path not found: status`, dropped into the menu
+  with no repo, and exited **0**. Three separate places dropped the status:
+
+  * `detect_repo` in `gitlaunch.sh` did `set_repo "$REQUESTED_REPO" || REPO=""`,
+    turning an explicit argument the operator got wrong into a silent
+    fall-through to detection. An argument that does not resolve is now an
+    error, and the message names what the argument is for: `Repo path not
+    found: status`.
+  * `open_git_menu` ended on a `&&` whose status became the function's, and its
+    restart loop treated a failed start as the mid-session crash it is meant
+    for — five identical errors before giving up. It now breaks on a non-zero
+    exit and returns it.
+  * The dispatcher's `git)` arm ended in a bare `return 0`, the same defect the
+    theme arm had in #150.
+
+  One pre-existing status had to be corrected for propagation to be safe: the
+  no-repo panel's Exit row was `*) exit ;;`, a bare `exit` that inherits the
+  previous command's status and had been leaving 1 behind. Harmless while the
+  caller discarded it, wrong the moment it is passed on. Now `exit 0`.
+
+  Verified on every path — back `0`, EOF `0`, no-repo Exit `0`, bad path `1` —
+  directly, through `mqlaunch git`, and through `bin/gitlaunch`.
+
+### Fixed
+
 * Two of `gitlaunch.sh`'s menu rows were invisible to the command-surface
   inventory, so the loop an operator sees as ten was measured as eight — under
   the gate whose whole subject is how many choices a loop offers.

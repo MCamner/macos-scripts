@@ -157,7 +157,11 @@ function set_repo() {
   local resolved_path resolved_repo
 
   resolved_path=$(resolve_repo_path "$repo_path") || {
-    echo "Path not found: $repo_path"
+    # Names what the argument is for. `gitlaunch status` reads like a
+    # subcommand, and the registry forwards anything after `git` as a path, so
+    # the operator needed to be told that a repo path is what was expected
+    # rather than just that this one did not exist.
+    echo "Repo path not found: $repo_path"
     sleep 1
     return 1
   }
@@ -201,7 +205,13 @@ function detect_repo() {
   local detected_path=""
 
   if [ -n "$REQUESTED_REPO" ]; then
-    set_repo "$REQUESTED_REPO" || REPO=""
+    # An explicit argument that does not resolve is an error, not a reason to
+    # fall through to detection. This used to be `|| REPO=""`, so a mistyped
+    # path — or a word the operator meant as a subcommand — printed one line and
+    # then opened the menu with no repo, exit status 0. Once bin/gitlaunch put
+    # the command on PATH that mattered: a wrapper that always succeeds is worse
+    # than none for anything scripted.
+    set_repo "$REQUESTED_REPO" || return 1
     REQUESTED_REPO=""
   fi
 
@@ -226,7 +236,10 @@ function detect_repo() {
         REPO=$DEFAULT_REPO
         WORK_DIR=$DEFAULT_REPO
         ;;
-      *) exit ;;
+      # Explicitly 0. A bare `exit` inherits the previous command's status, and
+      # choosing Exit here has been leaving 1 behind — invisible while the
+      # caller discarded it, wrong the moment the status is propagated.
+      *) exit 0 ;;
     esac
   fi
 
@@ -1052,7 +1065,10 @@ fi
 trap 'printf "%b" "$C_RESET"' EXIT
 
 while true; do
-  detect_repo
+  # detect_repo returns non-zero only for an explicit repo argument that does
+  # not resolve. Anything else it cannot work out is handled inside the menu,
+  # which is what the menu is for.
+  detect_repo || exit 1
   clear_screen
 
   status_check
