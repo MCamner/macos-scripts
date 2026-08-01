@@ -29,6 +29,7 @@ command-word-normalization-smoke.sh	active	-
 compat-path-delegation-smoke.sh	active	-
 dashboard-header-cache-smoke.sh	active	-
 delegated-exit-code-smoke.sh	active	-
+delegate-missing-message-smoke.sh	active	-
 docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
 document-functions-quality-smoke.sh	active	-
