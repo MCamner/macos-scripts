@@ -153,13 +153,18 @@ def advertised_groups(path):
 
     Headings start at column 0 and entries are indented, which is the same
     shape both renderers in terminal/menus/mq-help-menu.sh depend on.
+
+    A delegated group's heading carries its owner — `AGENT  (owner: mq-agent)`.
+    The suffix is stripped here because this function answers "which namespace
+    is this", and the owner is a separate claim checked separately. Without the
+    strip, every delegated command read as advertised under the wrong heading.
     """
     groups, heading = {}, None
     for line in open(path, encoding="utf-8").read().splitlines():
         if not line.strip():
             continue
         if not line[0].isspace():
-            heading = line.strip()
+            heading = re.sub(r"\s*\(owner: [^)]+\)\s*$", "", line.strip())
             groups.setdefault(heading, set())
             continue
         if heading is None:

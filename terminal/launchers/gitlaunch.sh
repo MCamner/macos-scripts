@@ -493,6 +493,28 @@ function status_check() {
 # ------------------------
 # MENU
 # ------------------------
+# Opens the editor, terminal and repo page for a working session.
+#
+# Lifted verbatim out of the front panel's row 6 so the submenu and the old arm
+# run the same code rather than two copies that drift.
+start_dev_mode() {
+  echo "🚀 Starting Dev Mode..."
+  save_state "dev_mode"
+
+  open -a "ChatGPT Atlas"
+  open -a Terminal "${WORK_DIR:-$REPO}"
+
+  if command -v code >/dev/null 2>&1; then
+    code "${WORK_DIR:-$REPO}"
+  fi
+
+  REPO_NAME=$(basename "$REPO")
+  open "https://github.com/MCamner/$REPO_NAME"
+
+  echo "✅ Dev environment ready"
+  sleep 1
+}
+
 function render_menu() {
   local git_state host_name
   local repo_label branch_label
@@ -513,11 +535,63 @@ function render_menu() {
   frame_mid
   frame_two_col "1. Git status" "2. Pull"
   frame_two_col "3. Commit with suggested message" "4. Safe push"
-  frame_two_col "5. Open repo" "6. Dev mode"
-  frame_two_col "7. Switch repo" "8. Auto commit + push"
-  frame_two_col "9. Recent log" "m. Safe merge"
-  frame_two_col "p. PR merge" "b. Back"
+  frame_two_col "5. Auto commit + push" "6. Recent log"
+  frame_two_col "7. Safe merge" "8. PR merge"
+  frame_two_col "9. Repo and workspace" "b. Back"
   frame_bottom
+}
+
+# Renders the repo-and-workspace submenu.
+#
+# Open repo, Dev mode and Switch repo were rows 5, 6 and 7 on the front panel.
+# None of them touches git state: they open a folder, start an editor session,
+# or point the launcher at a different repo. Grouping them leaves the front
+# panel holding only the things that read or change the repository.
+render_repo_menu() {
+  update_ui_width
+
+  frame_top_titled "Repo and workspace"
+  frame_row "Repo: $(basename "${REPO:-${WORK_DIR:-repo}}")"
+  frame_mid
+  frame_two_col "1. Open repo" "2. Dev mode"
+  frame_two_col "3. Switch repo" "b. Back"
+  frame_bottom
+}
+
+# Runs the repo-and-workspace submenu loop.
+repo_menu_loop() {
+  local repo_choice
+
+  while true; do
+    clear_screen
+    render_repo_menu
+
+    printf "\n%brepo > %b" "$C_TITLE" "$C_RESET"
+    if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+      return 1
+    fi
+    IFS= read -r repo_choice </dev/tty || return 1
+
+    case $repo_choice in
+      1)
+        open .
+        ;;
+      2)
+        start_dev_mode
+        ;;
+      3)
+        switch_repo
+        return 0
+        ;;
+      b|B|"")
+        return 0
+        ;;
+      *)
+        echo "Invalid"
+        sleep 1
+        ;;
+    esac
+  done
 }
 
 # Renders the next action view for terminal output.
@@ -1012,29 +1086,6 @@ while true; do
       pause_git_menu
       ;;
     5)
-      open .
-      ;;
-    6)
-      echo "🚀 Starting Dev Mode..."
-      save_state "dev_mode"
-
-      open -a "ChatGPT Atlas"
-      open -a Terminal "${WORK_DIR:-$REPO}"
-
-      if command -v code >/dev/null 2>&1; then
-        code "${WORK_DIR:-$REPO}"
-      fi
-
-      REPO_NAME=$(basename "$REPO")
-      open "https://github.com/MCamner/$REPO_NAME"
-
-      echo "✅ Dev environment ready"
-      sleep 1
-      ;;
-    7)
-      switch_repo
-      ;;
-    8)
       git add .
       SUGGESTED=$(suggest_commit)
       if git commit -m "$SUGGESTED"; then
@@ -1042,16 +1093,22 @@ while true; do
       fi
       pause_git_menu
       ;;
-    9)
+    6)
       show_recent_log
       ;;
-    m|M)
+    # `m` and `p` predate the numbers and stay bound. Both are mutating actions
+    # an operator reaches for by muscle memory; the numbers are what close the
+    # gap left when Open repo, Dev mode and Switch repo moved to the submenu.
+    7|m|M)
       safe_merge
       pause_git_menu
       ;;
-    p|P)
+    8|p|P)
       pr_merge
       pause_git_menu
+      ;;
+    9)
+      repo_menu_loop
       ;;
     b|B)
       mark_gitlaunch_back
