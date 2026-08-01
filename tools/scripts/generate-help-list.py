@@ -49,6 +49,30 @@ HIGHLIGHTS = ["doctor", "stack", "perf", "ask", "review"]
 NAME_COLUMN = 14
 
 
+# The repo that owns this one. Commands it owns carry no label: writing
+# "owner: macos-scripts" on nine of the twelve headings would be noise, and the
+# absence is documented in the header text instead.
+HOME_REPO = "macos-scripts"
+
+
+def owner_label(group_commands) -> str:
+    """The ` (owner: repo)` suffix for a heading, or "" for local commands.
+
+    A heading can carry one owner because every namespace has exactly one —
+    checked, not assumed: validate-command-registry.py fails a namespace that
+    mixes owners, so this cannot start lying after a command is added. Putting
+    the repo on the heading rather than the row is what keeps it free: rows are
+    already 26 columns of prefix plus a 66-character summary, which is the full
+    92-column width, and there is nowhere to put a per-row owner without taking
+    it out of the description.
+    """
+    owners = {c.get("owner") for c in group_commands}
+    owner = next(iter(owners))
+    if len(owners) > 1 or owner == HOME_REPO:
+        return ""
+    return f"  (owner: {owner})"
+
+
 def render(commands) -> str:
     public = [c for c in commands if c["operator_surface"]]
     groups: dict[str, list] = {}
@@ -73,7 +97,7 @@ def render(commands) -> str:
         if group not in groups:
             continue
         lines.append("")
-        lines.append(group.upper())
+        lines.append(group.upper() + owner_label(groups[group]))
         for command in sorted(groups[group], key=lambda c: c["name"]):
             lines.append(
                 f"  mqlaunch {command['name']:<{NAME_COLUMN}} {command['summary']}")

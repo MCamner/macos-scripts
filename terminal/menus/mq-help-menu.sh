@@ -92,7 +92,7 @@ MENUS
   mqlaunch release        Release menu, notes, version, and status
   mqlaunch shortcuts      Open the macOS Shortcuts menu
   mqlaunch system         Performance, network, doctor, checks, utilities
-  mqlaunch theme          Open the themes menu
+  mqlaunch theme          Show, apply, or reset the terminal theme
   mqlaunch tools          Open the tools menu
   mqlaunch workflows      Project boot, surface validation, snapshots
 
@@ -116,7 +116,7 @@ AI
   mqlaunch fix            Get runnable commands for an error
   mqlaunch ui             Copy the UI prompt to the clipboard
 
-AGENT
+AGENT  (owner: mq-agent)
   mqlaunch agent          Run orchestration commands
   mqlaunch architecture   Analyse the repository architecture
   mqlaunch flow           Run a guided flow
@@ -129,7 +129,7 @@ AGENT
   mqlaunch signal-brain   Repo signal report saved to the brain
   mqlaunch stack          Show stack status and operations
 
-OBSIDIAN
+OBSIDIAN  (owner: mqobsidian)
   mqlaunch obsidian       Durable memory and notes
 
 SRM
@@ -141,7 +141,7 @@ SKILLS
 REPOS
   mqlaunch repos          Repo status, roadmaps, skills, diff summaries
 
-HAL
+HAL  (owner: mq-hal)
   mqlaunch hal            Operator summaries and audits
 
 UTILITY
