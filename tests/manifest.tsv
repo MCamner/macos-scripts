@@ -33,6 +33,7 @@ docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
+git-menu-surface-smoke.sh	active	-
 git-restore-to-base-smoke.sh	active	-
 git-status-contract-smoke.sh	active	-
 gitlaunch-menu-surface-smoke.sh	active	-
