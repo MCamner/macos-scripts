@@ -861,8 +861,28 @@ dispatch_cli_command() {
       ;;
 
     theme|themes)
-      open_themes_menu
-      return 0
+      # Bare `theme` opens the menu, which is what it has always done. Anything
+      # after it goes to the switcher, which documents `apply <variant>`,
+      # `current`, `list` and `reset` and answers unknown words with usage and
+      # exit 1. Before this, everything after the command was dropped: `mqlaunch
+      # theme apply amber` opened a menu and never mentioned the two words it
+      # ignored.
+      case "$sub" in
+        ""|menu)
+          open_themes_menu
+          ;;
+        apply)
+          theme_cmd apply "${@:3}"
+          ;;
+        current|list|reset)
+          theme_cmd "$sub"
+          ;;
+        *)
+          theme_cmd "$sub" "${@:3}"
+          ;;
+      esac
+      command_status=$?
+      return "$command_status"
       ;;
 
     guide|terminal-guide)
@@ -929,12 +949,14 @@ dispatch_cli_command() {
 
     theme-macos)
       theme_cmd apply macos
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     theme-reset)
       theme_cmd reset
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     check|health)
