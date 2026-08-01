@@ -104,7 +104,13 @@ assert_grep 'surface_top "Help"' "$PROJECT_ROOT/terminal/menus/mq-help-center-me
 assert_grep 'surface_split_row "1\. Command index" "2\. About / Status"' "$PROJECT_ROOT/terminal/menus/mq-help-center-menu.sh" "Help center contains reference actions"
 assert_grep 'surface_panel_header "System"' "$PROJECT_ROOT/terminal/menus/mq-system-menu.sh" "System menu uses surface panel"
 assert_grep 'surface_panel_header "Prompt Tools"' "$PROJECT_ROOT/terminal/menus/mq-dev-menu.sh" "Dev menu uses surface panel"
-assert_grep 'surface_split_row "9\. Network Tools" "10\. Themes"' "$PROJECT_ROOT/terminal/menus/mq-dev-menu.sh" "Dev menu links to Network Tools"
+# Pinned as a route, not as a row. This asserted the literal text
+# `"9. Network Tools" "10. Themes"`, so regrouping the menu failed it while
+# both were still reachable — the assertion held the layout, and what it was
+# named for is whether the Dev menu can get to them. tests/dev-menu-smoke.sh
+# checks the numbering and the panel.
+assert_grep 'net_menu_loop' "$PROJECT_ROOT/terminal/menus/mq-dev-menu.sh" "Dev menu links to Network Tools"
+assert_grep 'open_themes_menu' "$PROJECT_ROOT/terminal/menus/mq-dev-menu.sh" "Dev menu links to Themes"
 assert_grep 'surface_panel_header "AI Modes"' "$PROJECT_ROOT/terminal/menus/mq-ai-menu.sh" "AI menu uses surface panel"
 assert_grep 'surface_panel_header "Network"' "$PROJECT_ROOT/terminal/menus/mq-net-menu.sh" "Network menu uses surface panel"
 assert_grep 'surface_row "STATUS"' "$PROJECT_ROOT/terminal/menus/mq-net-menu.sh" "Network menu groups status actions"
