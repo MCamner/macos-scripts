@@ -138,16 +138,30 @@ if theme.get("unknown_subcommand") != "forward":
     )
 PY
 
-echo "[9/9] the menu and the CLI offer the same variants"
-# The menu was the only way in for four of these. If someone adds a sixth
-# variant to the switcher, both surfaces should grow together.
-variants_switcher="$(sed -n '/^theme_list()/,/^}/p' "$ROOT/terminal/themes/mq-zsh-theme-switcher.sh" |
+echo "[9/9] all three variant lists agree"
+# The menu was the only way in for four of these. There are three hand-written
+# lists of the same five variants: theme_list() in the switcher, the mqlaunch
+# themes menu, and the switcher's own menu — which is what `main` runs when the
+# script is invoked with no arguments. They are in sync today. This step is here
+# so they stay that way, since nothing else would notice a sixth variant
+# reaching one list and not the others.
+SWITCHER="$ROOT/terminal/themes/mq-zsh-theme-switcher.sh"
+
+variants_canonical="$(sed -n '/^theme_list()/,/^}/p' "$SWITCHER" |
   grep -oE '^(amber|green|minimal|ice|macos)$' | sort | tr '\n' ' ')"
 variants_menu="$(grep -oE 'theme_cmd apply [a-z]+' "$ROOT/terminal/menus/mq-themes-menu.sh" |
   awk '{print $3}' | sort | tr '\n' ' ')"
-[[ "$variants_switcher" == "$variants_menu" ]] || {
-  echo "  switcher offers: $variants_switcher" >&2
-  echo "  menu offers:     $variants_menu" >&2
+variants_switcher_menu="$(grep -oE '^\s+[0-9]+\) apply_theme [a-z]+' "$SWITCHER" |
+  awk '{print $3}' | sort | tr '\n' ' ')"
+
+[[ "$variants_canonical" == "$variants_menu" ]] || {
+  echo "  theme_list():   $variants_canonical" >&2
+  echo "  mqlaunch menu:  $variants_menu" >&2
+  exit 1
+}
+[[ "$variants_canonical" == "$variants_switcher_menu" ]] || {
+  echo "  theme_list():     $variants_canonical" >&2
+  echo "  switcher's menu:  $variants_switcher_menu" >&2
   exit 1
 }
 
