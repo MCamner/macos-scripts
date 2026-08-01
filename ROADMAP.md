@@ -593,7 +593,7 @@ variable and mostly is not.
 
 ## P2 — Thin delegation polish
 
-Status: Planned
+Status: In progress — 2 of 5 tasks done, one exit gate closed
 Priority: P2
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -609,33 +609,84 @@ The front door should make the right workflow easy to find, then hand off to the
 
 * [ ] Review all `mq-agent` delegation commands.
 
-  * Keep them as thin pass-throughs.
-  * Avoid local shell logic that duplicates `mq-agent`.
+  Measured, by line count of each handler in `terminal/menus/mq-agent-menu.sh`:
+
+  ```text
+  _run_agent                  3   pass-through
+  _run_agent_architecture     3   pass-through
+  _run_agent_repo_health      5   pass-through
+  _run_agent_memory_cochange 13
+  _run_agent_flow            39
+  _run_agent_review          79   ← the one to look at
+  ```
+
+  Four of six are thin. `_run_agent_review` is 79 lines of scope and mode
+  parsing that turns `mqlaunch review file X security` into
+  `mq-agent review file X --security`. That is argument translation rather than
+  review cognition, so it does not cross the boundary
+  `docs/RUNTIME_AUTHORITY.md` draws — but it is the largest piece of local shell
+  standing between an operator and a delegate, and it is where a second
+  vocabulary would grow if one ever did. `_run_agent_flow` is the same shape at
+  half the size.
+
+  Unchecked because reading them is not reviewing them: the question is whether
+  those 118 lines should be flags `mq-agent` parses itself.
 
 * [ ] Add `mqlaunch stack status` alignment with `mq-agent ship status` once `ship status` exists.
 
   * `mqlaunch` should display or delegate the release cockpit.
   * It should not reimplement release state logic.
 
-* [ ] Add a clear “owner” label in help output.
+  Still blocked, and verified rather than assumed: there is no `ship` command in
+  `mq_agent/main.py` as of 2026-08-01. Nothing to align with yet.
 
-  * Example: `owner: mq-agent`
-  * Example: `owner: mq-hal`
-  * Example: `owner: repo-signal`
+* [x] Add a clear “owner” label in help output.
 
-* [ ] Improve failure messages for missing delegated tools.
+  Group headings carry the owning repo — `AGENT  (owner: mq-agent)`,
+  `HAL  (owner: mq-hal)`, `OBSIDIAN  (owner: mqobsidian)` — covering the 13 of
+  49 public entrypoints this repo does not implement. `macos-scripts` groups
+  stay unlabelled and `docs/COMMANDS.md` states that default, because writing
+  the home repo on nine of twelve headings is noise.
 
-  * Missing `mq-agent`
-  * Missing `mq-hal`
-  * Missing `repo-signal`
-  * Missing `mq-mcp`
+  The heading rather than the row, because a row is already 26 columns of prefix
+  plus a 66-character summary — the full 92-column width. That works only while
+  a namespace has one owner, which every one does;
+  `validate-command-registry.py` now fails a registry that mixes them, so the
+  label cannot start describing only some of the rows beneath it.
+
+* [x] Improve failure messages for missing delegated tools.
+
+  * `mq-hal` — `mq_hal_missing()` in `terminal/bridges/hal-bridge.sh`: names the
+    binary, names the path, prints two runnable checks, exits 127. This was
+    already right and became the template.
+  * `mq-agent` — was the shell's own diagnostic:
+    `_run_agent:cd:1: no such file or directory`, an internal function name and
+    no mention of mq-agent being a separate repo. `_mq_agent_missing()` now
+    mirrors mq-hal and adds the `MQ_AGENT_BIN` override.
+  * `mq-mcp` — `not_reachable_message()` in mq-agent's bridge names the endpoint
+    and prints `mq-agent mcp start`.
+  * `repo-signal` — reached through `mq-mcp`'s `repo_signal_analyze` rather than
+    directly, so its failure is a tool failure and surfaces as one.
+
+  Held by `tests/delegate-missing-message-smoke.sh`, which holds both bridges to
+  one contract so the good one cannot regress to the bad one's behaviour.
 
 * [ ] Keep local quick commands local only when they truly belong to the terminal entrypoint.
 
 ### Exit gate
 
-* [ ] A user can tell which repo owns each command.
+* [x] A user can tell which repo owns each command. `mqlaunch help` prints the
+  owning repo on every delegated group heading, and the unlabelled default is
+  documented. Held by `tests/registry-consumer-parity-smoke.sh` and the
+  namespace-owner rule in `validate-command-registry.py`.
 * [ ] `mqlaunch` does not duplicate deeper stack logic.
+
+  `tests/mq-stack-contract-smoke.sh` and `docs/architecture/MQ_BOUNDARY.md`
+  already hold the boundary that matters — no review, risk, release or memory
+  cognition in shell — and it holds. What is unproven is the weaker claim in the
+  task above: 118 lines across `_run_agent_review` and `_run_agent_flow` are
+  argument translation this repo performs on the delegate's behalf. Not a
+  boundary violation, but not nothing either.
 
 ---
 
@@ -655,7 +706,12 @@ Once runtime authority and command consistency are fixed, the product can become
 Every sub-item is a checkbox, and every box was measured rather than recalled.
 An unchecked box says what is missing and how that was established, so the next
 person starts from a fact instead of repeating the measurement. Measurements
-below are from 2026-07-30 against `2.0.1`.
+below are from 2026-08-01, re-derived with
+`tools/scripts/inventory-command-surfaces.py --json`.
+
+`before` is `d2ed66c`, the state this section was written against. `main today`
+is `73d88cb`: #145 through #152 are merged, so the numbers below describe the
+tree rather than a set of branches waiting on review.
 
 * [x] Improve first-run experience.
 
@@ -749,12 +805,48 @@ below are from 2026-07-30 against `2.0.1`.
   Targets, measured with `tools/scripts/inventory-command-surfaces.py`:
 
   ```text
-                                  target    now    before #132
-  operator choices per menu       <= 10     29     30
-  undocumented duplications        0         0      1
-  dispatcher bypasses              0         0      3
-  total options across 19 menus   <= 190    242    243
+                                  target   before   main today
+  worst menu loop                 <= 10      30       14  (#143, #144 open)
+  loops over the limit             0          5        2
+  undocumented duplications        0          1        0
+  dispatcher bypasses              0          3        0
+  menu files measured              —         19       23
+  menu loops measured              —         34       44
+  total options                   <= 190    243      294
   ```
+
+  `main today` is `73d88cb`, after #145 through #152 landed. The two loops still
+  over the limit are `dev` (14) and `release` (12), both with PRs open — #143
+  and #144. Nothing else is unclaimed.
+
+  `worst menu loop` replaces a row that read `operator choices per menu 29`,
+  which was the worst loop rather than a per-menu figure and read as though it
+  were an average. `loops over the limit` is the number the remaining work is
+  actually sized by.
+
+  **The measurement was measuring a subset.** Two limits in
+  `inventory-command-surfaces.py` hid real surfaces, and both are fixed:
+
+  * It read only `terminal/menus/*.sh`. Four operator menus live elsewhere —
+    `gitlaunch.sh`, `mq-zsh-theme-switcher.sh`, `workspace.sh` and
+    `ui/dashboards/mq-dashboard.sh`. `gitlaunch.sh` is the one that matters:
+    `mqlaunch git` opens it, not `mq-git-menu.sh`, so the git surface being
+    measured was not the git surface anyone reaches by typing the git command.
+    It had 11 choices and nothing would have reported it.
+  * The arm regex required the case key and its body on one line, and accepted
+    "all digits" or "all letters" but not the mixed form. `gitlaunch.sh` and
+    `mq-dashboard.sh` are written entirely in the multi-line style, so neither
+    registered at all; and `9|p|P` — a numbered row that also answers the letter
+    it used to be bound to — counted as nothing, so a menu lost a choice from
+    its total by keeping an old key working.
+
+  So the jump from 246 to 299 is the measurement getting honest, not the product
+  growing. Every menu listed below is shorter than it was.
+
+  `tools/scripts/mqlaunch_desktop.sh` is still outside the count, deliberately:
+  63 arms and its own dispatch, classified in `docs/RUNTIME_AUTHORITY.md` as a
+  separate live entrypoint. It needs its own measurement rather than a place in
+  this one.
 
   * [x] 0 dispatcher bypasses — `excalidraw`, `reap` and the two `self-check`
     rows go through the dispatcher. The pin was a ratchet at three; it is a hard
@@ -767,15 +859,49 @@ below are from 2026-07-30 against `2.0.1`.
     added: nothing needs a documented exception yet, and building the mechanism
     first would have made the target reachable by writing prose (#132).
 
+    That held until the scan started reading multi-line case arms, which
+    surfaced one bypass that had always been there: `mq-main-menu.sh` row `a`
+    runs `hal-terminal-guide.sh` directly. It has to — the guide writes a path
+    to `~/.hal_nav` and the menu `cd`s there afterwards, which `mqlaunch guide`
+    cannot do from a subprocess. So `BYPASS_EXCEPTIONS` exists now, holding
+    exactly that one entry with the reason beside it. The count stays 0, and the
+    smoke test still fails when a bypass is planted.
+
     The count was 1, not the 3 recorded here before. `ghost`, `review`, `flow`
     and `srm` looked duplicated because the generated help list contains rows
     like `mqlaunch doctor`, which the inventory read as menu invocations.
     Printing a command's name is not a way in; the scanner skips generated list
     blocks now.
-  * [ ] <= 10 operator choices per menu — six loops are over, worst first:
-    `system` 16, `apps` 15, `dev` 14, `git` 12, `release` 12, `workflows` 11.
-    Tools went 30 to 10, Agent 21 to 10 and HAL 17 to 10 by grouping rather than
-    cutting (#132, #136).
+  * [ ] <= 10 operator choices per menu — one loop is over on the branches, and
+    it has a PR open. Every menu now has work written; nothing is unclaimed.
+
+    ```text
+    menu         before  after  where
+    tools          30      10   #132
+    agent          21      10   #132
+    hal            17      10   #137
+    system         16      10   #141
+    apps           15       9   #148
+    dev            14       8   #143
+    git            12       9   #147
+    release        12       ?   #144 (open)
+    gitlaunch      11       8   #146
+    workflows      11       9   #149
+    ```
+
+    Two of these were not regroupings. The git menu was answering a `9` it never
+    drew — `d8ba588` removed the row and left the arm — and the workflows menu
+    had two rows duplicating the submenu they sat beside. In both cases the row
+    went and the function stayed, because `mq-git-menu.sh log` and
+    `mqlaunch workflows save|restore` reach them.
+
+    `gitlaunch` is on the list at all only because the measurement was widened;
+    see the note above. It is also the menu `mqlaunch git` opens, which makes it
+    the one an operator was most likely to meet over the limit.
+
+    Merging `feat/release-menu-grouping` needs a conflict resolved in
+    `CHANGELOG.md`, `tests/manifest.tsv` and `tools/scripts/test-all.sh` — the
+    branches all add test rows in the same places. Content, not logic.
 
     Back and quit are excluded, as the target says — they were half-counted
     before, since `x|X)` matched the arm pattern and `b|B|back)` did not.
@@ -786,23 +912,45 @@ below are from 2026-07-30 against `2.0.1`.
     splitting a long menu into submenus, which is the fix, could never improve
     the number.
 
-  * [ ] <= 190 total options — 244 today, up from 243. **This target and the one
-    above pull in opposite directions and cannot both be met by grouping.** Every
-    submenu adds a row in the parent and a Back arm of its own, so restructuring
-    Tools and Agent removed eleven flat rows and added sixteen. Reaching 190 means
-    deleting capability, not regrouping it.
+  * [ ] <= 190 total options — **retire this target.** It is 299 now against 246
+    before, and the increase is not regression. Two thirds of it is the widened
+    measurement seeing four more menu files and the multi-line arms it used to
+    skip; the rest is that every submenu adds a parent row and a Back arm of its
+    own.
 
-    Worth deciding which target is the real one before the next slice. The
-    per-loop limit is the one an operator feels.
+    Ten menus have been regrouped and the total has risen every time, including
+    the ones that deleted rows. That is not ten failures. **This target and the
+    per-loop limit pull in opposite directions and cannot both be met by
+    grouping** — reaching 190 means deleting capability, and the capability is
+    not the problem. 190 was set before the fix was known and before the
+    measurement was honest.
+
+    What an operator feels is the length of the panel in front of them, which is
+    the per-loop limit. A repo-wide sum of every choice behind every submenu is
+    not a number anyone experiences. Replace it with the per-loop limit plus a
+    gate, below.
+
+  * [ ] Gate the per-loop limit, once `#144` lands and no loop is over ten.
+
+    `tests/command-discovery-inventory-smoke.sh` pins `--max-bypass 0` and
+    nothing else. The per-loop target is measured on demand and enforced by
+    nobody, which is how `gitlaunch` sat at eleven unremarked and how four menus
+    drifted past ten in the first place. A `--max-loop 10` flag held by the smoke
+    test turns the target from a number in this file into a fact about the tree.
+
+    It cannot be added before the last menu is under, or the suite fails on
+    arrival. That ordering is the only reason it is not already done.
 
   * [x] `focus.sh` is no longer orphaned — it has a command, `mqlaunch focus`,
     and appears in help under `UTILITY`. It was routed rather than deleted
     because it works, which was checked before deciding (#134).
 
-  * [ ] `workflows` is over the limit because Demo flow moved there. It had ten
-    choices and has eleven. The move was right — it is the other full-stack run,
-    beside project boot and check — but it needs a submenu or a different home
-    for something else on that menu.
+  * [x] `workflows` is back under the limit, and not by moving Demo flow away —
+    the move was right, it is the other full-stack run. Two rows came off
+    instead: "Save workspace" and "Restore workspace" were running the same
+    calls as "1. Save current workspace" and "4. Restore latest snapshot" inside
+    the snapshots submenu on the row above them. Eleven to nine, with no submenu
+    added and nothing hidden (#149).
 
 ### Exit gate
 
@@ -963,6 +1111,10 @@ Exit gate:
 
 ### PR 4 — Drift detection
 
+Delivered across #81, #86, #87 and #90. This block tracked the same work as
+`P1 — Command registry drift tests`, which closed first; the boxes here were
+left behind rather than reopened.
+
 Suggested title:
 
 ```text
@@ -971,17 +1123,30 @@ test(mqlaunch): detect command surface drift
 
 Scope:
 
-* [ ] Add drift tests for help, commands, palette, docs, and dispatch
-* [ ] Start with detection before large refactor
-* [ ] Document known intentional exceptions
+* [x] Add drift tests for help, commands, palette, docs, and dispatch —
+  `tests/command-registry-smoke.sh` (registry against itself and dispatch) and
+  `tests/registry-consumer-parity-smoke.sh` (registry against the four
+  publishing surfaces), with `tests/command-docs-smoke.sh` holding README.
+* [x] Start with detection before large refactor — the tests found six
+  advertised commands that printed `Unknown command` and 22 the reference never
+  mentioned, before the second dispatcher was removed in #88.
+* [x] Document known intentional exceptions — help and README are curated
+  indexes and not required to cover all 73 commands; `operator_surface` records
+  which 48 are public; `deprecated_aliases` states retirement explicitly.
 
 Exit gate:
 
-* [ ] CI detects command-surface drift
+* [x] CI detects command-surface drift — all three tests are in
+  `tests/manifest.tsv` and `tools/scripts/test-all.sh`, which runs in the
+  `Quality` workflow. Re-verified green on `d2ed66c`.
 
 ---
 
 ### PR 5 — Runtime consolidation
+
+Delivered across #85, #87 and #88, tracked in full by `P1 — Single runtime
+authority`. Same situation as PR 4: the work closed there and these boxes were
+never carried over.
 
 Suggested title:
 
@@ -991,15 +1156,26 @@ refactor(mqlaunch): consolidate runtime authority
 
 Scope:
 
-* [ ] Route command resolution through authority path
-* [ ] Keep legacy paths as shims
-* [ ] Preserve compatibility aliases
-* [ ] Ensure delegation owners remain unchanged
+* [x] Route command resolution through authority path — `dispatch_cli_command`
+  is the only dispatcher. `run_arg_command` was frozen against a baseline (#85),
+  lost its last caller when the palette was rerouted (#87), and was deleted with
+  its freeze gate (#88). It survives only in `tools/legacy/patches/`, which is a
+  frozen path, and in the test that fails if a second dispatcher reappears.
+* [x] Keep legacy paths as shims — classified in `docs/AUTHORITY_MAP.md`,
+  enforced by `scripts/check-runtime-authority.sh`.
+* [x] Preserve compatibility aliases — `validate-command-registry.py` walks
+  every name and alias through one `seen_names` map; a deprecated spelling still
+  dispatches but must name a `replacement`.
+* [x] Ensure delegation owners remain unchanged — the validator compares the
+  first word of `delegates_to` against `owner`, so an entry cannot claim
+  `mq-agent` while routing to `mq-mcp`.
 
 Exit gate:
 
-* [ ] All smoke tests pass
-* [ ] Compatibility paths delegate instead of owning behavior
+* [x] All smoke tests pass — verified on `d2ed66c`.
+* [x] Compatibility paths delegate instead of owning behavior —
+  `tests/compat-path-delegation-smoke.sh` and
+  `tests/runtime-authority-freeze-smoke.sh`, both green.
 
 ---
 
@@ -1043,14 +1219,24 @@ gate on.
 Scope:
 
 * [x] Measure the current surface (#92)
-* [ ] Clear SC2034 in bulk
-* [ ] Triage SC2221/SC2222 and SC2046 by hand
-* [ ] Document intentional suppressions
-* [ ] Raise `lint.sh` to `-S warning` and drop `|| true` from `quality.yml`
+* [x] Clear SC2034 in bulk — split across #93 (the 34 read across a `source`
+  boundary) and #94 (the other 17, decided one at a time). Bulk-deleting them
+  would have reset every panel title.
+* [x] Triage SC2221/SC2222 and SC2046 by hand — #95 and #99. The SC2046
+  here-strings are only safe to quote because each emits a single line.
+* [x] Document intentional suppressions — every one explains itself next to the
+  finding, not at file level.
+* [x] Raise `lint.sh` to `-S warning` and drop `|| true` from `quality.yml` —
+  `tools/scripts/lint.sh:54` runs `shellcheck -S warning`; the workflow step
+  calls `lint.sh` and asserts shellcheck is installed, because `lint.sh` exits 0
+  without it.
 
 Exit gate:
 
-* [ ] `warning` is enforced for bash/sh, and the baseline is zero or documented
+* [x] `warning` is enforced for bash/sh, and the baseline is zero or documented
+  — `bash tools/scripts/lint.sh` exits 0 with no findings on `d2ed66c`. The 5
+  warnings in `terminal/mqlaunch-v1/` and `tools/legacy/` are outside the gated
+  surface by the compatibility policy in `docs/RUNTIME_AUTHORITY.md`.
 
 ---
 
