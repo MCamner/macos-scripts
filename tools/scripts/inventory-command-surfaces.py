@@ -81,7 +81,27 @@ SCHEMA = "mq-command-discovery-inventory.v1"
 # of their command invocations through letter keys, so a numeric-only scan saw 4
 # dispatcher calls where there are dozens. Two leading spaces keeps it to indented
 # case arms rather than any line that happens to start with a word.
-ARM = re.compile(r"^\s{2,}([0-9]+|[A-Za-z](?:\|[A-Za-z])*)\)\s*(.+?)\s*;;\s*$")
+# One case key: a number or a single letter, or several of those joined by `|`.
+# The alternatives used to be "all digits" or "all letters", which missed the
+# mixed form. `9|p|P` and `7|m|M` — a numbered row that also answers the letter
+# it used to be bound to — counted as nothing at all, so a menu lost a choice
+# from its total by keeping an old key working.
+KEY = r"(?:[0-9]+|[A-Za-z])(?:\|(?:[0-9]+|[A-Za-z]))*"
+
+ARM = re.compile(r"^\s{2,}(" + KEY + r")\)\s*(.+?)\s*;;\s*$")
+
+# A case arm whose key sits alone on its line, with the body following until
+# `;;`. gitlaunch.sh and ui/dashboards/mq-dashboard.sh are written entirely this
+# way, so a one-line-only scan saw nothing in either — including the menu that
+# `mqlaunch git` actually opens. The key had to be on the same line as its body
+# to be counted, which is a fact about shell formatting, not about how many
+# choices a panel offers.
+ARM_OPEN = re.compile(r"^\s{2,}(" + KEY + r")\)\s*$")
+ARM_CLOSE = re.compile(r"^\s*;;\s*$")
+
+# How far to read for an arm's `;;`. An arm longer than this is not a dispatch
+# line, and stopping keeps a malformed case from swallowing the rest of a file.
+ARM_BODY_LINES = 40
 
 # A case arm whose key sits alone on its line, with the body following until
 # `;;`. gitlaunch.sh and ui/dashboards/mq-dashboard.sh are written entirely this
