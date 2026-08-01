@@ -633,6 +633,49 @@ open_local_repo() {
   open "$CURRENT_REPO"
 }
 
+# Prints the repo-and-remote submenu.
+#
+# These three were the NAVIGATION block on the front panel. They are the choices
+# an operator makes least often — where the repo is, and how to look at it
+# somewhere other than this terminal — so they group cleanly and take the front
+# panel from twelve choices to ten.
+print_repo_submenu() {
+  local width panel_color
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+
+  print_header
+  surface_panel_header "Repo and remote" "git" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "REPO AND REMOTE" "$width" "$panel_color"
+  surface_split_row "1. Open repo on GitHub" "2. Open local repo folder" "$width" "$panel_color"
+  surface_split_row "3. Change repo path" "b. Back" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the repo-and-remote submenu loop.
+repo_submenu_loop() {
+  local choice=""
+
+  while true; do
+    print_repo_submenu
+    read_menu_choice "" "repo" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      1) open_repo_github ;;
+      2) open_local_repo ;;
+      3) choose_repo ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
 # Prints menu.
 print_git_menu() {
   local width panel_color
@@ -648,11 +691,10 @@ print_git_menu() {
   surface_split_row "3. Suggest commit message" "4. Next recommended action" "$width" "$panel_color"
   surface_split_row "5. Stage selected files" "6. Commit staged changes" "$width" "$panel_color"
   surface_split_row "7. Safe push" "8. Pull with rebase" "$width" "$panel_color"
-  surface_split_row "p. Merge pull request" "" "$width" "$panel_color"
+  surface_split_row "9. Merge pull request" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "NAVIGATION" "$width" "$panel_color"
-  surface_split_row "10. Open repo on GitHub" "11. Open local repo folder" "$width" "$panel_color"
-  surface_split_row "12. Change repo path" "b. Back" "$width" "$panel_color"
+  surface_row "REPO" "$width" "$panel_color"
+  surface_split_row "10. Repo and remote" "b. Back" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
@@ -678,11 +720,10 @@ git_menu_loop() {
       6) commit_changes ;;
       7) safe_push ;;
       8) pull_rebase ;;
-      p|P) merge_pull_request ;;
-      9) show_log ;;
-      10) open_repo_github ;;
-      11) open_local_repo ;;
-      12) choose_repo ;;
+      # `p` predates the number and stays bound. Rebinding a Class C mutating
+      # action would cost muscle memory and buy nothing.
+      9|p|P) merge_pull_request ;;
+      10) repo_submenu_loop ;;
       b|B|x|X|exit) return ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
