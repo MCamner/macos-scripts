@@ -710,8 +710,9 @@ below are from 2026-08-01, re-derived with
 `tools/scripts/inventory-command-surfaces.py --json`.
 
 `before` is `d2ed66c`, the state this section was written against. `main today`
-is `73d88cb`: #145 through #152 are merged, so the numbers below describe the
-tree rather than a set of branches waiting on review.
+is the tree after #142 through #153 landed. Three of the four targets are
+enforced by `tests/command-discovery-inventory-smoke.sh` rather than measured on
+demand, which is what `gated` means: they cannot drift without failing CI.
 
 * [x] Improve first-run experience.
 
@@ -800,24 +801,26 @@ tree rather than a set of branches waiting on review.
   delegates to. What `macos-scripts` owns here is the entrypoint, not the
   status logic — see `docs/RUNTIME_AUTHORITY.md`.
 
-* [ ] Keep menus focused.
+* [x] Keep menus focused. Every sub-item is closed except `<= 190 total
+  options`, which is retired rather than outstanding — the reasoning is under
+  that box.
 
   Targets, measured with `tools/scripts/inventory-command-surfaces.py`:
 
   ```text
                                   target   before   main today
-  worst menu loop                 <= 10      30       14  (#143, #144 open)
-  loops over the limit             0          5        2
-  undocumented duplications        0          1        0
-  dispatcher bypasses              0          3        0
+  worst menu loop                 <= 10      30       10  gated
+  loops over the limit             0          5        0  gated
+  undocumented duplications        0          1        0  gated
+  dispatcher bypasses              0          3        0  gated
   menu files measured              —         19       23
-  menu loops measured              —         34       44
-  total options                   <= 190    243      294
+  menu loops measured              —         34       49
+  total options                   <= 190    243      299  retired
   ```
 
-  `main today` is `73d88cb`, after #145 through #152 landed. The two loops still
-  over the limit are `dev` (14) and `release` (12), both with PRs open — #143
-  and #144. Nothing else is unclaimed.
+  No loop is over the limit, and the worst is exactly ten. That is the first
+  time this section can say so, and the gate below means it cannot quietly stop
+  being true.
 
   `worst menu loop` replaces a row that read `operator choices per menu 29`,
   which was the worst loop rather than a per-menu figure and read as though it
@@ -872,8 +875,8 @@ tree rather than a set of branches waiting on review.
     like `mqlaunch doctor`, which the inventory read as menu invocations.
     Printing a command's name is not a way in; the scanner skips generated list
     blocks now.
-  * [ ] <= 10 operator choices per menu — one loop is over on the branches, and
-    it has a PR open. Every menu now has work written; nothing is unclaimed.
+  * [x] <= 10 operator choices per menu — **no loop is over the limit.** Worst
+    is exactly 10, across 49 loops in 23 files.
 
     ```text
     menu         before  after  where
@@ -884,9 +887,10 @@ tree rather than a set of branches waiting on review.
     apps           15       9   #148
     dev            14       8   #143
     git            12       9   #147
-    release        12       ?   #144 (open)
+    release        12       7   #144
     gitlaunch      11       8   #146
     workflows      11       9   #149
+    performance    10      10   #142 (shell guard, not a regrouping)
     ```
 
     Two of these were not regroupings. The git menu was answering a `9` it never
@@ -899,9 +903,10 @@ tree rather than a set of branches waiting on review.
     see the note above. It is also the menu `mqlaunch git` opens, which makes it
     the one an operator was most likely to meet over the limit.
 
-    Merging `feat/release-menu-grouping` needs a conflict resolved in
-    `CHANGELOG.md`, `tests/manifest.tsv` and `tools/scripts/test-all.sh` — the
-    branches all add test rows in the same places. Content, not logic.
+    The shell-exec class is gone with it. `#137` and `#142` were the last two
+    menus handing unrecognised input to `/bin/zsh -lc "$choice"`, so a typo at a
+    prompt ran as a command. Both keep the deliberate `!` escape, which runs
+    only what follows the bang.
 
     Back and quit are excluded, as the target says — they were half-counted
     before, since `x|X)` matched the arm pattern and `b|B|back)` did not.
@@ -930,16 +935,22 @@ tree rather than a set of branches waiting on review.
     not a number anyone experiences. Replace it with the per-loop limit plus a
     gate, below.
 
-  * [ ] Gate the per-loop limit, once `#144` lands and no loop is over ten.
+  * [x] Gate the per-loop limit — done, and this is the box that matters most.
 
-    `tests/command-discovery-inventory-smoke.sh` pins `--max-bypass 0` and
-    nothing else. The per-loop target is measured on demand and enforced by
+    `tests/command-discovery-inventory-smoke.sh` pinned `--max-bypass 0` and
+    nothing else. The per-loop target was measured on demand and enforced by
     nobody, which is how `gitlaunch` sat at eleven unremarked and how four menus
-    drifted past ten in the first place. A `--max-loop 10` flag held by the smoke
-    test turns the target from a number in this file into a fact about the tree.
+    drifted past ten in the first place. Step 8 now runs `--max-loop 10`, so the
+    target is a fact about the tree rather than a number in this file.
 
-    It cannot be added before the last menu is under, or the suite fails on
-    arrival. That ordering is the only reason it is not already done.
+    The gate has to be able to fail, so the step also requires `--max-loop 9` to
+    exit non-zero. Three loops sit exactly at ten, which makes that off-by-one
+    free to check and proves the comparison is live rather than a flag that
+    always returns 0.
+
+    It could not land before the last menu was under, or the suite would have
+    failed on arrival. Eleven PRs cleared the way — #132, #136, #137, #141,
+    #142, #143, #144, #146, #147, #148, #149 — which is why this comes last.
 
   * [x] `focus.sh` is no longer orphaned — it has a command, `mqlaunch focus`,
     and appears in help under `UTILITY`. It was routed rather than deleted
