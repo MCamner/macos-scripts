@@ -593,7 +593,7 @@ variable and mostly is not.
 
 ## P2 — Thin delegation polish
 
-Status: Planned
+Status: In progress — 2 of 5 tasks done, one exit gate closed
 Priority: P2
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -609,33 +609,84 @@ The front door should make the right workflow easy to find, then hand off to the
 
 * [ ] Review all `mq-agent` delegation commands.
 
-  * Keep them as thin pass-throughs.
-  * Avoid local shell logic that duplicates `mq-agent`.
+  Measured, by line count of each handler in `terminal/menus/mq-agent-menu.sh`:
+
+  ```text
+  _run_agent                  3   pass-through
+  _run_agent_architecture     3   pass-through
+  _run_agent_repo_health      5   pass-through
+  _run_agent_memory_cochange 13
+  _run_agent_flow            39
+  _run_agent_review          79   ← the one to look at
+  ```
+
+  Four of six are thin. `_run_agent_review` is 79 lines of scope and mode
+  parsing that turns `mqlaunch review file X security` into
+  `mq-agent review file X --security`. That is argument translation rather than
+  review cognition, so it does not cross the boundary
+  `docs/RUNTIME_AUTHORITY.md` draws — but it is the largest piece of local shell
+  standing between an operator and a delegate, and it is where a second
+  vocabulary would grow if one ever did. `_run_agent_flow` is the same shape at
+  half the size.
+
+  Unchecked because reading them is not reviewing them: the question is whether
+  those 118 lines should be flags `mq-agent` parses itself.
 
 * [ ] Add `mqlaunch stack status` alignment with `mq-agent ship status` once `ship status` exists.
 
   * `mqlaunch` should display or delegate the release cockpit.
   * It should not reimplement release state logic.
 
-* [ ] Add a clear “owner” label in help output.
+  Still blocked, and verified rather than assumed: there is no `ship` command in
+  `mq_agent/main.py` as of 2026-08-01. Nothing to align with yet.
 
-  * Example: `owner: mq-agent`
-  * Example: `owner: mq-hal`
-  * Example: `owner: repo-signal`
+* [x] Add a clear “owner” label in help output.
 
-* [ ] Improve failure messages for missing delegated tools.
+  Group headings carry the owning repo — `AGENT  (owner: mq-agent)`,
+  `HAL  (owner: mq-hal)`, `OBSIDIAN  (owner: mqobsidian)` — covering the 13 of
+  49 public entrypoints this repo does not implement. `macos-scripts` groups
+  stay unlabelled and `docs/COMMANDS.md` states that default, because writing
+  the home repo on nine of twelve headings is noise.
 
-  * Missing `mq-agent`
-  * Missing `mq-hal`
-  * Missing `repo-signal`
-  * Missing `mq-mcp`
+  The heading rather than the row, because a row is already 26 columns of prefix
+  plus a 66-character summary — the full 92-column width. That works only while
+  a namespace has one owner, which every one does;
+  `validate-command-registry.py` now fails a registry that mixes them, so the
+  label cannot start describing only some of the rows beneath it.
+
+* [x] Improve failure messages for missing delegated tools.
+
+  * `mq-hal` — `mq_hal_missing()` in `terminal/bridges/hal-bridge.sh`: names the
+    binary, names the path, prints two runnable checks, exits 127. This was
+    already right and became the template.
+  * `mq-agent` — was the shell's own diagnostic:
+    `_run_agent:cd:1: no such file or directory`, an internal function name and
+    no mention of mq-agent being a separate repo. `_mq_agent_missing()` now
+    mirrors mq-hal and adds the `MQ_AGENT_BIN` override.
+  * `mq-mcp` — `not_reachable_message()` in mq-agent's bridge names the endpoint
+    and prints `mq-agent mcp start`.
+  * `repo-signal` — reached through `mq-mcp`'s `repo_signal_analyze` rather than
+    directly, so its failure is a tool failure and surfaces as one.
+
+  Held by `tests/delegate-missing-message-smoke.sh`, which holds both bridges to
+  one contract so the good one cannot regress to the bad one's behaviour.
 
 * [ ] Keep local quick commands local only when they truly belong to the terminal entrypoint.
 
 ### Exit gate
 
-* [ ] A user can tell which repo owns each command.
+* [x] A user can tell which repo owns each command. `mqlaunch help` prints the
+  owning repo on every delegated group heading, and the unlabelled default is
+  documented. Held by `tests/registry-consumer-parity-smoke.sh` and the
+  namespace-owner rule in `validate-command-registry.py`.
 * [ ] `mqlaunch` does not duplicate deeper stack logic.
+
+  `tests/mq-stack-contract-smoke.sh` and `docs/architecture/MQ_BOUNDARY.md`
+  already hold the boundary that matters — no review, risk, release or memory
+  cognition in shell — and it holds. What is unproven is the weaker claim in the
+  task above: 118 lines across `_run_agent_review` and `_run_agent_flow` are
+  argument translation this repo performs on the delegate's behalf. Not a
+  boundary violation, but not nothing either.
 
 ---
 
