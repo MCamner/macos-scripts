@@ -60,8 +60,8 @@ render_performance_panel() {
 
 # Opens performance menu.
 open_performance_menu() {
-  local choice
-  
+  local choice perf_shell
+
   while true; do
     print_header
     render_performance_panel
@@ -71,9 +71,11 @@ open_performance_menu() {
       read_main_choice || return
     else
       printf "\nmqlaunch > "
-      read -r choice
+      # `|| return`, because without it end-of-input left choice empty and the
+      # loop redrew the panel as fast as it could render, forever.
+      read -r choice || return
     fi
-    
+
     case "$choice" in
       1) command_perf_overview ;;
       2) command_perf_health_score ;;
@@ -87,13 +89,27 @@ open_performance_menu() {
       10) "$PROJECT_ROOT/tools/scripts/scan.sh"; pause_enter ;;
       b|B|back) break ;;
       x|X) exit 0 ;;
-      *)
-        # If it looks like a shell command, try to run it
-        if [[ -n "$choice" ]]; then
+      !*)
+        # Shell only when asked for, and only what follows the `!`.
+        #
+        # This arm used to be the `*` fallback: anything the menu did not
+        # recognise was handed to `/bin/zsh -lc "$choice"`, so mistyping `5` as
+        # `%` ran `%`. The prefix makes reaching a shell a decision rather than
+        # the default consequence of a typo. It is the same prefix the main
+        # prompt already advertises, so nothing new has to be learnt.
+        perf_shell="${choice#!}"
+        perf_shell="${perf_shell# }"
+        if [[ -n "$perf_shell" ]]; then
           echo
-          /bin/zsh -lc "$choice"
+          /bin/zsh -lc "$perf_shell" || true
           pause_enter
         fi
+        ;;
+      "") ;;
+      *)
+        echo "${C_ERR}Invalid selection:${C_RESET} $choice"
+        echo "Shell needs an explicit prefix:  ! ls -la"
+        pause_enter
         ;;
     esac
   done
