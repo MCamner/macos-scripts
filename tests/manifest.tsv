@@ -34,6 +34,7 @@ document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
 git-restore-to-base-smoke.sh	active	-
 git-status-contract-smoke.sh	active	-
+gitlaunch-menu-surface-smoke.sh	active	-
 gitmerge-safe-smoke.sh	active	-
 hal-args-no-eval-smoke.sh	active	-
 hal-command-surface-smoke.sh	active	-
