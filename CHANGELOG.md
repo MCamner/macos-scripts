@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* Two of `gitlaunch.sh`'s menu rows were invisible to the command-surface
+  inventory, so the loop an operator sees as ten was measured as eight — under
+  the gate whose whole subject is how many choices a loop offers.
+
+  `ARM_OPEN`, `ARM_CLOSE` and `ARM_BODY_LINES` were each defined twice in
+  `inventory-command-surfaces.py`, and in Python the second definition is the
+  one that runs. That copy predated the `KEY` pattern and accepted all-digits or
+  all-letters but never the mixed form, so widening `KEY` had no effect on
+  multi-line case arms: `7|m|M)` and `8|p|P)` matched nothing.
+
+  The gate still passes at `--max-loop 10` with both rows counted; the total
+  option count goes 299 → 301. Step 9 of
+  `tests/command-discovery-inventory-smoke.sh` requires two mixed-key rows in
+  that menu and fails when the old regex is put back.
+
 ### Removed
 
 * `tools/scripts/mqlaunch_desktop.sh`, 1104 lines that nothing started.

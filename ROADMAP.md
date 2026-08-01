@@ -817,7 +817,7 @@ demand, which is what `gated` means: they cannot drift without failing CI.
   dispatcher bypasses              0          3        0  gated
   menu files measured              —         19       23
   menu loops measured              —         34       49
-  total options                   <= 190    243      299  retired
+  total options                   <= 190    243      301  retired
   ```
 
   No loop is over the limit, and the worst is exactly ten. That is the first
@@ -845,7 +845,15 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     it used to be bound to — counted as nothing, so a menu lost a choice from
     its total by keeping an old key working.
 
-  So the jump from 246 to 299 is the measurement getting honest, not the product
+    Widening the key pattern did not take effect for the multi-line form until
+    2026-08-01. `ARM_OPEN` was defined twice in the tool and the second, older
+    definition won, so `7|m|M` and `8|p|P` in `gitlaunch.sh` still matched
+    nothing: the loop an operator sees as ten was measured as eight, under a
+    gate whose subject is how many choices a loop offers. Step 9 of
+    `tests/command-discovery-inventory-smoke.sh` now requires both rows and
+    fails when the old regex is put back.
+
+  So the jump from 246 to 301 is the measurement getting honest, not the product
   growing. Every menu listed below is shorter than it was.
 
   `tools/scripts/mqlaunch_desktop.sh` was outside the count as a separate live
@@ -919,7 +927,7 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     splitting a long menu into submenus, which is the fix, could never improve
     the number.
 
-  * [ ] <= 190 total options — **retire this target.** It is 299 now against 246
+  * [ ] <= 190 total options — **retire this target.** It is 301 now against 246
     before, and the increase is not regression. Two thirds of it is the widened
     measurement seeing four more menu files and the multi-line arms it used to
     skip; the rest is that every submenu adds a parent row and a Back arm of its

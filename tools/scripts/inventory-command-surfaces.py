@@ -103,18 +103,13 @@ ARM_CLOSE = re.compile(r"^\s*;;\s*$")
 # line, and stopping keeps a malformed case from swallowing the rest of a file.
 ARM_BODY_LINES = 40
 
-# A case arm whose key sits alone on its line, with the body following until
-# `;;`. gitlaunch.sh and ui/dashboards/mq-dashboard.sh are written entirely this
-# way, so a one-line-only scan saw nothing in either — including the menu that
-# `mqlaunch git` actually opens. The key had to be on the same line as its body
-# to be counted, which is a fact about shell formatting, not about how many
-# choices a panel offers.
-ARM_OPEN = re.compile(r"^\s{2,}([0-9]+|[A-Za-z](?:\|[A-Za-z])*)\)\s*$")
-ARM_CLOSE = re.compile(r"^\s*;;\s*$")
-
-# How far to read for an arm's `;;`. An arm longer than this is not a dispatch
-# line, and stopping keeps a malformed case from swallowing the rest of a file.
-ARM_BODY_LINES = 40
+# ARM_OPEN, ARM_CLOSE and ARM_BODY_LINES were each defined a second time here,
+# and in Python the second definition is the one that runs. That copy predated
+# KEY and accepted all-digits or all-letters but not the mixed form, so widening
+# the key pattern above had no effect on multi-line arms: `7|m|M)` and `8|p|P)`
+# in gitlaunch.sh matched nothing, and the loop an operator sees as ten was
+# measured as eight — under a gate whose subject is how many choices a loop
+# offers. Held by step 9 of tests/command-discovery-inventory-smoke.sh.
 
 # A shell function definition, in either accepted form.
 FUNC_DEF = re.compile(r"^\s*(?:function\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{")

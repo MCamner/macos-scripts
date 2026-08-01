@@ -137,7 +137,33 @@ if "$TOOL" --max-loop 9 >/dev/null 2>&1; then
 fi
 echo "  ok: no loop over ten, and the limit is enforced rather than recorded"
 
-echo "[9/9] the inventory still notices a bypass and a duplication"
+echo "[9/10] a mixed number-and-letter key counts as a choice"
+# `7|m|M)` and `8|p|P)` — a numbered row that also answers the letter it was
+# bound to before it had a number. Two regexes named ARM_OPEN were defined in
+# the tool, and the second one won: it accepted all-digits or all-letters, never
+# the mixed form. Both of gitlaunch.sh's merge rows were therefore invisible,
+# and the loop the operator sees as ten was measured as eight — under a gate
+# whose whole subject is how many choices a loop offers.
+#
+# Asserted through the tool's own output rather than by re-reading the file, and
+# on a menu that is written entirely in the multi-line arm style the bug needed.
+"$TOOL" --json | python3 -c '
+import re
+import sys, json
+
+options = json.load(sys.stdin)["options"]
+keys = {str(o["option"]) for o in options if o["menu"] == "gitlaunch.sh"}
+mixed = re.compile(r"^[0-9]+(\|[A-Za-z])+$")
+found = sorted(k for k in keys if mixed.match(k))
+if len(found) < 2:
+    sys.exit(
+        "FAIL: gitlaunch.sh should offer two mixed-key rows (safe merge, PR "
+        "merge); the inventory sees " + str(len(found)) + ". Seen: "
+        + ", ".join(sorted(keys)))
+'
+echo "  ok: mixed keys are counted"
+
+echo "[10/10] the inventory still notices a bypass and a duplication"
 # Both gates are at zero, so nothing in the repo exercises them. Each is proven
 # by reintroducing the defect in a tracked menu and taking it out again. The
 # trap restores the file even when an assertion below exits.
