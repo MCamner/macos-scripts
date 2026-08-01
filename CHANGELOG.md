@@ -8,6 +8,50 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `install.sh` symlinked `terminal/launchers/mqlaunch.sh` onto `PATH`, which is
+  one file past the official entrypoint. `mqlaunch repl` is routed in
+  `bin/mqlaunch` and nowhere else — the launcher it execs reports `repl` as an
+  unknown command and suggests `mqlaunch repos` — so a fresh install produced a
+  working `mqlaunch` with no REPL. Both link targets were verified rather than
+  reasoned about: through the launcher, `repl` prints `Unknown command: repl`;
+  through `bin/mqlaunch` it does not.
+
+  The installer now links every executable under `bin/`, discovered rather than
+  named. That is three commands: `mqlaunch`, `mq`, and the new `gitlaunch`.
+  `mq` was in the same position as `gitlaunch` — on `PATH` as a hand-made copy
+  that no install step maintains.
+
+  Uninstall follows the same list, and removes only symlinks. A copy sitting at
+  one of those names is reported and left alone: uninstall takes back what
+  install put there, and a file on `PATH` the repo never owned is not the
+  installer's to delete.
+
+### Added
+
+* `bin/gitlaunch`, so the git menu can be reached by typing `gitlaunch` without
+  a second copy of it existing.
+
+  `gitlaunch` was on `PATH` as a hand-made copy of
+  `terminal/launchers/gitlaunch.sh` — 453 lines dated 25 June against the repo's
+  1122. Everything since had reached `mqlaunch git` and not the command the hand
+  types: the eight-choice grouping, the 92-column convergence, the protected-push
+  guard. Committing to the repo cannot update a copy, which is the argument for
+  a link.
+
+  It is a wrapper rather than an entrypoint: `exec bin/mqlaunch git "$@"`. Going
+  straight to `terminal/launchers/gitlaunch.sh` would skip the repo argument
+  handling and the dashboard-cache invalidation in `open_git_menu`, and would add
+  a second way into a command the dispatcher already routes — the class
+  `tests/command-discovery-inventory-smoke.sh` holds at zero.
+
+  `tests/install-contract-smoke.sh` installs into a temporary bin dir and
+  asserts every entrypoint is linked, that each link resolves into `bin/` rather
+  than past it, that the installed `mqlaunch` routes `repl`, and that `gitlaunch`
+  hands `git <args>` to the dispatcher — the last one driven through a stub, so
+  what is checked is the argv rather than the source text.
+
+### Fixed
+
 * The Performance menu executed anything it did not recognise. Its last case arm
   was `*) /bin/zsh -lc "$choice"`, so mistyping a menu number ran the typo as a
   login-shell command — the pattern #137 removed from the HAL menu, left in the
