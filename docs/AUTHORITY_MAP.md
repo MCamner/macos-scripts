@@ -30,7 +30,15 @@ live→legacy edge appears.
 | --- | --- |
 | `bin/mqlaunch` | Official entrypoint → `terminal/launchers/mqlaunch.sh`; `mqlaunch repl` → `mqlaunch-repl.sh` |
 | `bin/mq` → `tools/cli/mq` | Secondary CLI entrypoint |
-| `tools/scripts/mqlaunch_desktop.sh` | Desktop launch variant (alternate live entry) |
+
+`tools/scripts/mqlaunch_desktop.sh` was listed here as an "alternate live entry"
+and was not one. It has been deleted; see the DEPRECATED section.
+
+`tests/runtime-authority-classification-smoke.sh` now holds this table to the
+claim it makes: a path listed here must either sit in `bin/`, which `install.sh`
+links onto `PATH` wholesale, or be named by a tracked file outside `docs/` and
+`tests/` — with comment lines dropped first, because prose explaining why
+something is *not* live reads exactly like a caller to a grep.
 
 ## Runtime coordinator — LIVE
 
@@ -54,7 +62,10 @@ Sourced directly by `terminal/launchers/mqlaunch.sh`:
 Reached through other live paths:
 
 * `terminal/menus/mq-hal-menu.sh` — via `hal-bridge.sh` (LIVE)
-* `terminal/menus/mq-git-menu.sh` — via `mqlaunch_desktop.sh` (LIVE)
+
+`terminal/menus/mq-git-menu.sh` was listed here as reached "via
+`mqlaunch_desktop.sh` (LIVE)", which was its only claimed route. See the
+DEPRECATED section — `mqlaunch git` opens `terminal/launchers/gitlaunch.sh`.
 
 ## Shared UI and dashboards — LIVE
 
@@ -114,7 +125,55 @@ win; growing it must be a conscious, reviewed decision.
 
 ## Dead — DEPRECATED
 
-Empty.
+| Path | Why |
+| --- | --- |
+| `terminal/menus/mq-git-menu.sh` (773 lines) | Nothing opens it; command mode still works |
+
+`tools/scripts/mqlaunch_desktop.sh` was classified as an "alternate live entry"
+until 2026-08-01 and has been deleted. Nothing in the repo invoked it — the only
+two tracked mentions were comments in `inventory-command-surfaces.py` explaining
+why it was excluded from the command-surface count. It was not in `bin/`, not
+linked from `/usr/local/bin`, not named in a shell rc, and there was no
+LaunchAgent, Raycast or Alfred integration on the machine this was checked on.
+
+It was a second dispatcher, not a wrapper: 1104 lines, 63 numbered menu arms,
+its own `eval "$cmd"`, and its own command vocabulary — `theme-amber`,
+`theme-green`, `theme-ice`, `netlaunch`, `gitlaunch` — none of which exist in
+`mqlaunch/lib/command-registry.json`. It knew nothing of `agent`, `obsidian`,
+`hal`, `theme apply` or `repos`. It was a snapshot of an older mqlaunch, and the
+"Forbidden" rule at the end of this file names exactly that shape: parallel
+implementations of the same menu responsibility.
+
+`mq-git-menu.sh` was live only because `mqlaunch_desktop.sh` was. `mqlaunch git`
+opens `terminal/launchers/gitlaunch.sh` instead. The menu itself —
+`print_git_menu`, `git_menu_loop`, `repo_submenu_loop` — is now reachable only
+by executing the file directly.
+
+Its command mode is not dead, which is why the file is still here:
+`mq-git-menu.sh log|status|...` is a supported and documented entry
+([COMMANDS.md](COMMANDS.md)), and three tests drive its functions
+(`git-menu-surface-smoke.sh`, `git-restore-to-base-smoke.sh`,
+`mq-git-protected-push-smoke.sh`).
+
+Nine function names are shared with `gitlaunch.sh`, including the whole
+protected-push chain, and the two implementations have already diverged:
+
+| Function | `gitlaunch.sh` | `mq-git-menu.sh` |
+| --- | --- | --- |
+| `protected_branch_names` | 3 lines | identical |
+| `is_protected_branch` | 7 lines | identical |
+| `pr_aware_push` | 33 lines | 22 — different signature, no detached-HEAD block |
+| `create_pr_branch_for_push` | 54 lines | 36 |
+| `safe_push` | 26 lines | 64 |
+| `analyze_diff` | 63 lines | 65 |
+| `suggest_commit` | 13 lines | 44 |
+| `next_action` | 40 lines | 48 |
+
+`gitlaunch.sh` refuses to push from a detached HEAD; `mq-git-menu.sh` takes the
+branch as an argument and leaves that to its caller. `mq-git-menu.sh` operates
+on `$CURRENT_REPO` via `git -C`; `gitlaunch.sh` operates on the working
+directory. Two designs, not two copies — which is why this is recorded rather
+than deduplicated in passing.
 
 `terminal/menus/mq-hal-menu.sh.bak.20260519-115142` was listed here as an editor
 backup that PR #32 had missed. It is not in the repository and never was.

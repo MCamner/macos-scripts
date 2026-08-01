@@ -335,8 +335,10 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
     palette's prose and now anchors to the call.
   * `skills/mqlaunch-menu-template` no longer tells contributors to register new
     commands there.
-  * `tools/scripts/mqlaunch_desktop.sh` keeps its own copy. It is a separate
-    live entrypoint with its own dispatch, not a caller of this one.
+  * `tools/scripts/mqlaunch_desktop.sh` kept its own copy on the grounds that it
+    was a separate live entrypoint. It was not an entrypoint — nothing started
+    it — and it has been deleted, so the second dispatcher this bullet accepted
+    is gone rather than tolerated.
 
 * [x] Test alias consistency.
 
@@ -846,10 +848,10 @@ demand, which is what `gated` means: they cannot drift without failing CI.
   So the jump from 246 to 299 is the measurement getting honest, not the product
   growing. Every menu listed below is shorter than it was.
 
-  `tools/scripts/mqlaunch_desktop.sh` is still outside the count, deliberately:
-  63 arms and its own dispatch, classified in `docs/RUNTIME_AUTHORITY.md` as a
-  separate live entrypoint. It needs its own measurement rather than a place in
-  this one.
+  `tools/scripts/mqlaunch_desktop.sh` was outside the count as a separate live
+  entrypoint needing its own measurement. Nothing started it, so it was never an
+  entrypoint and never needed one; it has been deleted. Its 63 arms never
+  belonged in this total either way.
 
   * [x] 0 dispatcher bypasses — `excalidraw`, `reap` and the two `self-check`
     rows go through the dispatcher. The pin was a ratchet at three; it is a hard
