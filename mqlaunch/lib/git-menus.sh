@@ -15,7 +15,7 @@
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
-  local git_path="" back_marker restart_count
+  local git_path="" back_marker restart_count menu_status=0
 
   if [[ -n "$repo_arg" ]]; then
     git_path="$repo_arg"
@@ -45,8 +45,16 @@ open_git_menu() {
     else
       MQ_GIT_REPO="$git_path" MQ_GITLAUNCH_BACK_MARKER="$back_marker" zsh "$git_script"
     fi
+    menu_status=$?
 
     [[ -f "$back_marker" ]] && break
+
+    # A non-zero exit is a failure to start, not the mid-session crash the
+    # restart counter is for. Restarting five times would print the same
+    # "Repo path not found" five times before giving up.
+    if (( menu_status != 0 )); then
+      break
+    fi
 
     # Without a terminal gitlaunch renders once and returns without setting the
     # back marker. That is a clean exit, not the crash the restart counter is
@@ -69,6 +77,10 @@ open_git_menu() {
   # Drop it so the main loop re-renders fresh Git status instead of waiting out
   # the cache TTL.
   command -v mq_dashboard_cache_invalidate >/dev/null 2>&1 && mq_dashboard_cache_invalidate
+
+  # Explicitly, because the line above is a `&&` whose status would otherwise
+  # become this function's — and the dispatcher now returns what it gets.
+  return "$menu_status"
 }
 
 # Opens release menu.

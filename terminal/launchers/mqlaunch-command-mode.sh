@@ -749,7 +749,12 @@ dispatch_cli_command() {
           open_git_menu "${2:-}"
           ;;
       esac
-      return 0
+      # The bare `return 0` this replaces discarded whatever the menu returned,
+      # so `mqlaunch git /nonexistent/repo` reported the bad path and still
+      # succeeded. Same defect the theme arm had in #150, and it reaches further
+      # now that bin/gitlaunch puts this on PATH.
+      command_status=$?
+      return "$command_status"
       ;;
 
     release)

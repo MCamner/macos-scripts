@@ -58,4 +58,36 @@ grep -q 'press 1-9, m, p or b' "$MENU" || {
   exit 1
 }
 
+echo "[6/6] a repo argument that resolves to nothing fails instead of opening"
+# gitlaunch takes a repo path, not a subcommand. `gitlaunch status` reads like
+# one and is forwarded as a path — the registry's declared contract for git is
+# unknown_subcommand: forward — so it printed "Path not found: status" and then
+# dropped into the menu with no repo and exit status 0.
+#
+# That mattered once bin/gitlaunch put the command on PATH: a wrapper that
+# always succeeds is worse than none for anything scripted. detect_repo did
+# `set_repo "$REQUESTED_REPO" || REPO=""`, which turns an explicit argument the
+# operator got wrong into a silent fall-through.
+#
+# Driven for real, in zsh, because this file is zsh and the failure is in
+# control flow rather than in text.
+out="$(cd /tmp && printf '2\n' | timeout 30 zsh "$MENU" /nonexistent/repo 2>&1)" && status=0 || status=$?
+if [[ "$status" -eq 0 ]]; then
+  printf '  a bad repo argument exited 0\n%s\n' "$out" >&2
+  exit 1
+fi
+printf '%s' "$out" | grep -q 'not found' || {
+  printf '  a bad repo argument did not say what was wrong:\n%s\n' "$out" >&2
+  exit 1
+}
+printf '%s' "$out" | grep -qi 'repo path' || {
+  printf '  the message does not say the argument is a repo path:\n%s\n' "$out" >&2
+  exit 1
+}
+printf '%s' "$out" | grep -q '1\. Go to default repo' && {
+  echo "  it opened the menu anyway after rejecting the argument" >&2
+  exit 1
+}
+echo "  ok: it reports the argument and exits non-zero"
+
 echo "PASS: gitlaunch menu surface"
