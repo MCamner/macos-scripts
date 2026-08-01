@@ -282,13 +282,13 @@ print_workflows_menu() {
   surface_split_row "5. Custom project check" "6. Open workflows folder" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "REFERENCE" "$width" "$panel_color"
-  surface_split_row "7. Open workflows README" "8. Workspace snapshots" "$width" "$panel_color"
+  surface_split_row "7. Open workflows README" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "WORKSPACE" "$width" "$panel_color"
-  surface_split_row "9. Save workspace" "10. Restore workspace" "$width" "$panel_color"
+  surface_split_row "8. Workspace snapshots" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "HEALTH" "$width" "$panel_color"
-  surface_split_row "11. Validate workflows" "12. Demo flow (full stack)" "$width" "$panel_color"
+  surface_split_row "9. Validate workflows" "10. Demo flow (full stack)" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -326,13 +326,15 @@ workflows_menu_loop() {
       5) run_project_check_custom ;;
       6) open_workflows_folder ;;
       7) open_workflows_readme ;;
+      # Save and restore had rows 9 and 10 here, duplicating "1. Save current
+      # workspace" and "4. Restore latest snapshot" inside the snapshots submenu
+      # they sat directly beside. The functions stay: `mqlaunch workflows save`
+      # and `restore` reach them, and so does `mq-workflows-menu.sh save|restore`.
       8) open_workspace_menu ;;
-      9) save_workspace_snapshot ;;
-      10) restore_workspace_snapshot ;;
-      11) run_workflows_validation ;;
+      9) run_workflows_validation ;;
       # Moved off the Agent menu, which was twenty-one rows deep. This is the
       # other full-stack run, so it belongs beside project boot and check.
-      12) run_demo_flow ;;
+      10) run_demo_flow ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
