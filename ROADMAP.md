@@ -655,8 +655,16 @@ Once runtime authority and command consistency are fixed, the product can become
 Every sub-item is a checkbox, and every box was measured rather than recalled.
 An unchecked box says what is missing and how that was established, so the next
 person starts from a fact instead of repeating the measurement. Measurements
-below are from 2026-08-01 against `d2ed66c`, re-derived with
+below are from 2026-08-01, re-derived with
 `tools/scripts/inventory-command-surfaces.py --json`.
+
+Two columns, because they answer different questions. `main` is `d2ed66c`.
+`with work merged` is every open branch and PR for this section merged into a
+throwaway branch and measured there — `feat/inventory-covers-all-menus`,
+`feat/gitlaunch-menu-grouping`, `feat/git-menu-grouping`,
+`feat/apps-menu-grouping`, `feat/workflows-menu-grouping`,
+`fix/theme-command-surface` and `#143`. `#144` is excluded because it conflicts;
+its effect is noted where it matters rather than guessed at.
 
 * [x] Improve first-run experience.
 
@@ -750,19 +758,44 @@ below are from 2026-08-01 against `d2ed66c`, re-derived with
   Targets, measured with `tools/scripts/inventory-command-surfaces.py`:
 
   ```text
-                                  target    now    before #132
-  worst menu loop                 <= 10     15     30
-  loops over the limit             0         5      —
-  undocumented duplications        0         0      1
-  dispatcher bypasses              0         0      3
-  total options across 19 menus   <= 190    246    243
+                                  target   main   with work merged
+  worst menu loop                 <= 10     15      12  (10 after #144)
+  loops over the limit             0         5       1  (0  after #144)
+  undocumented duplications        0         0       0
+  dispatcher bypasses              0         0       0
+  menu files measured              —        19      23
+  menu loops measured              —        34      47
+  total options                   <= 190   246     299
   ```
 
   `worst menu loop` replaces a row that read `operator choices per menu 29`,
   which was the worst loop rather than a per-menu figure and read as though it
   were an average. `loops over the limit` is the number the remaining work is
-  actually sized by. Total options counts all 246 rows including the 43
-  navigation arms; operator choices exclude them and come to 203.
+  actually sized by.
+
+  **The measurement was measuring a subset.** Two limits in
+  `inventory-command-surfaces.py` hid real surfaces, and both are fixed:
+
+  * It read only `terminal/menus/*.sh`. Four operator menus live elsewhere —
+    `gitlaunch.sh`, `mq-zsh-theme-switcher.sh`, `workspace.sh` and
+    `ui/dashboards/mq-dashboard.sh`. `gitlaunch.sh` is the one that matters:
+    `mqlaunch git` opens it, not `mq-git-menu.sh`, so the git surface being
+    measured was not the git surface anyone reaches by typing the git command.
+    It had 11 choices and nothing would have reported it.
+  * The arm regex required the case key and its body on one line, and accepted
+    "all digits" or "all letters" but not the mixed form. `gitlaunch.sh` and
+    `mq-dashboard.sh` are written entirely in the multi-line style, so neither
+    registered at all; and `9|p|P` — a numbered row that also answers the letter
+    it used to be bound to — counted as nothing, so a menu lost a choice from
+    its total by keeping an old key working.
+
+  So the jump from 246 to 299 is the measurement getting honest, not the product
+  growing. Every menu listed below is shorter than it was.
+
+  `tools/scripts/mqlaunch_desktop.sh` is still outside the count, deliberately:
+  63 arms and its own dispatch, classified in `docs/RUNTIME_AUTHORITY.md` as a
+  separate live entrypoint. It needs its own measurement rather than a place in
+  this one.
 
   * [x] 0 dispatcher bypasses — `excalidraw`, `reap` and the two `self-check`
     rows go through the dispatcher. The pin was a ratchet at three; it is a hard
@@ -775,20 +808,49 @@ below are from 2026-08-01 against `d2ed66c`, re-derived with
     added: nothing needs a documented exception yet, and building the mechanism
     first would have made the target reachable by writing prose (#132).
 
+    That held until the scan started reading multi-line case arms, which
+    surfaced one bypass that had always been there: `mq-main-menu.sh` row `a`
+    runs `hal-terminal-guide.sh` directly. It has to — the guide writes a path
+    to `~/.hal_nav` and the menu `cd`s there afterwards, which `mqlaunch guide`
+    cannot do from a subprocess. So `BYPASS_EXCEPTIONS` exists now, holding
+    exactly that one entry with the reason beside it. The count stays 0, and the
+    smoke test still fails when a bypass is planted.
+
     The count was 1, not the 3 recorded here before. `ghost`, `review`, `flow`
     and `srm` looked duplicated because the generated help list contains rows
     like `mqlaunch doctor`, which the inventory read as menu invocations.
     Printing a command's name is not a way in; the scanner skips generated list
     blocks now.
-  * [ ] <= 10 operator choices per menu — five loops are over, worst first:
-    `apps` 15, `dev` 14, `git` 12, `release` 12, `workflows` 11. Tools went 30
-    to 10, Agent 21 to 10, HAL 17 to 10 and System 16 to 10 by grouping rather
-    than cutting (#132, #136, #137, #141).
+  * [ ] <= 10 operator choices per menu — one loop is over on the branches, and
+    it has a PR open. Every menu now has work written; nothing is unclaimed.
 
-    `dev` and `release` have grouping branches pushed and not yet merged
-    (`feat/dev-menu-grouping`, `feat/release-menu-grouping`), so the live count
-    is three loops behind what is already written. `apps` is the only one of the
-    five with no work started.
+    ```text
+    menu         before  after  where
+    tools          30      10   #132
+    agent          21      10   #132
+    hal            17      10   #137
+    system         16      10   #141
+    apps           15       9   feat/apps-menu-grouping
+    dev            14       8   #143
+    git            12       9   feat/git-menu-grouping
+    release        12       ?   #144 (open)
+    gitlaunch      11       8   feat/gitlaunch-menu-grouping
+    workflows      11       9   feat/workflows-menu-grouping
+    ```
+
+    Two of these were not regroupings. The git menu was answering a `9` it never
+    drew — `d8ba588` removed the row and left the arm — and the workflows menu
+    had two rows duplicating the submenu they sat beside. In both cases the row
+    went and the function stayed, because `mq-git-menu.sh log` and
+    `mqlaunch workflows save|restore` reach them.
+
+    `gitlaunch` is on the list at all only because the measurement was widened;
+    see the note above. It is also the menu `mqlaunch git` opens, which makes it
+    the one an operator was most likely to meet over the limit.
+
+    Merging `feat/release-menu-grouping` needs a conflict resolved in
+    `CHANGELOG.md`, `tests/manifest.tsv` and `tools/scripts/test-all.sh` — the
+    branches all add test rows in the same places. Content, not logic.
 
     Back and quit are excluded, as the target says — they were half-counted
     before, since `x|X)` matched the arm pattern and `b|B|back)` did not.
@@ -799,28 +861,45 @@ below are from 2026-08-01 against `d2ed66c`, re-derived with
     splitting a long menu into submenus, which is the fix, could never improve
     the number.
 
-  * [ ] <= 190 total options — 246 today, up from 243, and rising with each
-    regrouping. **This target and the one above pull in opposite directions and
-    cannot both be met by grouping.** Every submenu adds a row in the parent and
-    a Back arm of its own, so restructuring Tools and Agent removed eleven flat
-    rows and added sixteen. Reaching 190 means deleting capability, not
-    regrouping it.
+  * [ ] <= 190 total options — **retire this target.** It is 299 now against 246
+    before, and the increase is not regression. Two thirds of it is the widened
+    measurement seeing four more menu files and the multi-line arms it used to
+    skip; the rest is that every submenu adds a parent row and a Back arm of its
+    own.
 
-    Four menus have now been regrouped and the total has gone up every time.
-    That is the target failing, not the work: 190 was set before the fix was
-    known.
+    Ten menus have been regrouped and the total has risen every time, including
+    the ones that deleted rows. That is not ten failures. **This target and the
+    per-loop limit pull in opposite directions and cannot both be met by
+    grouping** — reaching 190 means deleting capability, and the capability is
+    not the problem. 190 was set before the fix was known and before the
+    measurement was honest.
 
-    Worth deciding which target is the real one before the next slice. The
-    per-loop limit is the one an operator feels.
+    What an operator feels is the length of the panel in front of them, which is
+    the per-loop limit. A repo-wide sum of every choice behind every submenu is
+    not a number anyone experiences. Replace it with the per-loop limit plus a
+    gate, below.
+
+  * [ ] Gate the per-loop limit, once `#144` lands and no loop is over ten.
+
+    `tests/command-discovery-inventory-smoke.sh` pins `--max-bypass 0` and
+    nothing else. The per-loop target is measured on demand and enforced by
+    nobody, which is how `gitlaunch` sat at eleven unremarked and how four menus
+    drifted past ten in the first place. A `--max-loop 10` flag held by the smoke
+    test turns the target from a number in this file into a fact about the tree.
+
+    It cannot be added before the last menu is under, or the suite fails on
+    arrival. That ordering is the only reason it is not already done.
 
   * [x] `focus.sh` is no longer orphaned — it has a command, `mqlaunch focus`,
     and appears in help under `UTILITY`. It was routed rather than deleted
     because it works, which was checked before deciding (#134).
 
-  * [ ] `workflows` is over the limit because Demo flow moved there. It had ten
-    choices and has eleven. The move was right — it is the other full-stack run,
-    beside project boot and check — but it needs a submenu or a different home
-    for something else on that menu.
+  * [x] `workflows` is back under the limit, and not by moving Demo flow away —
+    the move was right, it is the other full-stack run. Two rows came off
+    instead: "Save workspace" and "Restore workspace" were running the same
+    calls as "1. Save current workspace" and "4. Restore latest snapshot" inside
+    the snapshots submenu on the row above them. Eleven to nine, with no submenu
+    added and nothing hidden (`feat/workflows-menu-grouping`).
 
 ### Exit gate
 
