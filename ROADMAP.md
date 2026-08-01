@@ -709,13 +709,9 @@ person starts from a fact instead of repeating the measurement. Measurements
 below are from 2026-08-01, re-derived with
 `tools/scripts/inventory-command-surfaces.py --json`.
 
-Two columns, because they answer different questions. `main` is `d2ed66c`.
-`with work merged` is every open branch and PR for this section merged into a
-throwaway branch and measured there — `feat/inventory-covers-all-menus`,
-`feat/gitlaunch-menu-grouping`, `feat/git-menu-grouping`,
-`feat/apps-menu-grouping`, `feat/workflows-menu-grouping`,
-`fix/theme-command-surface` and `#143`. `#144` is excluded because it conflicts;
-its effect is noted where it matters rather than guessed at.
+`before` is `d2ed66c`, the state this section was written against. `main today`
+is `73d88cb`: #145 through #152 are merged, so the numbers below describe the
+tree rather than a set of branches waiting on review.
 
 * [x] Improve first-run experience.
 
@@ -809,15 +805,19 @@ its effect is noted where it matters rather than guessed at.
   Targets, measured with `tools/scripts/inventory-command-surfaces.py`:
 
   ```text
-                                  target   main   with work merged
-  worst menu loop                 <= 10     15      12  (10 after #144)
-  loops over the limit             0         5       1  (0  after #144)
-  undocumented duplications        0         0       0
-  dispatcher bypasses              0         0       0
-  menu files measured              —        19      23
-  menu loops measured              —        34      47
-  total options                   <= 190   246     299
+                                  target   before   main today
+  worst menu loop                 <= 10      30       14  (#143, #144 open)
+  loops over the limit             0          5        2
+  undocumented duplications        0          1        0
+  dispatcher bypasses              0          3        0
+  menu files measured              —         19       23
+  menu loops measured              —         34       44
+  total options                   <= 190    243      294
   ```
+
+  `main today` is `73d88cb`, after #145 through #152 landed. The two loops still
+  over the limit are `dev` (14) and `release` (12), both with PRs open — #143
+  and #144. Nothing else is unclaimed.
 
   `worst menu loop` replaces a row that read `operator choices per menu 29`,
   which was the worst loop rather than a per-menu figure and read as though it
@@ -881,12 +881,12 @@ its effect is noted where it matters rather than guessed at.
     agent          21      10   #132
     hal            17      10   #137
     system         16      10   #141
-    apps           15       9   feat/apps-menu-grouping
+    apps           15       9   #148
     dev            14       8   #143
-    git            12       9   feat/git-menu-grouping
+    git            12       9   #147
     release        12       ?   #144 (open)
-    gitlaunch      11       8   feat/gitlaunch-menu-grouping
-    workflows      11       9   feat/workflows-menu-grouping
+    gitlaunch      11       8   #146
+    workflows      11       9   #149
     ```
 
     Two of these were not regroupings. The git menu was answering a `9` it never
@@ -950,7 +950,7 @@ its effect is noted where it matters rather than guessed at.
     instead: "Save workspace" and "Restore workspace" were running the same
     calls as "1. Save current workspace" and "4. Restore latest snapshot" inside
     the snapshots submenu on the row above them. Eleven to nine, with no submenu
-    added and nothing hidden (`feat/workflows-menu-grouping`).
+    added and nothing hidden (#149).
 
 ### Exit gate
 
