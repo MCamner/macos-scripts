@@ -81,8 +81,13 @@ detect_mqlaunch_base() {
     return 0
   fi
 
-  if [[ -x "$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh" ]]; then
-    printf '%q' "$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
+  # bin/mqlaunch, not the frozen v1 launcher this branch used to name. Without
+  # mqlaunch on PATH the login flow booted into the compat tree ahead of the
+  # current runtime; the freeze gate could not see it, because it did not scan
+  # automation/ until 2026-08-01. Naming the v1 path here again — even in a
+  # comment — is a gate failure by design.
+  if [[ -x "$PROJECT_ROOT/bin/mqlaunch" ]]; then
+    printf '%q' "$PROJECT_ROOT/bin/mqlaunch"
     return 0
   fi
 

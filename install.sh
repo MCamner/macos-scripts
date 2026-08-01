@@ -20,6 +20,15 @@ LAUNCHER_REL="terminal/launchers/mqlaunch.sh"
 ONBOARDING_REL="tools/onboarding.sh"
 TARGET_LINK_NAME="mqlaunch"
 
+# Everything executable under bin/ goes on PATH, and the links point at bin/
+# rather than past it. This used to link terminal/launchers/mqlaunch.sh direct,
+# which skips the only file that routes `mqlaunch repl` — a fresh install got a
+# working mqlaunch whose repl answered "Unknown command: repl". Discovering the
+# list rather than naming it also means a new entrypoint is installed by adding
+# the file, instead of being hand-copied onto PATH and frozen there, which is
+# what happened to gitlaunch and mq.
+BIN_REL="bin"
+
 # Handles log.
 log()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
 # Handles ok.
@@ -122,6 +131,15 @@ target_link() {
   printf '%s\n' "$BIN_DIR/$TARGET_LINK_NAME"
 }
 
+# Prints the name of every executable entrypoint under bin/.
+entrypoint_names() {
+  local path
+  for path in "$INSTALL_DIR/$BIN_REL"/*; do
+    [[ -x "$path" && ! -d "$path" ]] || continue
+    basename "$path"
+  done
+}
+
 # Handles shell rc file.
 shell_rc_file() {
   if [[ -n "${ZDOTDIR:-}" ]]; then
@@ -158,22 +176,22 @@ read_state_if_present() {
   fi
 }
 
-# Handles install symlink.
-install_symlink() {
-  local launcher_path link_path
-  launcher_path="$(target_launcher)"
-  link_path="$(target_link)"
+# Links one entrypoint from bin/ into BIN_DIR.
+install_one_symlink() {
+  local name="$1" source_path link_path
+  source_path="$INSTALL_DIR/$BIN_REL/$name"
+  link_path="$BIN_DIR/$name"
 
-  [[ -f "$launcher_path" ]] || die "Launcher not found: $launcher_path"
-
-  run_cmd mkdir -p "$BIN_DIR"
+  [[ -f "$source_path" ]] || die "Entrypoint not found: $source_path"
 
   if [[ -L "$link_path" || -e "$link_path" ]]; then
-    if [[ "$(abs_path "$link_path" 2>/dev/null || true)" == "$(abs_path "$launcher_path")" ]]; then
+    if [[ "$(abs_path "$link_path" 2>/dev/null || true)" == "$(abs_path "$source_path")" ]]; then
       ok "Symlink already correct: $link_path"
       return 0
     fi
 
+    # Names the existing file, because the thing being replaced is usually an
+    # older copy of the same command and the operator should see that.
     if ! confirm "Replace existing $link_path ? [y/N]"; then
       die "Aborted"
     fi
@@ -181,8 +199,22 @@ install_symlink() {
     run_cmd rm -f "$link_path"
   fi
 
-  run_cmd ln -s "$launcher_path" "$link_path"
-  ok "Installed symlink: $link_path -> $launcher_path"
+  run_cmd ln -s "$source_path" "$link_path"
+  ok "Installed symlink: $link_path -> $source_path"
+}
+
+# Handles install symlink.
+install_symlink() {
+  local name
+
+  [[ -f "$(target_launcher)" ]] || die "Launcher not found: $(target_launcher)"
+
+  run_cmd mkdir -p "$BIN_DIR"
+
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    install_one_symlink "$name"
+  done < <(entrypoint_names)
 }
 
 # Handles managed block content.
@@ -285,15 +317,33 @@ do_install() {
 
 # Handles remove symlink.
 remove_symlink() {
-  local link_path
-  link_path="${TARGET_LINK:-$(target_link)}"
+  local link_path name removed=0
 
-  if [[ -L "$link_path" || -e "$link_path" ]]; then
+  # Only links this installer could have made. A hand-made copy at the same
+  # name is left alone: uninstall removes what install put there, and deleting
+  # a file off PATH that the repo never owned is not this script's call.
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    link_path="$BIN_DIR/$name"
+    if [[ -L "$link_path" ]]; then
+      run_cmd rm -f "$link_path"
+      ok "Removed: $link_path"
+      removed=$(( removed + 1 ))
+    elif [[ -e "$link_path" ]]; then
+      warn "Left in place (not a symlink): $link_path"
+    fi
+  done < <(entrypoint_names)
+
+  # The state file records where a previous install put its link, which may be
+  # a bin dir the current invocation was not told about.
+  link_path="${TARGET_LINK:-}"
+  if [[ -n "$link_path" && -L "$link_path" ]]; then
     run_cmd rm -f "$link_path"
     ok "Removed: $link_path"
-  else
-    warn "Nothing to remove at: $link_path"
+    removed=$(( removed + 1 ))
   fi
+
+  (( removed > 0 )) || warn "Nothing to remove in: $BIN_DIR"
 }
 
 # Handles remove state.

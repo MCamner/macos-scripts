@@ -34,6 +34,80 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The login flow preferred the frozen v1 launcher over the current runtime.
+  `detect_mqlaunch_base` in `automation/login/mqlogin.sh` tried
+  `command -v mqlaunch` first and the `mqlaunch-v1` launcher **second**, ahead
+  of `terminal/launchers/`. On a machine with `mqlaunch` on `PATH` the first
+  branch always wins, which is why nobody saw it; without it, the login flow
+  booted into the compat tree. The fallback is now `bin/mqlaunch`.
+
+* The runtime authority freeze gate scanned three directories — `terminal/`,
+  `ui/` and `mqlaunch/` — which is narrower than the "live runtime shell" it
+  claimed to cover. `automation/` and `tools/` were outside it, so two live→v1
+  edges were never recorded: the `mqlogin.sh` fallback above, and
+  `tools/scripts/create-debug-bundle.sh:74`, which runs `bash v1/mqlaunch.sh
+  help` from `mq-system-menu.sh` option 6.
+
+  The gate now reads `git ls-files` and covers every tracked shell file except
+  the v1 tree itself and `tests/`, which drives v1 on purpose. Same source as
+  `inventory-command-surfaces.py`, and for the same reason: an untracked copy of
+  a menu in the working tree can neither add an edge nor hide one.
+
+  Widening it needed two lists rather than a longer one. `COMPAT_EDGES` is live
+  code that reaches v1 at runtime — now four entries, with the debug bundle
+  added. `TOOLING` is the seven build, lint and documentation scripts that name
+  v1 to exclude, test or police it; deleting v1 would edit those and break the
+  others. A single allowlist could not say which.
+
+  `tests/runtime-authority-freeze-smoke.sh` grew from one assertion to four. It
+  plants an edge in `automation/` and one in `tools/` so the widened scope is
+  proven rather than declared, asserts that every reference to v1 in the repo
+  sits on one of the two lists, and drives `detect_mqlaunch_base` with `PATH`
+  emptied — the only condition under which the fallback order is observable.
+* `install.sh` symlinked `terminal/launchers/mqlaunch.sh` onto `PATH`, which is
+  one file past the official entrypoint. `mqlaunch repl` is routed in
+  `bin/mqlaunch` and nowhere else — the launcher it execs reports `repl` as an
+  unknown command and suggests `mqlaunch repos` — so a fresh install produced a
+  working `mqlaunch` with no REPL. Both link targets were verified rather than
+  reasoned about: through the launcher, `repl` prints `Unknown command: repl`;
+  through `bin/mqlaunch` it does not.
+
+  The installer now links every executable under `bin/`, discovered rather than
+  named. That is three commands: `mqlaunch`, `mq`, and the new `gitlaunch`.
+  `mq` was in the same position as `gitlaunch` — on `PATH` as a hand-made copy
+  that no install step maintains.
+
+  Uninstall follows the same list, and removes only symlinks. A copy sitting at
+  one of those names is reported and left alone: uninstall takes back what
+  install put there, and a file on `PATH` the repo never owned is not the
+  installer's to delete.
+
+### Added
+
+* `bin/gitlaunch`, so the git menu can be reached by typing `gitlaunch` without
+  a second copy of it existing.
+
+  `gitlaunch` was on `PATH` as a hand-made copy of
+  `terminal/launchers/gitlaunch.sh` — 453 lines dated 25 June against the repo's
+  1122. Everything since had reached `mqlaunch git` and not the command the hand
+  types: the eight-choice grouping, the 92-column convergence, the protected-push
+  guard. Committing to the repo cannot update a copy, which is the argument for
+  a link.
+
+  It is a wrapper rather than an entrypoint: `exec bin/mqlaunch git "$@"`. Going
+  straight to `terminal/launchers/gitlaunch.sh` would skip the repo argument
+  handling and the dashboard-cache invalidation in `open_git_menu`, and would add
+  a second way into a command the dispatcher already routes — the class
+  `tests/command-discovery-inventory-smoke.sh` holds at zero.
+
+  `tests/install-contract-smoke.sh` installs into a temporary bin dir and
+  asserts every entrypoint is linked, that each link resolves into `bin/` rather
+  than past it, that the installed `mqlaunch` routes `repl`, and that `gitlaunch`
+  hands `git <args>` to the dispatcher — the last one driven through a stub, so
+  what is checked is the argv rather than the source text.
+
+### Fixed
+
 * `docs/COMMANDS.md` documented the wrong git menu. `mqlaunch git` opens
   `terminal/launchers/gitlaunch.sh`, whose panel puts safe merge on `7`/`m` and
   PR merge on `8`/`p`, with repo switching under `9. Repo and workspace`. The

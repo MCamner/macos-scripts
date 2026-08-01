@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# gitlaunch — the git menu as a top-level command.
+#
+# A wrapper, not a second entrypoint. It hands over to `mqlaunch git`, so the
+# menu is reached through the one dispatcher along with the repo argument and
+# the dashboard-cache invalidation that open_git_menu does on return. Running
+# terminal/launchers/gitlaunch.sh directly from here would skip both and add a
+# second way into a command the dispatcher already routes.
+#
+# This file exists because gitlaunch was on PATH as a hand-made copy of that
+# launcher, frozen at whatever the tree looked like the day it was copied. A
+# symlink to a wrapper follows the repo; a copy does not.
+set -euo pipefail
+
+BASE_DIR="${BASE_DIR:-$HOME/macos-scripts}"
+MQLAUNCH="$BASE_DIR/bin/mqlaunch"
+
+if [[ ! -x "$MQLAUNCH" ]]; then
+  echo "[MQ] Entrypoint not found or not executable: $MQLAUNCH" >&2
+  echo "[MQ] Set BASE_DIR to the macos-scripts checkout, or run ./install.sh" >&2
+  exit 1
+fi
+
+exec "$MQLAUNCH" git "$@"
