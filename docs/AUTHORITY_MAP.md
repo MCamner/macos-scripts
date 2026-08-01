@@ -102,22 +102,52 @@ Reached through other live paths:
 
 ### The exact live→legacy edges (remove these in Step 12)
 
-These three edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
+These four edges are the *entire* reason `mqlaunch-v1` is still live. Migrating
 them off v1 lets the tree be reclassified `DEPRECATED` and deleted:
 
 * `terminal/bridges/performance-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/bridges/tools-bridge.sh` → subprocess `terminal/mqlaunch-v1/mqlaunch.sh`
 * `terminal/menus/mq-performance-menu.sh:26` → **sources** `terminal/mqlaunch-v1/commands/performance.sh` (the only direct live-menu → v1 `source`)
+* `tools/scripts/create-debug-bundle.sh:74` → runs `bash terminal/mqlaunch-v1/mqlaunch.sh help` as a health probe, reached from `mq-system-menu.sh` option 6
+
+The fourth was listed as three until 2026-08-01. It is diagnostics rather than a
+functional dependency — the bundle reports whether the compat tree still answers
+`help` — but it executes v1 from a live menu row, which is what the list is for.
+Deleting v1 edits this file; it breaks the other three.
+
+`automation/login/mqlogin.sh` was a fifth. `detect_mqlaunch_base` tried
+`command -v mqlaunch` first and the frozen v1 launcher **second**, so a machine
+without `mqlaunch` on `PATH` booted its login flow into the compat tree ahead of
+the current runtime. It now falls back to `bin/mqlaunch` and reaches v1 nowhere.
 
 ### Enforcement (Step 10 freeze)
 
-`scripts/check-runtime-authority.sh` is the freeze gate. It scans live runtime
-shell (`terminal/`, `ui/`, `mqlaunch/`, excluding the v1 tree) and fails if any
-file **not** on the compat allowlist references `mqlaunch-v1`. The allowlist is
-exactly the three edges above; keep it in sync with this file. The check runs in
-CI (Quality → *Runtime authority freeze*) and locally via
-`tests/runtime-authority-freeze-smoke.sh`. Shrinking the allowlist is a Step 12
-win; growing it must be a conscious, reviewed decision.
+`scripts/check-runtime-authority.sh` is the freeze gate. It scans every tracked
+shell file except the v1 tree itself and `tests/`, which drives v1 on purpose,
+and fails if any file references `mqlaunch-v1` without being classified. The
+file list comes from `git ls-files`, so an untracked copy of a menu in the
+working tree can neither add an edge nor hide one.
+
+Scope was `terminal/`, `ui/` and `mqlaunch/` until 2026-08-01 — narrower than
+"live runtime shell", which is how the `create-debug-bundle.sh` and `mqlogin.sh`
+edges above went unrecorded. A gate that does not scan a directory makes no
+claim about it.
+
+Two lists, because widening the scan pulled in files that name v1 without
+depending on it:
+
+* `COMPAT_EDGES` — live code that reaches v1 at runtime: exactly the four edges
+  above. Shrinking it is a Step 12 win; growing it must be a conscious, reviewed
+  decision.
+* `TOOLING` — build, lint and documentation scripts that name v1 to exclude it,
+  test it, or police it (`lint.sh`, `shellcheck-report.sh`,
+  `generate-wiki-command-ref.sh`, the `test-*` harnesses, and the gate itself).
+  Not runtime dependencies.
+
+Keep both in sync with this file. The check runs in CI (Quality → *Runtime
+authority freeze*) and locally via `tests/runtime-authority-freeze-smoke.sh`,
+which plants an edge in `automation/` and one in `tools/` to prove the widened
+scope is real rather than declared.
 
 ## Dead — DEPRECATED
 
