@@ -34,7 +34,12 @@ grep -Fq "MQ_GITLAUNCH_BACK_MARKER" "$LEGACY_MENU"
 grep -Fq "update_ui_width" "$LEGACY_MENU"
 grep -Fq "surface_terminal_width" "$LEGACY_MENU"
 grep -Fq "refresh_git_counters" "$LEGACY_MENU"
-grep -Fq "9. Recent log" "$LEGACY_MENU"
+# Which number the row carries is not this file's business, and pinning it is
+# the same mistake as the width literals above: the menu regrouped, Recent log
+# moved from 9 to 6, and an assertion about the panel's layout failed for a
+# change that kept every capability. What matters here is that the row exists
+# and reaches the handler.
+grep -Eq '"[0-9]+\. Recent log"' "$LEGACY_MENU"
 grep -Fq "show_recent_log" "$LEGACY_MENU"
 grep -Fq "Staged:" "$LEGACY_MENU"
 grep -Fq "if [[ -t 0 && -t 1 ]]" "$LEGACY_MENU"

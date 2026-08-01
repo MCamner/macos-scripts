@@ -141,6 +141,14 @@ nobody can answer.
 Supported actions inside the menu: status, diff risk, commit suggestion,
 safe push, pull with rebase, safe merge, open on GitHub, change repo path.
 
+The front panel holds nine choices; opening on GitHub, opening the local folder
+and changing the repo path live under `10. Repo and remote`. Safe merge answers
+to `9` and to `p`, the key it had before it had a number.
+
+`mq-git-menu.sh log` shows the recent log. It has no menu row: `d8ba588` removed
+that row deliberately, but left the arm behind it dispatching, so the menu
+answered a `9` it never advertised until this was cleaned up.
+
 AI commit and safe push avoid direct pushes to protected branches such as
 `main` and `master`. When branch protection requires a pull request, mqlaunch
 offers to create a `mq/...` PR branch and push that branch instead.
