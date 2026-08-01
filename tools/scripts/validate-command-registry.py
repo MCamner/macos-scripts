@@ -405,6 +405,38 @@ def check_operator_surface(commands) -> None:
                 f"help has no group to print it under")
 
 
+def check_namespace_owner(commands) -> None:
+    """A namespace must not mix owner repos.
+
+    `mqlaunch help` prints the owner on the group heading rather than on each
+    row — a row is already 26 columns of prefix plus a 66-character summary,
+    which is the whole 92-column width, so a per-row owner would have to come
+    out of the description. That works only while a namespace has one owner.
+
+    Every namespace has one today. Without this rule the first command added
+    under someone else's namespace would not fail anything: help would keep
+    printing the old heading, and the label would silently start describing
+    some of the rows beneath it instead of all of them. A wrong owner is worse
+    than no owner, because an operator has no reason to doubt it.
+    """
+    owners: dict[str, dict[str, list[str]]] = {}
+    for command in commands:
+        namespace = command["namespace"]
+        if namespace is None:
+            continue
+        owners.setdefault(namespace, {}).setdefault(
+            command.get("owner"), []).append(command["name"])
+
+    for namespace, by_owner in sorted(owners.items()):
+        if len(by_owner) > 1:
+            detail = "; ".join(
+                f"{owner}: {' '.join(sorted(names))}"
+                for owner, names in sorted(by_owner.items(), key=lambda kv: str(kv[0]))
+            )
+            err(f"namespace '{namespace}' mixes owners, so help cannot label "
+                f"the group — {detail}")
+
+
 def check_privilege_safety(
     commands: list[dict],
     seen_names: dict[str, str],
@@ -655,6 +687,7 @@ def main(argv: list[str] | None = None) -> int:
     check_subcommands(commands, seen_names, subcases)
     check_privilege_safety(commands, seen_names, branches)
     check_operator_surface(commands)
+    check_namespace_owner(commands)
     check_summaries(commands)
 
     if errors:

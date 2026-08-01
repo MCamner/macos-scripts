@@ -795,6 +795,71 @@ run_repo_signal_check() {
   pause_enter
 }
 
+# Renders a Release submenu panel from a title and its rows.
+_release_submenu_panel() {
+  local title="$1"; shift
+  local width panel_color heading
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  # `tr` rather than `${title^^}`: that expansion is bash 4, and this menu is
+  # sourced into whatever shell mqlaunch runs under — on macOS that can be
+  # /bin/bash 3.2 or zsh, neither of which has it.
+  heading="$(printf '%s' "$title" | tr '[:lower:]' '[:upper:]')"
+
+  print_header
+  surface_panel_header "$title" "Release" "$width" "$panel_color"
+  surface_row "$heading" "$width" "$panel_color"
+  local row
+  for row in "$@"; do
+    surface_split_row "$row" "" "$width" "$panel_color"
+  done
+  surface_split_row "b. Back" "" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the changelog submenu.
+release_changelog_menu_loop() {
+  local choice
+  while true; do
+    _release_submenu_panel "Changelog" "1. View changelog" "2. Open changelog"
+    read_menu_choice "" "changelog" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) show_changelog ;;
+      2) open_changelog_in_editor ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
+# Runs the setup submenu.
+#
+# Three things done once per repo, not once per release: pointing the menu at a
+# repo, creating the files a release needs, and editing the release script.
+# They were rows 2, 3 and 10, interleaved with the ship path.
+release_setup_menu_loop() {
+  local choice
+  while true; do
+    _release_submenu_panel "Setup" "1. Change repo" "2. Initialize files" \
+      "3. Open release script"
+    read_menu_choice "" "setup" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) choose_release_repo || true ;;
+      2) init_release_files || true ;;
+      3) open_release_script_in_editor ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) ui_err "Invalid option."; pause_enter ;;
+    esac
+  done
+}
+
 # Prints menu.
 print_release_menu() {
   local width panel_color
@@ -806,17 +871,18 @@ print_release_menu() {
   surface_row "Repo: $RELEASE_REPO" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "CHECKS" "$width" "$panel_color"
-  surface_split_row "1. Release status" "2. Change repo" "$width" "$panel_color"
-  surface_split_row "3. Initialize files" "4. Dry run release" "$width" "$panel_color"
-  surface_row "${C_WARN}12. Repo Signal Check${C_RESET}" "$width" "$panel_color"
+  surface_split_row "1. Release status" "${C_WARN}2. Repo signal check${C_RESET}" "$width" "$panel_color"
+  surface_split_row "3. Latest tags" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "SHIP" "$width" "$panel_color"
-  surface_split_row "5. Run release" "6. Create GitHub release" "$width" "$panel_color"
-  surface_split_row "11. Auto release" "b. Back" "$width" "$panel_color"
+  surface_split_row "4. Dry run release" "5. Run release" "$width" "$panel_color"
+  surface_split_row "6. Auto release" "7. Create GitHub release" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "REFERENCE" "$width" "$panel_color"
-  surface_split_row "7. View changelog" "8. Show latest tags" "$width" "$panel_color"
-  surface_split_row "9. Open changelog" "10. Open release script" "$width" "$panel_color"
+  surface_row "CHANGELOG" "$width" "$panel_color"
+  surface_split_row "8. Changelog" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+  surface_row "SETUP" "$width" "$panel_color"
+  surface_split_row "9. Setup" "b. Back" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "STATUS" "$width" "$panel_color"
   surface_split_row "Status: $(release_status_line)" "$(release_status_next)" "$width" "$panel_color"
@@ -842,17 +908,14 @@ release_menu_loop() {
 
     case "$choice" in
       1) show_release_status ;;
-      2) choose_release_repo || true ;;
-      3) init_release_files || true ;;
+      2) run_repo_signal_check || true ;;
+      3) show_tags ;;
       4) run_release_dry || true ;;
       5) run_release_live || true ;;
-      6) create_github_release_only || true ;;
-      7) show_changelog ;;
-      8) show_tags ;;
-      9) open_changelog_in_editor ;;
-      10) open_release_script_in_editor ;;
-      11) require_release_script && auto_release || true ;;
-      12) run_repo_signal_check || true ;;
+      6) require_release_script && auto_release || true ;;
+      7) create_github_release_only || true ;;
+      8) release_changelog_menu_loop ;;
+      9) release_setup_menu_loop ;;
       b|B|x|X|exit) ui_ok "Exiting."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac

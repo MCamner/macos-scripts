@@ -30,6 +30,37 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* The Release menu shows nine choices instead of twelve, and stops printing two
+  of them out of position. Option 12 sat inside CHECKS between 4 and 5, and
+  option 11 sat inside SHIP between 6 and 7, so anyone picking by position
+  rather than by label got the wrong command — and on this menu the wrong
+  command ships a release.
+
+  CHECKS is Release status, Repo signal check and Latest tags. SHIP is Dry run,
+  Run release, Auto release and Create GitHub release, in that order. Changelog
+  and Setup are submenus; Setup holds the three things done once per repo rather
+  than once per release.
+
+  Nothing was dropped — `tests/release-menu-smoke.sh` lists every original
+  handler by name, so a regrouping cannot quietly become a deletion.
+* The Dev menu shows ten choices instead of sixteen: Prompts, Edit mqlaunch,
+  Backup mqlaunch, Folders, Create repo, Repo signal folder check, Comment
+  scripts, Env snapshot, Excalidraw, Menus.
+
+  Prompts, Folders and Menus are submenus. Nothing was dropped —
+  `tests/dev-menu-smoke.sh` lists every original handler by name, so a
+  regrouping cannot quietly become a deletion.
+
+  Network Tools, Themes and Tools Menu were rows 9-11, three doors to other
+  menus sitting between actions. They are grouped rather than removed: Dev is
+  the only menu that reaches Themes and Tools at all, and removing them would
+  have left both reachable only as typed commands.
+
+  `tools/scripts/test-mqlaunch.sh` asserted the literal row text
+  `"9. Network Tools" "10. Themes"`, so it failed on a menu where both were
+  still reachable. It pins the routes now, which is what its own name says it
+  checks.
+
 * The System menu shows ten choices instead of sixteen, grouped by what an
   operator is trying to find out: Performance, Network, Processes, Doctor,
   Checks, Debug bundle, Maintenance, Desktop, Repo folder, Repo in browser.

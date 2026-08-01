@@ -23,17 +23,21 @@
 #
 # name	class	note
 command-docs-smoke.sh	active	-
+apps-menu-surface-smoke.sh	active	-
 command-registry-smoke.sh	active	-
 command-word-normalization-smoke.sh	active	-
 compat-path-delegation-smoke.sh	active	-
 dashboard-header-cache-smoke.sh	active	-
 delegated-exit-code-smoke.sh	active	-
+delegate-missing-message-smoke.sh	active	-
 docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
+git-menu-surface-smoke.sh	active	-
 git-restore-to-base-smoke.sh	active	-
 git-status-contract-smoke.sh	active	-
+gitlaunch-menu-surface-smoke.sh	active	-
 gitmerge-safe-smoke.sh	active	-
 hal-args-no-eval-smoke.sh	active	-
 hal-command-surface-smoke.sh	active	-
@@ -60,6 +64,7 @@ release-pull-request-mode-smoke.sh	active	-
 runtime-authority-classification-smoke.sh	active	-
 runtime-authority-freeze-smoke.sh	active	-
 terminal-width-smoke.sh	active	-
+theme-command-surface-smoke.sh	active	-
 theme-lib-smoke.sh	active	-
 unknown-command-contract-smoke.sh	active	-
 wiki-command-ref-smoke.sh	active	-
@@ -79,4 +84,6 @@ test-inventory-smoke.sh	active	-
 command-discovery-inventory-smoke.sh	active	-
 panel-color-smoke.sh	active	-
 system-menu-smoke.sh	active	-
+dev-menu-smoke.sh	active	-
 menu-shell-guard-smoke.sh	active	-
+release-menu-smoke.sh	active	-
