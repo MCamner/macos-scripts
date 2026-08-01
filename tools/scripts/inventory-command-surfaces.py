@@ -56,11 +56,11 @@ LAUNCHERS = ROOT / "terminal" / "launchers"
 # anyone reaches by typing the git command, and nothing would have reported it
 # crossing ten.
 #
-# tools/scripts/mqlaunch_desktop.sh is deliberately absent. It holds 63 arms and
-# its own dispatch, and docs/RUNTIME_AUTHORITY.md classifies it as a separate
-# live entrypoint rather than a caller of this one. Counting its loops here
-# would mix two products in one total. It needs its own measurement, not a place
-# in this one.
+# tools/scripts/mqlaunch_desktop.sh used to be excluded here on the grounds that
+# it was a separate live entrypoint needing its own measurement. It was not an
+# entrypoint at all — nothing started it — and it has been deleted. Excluding it
+# was still the right call: its 63 arms were a second dispatcher's, and counting
+# them here would have mixed two products in one total.
 EXTRA_MENUS = (
     ROOT / "terminal" / "launchers" / "gitlaunch.sh",
     ROOT / "terminal" / "themes" / "mq-zsh-theme-switcher.sh",
@@ -137,8 +137,8 @@ FUNC_BODY_LINES = 120
 # a fixed line count, which was reading past the end of a short handler and into
 # whichever function came next in the file. That is how `ping_test`,
 # `show_dns_gateway` and `open_network_settings` — none of which touch pulse.sh —
-# were all attributed to it: they are 9 to 15 lines long and share
-# tools/scripts/mqlaunch_desktop.sh with a neighbour that runs it.
+# were all attributed to it: they are 9 to 15 lines long and shared a file with a
+# neighbour that runs it.
 FUNC_END = re.compile(r"^\}")
 
 # A handler that opens a submenu rather than running anything: open_system_menu,

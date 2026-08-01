@@ -138,12 +138,18 @@ mqlaunch github                     # GitHub repo picker (search, clone, open)
 Without a terminal they exit with a message rather than blocking on a picker
 nobody can answer.
 
-Supported actions inside the menu: status, diff risk, commit suggestion,
-safe push, pull with rebase, safe merge, open on GitHub, change repo path.
+`mqlaunch git` opens `terminal/launchers/gitlaunch.sh`. Its front panel holds
+nine choices — Git status, Pull, Commit with suggested message, Safe push, Auto
+commit + push, Recent log, Safe merge, PR merge, and `9. Repo and workspace`,
+which holds the repo switching. Safe merge answers to `7` and to `m`, PR merge
+to `8` and to `p`: the letters they had before they had numbers.
 
-The front panel holds nine choices; opening on GitHub, opening the local folder
-and changing the repo path live under `10. Repo and remote`. Safe merge answers
-to `9` and to `p`, the key it had before it had a number.
+The repo has a second git menu, `terminal/menus/mq-git-menu.sh`, with a
+different panel — ten rows, safe merge at `9`, repo actions under
+`10. Repo and remote`. This paragraph described **that** one until 2026-08-01,
+which meant the documented keys for `mqlaunch git` were the other menu's. It is
+a separate file with its own implementation, not a second name for this one; see
+[AUTHORITY_MAP.md](AUTHORITY_MAP.md) for what reaches it.
 
 `mq-git-menu.sh log` shows the recent log. It has no menu row: `d8ba588` removed
 that row deliberately, but left the arm behind it dispatching, so the menu

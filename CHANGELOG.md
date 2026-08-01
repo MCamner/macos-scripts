@@ -6,6 +6,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+* `tools/scripts/mqlaunch_desktop.sh`, 1104 lines that nothing started.
+
+  `docs/AUTHORITY_MAP.md` called it an "alternate live entry". No file in the
+  repo invoked it — the only two tracked mentions were comments in
+  `inventory-command-surfaces.py` explaining why it was *excluded* from the
+  command-surface count. It was not in `bin/`, not linked from
+  `/usr/local/bin`, not named in a shell rc, and there was no LaunchAgent,
+  Raycast or Alfred integration on the machine this was checked on.
+
+  It was a second dispatcher rather than a wrapper: 63 numbered menu arms, its
+  own `eval "$cmd"`, and its own vocabulary — `theme-amber`, `theme-green`,
+  `theme-ice`, `netlaunch`, `gitlaunch` — none of it in the command registry. It
+  knew nothing of `agent`, `obsidian`, `hal`, `theme apply` or `repos`. A
+  snapshot of an older mqlaunch, and exactly the shape the map's own "Forbidden"
+  rule names: parallel implementations of the same menu responsibility.
+
+  `terminal/menus/mq-git-menu.sh` was live only through it and is now
+  DEPRECATED, but kept: `mq-git-menu.sh log|status|…` is a documented entry and
+  three tests drive its functions. Nine function names are shared with
+  `gitlaunch.sh` and the two have already diverged — `safe_push` is 26 lines
+  against 64, `pr_aware_push` takes a different signature and only
+  `gitlaunch.sh` refuses to push from a detached HEAD. Two designs, not two
+  copies, so the overlap is recorded in the map rather than merged in passing.
+
 ### Fixed
 
 * The login flow preferred the frozen v1 launcher over the current runtime.
@@ -81,6 +107,24 @@ All notable changes to this project will be documented in this file.
   what is checked is the argv rather than the source text.
 
 ### Fixed
+
+* `docs/COMMANDS.md` documented the wrong git menu. `mqlaunch git` opens
+  `terminal/launchers/gitlaunch.sh`, whose panel puts safe merge on `7`/`m` and
+  PR merge on `8`/`p`, with repo switching under `9. Repo and workspace`. The
+  section described `mq-git-menu.sh` instead — ten rows, safe merge on `9`,
+  repo actions under `10. Repo and remote` — so anyone reading the docs and
+  pressing `9` for a merge got a submenu.
+
+* `tests/runtime-authority-classification-smoke.sh` checked that the authority
+  map declares an entry point, never that anything can enter through one. A
+  seventh step now requires every path in the entry-point table to sit in `bin/`,
+  which `install.sh` links onto `PATH` wholesale, or to be named by a tracked
+  file outside `docs/` and `tests/`.
+
+  Comment lines are stripped before that search. The first version of the check
+  passed, because the two mentions of the desktop script were comments saying it
+  is *not* part of the live surface — prose reads exactly like a caller to a
+  grep, which is the mistake one level up from the one being caught.
 
 * The Performance menu executed anything it did not recognise. Its last case arm
   was `*) /bin/zsh -lc "$choice"`, so mistyping a menu number ran the typo as a
