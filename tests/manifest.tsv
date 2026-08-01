@@ -23,6 +23,7 @@
 #
 # name	class	note
 command-docs-smoke.sh	active	-
+apps-menu-surface-smoke.sh	active	-
 command-registry-smoke.sh	active	-
 command-word-normalization-smoke.sh	active	-
 compat-path-delegation-smoke.sh	active	-
