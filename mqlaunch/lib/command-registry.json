@@ -1623,9 +1623,9 @@
         "themes"
       ],
       "namespace": "menus",
-      "summary": "Open the themes menu",
+      "summary": "Show, apply, or reset the terminal theme",
       "owner": "macos-scripts",
-      "safety": "read-only",
+      "safety": "local-write",
       "output_modes": [
         "human",
         "interactive"
@@ -1634,7 +1634,35 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the themes menu"
+        },
+        {
+          "name": "apply",
+          "aliases": [],
+          "summary": "Apply a variant: amber, green, minimal, ice, macos"
+        },
+        {
+          "name": "current",
+          "aliases": [],
+          "summary": "Show the active variant and whether it is sourced"
+        },
+        {
+          "name": "list",
+          "aliases": [],
+          "summary": "List the available variants"
+        },
+        {
+          "name": "reset",
+          "aliases": [],
+          "summary": "Reset the terminal theme"
+        }
+      ]
     },
     {
       "name": "guide",
