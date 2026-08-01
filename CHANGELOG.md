@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* The Release menu shows nine choices instead of twelve, and stops printing two
+  of them out of position. Option 12 sat inside CHECKS between 4 and 5, and
+  option 11 sat inside SHIP between 6 and 7, so anyone picking by position
+  rather than by label got the wrong command — and on this menu the wrong
+  command ships a release.
+
+  CHECKS is Release status, Repo signal check and Latest tags. SHIP is Dry run,
+  Run release, Auto release and Create GitHub release, in that order. Changelog
+  and Setup are submenus; Setup holds the three things done once per repo rather
+  than once per release.
+
+  Nothing was dropped — `tests/release-menu-smoke.sh` lists every original
+  handler by name, so a regrouping cannot quietly become a deletion.
 * The Dev menu shows ten choices instead of sixteen: Prompts, Edit mqlaunch,
   Backup mqlaunch, Folders, Create repo, Repo signal folder check, Comment
   scripts, Env snapshot, Excalidraw, Menus.
