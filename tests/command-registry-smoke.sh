@@ -368,7 +368,7 @@ FIXTURE
 expect_reject "$tmp_dir/foreign-role.json" "local_role on a delegated command" \
   "local_role is only for owner 'macos-scripts'"
 
-echo "[23/23] the exemption is exactly one command and cannot be classified too"
+echo "[23/23] no command is exempt from classification"
 # Two halves of the same rule. The list must hold exactly `srm` — a second name
 # is a second breach, and the fix is the runtime, not the list — and an exempt
 # command must not also carry a role, or removing it from the list later would
@@ -376,27 +376,20 @@ echo "[23/23] the exemption is exactly one command and cannot be classified too"
 exempt="$(python3 -c '
 import re, sys
 src = open("tools/scripts/validate-command-registry.py").read()
-m = re.search(r"^LOCAL_ROLE_EXEMPT = \{([^}]*)\}", src, re.M)
-print(m.group(1).strip() if m else "MISSING")
+m = re.search(r"^LOCAL_ROLE_EXEMPT[^=]*= (?:set\(\)|\{([^}]*)\})", src, re.M)
+print((m.group(1) or "").strip() if m else "MISSING")
 ')"
-if [[ "$exempt" != '"srm"' ]]; then
-  echo "FAIL: LOCAL_ROLE_EXEMPT is $exempt; it must hold exactly \"srm\"." >&2
-  echo "      A new exemption is a new owner breach — fix the runtime instead." >&2
+# `srm` was the one entry here. Its OpenAI fall-through has been retired and it
+# delegates every verb to mq-agent, so it classifies normally and the list is
+# empty. Empty is the only correct value now: a name reappearing means a command
+# this repo owns could not be classified, which is an owner breach, and the fix
+# is the runtime rather than the list.
+if [[ -n "$exempt" && "$exempt" != "MISSING" ]]; then
+  echo "FAIL: LOCAL_ROLE_EXEMPT is $exempt; it must be empty." >&2
+  echo "      An exemption is an unclassifiable local command — fix the runtime." >&2
   exit 1
 fi
-echo "  ok: the exemption list holds exactly srm"
-
-python3 - "$REGISTRY" "$tmp_dir/exempt-classified.json" <<'FIXTURE'
-import json, sys
-doc = json.load(open(sys.argv[1]))
-entry = next((c for c in doc["commands"] if c["name"] == "srm"), None)
-if entry is None:
-    sys.exit("registry has no 'srm' command")
-entry["local_role"] = "thin-entrypoint"
-json.dump(doc, open(sys.argv[2], "w"))
-FIXTURE
-expect_reject "$tmp_dir/exempt-classified.json" "an exempt command that also classifies" \
-  "must not also declare local_role"
+echo "  ok: the exemption list is empty"
 
 bash -n "$0"
 

@@ -67,7 +67,7 @@ LOCAL_ROLES = {"terminal-ux", "host-operation", "thin-entrypoint"}
 # LOCAL_ROLE_EXEMPT goes back to being empty. The list must never grow: a second
 # unclassifiable command is a second breach, and the answer is to fix it rather
 # than to name it here.
-LOCAL_ROLE_EXEMPT = {"srm"}
+LOCAL_ROLE_EXEMPT: set[str] = set()
 
 # A deprecated alias still dispatches — that is the point of deprecating rather
 # than deleting — so it must say what to use instead. Without `replacement` the

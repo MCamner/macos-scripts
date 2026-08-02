@@ -602,7 +602,7 @@ variable and mostly is not.
 
 ## P2 — Thin delegation polish
 
-Status: In progress — 4 of 5 tasks done, both exit gates closed
+Status: Done — 5 of 5 tasks, both exit gates closed
 Priority: P2
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -729,10 +729,11 @@ The front door should make the right workflow easy to find, then hand off to the
   Held by `tests/delegate-missing-message-smoke.sh`, which holds both bridges to
   one contract so the good one cannot regress to the bad one's behaviour.
 
-* [ ] Keep local quick commands local only when they truly belong to the terminal entrypoint.
+* [x] Keep local quick commands local only when they truly belong to the terminal entrypoint.
 
-  Half done: the rule is defined, gated and applied to 59 of 60. The runtime fix
-  the classification exposed is a separate PR, and this box closes when it lands.
+  Done. The rule is defined, gated and applied to the whole local surface with no
+  exception: `LOCAL_ROLE_EXEMPT` is empty, because the one command that could not
+  be classified was fixed rather than excused.
 
   `owner: macos-scripts` used to say only "not delegated". `local_role` is the
   positive rule, and every local command now declares one of exactly three,
@@ -742,23 +743,25 @@ The front door should make the right workflow easy to find, then hand off to the
   terminal-ux      28   menus, help, indexes, pickers, dashboards, theme
   host-operation   14   network, processes, ports, power, scans, clipboard
   thin-entrypoint  17   starts something that lives elsewhere, owns the call
-  exempt            1   srm
+  exempt            0
   ```
 
   `validate-command-registry.py` fails a local command with no role, a role
   outside the three, a `local_role` on a command another repo owns, and an exempt
   command that also classifies. Four negative fixtures prove each fires.
 
-  **`srm` is the exemption, and finding out why was the point of the exercise.**
+  **`srm` was the exemption, and finding out why was the point of the exercise.**
   Its first four verbs delegate to `mq-agent memory-*`. Everything else falls
   through to `tools/scripts/srm.sh`: 156 lines that build a system prompt and
   call `https://api.openai.com/v1/responses` directly with `file_search` against
   a hardcoded vector store. Memory belongs to `mqobsidian` and orchestration to
   `mq-agent`, and "do not implement memory promotion in shell" is a v2.0.0
   non-goal on this page. Classifying it `thin-entrypoint` would have recorded the
-  breach as approved, so it is named in `LOCAL_ROLE_EXEMPT` with the removal
-  condition instead, and the smoke test fails if that list ever holds anything
-  other than exactly `srm`.
+  breach as approved, so it was named in `LOCAL_ROLE_EXEMPT` with a removal
+  condition instead — and then the condition was met. The fall-through is
+  retired, `mq-agent memory search|status` reaches the same vector store through
+  its owner, `srm` delegates every verb and is owned by `mq-agent`. The smoke
+  test now fails on any exemption at all.
 
   **`srm` is not the only one.** `ask`, `fix` and `chat` call the same endpoint
   from `tools/scripts/*.sh`. They are classified `thin-entrypoint`, which is
