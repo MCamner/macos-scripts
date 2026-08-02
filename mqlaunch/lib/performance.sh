@@ -11,6 +11,40 @@
 # port. Naming the old path here — even in a comment — fails the freeze gate by
 # design, so it is described rather than written out.
 
+# The three helpers the screens below render through. They lived in the frozen
+# v1 tree's lib/ui.sh, and the live path never sourced that file —
+# mq-performance-menu.sh sources mq-ui.sh and this file, nothing else. So rows 3
+# to 9 of the Performance menu printed `print_section: command not found` where
+# a heading belongs, for as long as that path existed. Restored verbatim from
+# 94d0eba so the screens render as they were written to.
+#
+# Defined here rather than in ui/terminal-ui/mq-ui.sh, the UI authority, because
+# this file is their only caller and terminal/release/mq-release-check.sh
+# already carries its own print_section. Guarded, so a future definition in the
+# authority wins without this one having to be removed first.
+if ! command -v print_section >/dev/null 2>&1; then
+  # Prints section.
+  print_section() {
+    printf "\n%b\n" "${C_BOLD:-}$1${C_RESET:-}"
+  }
+fi
+
+if ! command -v print_kv >/dev/null 2>&1; then
+  # Prints kv.
+  print_kv() {
+    local key="$1"
+    local value="$2"
+    printf "%-18s %s\n" "$key" "$value"
+  }
+fi
+
+if ! command -v print_divider >/dev/null 2>&1; then
+  # Prints divider.
+  print_divider() {
+    printf '%*s\n' 52 '' | tr ' ' '-'
+  }
+fi
+
 # Handles performance reports dir.
 performance_reports_dir() {
   local dir="$PROJECT_ROOT/backups/performance-reports"
@@ -30,7 +64,14 @@ perf_cpu_count() {
 
 # Handles perf load 1m.
 perf_load_1m() {
-  uptime | awk -F'load averages?: ' '{print $2}' | awk -F', ' '{print $1}' | tr -d ' '
+  # Split on whitespace, not on ", ". macOS separates the three load averages
+  # with spaces — "load averages: 1.50 1.25 1.10" — so splitting on ", " kept
+  # all three and `tr -d ' '` glued them into "1.501.251.10". That is what the
+  # Performance Hub's Load (1m) field and the menu's Signals row have been
+  # showing. Linux writes "load average:" with commas between the figures, which
+  # the same awk handles: taking field 1 of a whitespace split gives the 1m
+  # value there too, once its trailing comma is dropped.
+  uptime | awk -F'load averages?: ' '{print $2}' | awk '{print $1}' | tr -d ' ,'
 }
 
 # Handles perf disk percent root.
@@ -481,6 +522,13 @@ command_perf_quick_watch() {
   print_header
   print_section "Quick Watch"
 
+  # Ctrl+C used to be the only way out, and in the menu it takes the whole
+  # mqlaunch session with it rather than returning to the Performance panel.
+  # The trap turns it into "stop watching"; `trap - INT` at the end puts the
+  # caller's handling back.
+  local quick_watch_stop=0
+  trap 'quick_watch_stop=1' INT
+
   echo "Refreshing every 2 seconds. Press Ctrl+C to stop."
   echo
 
@@ -515,6 +563,18 @@ command_perf_quick_watch() {
     echo
     echo "Top Memory:"
     ps -Ao %mem,comm | sort -nr | head -n 6
+
+    (( quick_watch_stop )) && break
+
+    # Without a terminal there is nobody to press Ctrl+C, so this loop had no
+    # way to end at all: it refreshed until something killed it. One frame is
+    # the whole of what a non-interactive caller can use.
+    if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+      break
+    fi
+
     sleep 2
   done
+
+  trap - INT
 }

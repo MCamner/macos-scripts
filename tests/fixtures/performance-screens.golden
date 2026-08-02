@@ -5,7 +5,7 @@
 │ Score:  <SCORE>/<N> (Excellent)                                                              │
 │                                                                                          │
 │ SIGNALS                                                                                  │
-│ Load (1m): <LOADAVG>                      CPU cores: <N>                                │
+│ Load (1m): 1.50                              CPU cores: 8                                │
 │ Disk (/): <PCT>                                Battery: <PCT>                                │
 │ Memory: normal                               Network: <IP>                          │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -17,7 +17,7 @@
 │ Health score: <SCORE>/<N> (Excellent)                                                        │
 │                                                                                          │
 │ SYSTEM STATE                                                                             │
-│ Load:  <UPTIME_LOAD>
+│ Load:  14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10                   │
 │ Disk: <PCT>   Memory: normal   Battery: <PCT>                                                │
 │ Network IP: <IP>                                                                    │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -25,38 +25,44 @@
 ===== command_perf_cpu_top =====
 --- exit: 0
 --- stdout:
+
+Top CPU Processes
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_mem_top =====
 --- exit: 0
 --- stdout:
+
+Top Memory Processes
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_disk_usage =====
 --- exit: 0
 --- stdout:
+
+Disk Usage
 Filesystem      Size  Used Avail Capacity  Mounted on
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 map auto_home      <SIZE>    <SIZE>    <SIZE>   <PCT>%    /System/Volumes/Data/home
 
+
+Largest folders in project root
 <SIZE>\t/stub/a
  <SIZE>\t/stub/b
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_network =====
 --- exit: 0
 --- stdout:
+
+Network Overview
 Active IP:
 <IP>
 
@@ -66,76 +72,42 @@ stub netstat line
 Listening ports:
 stub lsof line
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_battery =====
 --- exit: 0
 --- stdout:
+
+Battery Status
 Now drawing from 'Battery Power'
  -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 
 Now drawing from 'Battery Power'
  -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_snapshot =====
 --- exit: 0
 --- stdout:
+
+Create Performance Snapshot
 <REPO>/backups/performance-reports/perf-snapshot-<TIMESTAMP>.txt
 
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 <REPO>/mqlaunch/lib/performance.sh: line <N>: ok: command not found
 <REPO>/mqlaunch/lib/performance.sh: line <N>: command_exists: command not found
 ===== command_perf_quick_watch =====
---- exit: 124
+--- exit: 0
 --- stdout:
+
+Quick Watch
 Refreshing every <N> seconds. Press Ctrl+C to stop.
 
 
+Quick Watch
+Time:              Thu Jan  <N> <N>:<N>:<N> CET <N>
+Health:            <SCORE>/<N> (Excellent)
 
- <UPTIME_LOAD>
+----------------------------------------------------
 
-/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
-
- -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
-
-Top CPU:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Top Memory:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-
- <UPTIME_LOAD>
-
-/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
-
- -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
-
-Top CPU:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Top Memory:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-
- <UPTIME_LOAD>
+ 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
 
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
@@ -155,16 +127,3 @@ Top Memory:
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
-<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found

@@ -32,14 +32,12 @@ RULES = [
     # Where the checkout sits is not part of what a screen renders.
     (re.compile(r"/(?:private/)?(?:tmp|var)/[^\s\"'|]+"), "<PATH>"),
     (re.compile(r"/Users/[^\s\"'|]+"), "<PATH>"),
-    # Load averages. `perf_load_1m` splits `uptime` on ", " while macOS
-    # separates the three figures with spaces, so this field arrives as one run
-    # of concatenated decimals ("1.541.481.58"). Masked before the IP rule,
-    # which would otherwise claim it — four dot-separated groups is exactly what
-    # that malformed value looks like.
-    (re.compile(r"(?<=Load \(1m\): )[\d.]+"), "<LOADAVG>"),
-    (re.compile(r"\d{1,2}:\d{2}\s+up\s+.*?load averages?:.*"), "<UPTIME_LOAD>"),
-    (re.compile(r"load averages?:[\d.\s]+"), "load averages: <LOADAVG>"),
+    # Load and uptime are NOT masked. `uptime` is stubbed with fixed output, so
+    # both are deterministic, and masking them hid a defect for as long as they
+    # were masked: `perf_load_1m` split `uptime` on ", " while macOS separates
+    # the three figures with spaces, so the field rendered as one run of
+    # concatenated decimals and `<LOADAVG>` covered it up. A golden that masks
+    # the field a bug lives in cannot report the bug.
     # Dates and timestamps.
     (re.compile(r"\d{4}-\d{2}-\d{2}[_ ]\d{2}[-:]\d{2}([-:]\d{2})?"), "<TIMESTAMP>"),
     (re.compile(r"\d{4}-\d{2}-\d{2}"), "<DATE>"),
@@ -56,6 +54,16 @@ RULES = [
     (re.compile(r"\b\d+\b"), "<N>"),
 ]
 
+# Lines that pass through untouched. `uptime` is stubbed, so everything on them
+# is deterministic, and every one of them carries a load average — the field a
+# defect lived in while the masking covered it up. The malformed value even
+# matched the IP rule, four dot-separated groups being exactly what
+# "1.501.251.10" looks like, so the fixture read `Load (1m): <IP>`.
+PASSTHROUGH = (
+    re.compile(r".*Load \(1m\):"),
+    re.compile(r".*load averages?:"),
+)
+
 # A row of `ps` output. Which processes are in a top-N list changes between two
 # runs seconds apart, so the rows themselves are process-dependent data and not
 # just the numbers in them. Each collapses to one marker, so the *number* of
@@ -71,6 +79,8 @@ def normalize(line: str) -> str:
     line = ANSI.sub("", line.rstrip("\n"))
     if REPO_ROOT:
         line = line.replace(REPO_ROOT, "<REPO>")
+    if any(p.match(line) for p in PASSTHROUGH):
+        return re.sub(r"\s+$", "", line)
     for pattern, replacement in RULES:
         line = pattern.sub(replacement, line)
     line = re.sub(r"\s+$", "", line)

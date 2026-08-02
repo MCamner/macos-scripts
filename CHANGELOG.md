@@ -6,6 +6,51 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* The three behaviour defects the performance golden pinned. One commit each,
+  the golden red before the fix and regenerated after it.
+
+* Seven of the nine Performance screens printed `print_section: command not
+  found` where a heading belongs — eleven error lines, counting the two
+  `print_kv` and one `print_divider` in Quick Watch. All three helpers lived
+  only in the frozen v1 tree's `lib/ui.sh`, and the live path never sourced that
+  file: `mq-performance-menu.sh` sources `mq-ui.sh` and the data layer, nothing
+  else. Rows 3 to 9 have been broken for as long as this path has existed.
+
+  Restored verbatim from `94d0eba` into `mqlaunch/lib/performance.sh` rather
+  than into `ui/terminal-ui/mq-ui.sh`, because this file is their only caller
+  and `terminal/release/mq-release-check.sh` already carries its own
+  `print_section`. Guarded with `command -v`, so a later definition in the UI
+  authority wins without this one having to be removed first.
+
+* `Load (1m)` showed all three load averages glued together — `1.501.251.10`.
+  `perf_load_1m` split `uptime` on `", "` while macOS separates the figures with
+  spaces, so it kept all three and `tr -d ' '` closed the gaps. The same value
+  appeared in the menu's Signals row. It splits on whitespace now, verified on
+  both formats: macOS `load averages: 1.50 1.25 1.10` and Linux
+  `load average: 0.15, 0.20, 0.18`.
+
+  The masking had to go first, and that is the more useful half of the change.
+  `<LOADAVG>` covered exactly the field the bug lived in, so the golden could
+  not have gone red on a fix — and the malformed value matched the IP rule, four
+  dot-separated groups being what `1.501.251.10` looks like, so the fixture read
+  `Load (1m): <IP>`. Those lines pass through unmasked now.
+
+* Quick Watch could not stop. It refreshed until something killed it, and the
+  loop did not trap `SIGINT`, so Ctrl+C took the whole `mqlaunch` session rather
+  than returning to the Performance panel. With no terminal there was no way out
+  at all.
+
+  A trap sets a flag the loop checks and `trap - INT` restores the caller's
+  handling; the loop also breaks after one frame when there is no tty or
+  `MQ_NO_TUI` is set, matching the guard `open_git_menu` already uses. Proven
+  against the pre-fix code: `SIGINT` mid-watch used to kill the caller and now
+  returns to it with status 0. With a real pty it still refreshes — six frames
+  in nine seconds — so the guard is not firing where it should not.
+
+  All nine screens exit 0 now, where the golden used to record a 124.
+
 ### Added
 
 * `tests/performance-screens-golden-smoke.sh` and

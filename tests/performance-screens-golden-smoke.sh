@@ -23,20 +23,32 @@
 # runs Linux and has no pmset. Stubbing also makes the comparison sharper: with
 # the inputs fixed, almost nothing needs masking.
 #
-# THE GOLDEN PINS FOUR DEFECTS. It records what these screens do, which is not
+# THE GOLDEN PINS FOUR DEFECTS, ALL OF THEM NOW FIXED. It records what these screens do, which is not
 # the same as what they should do, and reconstructing it is what found all four.
 # Every one predates the migration and renders identically on both sides:
 #
-#   1. `print_section: command not found`, 11 times. Seven of the nine screens
-#      call print_section, and one also calls print_kv. Both live only in the
-#      v1 tree's lib/ui.sh, which the live path never sourced — the menu sources
-#      mq-ui.sh and the data layer, nothing else. Rows 3 to 9 have been printing
-#      that error instead of a heading for as long as this path has existed.
-#   2. `Load (1m)` renders as one run of concatenated decimals ("1.501.251.10").
-#      perf_load_1m splits `uptime` on ", " while macOS separates the three load
-#      averages with spaces, so it keeps all three and `tr -d ' '` glues them.
-#   3. command_perf_quick_watch cannot exit on its own; it refreshes forever and
-#      is bounded here, so its exit status in the golden is the timeout's 124.
+#   1. FIXED. `print_section: command not found`, 11 times — seven screens call
+#      print_section, one also calls print_kv and print_divider. All three lived
+#      only in the v1 tree's lib/ui.sh, which the live path never sourced, so
+#      rows 3 to 9 printed that error where a heading belongs. Restored verbatim
+#      from 94d0eba into the data layer, guarded, and the golden regenerated:
+#      the eleven error lines are gone and every screen carries its heading.
+#   2. FIXED. `Load (1m)` rendered as one run of concatenated decimals —
+#      "1.501.251.10". perf_load_1m split `uptime` on ", " while macOS separates
+#      the three figures with spaces, so it kept all three and `tr -d ' '` glued
+#      them. It splits on whitespace now and works on both formats: verified
+#      against a Linux-style "load average: 0.15, 0.20, 0.18" as well.
+#
+#      The masking had to go before the fix could be seen. `<LOADAVG>` covered
+#      the field the bug lived in, and the malformed value even matched the IP
+#      rule, so the fixture read `Load (1m): <IP>`. Those lines pass through
+#      unmasked now — `uptime` is stubbed, so they are deterministic.
+#   3. FIXED. command_perf_quick_watch could not exit on its own. It refreshed
+#      until something killed it, so this harness had to bound it and the
+#      golden recorded the timeout's 124. Two ways out now: a SIGINT trap, so
+#      Ctrl+C stops watching instead of taking the whole mqlaunch session with
+#      it, and a non-interactive guard, because with no terminal there is nobody
+#      to press Ctrl+C. Its status in the golden is 0.
 #   4. `awk -v load=...` in perf_health_score — fixed, because it is what kept
 #      this test from being a CI gate at all. `load` is a gawk builtin, so gawk
 #      rejects it and the whole health score fails on any system with GNU awk.
@@ -44,10 +56,9 @@
 #      renamed; the golden is unchanged on macOS, which is the proof the rename
 #      is behaviour-preserving here.
 #
-# Fixing the other three changes this output, and the golden must be regenerated
-# in the same commit with the reason written down. Do not regenerate it to make
-# an unexplained diff go away — that is the failure mode a golden exists to
-# catch.
+# Each was fixed in its own commit, the golden going red first and regenerated
+# after with the reason written down. Do not regenerate it to make an
+# unexplained diff go away — that is the failure mode a golden exists to catch.
 #
 # Verified as a chain, not a claim: the pre-migration implementation extracted
 # from 94d0eba renders byte-identical to this golden, the current one does too,
@@ -86,15 +97,16 @@ test -f "$GOLDEN"
 render_screen() {
   local perf_file="$1" fn="$2" out="$3" err="$4"
   local rc=0
-  # quick_watch refreshes every two seconds by design, so it is bounded. The
-  # timeout's own status (124) is part of the golden.
+  # The bound is a backstop now rather than the thing that ends quick_watch:
+  # with no terminal it renders one frame and returns 0. It stays because a
+  # screen that hangs should fail this test rather than the whole suite.
   # The system commands are stubbed with fixed output. Without that the golden
   # is a photograph of one machine: it captured this laptop's battery, load and
   # process list, and CI runs Linux, where pmset and memory_pressure do not
   # exist and gawk rejects `load` as a variable name. Stubbing makes the fixture
   # portable and, more to the point, makes it measure the thing it is for —
   # drift in *rendering*, not whether `df` still works.
-  timeout 6 env \
+  timeout 7 env \
     PATH="$ROOT/tests/fixtures/perf-stubs:$PATH" \
     BASE_DIR="$ROOT" PROJECT_ROOT="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
     NO_COLOR=1 TERM=dumb COLUMNS=92 \
