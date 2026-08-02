@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Smoke: the runtime authority freeze gate (P1 Step 10) passes on the current
-# tree — i.e. no live shell file outside the documented compat allowlist
-# references terminal/mqlaunch-v1/. Local parity for the CI step.
+# Smoke: the runtime authority freeze gate passes on the current tree — i.e. no
+# shell file outside the documented lists references terminal/mqlaunch-v1/,
+# which was deleted in Step 12.6. Local parity for the CI step.
 #
 # The gate used to scan three directories (terminal/, ui/, mqlaunch/), which is
 # narrower than "live runtime shell": automation/ and tools/ hold live code too.
@@ -43,7 +43,13 @@ gate_text = pathlib.Path(sys.argv[2]).read_text(encoding="utf-8")
 
 listed = set()
 for name in ("COMPAT_EDGES", "TOOLING"):
-    block = re.search(rf"^{name}=\((.*?)^\)", gate_text, re.S | re.M)
+    # The empty form is matched first and on its own line. A single pattern
+    # ending at `^\)` reads straight past `NAME=()` and stops at the *next*
+    # block's closing paren, so once COMPAT_EDGES emptied, its "list" was
+    # silently TOOLING's entries and this check stopped checking what it says.
+    if re.search(rf"^{name}=\(\)\s*$", gate_text, re.M):
+        continue
+    block = re.search(rf"^{name}=\(\n(.*?)^\)", gate_text, re.S | re.M)
     if not block:
         sys.exit(f"FAIL: the gate no longer declares a {name} list")
     listed |= set(re.findall(r'"([^"]+)"', block.group(1)))

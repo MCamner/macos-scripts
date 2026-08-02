@@ -11,7 +11,7 @@ set -euo pipefail
 #                                is already a hard gate, not warn-only.
 #   .github/workflows/quality.yml  `shellcheck --severity=error "$f" || true`
 #                                over a wider surface that includes
-#                                tools/legacy/ and terminal/mqlaunch-v1/.
+#                                tools/legacy/.
 #                                Never fails.
 #
 # This report prints both surfaces and what each severity would cost on them, so
@@ -60,7 +60,7 @@ collect() {
 
 lint_surface=()
 while IFS= read -r file; do lint_surface+=("$file"); done < <(
-  collect "$ROOT" -not -path "$ROOT/tools/legacy/*" -not -path "$ROOT/terminal/mqlaunch-v1/*"
+  collect "$ROOT" -not -path "$ROOT/tools/legacy/*"
 )
 
 ci_surface=()

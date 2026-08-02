@@ -84,10 +84,6 @@ echo "== Running HAL menu checks =="
 "$PROJECT_ROOT/tests/command-discovery-inventory-smoke.sh"
 
 echo
-echo "== Running mqlaunch v1 checks =="
-bash "$ROOT/test-mqlaunch-v1.sh"
-
-echo
 echo "== Running shell lint checks =="
 bash "$ROOT/lint.sh"
 

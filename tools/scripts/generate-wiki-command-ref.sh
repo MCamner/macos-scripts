@@ -96,7 +96,6 @@ should_skip() {
   local rel="$1"
   case "$rel" in
     tools/legacy/*)                          return 0 ;;
-    terminal/mqlaunch-v1/*)                  return 0 ;;
     backups/*)                               return 0 ;;
     tools/scripts/generate-wiki-command-ref*) return 0 ;;
     *)                                        return 1 ;;

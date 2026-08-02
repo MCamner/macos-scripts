@@ -1,109 +1,54 @@
 # Bridges
 
-This folder contains compatibility bridge scripts between the main `mqlaunch` launcher and `terminal/mqlaunch-v1`.
+A bridge is a routing shim: the launcher sources it, and it hands a command to
+whatever actually implements it. It holds no business logic.
 
-They exist to support incremental migration:
-
-* keep the current launcher usable
-* route selected commands into v1 where no newer replacement exists yet
-* preserve stable entrypoints during cleanup
-
-## Current status
-
-Migration is now mixed rather than all-in:
-
-* `dev` uses the newer main-menu implementation
-* `tools` now uses the newer main-menu implementation
-* `performance` still routes through `mqlaunch-v1`
-
-So the bridge layer is now mostly a compatibility/fallback layer, not the primary path for every migrated area.
-
-## Performance Decision
-
-`performance` is the one intentional exception right now.
-
-Why it remains behind the bridge:
-
-* the existing v1 performance module is already the most complete implementation
-* it includes overview, health scoring, process views, disk/network checks, battery status, snapshots, and quick watch
-* replacing it incrementally in the main launcher would likely create a worse in-between state
-
-Current policy:
-
-* keep `mqlaunch perf` and related entrypoints stable
-* route them through `open_performance_menu()` / `run_performance_command()`
-* treat the bridge as an implementation detail, not a user-facing concept
-* revisit migration only when performance can move as a complete feature slice
+This folder existed for a migration off `terminal/mqlaunch-v1`. That tree was
+deleted on 2026-08-02, so the compatibility half of the job is finished. What is
+left routes to another repo or to a menu in this one.
 
 ## Files
 
 ```text
 terminal/bridges/
-├── dev-bridge.sh           # inert tombstone; legacy Dev routing retired
-├── performance-bridge.sh   # active bridge for Performance
-├── tools-bridge.sh         # legacy fallback for old Tools routing
+├── hal-bridge.sh           # routes to mq-hal
+├── brain-bridge.sh         # routes to the mqobsidian brain surface
+├── performance-bridge.sh   # loads terminal/menus/mq-performance-menu.sh
+├── dev-bridge.sh           # inert tombstone; legacy Dev routing retired in 12.1
 └── README.md
 ```
 
-## How They Work
+## What changed when v1 went
 
-Active compatibility bridges:
+* `tools-bridge.sh` is gone. It forwarded `tools` to the v1 launcher as a
+  subprocess, and neither `open_v1_tools_menu` nor `run_v1_tools_command` had a
+  caller anywhere in the tree.
+* `performance-bridge.sh` kept its name and lost its bridging. It used to fall
+  back to the v1 launcher when `mq-performance-menu.sh` was missing. A missing
+  menu file is a broken checkout, and answering it by running a frozen launcher
+  hid that; it reports and returns 1 now.
+* `run_performance_command`, `open_v1_performance_menu` and
+  `run_v1_performance_command` went with the fallback. None had a caller.
 
-* builds the path to `terminal/mqlaunch-v1/mqlaunch.sh`
-* checks whether the v1 launcher is executable
-* runs the matching v1 command if available
-* falls back to `bash` if the file exists but is not executable
-* prints an error if the v1 launcher is missing
+Performance was the one area genuinely dependent on v1, and not for the reason a
+compat layer usually exists. The v1 performance module was 504 lines of working
+`perf_*` readings — health score, process views, disk and network checks,
+battery, snapshots, quick watch — so the frozen tree was being kept alive to
+*supply code*, not to preserve an old route. Moving that file to
+`mqlaunch/lib/performance.sh` is what made the deletion possible.
 
-## Current Bridge Functions
+## Rules
 
-Examples from the current files:
+* A bridge routes. New logic in a bridge is forbidden — see
+  [docs/RUNTIME_AUTHORITY.md](../../docs/RUNTIME_AUTHORITY.md).
+* Nothing here may name the deleted tree again.
+  `scripts/check-runtime-authority.sh` is a tombstone gate now: it fails on any
+  shell file that references it, so a second runtime cannot come back quietly.
+* A bridge with no callers is deleted, not kept for symmetry. That is how both
+  the dev and the tools bridge ended.
 
-* `open_performance_menu()`
-* `run_performance_command()`
-* `open_v1_performance_menu()` (compatibility alias)
-* `run_v1_performance_command()` (compatibility alias)
-* `open_v1_tools_menu()`
-* `run_v1_tools_command()`
+## Relationship to the rest of `terminal/`
 
-These functions are sourced into the main launcher and used as routing helpers when an area still depends on v1 or when an explicit legacy path is retained.
-
-## Why This Layer Matters
-
-Without bridges, migration would require changing the whole launcher in one pass.
-
-With bridges:
-
-* migrated areas can move over one at a time
-* non-migrated areas can keep working
-* legacy aliases can remain available temporarily
-* testing is easier because routing stays explicit
-
-## Design Philosophy
-
-The bridge scripts are intentionally small.
-
-They should:
-
-* do one job only: routing
-* avoid business logic
-* avoid duplicated menu logic
-* stay easy to remove once migration is complete
-
-## Relationship To The Rest Of terminal/
-
-In simple terms:
-
-* `launchers/` = user-facing entry points
-* `mqlaunch-v1/` = older modular compatibility layer still used by some routes
-* `bridges/` = explicit handoff between the primary launcher and v1
-
-## Future Direction
-
-As more routes move fully into the main launcher, the bridge layer should shrink.
-
-Long term:
-
-* keep only bridges that still serve a real compatibility purpose
-* remove dead bridge paths once no command uses them
-* migrate `performance` only when the main launcher can match or improve the current v1 experience end-to-end
+* `launchers/` — user-facing entry points
+* `menus/` — the implementations
+* `bridges/` — the handoff between them, and to other repos in the stack

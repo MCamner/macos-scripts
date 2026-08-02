@@ -6,6 +6,58 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+* `terminal/mqlaunch-v1/` — 23 files, 1125 shell LOC, plus its own
+  `tools/scripts/test-mqlaunch-v1.sh`. The last legacy runtime, and the last
+  duplicate UI implementation: it shipped its own `lib/ui.sh` alongside
+  `ui/terminal-ui/mq-ui.sh`.
+
+  Its live edges went first, in the PR before this one, which is why this one
+  deletes rather than migrates. Four checks were run against `main` before
+  anything was removed: the freeze gate reported 0 compat edges; a sweep of
+  every tracked `.sh`, `.zsh` and `.py` outside the tree found no `source`,
+  `bash` or `exec` reaching it; the 24 files still naming it were all history,
+  tests, docs or tooling; and the suite passed after the deletion.
+
+  **Nothing that ran was edited.** Seven tooling files named the tree — to
+  exclude it from lint, to test it, or to police it — which is exactly the
+  distinction the freeze gate's two lists were built to make:
+
+  ```text
+  test-mqlaunch-v1.sh            deleted with the tree
+  test-all.sh                    v1 selftest block removed
+  test-mqlaunch.sh               v1 launcher assertions removed
+  lint.sh                        exclusion had nothing left to exclude
+  shellcheck-report.sh           same
+  generate-wiki-command-ref.sh   same
+  check-runtime-authority.sh     became a tombstone gate
+  ```
+
+  The lint surface went from 189 files to 188 and stayed clean at warning
+  severity. Four of the five SC2034 findings that `RUNTIME_AUTHORITY.md`
+  documented as deliberately exempt left with the tree — they were colour
+  variables in its `lib/core.sh` that the scripts sourcing it did read.
+
+  `scripts/check-runtime-authority.sh` keeps running as a tombstone. A path that
+  no longer exists cannot be depended on by accident, but it can be recreated,
+  and a second runtime is what the v2.0.0 track spent its length removing. Its
+  compat list is empty permanently; a non-empty one means the legacy runtime is
+  back.
+
+  Three READMEs still claimed performance routed through v1.
+  `terminal/bridges/README.md` was 109 lines about a migration that is now
+  finished and is rewritten; `terminal/README.md` and
+  `terminal/launchers/README.md` are corrected.
+
+  One gap is recorded rather than papered over: `docs/plans/step-12-v1-removal.md`
+  called for a golden snapshot of performance output *before* the migration, and
+  that fixture was never written. The migration was verified by driving the menu
+  before and after — same score, same signals, same rows — which proves the panel
+  but not each of the nine `command_perf_*` screens behind it. R1 in that plan's
+  risk table is specifically about unnoticed output drift, and its mitigation is
+  the step that was skipped.
+
 ### Changed
 
 * Nothing live reaches `terminal/mqlaunch-v1/` any more. The freeze gate reports

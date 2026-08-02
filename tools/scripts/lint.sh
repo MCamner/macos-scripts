@@ -15,7 +15,6 @@ done < <(
   find "$PROJECT_ROOT" -type f -name '*.sh' \
     -not -path "$PROJECT_ROOT/backups/*" \
     -not -path "$PROJECT_ROOT/tools/legacy/*" \
-    -not -path "$PROJECT_ROOT/terminal/mqlaunch-v1/*" \
     | sort
 )
 

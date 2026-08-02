@@ -24,10 +24,9 @@ It is designed for:
 
 ```text
 terminal/
-├── bridges/      # compatibility handoff to v1 where needed
+├── bridges/      # routing handoff to a menu here or to another repo
 ├── launchers/    # primary mqlaunch entrypoints and routing
 ├── menus/        # shared menu modules used by the launcher
-├── mqlaunch-v1/  # compatibility implementation still used by performance
 ├── themes/       # zsh themes and theme switching
 └── README.md
 ```
