@@ -25,12 +25,12 @@ echo "SMOKE: plain and machine-readable output contract"
 
 DOCTOR="$ROOT/tools/scripts/doctor.sh"
 
-echo "[1/12] files exist"
+echo "[1/13] files exist"
 test -f "$UI"
 test -f "$LAUNCH"
 test -f "$DOCTOR"
 
-echo "[2/12] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
+echo "[2/13] NO_COLOR suppresses ANSI color on a TTY (behavioural, via pty)"
 python3 - "$ROOT" <<'PY'
 import os, pty, subprocess, sys
 
@@ -73,13 +73,13 @@ assert ESC not in plain, f"NO_COLOR=1 still emitted ANSI: {plain!r}"
 print("  ok: color on TTY, none under NO_COLOR")
 PY
 
-echo "[3/12] NO_COLOR is honoured in the central colour guard (structural)"
+echo "[3/13] NO_COLOR is honoured in the central colour guard (structural)"
 # Fixed-string match: the guard line is literal, and ERE brace handling differs
 # between BSD (macOS) and GNU (Linux) grep.
 # shellcheck disable=SC2016
 grep -qF 'if [[ -t 1 && -z "${NO_COLOR:-}" ]]' "$UI"
 
-echo "[4/12] JSON mode prints only JSON to stdout — no banner, no ANSI"
+echo "[4/13] JSON mode prints only JSON to stdout — no banner, no ANSI"
 # Test the JSON producer directly: it is deterministic regardless of which tools
 # are installed. A health check may legitimately exit non-zero when tools are
 # missing, so the exit status is captured, not asserted — the contract is that
@@ -95,12 +95,49 @@ json.loads(data)                # must parse as a single JSON document
 print("  ok: valid JSON, no ANSI, no banner")
 '
 
-echo "[5/12] mqlaunch status --json emits JSON only — end-to-end through the launcher"
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+
+# Runs `status --json` through a launcher and writes its stdout to $2, returning
+# the launcher's own exit status.
+#
+# BASE_DIR is pinned at this checkout. bin/mqlaunch otherwise defaults it to
+# $HOME/macos-scripts, which is true on a developer machine and false on a CI
+# runner — there the launcher exits 1 with "Main launcher not found" on stderr,
+# and a step that only looked at stdout would be measuring a launcher that never
+# ran. MQ_NO_TUI keeps any interactive path from blocking if this regresses.
+run_launcher_json() {
+  local launcher="$1" outfile="$2" st=0
+  BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 \
+    timeout 60 bash "$launcher" status --json >"$outfile" 2>/dev/null || st=$?
+  return "$st"
+}
+
+# The startup half of the contract, in one predicate so the planted-defect step
+# at the end can assert that breaking it is actually noticed: the launcher must
+# exit 0 *and* put bytes on stdout. Either alone is insufficient — a launcher
+# that dies produces no output but a launcher that prints a perfectly good
+# document and then exits 3 produces plenty.
+launcher_json_contract_holds() {
+  local launcher="$1" outfile="$2"
+  run_launcher_json "$launcher" "$outfile" || return 1
+  test -s "$outfile"
+}
+
+echo "[5/13] mqlaunch status --json emits JSON only — end-to-end through the launcher"
 # The producer being clean is not enough: the launcher is what a caller pipes.
-# bin/mqlaunch resolves the repo through BASE_DIR, so pin it at this checkout.
-# MQ_NO_TUI keeps any interactive path from blocking if this ever regresses.
-status_out="$(BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 \
-  bash "$LAUNCH" status --json 2>/dev/null)" || true
+#
+# The launcher's own exit status is asserted, not discarded. This step used to
+# end in `|| true`; the emptiness check caught a launcher that failed to start,
+# but not one that printed a valid document and then exited non-zero. Measured
+# on the unfixed step: a stub emitting valid JSON with `exit 3` passed.
+if ! launcher_json_contract_holds "$LAUNCH" "$WORK/status.json"; then
+  echo "FAIL: mqlaunch status --json did not exit 0 with output on stdout" >&2
+  BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 \
+    bash "$LAUNCH" status --json >/dev/null || true
+  exit 1
+fi
+status_out="$(cat "$WORK/status.json")"
 printf '%s' "$status_out" | python3 -c '
 import sys, json
 data = sys.stdin.buffer.read()
@@ -114,7 +151,7 @@ for key in ("project", "version", "repo_state"):
 print("  ok: status --json is a single clean JSON document")
 '
 
-echo "[6/12] the JSON status path stays side-effect free (structural)"
+echo "[6/13] the JSON status path stays side-effect free (structural)"
 # print_status_json must not fall back into the dashboard renderer: that one runs
 # the full test suite and calls pause_enter, so reusing it here would make a
 # machine-readable command slow, interactive, and (run from test-all) recursive.
@@ -128,7 +165,7 @@ test -n "$json_status_body"
 # Without --json, status must still render the dashboard.
 grep -q 'show_about_dashboard' "$COMMAND_MODE"
 
-echo "[7/12] plain status is clean when piped and when redirected"
+echo "[7/13] plain status is clean when piped and when redirected"
 # The banner was the remaining hole in the contract (#67): the colour guard was
 # doing its job — zero ANSI in a pipe — but ASCII art is not colour, so a caller
 # who did not know about --json got 5.8 KB of dashboard on stdout and exit 0.
@@ -137,8 +174,10 @@ echo "[7/12] plain status is clean when piped and when redirected"
 # Both destinations are checked because they are different tests of the same
 # guard: `| cat` gives a pipe, `> file` gives a regular file, and a check that
 # looked at anything other than isatty(1) would pass one and fail the other.
-plain_dir="$(mktemp -d)"
-trap 'rm -rf "$plain_dir"' EXIT
+# Under $WORK rather than its own mktemp: an EXIT trap replaces the previous
+# one, so a second trap here would silently orphan the directory step 5 uses.
+plain_dir="$WORK/plain"
+mkdir -p "$plain_dir"
 
 set +e
 BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
@@ -195,7 +234,7 @@ for path in sys.argv[1:]:
 print("  ok: piped and redirected status carry content without decoration")
 PY
 
-echo "[8/12] the header still renders on a terminal (both directions, via pty)"
+echo "[8/13] the header still renders on a terminal (both directions, via pty)"
 # The risk in suppressing the banner is suppressing it everywhere. This asserts
 # the human path in the same breath as the machine path, because a guard that
 # only ever proves the negative would also pass if print_header were deleted.
@@ -231,7 +270,7 @@ assert piped == b"", f"header rendered into a pipe: {piped[:200]!r}"
 print("  ok: header on a terminal, nothing in a pipe")
 PY
 
-echo "[9/12] --no-color disables colour from the command line (both directions, via pty)"
+echo "[9/13] --no-color disables colour from the command line (both directions, via pty)"
 # NO_COLOR is an environment variable; a caller with a command line and no
 # control over the environment needs the flag form. `commands` is the probe
 # because it colours its output and returns without waiting for a keypress.
@@ -294,7 +333,7 @@ assert len(plain) > 1000, f"--no-color suppressed the output itself: {len(plain)
 print("  ok: colour on a TTY, none with --no-color, command still runs")
 PY
 
-echo "[10/12] repo_state means the same thing on every surface"
+echo "[10/13] repo_state means the same thing on every surface"
 # #66: `mqlaunch status`, the dashboard and `mqlaunch version` each derived
 # repo_state from `git diff --quiet HEAD`, which sees tracked changes only. A
 # checkout holding nothing but untracked files therefore read as `clean` — while
@@ -369,7 +408,7 @@ if [[ -n "$stale" ]]; then
 fi
 echo "  ok: clean, dirty (tracked and untracked), and not-a-git-repo"
 
-echo "[11/12] reporting surfaces stay quiet when the terminal is unknown"
+echo "[11/13] reporting surfaces stay quiet when the terminal is unknown"
 # A stripped environment has no TERM: a GUI launch, a cron job, a nested
 # launcher, a CI runner. `tput cols` fails there and prints its own complaint.
 #
@@ -420,7 +459,7 @@ if max(runs) < 60:
 ' || exit 1
 echo "  ok: no stderr noise, rules drawn as valid UTF-8 without TERM or LANG"
 
-echo "[12/12] no dispatched tool clears the screen unguarded"
+echo "[12/13] no dispatched tool clears the screen unguarded"
 # Step 11 proves `doctor` is quiet without TERM by running it. That does not
 # generalise: `pulse` takes twenty seconds of network probing, so executing every
 # command to check the same property would make the suite unusable.
@@ -466,5 +505,48 @@ if offenders:
     )
 print(f"  ok: {len(invoked)} dispatched tools, none clearing unguarded")
 PY
+
+echo "[13/13] a launcher that fails to start makes step 5 fail"
+# The step above proves the contract holds. This one proves the step can notice
+# when it does not — otherwise a launcher that stopped running would be reported
+# as a passing output contract, which is the failure mode this test exists to
+# rule out.
+#
+# Three stubs, one per way the startup contract can break. The third is the one
+# that motivated the change: it produces a document indistinguishable from the
+# real thing and only the exit status gives it away.
+planted="$WORK/planted"
+mkdir -p "$planted"
+
+cat > "$planted/dead" <<'EOF'
+#!/usr/bin/env bash
+echo "[MQ] Main launcher not found or not executable" >&2
+exit 1
+EOF
+
+cat > "$planted/silent" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+
+cat > "$planted/wrong-status" <<'EOF'
+#!/usr/bin/env bash
+printf '{"project":"x","version":"0","repo_state":"clean"}'
+exit 3
+EOF
+
+chmod +x "$planted/dead" "$planted/silent" "$planted/wrong-status"
+
+for defect in dead silent wrong-status; do
+  if launcher_json_contract_holds "$planted/$defect" "$WORK/planted.out"; then
+    echo "FAIL: the '$defect' launcher defect was not detected" >&2
+    exit 1
+  fi
+done
+
+# And the real launcher must still pass the same predicate, so the three
+# rejections above are not simply a predicate that rejects everything.
+launcher_json_contract_holds "$LAUNCH" "$WORK/planted.out"
+echo "  ok: startup failure, empty output and a bad exit status are all caught"
 
 echo "PASS: output contract holds (no decoration off-TTY, colour opt-out, clean JSON)"
