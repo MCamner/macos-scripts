@@ -421,6 +421,11 @@ Humans need clear rendering. Scripts need clean stdout, stable exit codes, and d
 * [x] Respect `NO_COLOR=1`.
 
   * [x] No ANSI colors when disabled — central colour guard in `ui/terminal-ui/mq-ui.sh` (#63).
+  * [x] The two surfaces that defined their own colours and so never inherited
+    that guard — `tools/scripts/pulse.sh`, and `tools/cli/mq-ui.sh` for `scan`,
+    `doctor` and `brew-check`. Measured at 20 and 36 stray escapes; both now
+    gate on the same condition, locked by
+    `tests/pulse-cli-color-contract-smoke.sh`.
   * [x] No decorative dashboard output when stdout is not a TTY — `mq_wants_plain_output`
     gates `print_header`, `print_footer`, `clear_screen` and the row padding (#67).
 

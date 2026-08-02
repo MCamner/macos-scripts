@@ -8,6 +8,42 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The two colour surfaces that never went through the shared library, and so
+  never inherited the P1 output contract. `tools/scripts/pulse.sh` defines its
+  own six colour variables; `tools/cli/mq-ui.sh` defines four more and is
+  sourced by `scan.sh`, `brew-check.sh` and `doctor.sh`. Both assigned the
+  escapes unconditionally, so redirecting stdout wrote them into the file and
+  neither `NO_COLOR=1` nor `--no-color` removed one:
+
+  ```text
+                     before  after     on a real terminal
+  mqlaunch pulse         20      0     20 colour escapes, unchanged
+  mqlaunch scan          36      0     34 colour escapes, unchanged
+  mqlaunch doctor         -      0
+  ```
+
+  Both files now gate on `[[ -t 1 && -z "${NO_COLOR:-}" ]]`, the same condition
+  the central guard in `ui/terminal-ui/mq-ui.sh` uses.
+
+  Two details the measurement turned up that reading would not have. `pulse.sh`
+  opened with a bare `clear`, which writes `^[[3J^[[H^[[2J` to a pipe whenever
+  it can read a terminfo entry — three escapes ahead of the first line of the
+  report, and invisible in a run with `TERM` unset. It is now gated on `-t 1`
+  alone, matching `clear_screen()`: a screen clear is a terminal action, not
+  colour, and every other mqlaunch screen still clears under `NO_COLOR`. And
+  `blink_err` carried a literal `\033[5m` inside its own `printf` format, so it
+  would have kept leaking one escape per call after the colour variables were
+  emptied; the blink moved into a guarded `C_BLINK`.
+
+  Only the escapes are conditional. The ASCII banner, the headings, the box
+  rules and the `✔ ⚠ ✖` glyphs are untouched, and
+  `tests/pulse-cli-color-contract-smoke.sh` checks that half explicitly —
+  suppressing colour by dropping output would otherwise pass a bare "no ANSI"
+  check. It stubs the Wi-Fi and network probes so every colour branch fires,
+  compares the colour and plain runs line by line, and drives the real path
+  under a pseudo-terminal. `mqlaunch scan` with `NO_COLOR=1` emits zero colour
+  escapes and 5708 bytes, against 5426 with colour: the output grew.
+
 * The seven remaining branches that called a shell-function delegate and then
   discarded its status. Each was measured with the delegate stubbed to exit 7
   before deciding anything, and the measurement split them in a way reading them

@@ -89,3 +89,4 @@ menu-shell-guard-smoke.sh	active	-
 release-menu-smoke.sh	active	-
 install-contract-smoke.sh	active	-
 performance-screens-golden-smoke.sh	active	-
+pulse-cli-color-contract-smoke.sh	active	-
