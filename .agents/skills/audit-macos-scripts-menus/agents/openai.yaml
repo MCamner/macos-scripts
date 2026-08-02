@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit macOS Scripts Menus"
+  short_description: "Kontrollera menyer, script och routing säkert"
+  default_prompt: "Use $audit-macos-scripts-menus to verify every macos-scripts menu and script surface."
