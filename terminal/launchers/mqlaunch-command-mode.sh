@@ -1239,11 +1239,12 @@ dispatch_cli_command() {
     brain)
       if declare -f mq_brain_run >/dev/null; then
         mq_brain_run "${@:2}"
+        command_status=$?
       else
         echo "ERROR: brain-bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     # `memory` is deliberately absent here: the srm|memory|repo-memory branch
@@ -1251,11 +1252,12 @@ dispatch_cli_command() {
     note|sessions|decisions|reviews|learn|verified|systems)
       if declare -f mq_brain_run >/dev/null; then
         mq_brain_run "$area" "${@:2}"
+        command_status=$?
       else
         echo "ERROR: brain-bridge not loaded" >&2
         return 1
       fi
-      return 0
+      return "$command_status"
       ;;
 
     b2tui|b2)
