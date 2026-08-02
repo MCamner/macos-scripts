@@ -8,6 +8,45 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The seven remaining branches that called a shell-function delegate and then
+  discarded its status. Each was measured with the delegate stubbed to exit 7
+  before deciding anything, and the measurement split them in a way reading them
+  would not have:
+
+  ```text
+  review-brain    operation            0 -> 7   mq-agent review repo --brain
+  signal-brain    operation            0 -> 7   mq-agent signal --brain
+  learn-promote   operation            0 -> 7   mq-agent learn promote --approve
+  workflows save  operation            0 -> 7   with a subcommand
+  login status    operation            0 -> 7   with arguments
+  shortcuts list  operation            0 -> 7   with arguments
+  workflows       menu                 0 -> 0   deliberate
+  login           menu                 0 -> 0   deliberate
+  shortcuts       menu                 0 -> 0   deliberate
+  atlas           interactive session  0 -> 0   deliberate
+  ```
+
+  `learn-promote` is the one that matters most: it runs
+  `mq-agent learn promote <slug> --approve`, a Class C write, and reported
+  success whatever happened.
+
+  **Three of them are mixed, which is why a per-branch answer would have been
+  wrong.** `workflows`, `login` and `shortcuts` open a menu when called bare and
+  run an operation when given arguments. A first attempt propagated the status
+  in both cases and the full suite stayed green — but `mqlaunch shortcuts` with
+  no terminal went from exit 0 to exit 1, because a menu loop exits non-zero on
+  EOF by design (`tests/menu-eof-smoke.sh`). Propagating there reports "the
+  command failed" for "there was no terminal". The suite did not catch it; running
+  the real command did. Only the argument path propagates now.
+
+  `atlas` is an interactive session in both forms and returns 0 on purpose.
+
+  Steps 10 and 11 pin both halves — six operation paths propagate, four
+  interactive entrypoints return 0 — so the deliberate half cannot later be
+  mistaken for the bug and "fixed".
+
+### Fixed
+
 * `mqlaunch brain` and the seven verbs beside it reported success no matter what
   the bridge did. Both branches ended in an unconditional `return 0` after
   calling `mq_brain_run`, so a failing brain command exited 0 and a script could

@@ -376,11 +376,16 @@ dispatch_cli_command() {
       ;;
 
     workflows|workflow)
+      # Bare `workflows` opens the menu, and a menu that ends is not a failure:
+      # without a TTY the loop exits non-zero by design (tests/menu-eof-smoke.sh),
+      # so propagating that would turn "no terminal" into "the command failed".
+      # With a subcommand this runs a workflow, and that status is real.
       if [[ -n "$sub" && "$sub" != "menu" ]]; then
         run_mqworkflows "$sub"
-      else
-        run_mqworkflows
+        command_status=$?
+        return "$command_status"
       fi
+      run_mqworkflows
       return 0
       ;;
 
@@ -670,8 +675,9 @@ dispatch_cli_command() {
       fi
       local _rb_path="${2:-.}"
       _run_agent review repo "$_rb_path" --brain
+      command_status=$?
       pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     signal-brain|/signal-brain)
@@ -680,8 +686,9 @@ dispatch_cli_command() {
       fi
       local _sb_path="${2:-.}"
       _run_agent signal --brain "$_sb_path"
+      command_status=$?
       pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     learn-promote|/learn-promote|promote-pattern)
@@ -695,8 +702,9 @@ dispatch_cli_command() {
         return 1
       fi
       _run_agent learn promote "$_slug" --approve
+      command_status=$?
       pause_enter
-      return 0
+      return "$command_status"
       ;;
 
     selftest|/selftest|test-all)
@@ -722,6 +730,9 @@ dispatch_cli_command() {
 
     atlas|/atlas)
       shift
+      # An interactive AI session, not an operation with a result. Bare `atlas`
+      # already exited 0 without a terminal, and there is no non-interactive
+      # form whose failure a caller would act on.
       mq_ai_run_atlas "$@"
       return 0
       ;;
@@ -884,13 +895,29 @@ dispatch_cli_command() {
       ;;
 
     login|boot|session)
+      # Same split as `workflows`: bare opens the menu and returns 0 because a
+      # menu ending is not a failure; with arguments run_mqlogin runs
+      # automation/login/, whose status is the operation's.
+      if [[ $# -le 1 ]]; then
+        run_mqlogin
+        return 0
+      fi
       run_mqlogin "${@:2}"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     shortcuts|shortcut|sc)
+      # Same split as `workflows`: bare opens the menu and returns 0 because a
+      # menu ending is not a failure; with arguments run_mqshortcuts runs
+      # automation/shortcuts/, whose status is the operation's.
+      if [[ $# -le 1 ]]; then
+        run_mqshortcuts
+        return 0
+      fi
       run_mqshortcuts "${@:2}"
-      return 0
+      command_status=$?
+      return "$command_status"
       ;;
 
     theme|themes)

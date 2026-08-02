@@ -32,23 +32,23 @@ assert_status() {
 
 echo "SMOKE: delegated exit-code contract"
 
-echo "[1/9] missing backend is non-zero"
+echo "[1/11] missing backend is non-zero"
 unset -f run_agent_command 2>/dev/null || true
 assert_status 1 dispatch_cli_command review
 grep -q 'bridge not loaded' "$TMPDIR_TEST/stderr"
 
-echo "[2/9] usage and runtime failures propagate"
+echo "[2/11] usage and runtime failures propagate"
 run_agent_command() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 MQ_TEST_BACKEND_STATUS=2 assert_status 2 dispatch_cli_command review
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command stack status
 
-echo "[3/9] HAL pause does not overwrite backend status"
+echo "[3/11] HAL pause does not overwrite backend status"
 mq_hal_run() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 rm -f "$TMPDIR_TEST/pause.log"
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command hal brief
 [[ -s "$TMPDIR_TEST/pause.log" ]]
 
-echo "[4/9] JSON stdout stays clean"
+echo "[4/11] JSON stdout stays clean"
 mq_hal_run() {
   printf '{"schema":"hal.test.v1"}\n'
   return 42
@@ -59,7 +59,7 @@ assert_status 42 dispatch_cli_command hal brief --json
 [[ ! -e "$TMPDIR_TEST/pause.log" ]]
 [[ ! -s "$TMPDIR_TEST/stderr" ]]
 
-echo "[5/9] full launcher returns backend status without double dispatch"
+echo "[5/11] full launcher returns backend status without double dispatch"
 mkdir -p "$TMPDIR_TEST/bin" "$TMPDIR_TEST/agent"
 cat > "$TMPDIR_TEST/bin/uv" <<EOF
 #!/usr/bin/env bash
@@ -87,7 +87,7 @@ set -e
   exit 1
 }
 
-echo "[6/9] external script delegates propagate their status"
+echo "[6/11] external script delegates propagate their status"
 # Steps 1-5 stub shell functions, which only reaches the agent and HAL families.
 # Most of the surface delegates to scripts under $BASE_DIR instead, and those
 # were never covered. Both cases below are real argparse failures.
@@ -120,7 +120,7 @@ run_launcher repos list || {
   exit 1
 }
 
-echo "[7/9] no delegating branch ends in an unconditional return 0"
+echo "[7/11] no delegating branch ends in an unconditional return 0"
 # The behavioural cases above pin two branches. This keeps the other nineteen
 # from drifting back, and stops new ones from being written that way.
 python3 - "$COMMAND_MODE" <<'PY'
@@ -170,7 +170,7 @@ if offenders:
     sys.exit(1)
 PY
 
-echo "[8/9] the brain bridge's exit status reaches the caller"
+echo "[8/11] the brain bridge's exit status reaches the caller"
 # Step 7 only inspects branches that invoke a $BASE_DIR script. The brain
 # branches call a shell function, mq_brain_run, so the structural check never
 # looked at them and both ended in an unconditional `return 0` — the delegate
@@ -195,7 +195,7 @@ for code in 0 1 2 127; do
 done
 echo "  ok: 8 brain verbs propagate 0, 1, 2 and 127"
 
-echo "[9/9] a missing brain bridge still fails, and says so"
+echo "[9/11] a missing brain bridge still fails, and says so"
 # The `else` arm was already correct. It is pinned here so fixing the success
 # path cannot quietly turn a missing bridge into a silent success.
 (
@@ -210,6 +210,59 @@ echo "[9/9] a missing brain bridge still fails, and says so"
   esac
 )
 echo "  ok: a missing bridge fails with a named reason"
+
+echo "[10/11] function delegates that run an operation propagate their status"
+# Seven branches called a shell-function delegate and ended in `return 0`. Step
+# 7 never looked at them, because it only inspects branches invoking a
+# $BASE_DIR script. Each was measured with the delegate stubbed to exit 7
+# before deciding what to do about it, rather than sorted by reading.
+fn_status() {
+  local code="$1" fn="$2"
+  shift 2
+  (
+    eval "$fn() { return $code; }"
+    dispatch_cli_command "$@" >/dev/null 2>&1
+  )
+}
+
+expect_status() {
+  local want="$1" fn="$2"
+  shift 2
+  local got=0
+  fn_status 7 "$fn" "$@" || got=$?
+  if [[ "$got" != "$want" ]]; then
+    printf 'FAIL: %s exited 7 but `mqlaunch %s` returned %s (want %s)\n' \
+      "$fn" "$*" "$got" "$want" >&2
+    exit 1
+  fi
+}
+
+# Real operations. `learn-promote` is the one that matters most: it runs
+# `mq-agent learn promote <slug> --approve`, a Class C write, and reported
+# success whatever happened.
+expect_status 7 _run_agent       review-brain .
+expect_status 7 _run_agent       signal-brain .
+expect_status 7 _run_agent       learn-promote some-slug
+# Mixed branches: a menu with no argument, an operation with one. Only the
+# operation's status is real.
+expect_status 7 run_mqworkflows  workflows save
+expect_status 7 run_mqlogin      login status
+expect_status 7 run_mqshortcuts  shortcuts list
+echo "  ok: six operation paths propagate a failing delegate"
+
+echo "[11/11] a menu ending is not a failure"
+# Deliberate exit 0, and the reason is in tests/menu-eof-smoke.sh: without a
+# terminal a menu loop exits non-zero by design. Propagating that would report
+# "the command failed" for "there was no terminal". Pinned so the deliberate
+# part cannot be mistaken for the bug above and "fixed".
+expect_status 0 run_mqworkflows  workflows
+expect_status 0 run_mqlogin      login
+expect_status 0 run_mqshortcuts  shortcuts
+# atlas is an interactive session in both forms — there is no non-interactive
+# result for a caller to act on.
+expect_status 0 mq_ai_run_atlas  atlas
+expect_status 0 mq_ai_run_atlas  atlas "some prompt"
+echo "  ok: four interactive entrypoints return 0 on purpose"
 
 bash -n "$0"
 echo "OK: delegated failures preserve their exit status"
