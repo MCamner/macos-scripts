@@ -6,7 +6,10 @@ V1_ROOT="$PROJECT_ROOT/terminal/mqlaunch-v1"
 V1="$V1_ROOT/mqlaunch.sh"
 UI="$V1_ROOT/lib/ui.sh"
 ROUTER="$V1_ROOT/lib/router.sh"
-PERF="$V1_ROOT/commands/performance.sh"
+# The performance data layer moved out of this tree on 2026-08-02, so that
+# nothing live had to reach into a frozen tree for working code. v1 sources it
+# from its new home; the assertions below still apply, to the file itself.
+PERF="$PROJECT_ROOT/mqlaunch/lib/performance.sh"
 DEV="$V1_ROOT/commands/dev.sh"
 TOOLS="$V1_ROOT/commands/tools.sh"
 

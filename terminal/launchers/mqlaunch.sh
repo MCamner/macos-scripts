@@ -85,12 +85,6 @@ if [[ -f "$BASE_DIR/terminal/bridges/dev-bridge.sh" ]]; then
   source "$BASE_DIR/terminal/bridges/dev-bridge.sh"
 fi
 
-# Tools bridge
-if [[ -f "$BASE_DIR/terminal/bridges/tools-bridge.sh" ]]; then
-  # shellcheck disable=SC1091
-  source "$BASE_DIR/terminal/bridges/tools-bridge.sh"
-fi
-
 # HAL bridge (mq-hal local Ollama router)
 if [[ -f "$BASE_DIR/terminal/bridges/hal-bridge.sh" ]]; then
   # shellcheck disable=SC1091

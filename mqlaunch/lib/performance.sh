@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+#
+# Performance data layer: the perf_* readings the Performance Hub renders, and
+# the command_perf_* screens behind its rows.
+#
+# Moved verbatim out of the frozen v1 tree on 2026-08-02. It was the last real
+# live dependency on that tree: mq-performance-menu.sh sourced it for
+# perf_health_score and the rest, so the tree stayed classified live in order to
+# supply working code rather than to keep a legacy route open. It sources
+# nothing and reads only $PROJECT_ROOT, which is why this was a move and not a
+# port. Naming the old path here — even in a comment — fails the freeze gate by
+# design, so it is described rather than written out.
 
 # Handles performance reports dir.
 performance_reports_dir() {

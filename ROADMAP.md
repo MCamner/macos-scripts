@@ -990,40 +990,95 @@ demand, which is what `gated` means: they cannot drift without failing CI.
 
 ## P3 — Compatibility cleanup
 
-Status: Future
+Status: In progress — the live→legacy edges are gone; the tree itself remains
 Priority: P3
 Risk if delayed: Low
 Owner: `macos-scripts`
 
 ### Problem
 
-Compatibility routes are useful during migration, but they become debt if they remain forever.
+Compatibility routes are useful during migration, but they become debt if they
+remain forever.
 
 ### Tasks
 
-* [ ] List all compatibility paths.
+* [x] List all compatibility paths.
 
-  * legacy command paths
-  * legacy menu paths
-  * old bridge paths
-  * aliases
-  * deprecated scripts
+  Listed in [docs/AUTHORITY_MAP.md](docs/AUTHORITY_MAP.md), which classifies
+  every path in the tree and is held by
+  `tests/runtime-authority-classification-smoke.sh`. The list this task asked
+  for existed before the task was written; what it lacked was enforcement, which
+  the freeze gate now supplies.
 
-* [ ] Mark compatibility routes in the command registry.
+  One correction the listing produced: the map counted three live→legacy edges
+  and there were five. The gate scanned three directories while claiming to
+  cover live runtime shell, so `automation/login/mqlogin.sh` and
+  `tools/scripts/create-debug-bundle.sh` were never in scope (#155).
 
-* [ ] Add usage notes or migration hints.
+* [x] Mark compatibility routes in the command registry.
+
+  Exactly one command is `compat_only`: `mqlaunch`, the self-referential prefix
+  so a pasted line carrying the program name still runs.
+  `validate-command-registry.py` holds the field and `docs/COMMANDS.md` states
+  that it is never advertisable.
+
+  The registry was never where the compatibility surface lived. It is a path
+  inventory question, not a command question, which is why the answer is the
+  authority map.
+
+* [x] Add usage notes or migration hints.
+
+  Each retired edge is recorded in the map with what replaced it, so a
+  contributor reading it learns where the concern moved rather than that it
+  disappeared.
 
 * [ ] Remove only after:
 
-  * runtime authority is stable
-  * command registry drift tests are green
-  * docs no longer point to the old path
-  * release-check passes
-  * no active workflow depends on the old path
+  * [x] runtime authority is stable — freeze gate green with **0** compat edges
+  * [x] command registry drift tests are green — `command-registry-smoke.sh`
+  * [x] docs no longer point to the old path — the map and `COMMANDS.md` are updated
+  * [x] release-check passes — `status: READY`, 0 blockers
+  * [x] no active workflow depends on the old path — nothing live reaches the tree
+
+  Every condition is met. The deletion itself — 23 files, 1125 lines — is left
+  unchecked because it is a decision rather than a blocked task, and this repo's
+  rule is that a box is ticked by evidence.
+
+### What was migrated (2026-08-02)
+
+Four live→legacy edges, none retired by weakening a gate:
+
+```text
+mq-performance-menu.sh:26  sourced 504 lines of perf_* readings out of the
+                           frozen tree  →  moved verbatim to
+                           mqlaunch/lib/performance.sh
+tools-bridge.sh            forwarded `tools` to the v1 launcher  →  deleted;
+                           neither of its functions had a caller
+performance-bridge.sh      fell back to the v1 launcher when the current menu
+                           was missing  →  reports and returns 1
+create-debug-bundle.sh     ran `v1 help` as a health probe from a menu row  →
+                           dropped
+```
+
+The one that mattered was the first. The tree was classified live in order to
+supply working code, not to keep a legacy route open — which is why "delete the
+compat tree" was never the small job the Status line implied.
+
+The dependency now runs the other way: `terminal/mqlaunch-v1/mqlaunch.sh:22`
+sources `mqlaunch/lib/performance.sh`. Legacy depending on live is the allowed
+direction, and it keeps the tree runnable so its deletion is decided on its own
+terms rather than forced by a move.
 
 ### Exit gate
 
-* [ ] Compatibility cleanup happens only after the new authority path is proven.
+* [x] Compatibility cleanup happens only after the new authority path is proven.
+
+  Proven before the cleanup, not asserted after it: the freeze gate covers every
+  tracked shell file from `git ls-files`, fails on an unclassified reference,
+  and reports **0** compat edges. `tests/compat-path-delegation-smoke.sh` no
+  longer proves the legacy shim forwards correctly — it proves the shim is gone,
+  and that the performance route fails rather than falling through when its menu
+  is missing.
 
 ---
 

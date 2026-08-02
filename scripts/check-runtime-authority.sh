@@ -10,9 +10,10 @@
 # drives v1 on purpose. It was three directories (terminal/, ui/, mqlaunch/)
 # until 2026-08-01, which is narrower than "live runtime shell" and let two
 # edges sit unseen: `automation/login/mqlogin.sh` preferred the frozen launcher
-# over the current one, and `tools/scripts/create-debug-bundle.sh` runs
-# `bash v1/mqlaunch.sh help` from a live system-menu row. Neither was a
-# conscious decision, which is the only thing an allowlist is for.
+# over the current one, and `tools/scripts/create-debug-bundle.sh` ran its help
+# as a probe from a live system-menu row. Neither was a conscious decision,
+# which is the only thing an allowlist is for. Both are gone now, along with the
+# two edges that had been documented all along.
 #
 # The file list comes from `git ls-files`, so an untracked copy of a menu in the
 # working tree can neither add an edge nor hide one — the same reason
@@ -25,12 +26,14 @@ cd "$ROOT"
 # Live code that depends on the v1 tree at runtime. Keep in sync with
 # docs/AUTHORITY_MAP.md. Shrinking this list is the goal (Step 12); growing it
 # must be a conscious, reviewed decision.
-COMPAT_EDGES=(
-  "terminal/bridges/performance-bridge.sh"
-  "terminal/bridges/tools-bridge.sh"
-  "terminal/menus/mq-performance-menu.sh"
-  "tools/scripts/create-debug-bundle.sh"
-)
+#
+# Empty since 2026-08-02. The four entries that were here are gone rather than
+# tolerated: the performance data layer moved out of the frozen tree into
+# mqlaunch/lib/performance.sh, tools-bridge.sh was deleted because neither of
+# its functions had a caller, performance-bridge.sh lost a fallback that only
+# fired when the current menu was missing, and create-debug-bundle.sh stopped
+# probing a tree nothing routes to. Nothing live reaches it now.
+COMPAT_EDGES=()
 
 # Build, lint and documentation tooling that names the v1 tree to exclude it, to
 # test it, or to police it. These are not runtime dependencies, so deleting v1
@@ -47,12 +50,18 @@ TOOLING=(
   "tools/scripts/test-mqlaunch.sh"
 )
 
-CLASSIFIED=("${COMPAT_EDGES[@]}" "${TOOLING[@]}")
+# The `+` guards are for the empty COMPAT_EDGES: under `set -u`, bash 3.2 —
+# which is what /bin/bash is on macOS — treats "${EMPTY[@]}" as an unbound
+# variable and aborts.
+CLASSIFIED=(
+  ${COMPAT_EDGES[@]+"${COMPAT_EDGES[@]}"}
+  ${TOOLING[@]+"${TOOLING[@]}"}
+)
 
 # Returns 0 if the path is classified on either list.
 is_classified() {
   local f="$1" a
-  for a in "${CLASSIFIED[@]}"; do
+  for a in ${CLASSIFIED[@]+"${CLASSIFIED[@]}"}; do
     [[ "$f" == "$a" ]] && return 0
   done
   return 1
@@ -74,7 +83,7 @@ done < <(git ls-files '*.sh' '*.zsh')
 # and still reference v1 (otherwise it is stale and the list should shrink — a
 # Step 12 win worth surfacing).
 stale=0
-for a in "${CLASSIFIED[@]}"; do
+for a in ${CLASSIFIED[@]+"${CLASSIFIED[@]}"}; do
   if [[ ! -f "$a" ]]; then
     echo "STALE LIST: $a no longer exists — remove it"
     stale=$(( stale + 1 ))
@@ -91,4 +100,4 @@ if (( violations > 0 || stale > 0 )); then
   exit 1
 fi
 
-echo "[PASS] Runtime authority freeze: no new live->mqlaunch-v1 edges (compat edges: ${#COMPAT_EDGES[@]}, tooling: ${#TOOLING[@]})."
+echo "[PASS] Runtime authority freeze: no live->mqlaunch-v1 edges (compat edges: ${#COMPAT_EDGES[@]}, tooling: ${#TOOLING[@]})."

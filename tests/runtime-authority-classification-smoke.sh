@@ -24,8 +24,17 @@ echo "[4/6] UI and dashboard authorities are explicit"
 grep -q '`ui/terminal-ui/mq-ui.sh`.*UI authority' "$MAP"
 grep -q '`ui/ascii/mqlaunch-dashboard-v7.1.sh`.*Dashboard authority' "$MAP"
 
-echo "[5/6] performance compat exception and forbidden direction are explicit"
-grep -q '`terminal/menus/mq-performance-menu.sh`.*COMPAT' "$MAP"
+echo "[5/6] the performance menu no longer reaches the frozen tree"
+# This asserted the opposite until 2026-08-02: the map carried
+# `mq-performance-menu.sh` as COMPAT, because it sourced 504 lines of working
+# perf_* readings out of the v1 tree. That file moved to mqlaunch/lib, so the
+# exception it documented is gone rather than relaxed. Asserted against the
+# menu itself, not against the map's prose about it.
+grep -q 'mqlaunch/lib/performance.sh' "$ROOT/terminal/menus/mq-performance-menu.sh"
+if grep -q 'mqlaunch-v1' "$ROOT/terminal/menus/mq-performance-menu.sh"; then
+  echo "FAIL: the performance menu reaches the frozen tree again" >&2
+  exit 1
+fi
 grep -q 'live menus or launchers depending directly on `terminal/mqlaunch-v1/\*`' "$MAP"
 
 echo "[6/7] freeze gate agrees with the documented boundary"
