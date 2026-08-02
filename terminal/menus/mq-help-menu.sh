@@ -127,7 +127,7 @@ AGENT  (owner: mq-agent)
   mqlaunch review-brain   Review a repo and save it to the brain
   mqlaunch risk-review    Review a diff for risk
   mqlaunch signal-brain   Repo signal report saved to the brain
-  mqlaunch stack          Show stack status and operations
+  mqlaunch stack          Show stack status and the read-only release cockpit
 
 OBSIDIAN  (owner: mqobsidian)
   mqlaunch obsidian       Durable memory and notes

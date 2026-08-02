@@ -8,6 +8,31 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The `stack` route named three of mq-agent's sixteen verbs and omitted the one
+  the roadmap was waiting for. `mqlaunch stack --help` and `docs/COMMANDS.md`
+  both listed `status, contract-check, truth-export`; the release cockpit is
+  `mq-agent stack cockpit`, it already worked through `mqlaunch stack cockpit`
+  because the route forwards everything, and the word appeared nowhere in this
+  repo. An operator had to read mq-agent's help to find it.
+
+  Both surfaces name it now, say that unlisted verbs forward, and state that
+  `--json` is an option on the subcommands rather than the group —
+  `stack status --json` and `stack cockpit --json` emit machine documents,
+  `stack --json` exits 2 from mq-agent. The registry summary went from "Show
+  stack status and operations" to "Show stack status and the read-only release
+  cockpit", so help says it too.
+
+  No routing change, and no `mq-agent` change. A bare `mqlaunch stack` still
+  means `mq-agent stack status` — the only local decision on this route — and
+  `tests/mq-agent-routing-smoke.sh` steps 10 and 11 now pin that default, the
+  verbatim forwarding of every other verb including one this repo has never
+  heard of, and the delegate's exit code for 0, 1, 2 and 127. Both steps were
+  proved able to fail by planting a defect and watching them report it.
+
+  The roadmap task this closes had been waiting since it was written for
+  `mq-agent ship status`, a command that does not exist and is not planned.
+  `mq-agent --help` lists 34 commands; the cockpit shipped under `stack`.
+
 * `mqlaunch review file <path> --repo <repo>` reviewed the wrong thing. `--repo`
   was accepted here as a scope selector — an undocumented alias for
   `review repo` — and it also happens to be a real mq-agent option on

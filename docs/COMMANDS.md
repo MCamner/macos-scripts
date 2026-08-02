@@ -355,7 +355,9 @@ mqlaunch review repo architecture              # review repo in architecture mod
 mqlaunch risk-review                            # risk review current diff via mq-agent
 mqlaunch architecture                           # show mq-mcp architecture decisions
 mqlaunch repo-health                            # repo-signal + orchestration contract health
+mqlaunch stack                                  # same as `stack status`
 mqlaunch stack status                           # canonical stack truth status via mq-agent
+mqlaunch stack cockpit                          # the release cockpit, read-only, via mq-agent
 mqlaunch stack contract-check                   # delegate stack contract check to mq-agent
 mqlaunch stack truth-export                     # delegate stack truth export to mq-agent
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
@@ -366,9 +368,26 @@ mqlaunch ui                                     # copy UI prompt to clipboard
 logic, severity labels, semantic memory, and risk routing stay in `mq-mcp`;
 `mq-agent` is the orchestration layer between mqlaunch and mq-mcp.
 
-`mqlaunch stack ...` is also delegate-only. `status` defaults to
-`mq-agent stack status`; `contract-check`, `truth-export`, and future stack
-verbs are forwarded to `mq-agent stack` without local truth parsing.
+`mqlaunch stack ...` is also delegate-only. A bare `mqlaunch stack` means
+`mq-agent stack status`, and that default is the only local decision on this
+route; every other verb — `cockpit`, `contract-check`, `truth-export`, and any
+subcommand mq-agent grows later — is forwarded to `mq-agent stack` unchanged,
+without local truth parsing. `mq-agent stack --help` is the complete list.
+
+The release cockpit is `mq-agent stack cockpit`: one table with each repo's
+version, branch, dirty state, contract, release gate and next action, plus the
+stack-wide gate and brain-export freshness. It is read-only and combines
+`stack status`, `contract-check`, `release-check` and the latest mqobsidian
+stack-truth note. `mqlaunch` displays it by delegating and reimplements none of
+it — the release-state logic belongs to `mq-agent`, per
+`docs/RUNTIME_AUTHORITY.md`.
+
+`--json` is an option on the subcommands rather than on the group.
+`mqlaunch stack status --json` and `mqlaunch stack cockpit --json` emit machine
+documents; `mqlaunch stack --json` exits 2 from mq-agent with
+`No such option '--json'`, and that exit code reaches the caller. The registry
+records `json: false` for `stack` for exactly this reason: the claim is about
+the command as typed, and the bare command has no JSON mode.
 
 ### Workflow orchestration (flow)
 

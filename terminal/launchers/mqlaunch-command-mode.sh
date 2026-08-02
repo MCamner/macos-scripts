@@ -154,7 +154,16 @@ HELP
       cat <<'HELP'
 Usage: mqlaunch stack <command> [args]
 
-Commands: status, contract-check, truth-export
+Commands: status, cockpit, contract-check, truth-export
+
+  status    version, branch, last activity, drift and readiness per repo
+  cockpit   the release cockpit — status plus contract, release gate and
+            the next action per repo. Read-only.
+
+Every verb is forwarded to `mq-agent stack` unchanged, including ones not
+listed here. Run `mq-agent stack --help` for the full set. `--json` is an
+option on the subcommands, not on the group: `mqlaunch stack status --json`
+works, `mqlaunch stack --json` does not.
 HELP
       ;;
     *)

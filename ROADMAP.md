@@ -366,9 +366,16 @@ The dangerous failure is not a broken command. The dangerous failure is a comman
   have no nested `case` in the dispatcher — they hand the rest of the line to
   the owning repo. There are no mqlaunch-routed subcommands to model, and
   modelling the delegate's surface would make the registry claim authority over
-  commands it does not route. Their `unknown_subcommand` records that they
-  forward, which is what a consumer needs to know before publishing a list as
-  complete.
+  commands it does not route.
+
+  The last sentence here used to read that "their `unknown_subcommand` records
+  that they forward". It does not, and cannot: `unknown_subcommand` is only
+  valid alongside a `subcommands` array, and `validate-command-registry.py`
+  fails an entry that carries one without the other. The ten commands that have
+  it are the ten with nested cases. For a forwarding command the registry is
+  silent by design, and the forwarding contract is stated in
+  `docs/COMMANDS.md` and gated behaviourally instead — for `stack`, by steps 10
+  and 11 of `tests/mq-agent-routing-smoke.sh`.
 
 * [x] Test delegation ownership.
 
@@ -595,7 +602,7 @@ variable and mostly is not.
 
 ## P2 — Thin delegation polish
 
-Status: In progress — 3 of 5 tasks done, both exit gates closed
+Status: In progress — 4 of 5 tasks done, both exit gates closed
 Priority: P2
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -655,15 +662,41 @@ The front door should make the right workflow easy to find, then hand off to the
   and 9 run the translation against a stubbed delegate and compare the built
   command line — the form that was red on the old code.
 
-* [ ] Add `mqlaunch stack status` alignment with `mq-agent ship status` once `ship status` exists.
+* [x] Align `mqlaunch stack` with the release cockpit `mq-agent` actually has.
 
   * `mqlaunch` should display or delegate the release cockpit.
   * It should not reimplement release state logic.
 
-  Still blocked, and verified rather than assumed: `mq-agent --help` lists 34
-  commands as of 2026-08-02 and `ship` is not among them. `release-check` and
-  `release-plan` exist, `stack` exists — the release cockpit this task waits for
-  does not. Nothing to align with yet.
+  **This task was waiting for a command that was never going to exist.** It named
+  `mq-agent ship status`; `mq-agent --help` lists 34 commands as of 2026-08-02
+  and `ship` is not among them, and nothing in that repo is planned under the
+  name. The release cockpit was already shipped under a different one —
+  `mq-agent stack cockpit`, read-only, combining `stack status`,
+  `contract-check`, `release-check` and the latest mqobsidian stack-truth note
+  into one table with a next action per repo. Run side by side, `stack status`
+  gives version, branch, last activity, drift and readiness with an empty
+  `next_action`; `cockpit` fills it — `stack release --repo mq-mcp` and so on —
+  and adds the stack-wide gate and brain-export freshness. Both take ~1s, so
+  cost did not decide anything.
+
+  So the fix was a correction here, not a PR in `mq-agent`. No `mq-agent` change
+  was made and none was needed.
+
+  What was actually wrong in this repo was discoverability, the same shape as
+  `stack` itself being unadvertised earlier in this section. `mqlaunch stack
+  cockpit` already worked — the route forwards every verb — but the word
+  appeared nowhere: `mqlaunch stack --help` listed `status, contract-check,
+  truth-export`, three of sixteen, and `docs/COMMANDS.md` listed the same three.
+  An operator could not find the cockpit without reading mq-agent's help. Both
+  now name it, say that unlisted verbs forward, and state that `--json` belongs
+  to the subcommands rather than the group.
+
+  The routing needed no change and did not get one. A bare `mqlaunch stack`
+  still means `mq-agent stack status`, which is the only local decision on this
+  route; `tests/mq-agent-routing-smoke.sh` steps 10 and 11 now pin that default,
+  the verbatim forwarding of every other verb including one this repo has never
+  heard of, and the delegate's exit code for 0, 1, 2 and 127. Both were proved
+  able to fail by planting a defect.
 
 * [x] Add a clear “owner” label in help output.
 
