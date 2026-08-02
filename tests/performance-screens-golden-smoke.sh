@@ -23,7 +23,7 @@
 # runs Linux and has no pmset. Stubbing also makes the comparison sharper: with
 # the inputs fixed, almost nothing needs masking.
 #
-# THE GOLDEN PINS FOUR DEFECTS, ONE OF THEM STILL OPEN. It records what these screens do, which is not
+# THE GOLDEN PINS FOUR DEFECTS, ALL OF THEM NOW FIXED. It records what these screens do, which is not
 # the same as what they should do, and reconstructing it is what found all four.
 # Every one predates the migration and renders identically on both sides:
 #
@@ -43,8 +43,12 @@
 #      the field the bug lived in, and the malformed value even matched the IP
 #      rule, so the fixture read `Load (1m): <IP>`. Those lines pass through
 #      unmasked now — `uptime` is stubbed, so they are deterministic.
-#   3. command_perf_quick_watch cannot exit on its own; it refreshes forever and
-#      is bounded here, so its exit status in the golden is the timeout's 124.
+#   3. FIXED. command_perf_quick_watch could not exit on its own. It refreshed
+#      until something killed it, so this harness had to bound it and the
+#      golden recorded the timeout's 124. Two ways out now: a SIGINT trap, so
+#      Ctrl+C stops watching instead of taking the whole mqlaunch session with
+#      it, and a non-interactive guard, because with no terminal there is nobody
+#      to press Ctrl+C. Its status in the golden is 0.
 #   4. `awk -v load=...` in perf_health_score — fixed, because it is what kept
 #      this test from being a CI gate at all. `load` is a gawk builtin, so gawk
 #      rejects it and the whole health score fails on any system with GNU awk.
@@ -52,10 +56,9 @@
 #      renamed; the golden is unchanged on macOS, which is the proof the rename
 #      is behaviour-preserving here.
 #
-# Fixing the other three changes this output, and the golden must be regenerated
-# in the same commit with the reason written down. Do not regenerate it to make
-# an unexplained diff go away — that is the failure mode a golden exists to
-# catch.
+# Each was fixed in its own commit, the golden going red first and regenerated
+# after with the reason written down. Do not regenerate it to make an
+# unexplained diff go away — that is the failure mode a golden exists to catch.
 #
 # Verified as a chain, not a claim: the pre-migration implementation extracted
 # from 94d0eba renders byte-identical to this golden, the current one does too,
@@ -94,11 +97,9 @@ test -f "$GOLDEN"
 render_screen() {
   local perf_file="$1" fn="$2" out="$3" err="$4"
   local rc=0
-  # quick_watch refreshes every two seconds by design, so it is bounded. The
-  # timeout's own status (124) is part of the golden. 7s, not 6 or 8: those land
-  # exactly on a refresh boundary, so whether the last frame gets printed comes
-  # down to scheduling. 7 sits in the middle of a sleep, one second clear of
-  # either side.
+  # The bound is a backstop now rather than the thing that ends quick_watch:
+  # with no terminal it renders one frame and returns 0. It stays because a
+  # screen that hangs should fail this test rather than the whole suite.
   # The system commands are stubbed with fixed output. Without that the golden
   # is a photograph of one machine: it captured this laptop's battery, load and
   # process list, and CI runs Linux, where pmset and memory_pressure do not

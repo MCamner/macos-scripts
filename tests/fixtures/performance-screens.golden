@@ -94,90 +94,12 @@ Create Performance Snapshot
 <REPO>/mqlaunch/lib/performance.sh: line <N>: ok: command not found
 <REPO>/mqlaunch/lib/performance.sh: line <N>: command_exists: command not found
 ===== command_perf_quick_watch =====
---- exit: 124
+--- exit: 0
 --- stdout:
 
 Quick Watch
 Refreshing every <N> seconds. Press Ctrl+C to stop.
 
-
-Quick Watch
-Time:              Thu Jan  <N> <N>:<N>:<N> CET <N>
-Health:            <SCORE>/<N> (Excellent)
-
-----------------------------------------------------
-
- 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
-
-/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
-
- -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
-
-Top CPU:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Top Memory:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Quick Watch
-Time:              Thu Jan  <N> <N>:<N>:<N> CET <N>
-Health:            <SCORE>/<N> (Excellent)
-
-----------------------------------------------------
-
- 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
-
-/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
-
- -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
-
-Top CPU:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Top Memory:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Quick Watch
-Time:              Thu Jan  <N> <N>:<N>:<N> CET <N>
-Health:            <SCORE>/<N> (Excellent)
-
-----------------------------------------------------
-
- 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
-
-/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
-
- -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
-
-Top CPU:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-
-Top Memory:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
 
 Quick Watch
 Time:              Thu Jan  <N> <N>:<N>:<N> CET <N>

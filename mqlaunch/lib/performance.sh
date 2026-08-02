@@ -522,6 +522,13 @@ command_perf_quick_watch() {
   print_header
   print_section "Quick Watch"
 
+  # Ctrl+C used to be the only way out, and in the menu it takes the whole
+  # mqlaunch session with it rather than returning to the Performance panel.
+  # The trap turns it into "stop watching"; `trap - INT` at the end puts the
+  # caller's handling back.
+  local quick_watch_stop=0
+  trap 'quick_watch_stop=1' INT
+
   echo "Refreshing every 2 seconds. Press Ctrl+C to stop."
   echo
 
@@ -556,6 +563,18 @@ command_perf_quick_watch() {
     echo
     echo "Top Memory:"
     ps -Ao %mem,comm | sort -nr | head -n 6
+
+    (( quick_watch_stop )) && break
+
+    # Without a terminal there is nobody to press Ctrl+C, so this loop had no
+    # way to end at all: it refreshed until something killed it. One frame is
+    # the whole of what a non-interactive caller can use.
+    if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+      break
+    fi
+
     sleep 2
   done
+
+  trap - INT
 }
