@@ -33,6 +33,42 @@ OUTPUT_MODES = {"human", "json", "interactive"}
 # distinction a consumer needs before publishing the list as complete.
 UNKNOWN_SUBCOMMAND = {"reject", "forward"}
 
+# What a command owned by this repo is allowed to be. The stack boundary says
+# orchestration belongs to mq-agent, execution to mq-mcp, memory to mqobsidian
+# and repo analysis to repo-signal; what is left for the terminal entrypoint is
+# these three, and a local command that is none of them is owned by the wrong
+# repo. Classified by what the command's own code owns, not by what it opens:
+#
+#   terminal-ux      renders or navigates the launcher's own surface — menus,
+#                    help, indexes, pickers, dashboards, prompts, theme
+#   host-operation   reads or changes the macOS machine outside the terminal —
+#                    network, processes, ports, power, scans, clipboard
+#   thin-entrypoint  starts a program, script or workflow that lives elsewhere
+#                    and owns nothing but the invocation
+LOCAL_ROLES = {"terminal-ux", "host-operation", "thin-entrypoint"}
+
+# The one command that cannot honestly carry any of the three, with the reason
+# and the removal condition beside it rather than in someone's memory.
+#
+# `srm` is not a launcher at all below its first four verbs. `cochange`,
+# `review-status`, `promote-from-review` and `resolve-supersede` delegate to
+# `mq-agent memory-*`, which is a real thin entrypoint. Everything else falls
+# through to tools/scripts/srm.sh, 156 lines that build a system prompt and call
+# https://api.openai.com/v1/responses directly with file_search against a
+# hardcoded vector store. That is semantic memory cognition in shell: memory
+# belongs to mqobsidian and orchestration to mq-agent, and ROADMAP.md lists
+# "do not implement memory promotion in shell" as a v2.0.0 non-goal.
+#
+# Classifying it `thin-entrypoint` would record the breach in the registry as
+# approved, which is the opposite of what this gate is for.
+#
+# REMOVE THIS ENTRY when `srm ask|search|inspect` and the fall-through have been
+# moved to their owning repo or retired. `srm` then classifies normally and
+# LOCAL_ROLE_EXEMPT goes back to being empty. The list must never grow: a second
+# unclassifiable command is a second breach, and the answer is to fix it rather
+# than to name it here.
+LOCAL_ROLE_EXEMPT = {"srm"}
+
 # A deprecated alias still dispatches — that is the point of deprecating rather
 # than deleting — so it must say what to use instead. Without `replacement` the
 # registry records that a word is on its way out and leaves the person who typed
@@ -405,6 +441,56 @@ def check_operator_surface(commands) -> None:
                 f"help has no group to print it under")
 
 
+def check_local_role(commands) -> None:
+    """Every command this repo owns must say which of the three it is.
+
+    The stack boundary is stated in docs/architecture/MQ_BOUNDARY.md and tested
+    for the cognition classes — no review, risk, release or memory logic in
+    shell. What it did not state is the positive rule: what a local command is
+    *allowed* to be. Without it, `owner: macos-scripts` meant only "not
+    delegated", so a command could drift into orchestration or memory and the
+    registry would record nothing unusual. That is how `srm` reached 156 lines
+    of direct AI memory querying while declaring `owner: macos-scripts` and
+    `delegates_to: mq-agent memory-*` in the same entry.
+
+    Three rules, and the second is the one that keeps the exception honest:
+
+    A local command carries a `local_role` from LOCAL_ROLES, unless it is named
+    in LOCAL_ROLE_EXEMPT.
+
+    An exempt command must NOT carry one. Otherwise an exemption could be
+    granted and quietly classified at the same time, and removing the entry from
+    the exempt list later would silently change nothing.
+
+    A command owned by another repo must not carry one at all. `local_role`
+    describes what this repo owns; on a delegated command it would be a claim
+    about someone else's tree.
+    """
+    for command in commands:
+        name = command["name"]
+        role = command.get("local_role")
+        local = command["owner"] == "macos-scripts"
+
+        if not local:
+            if role is not None:
+                err(f"{name}: local_role is only for owner 'macos-scripts', "
+                    f"but owner is {command['owner']!r}")
+            continue
+
+        if name in LOCAL_ROLE_EXEMPT:
+            if role is not None:
+                err(f"{name}: is in LOCAL_ROLE_EXEMPT and must not also declare "
+                    f"local_role — remove one or the other")
+            continue
+
+        if role is None:
+            err(f"{name}: owner is 'macos-scripts' but no local_role is "
+                f"declared — must be one of {sorted(LOCAL_ROLES)}")
+        elif role not in LOCAL_ROLES:
+            err(f"{name}: local_role {role!r} is not one of "
+                f"{sorted(LOCAL_ROLES)}")
+
+
 def check_namespace_owner(commands) -> None:
     """A namespace must not mix owner repos.
 
@@ -687,6 +773,7 @@ def main(argv: list[str] | None = None) -> int:
     check_subcommands(commands, seen_names, subcases)
     check_privilege_safety(commands, seen_names, branches)
     check_operator_surface(commands)
+    check_local_role(commands)
     check_namespace_owner(commands)
     check_summaries(commands)
 
