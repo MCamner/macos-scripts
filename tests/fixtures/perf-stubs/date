@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Fixed-output stub for the performance golden. See
+# tests/performance-screens-golden-smoke.sh. Quick Watch prints `date` on every
+# refresh, and snapshots use it in filenames.
+if [[ "${1:-}" == +* ]]; then
+  fmt="${1#+}"
+  case "$fmt" in
+    *Y*m*d*H*M*S*|*Y*m*d*_*) printf '%s\n' "2026-01-01_00-00-00" ;;
+    *) printf '%s\n' "2026-01-01" ;;
+  esac
+else
+  printf '%s\n' "Thu Jan  1 00:00:00 CET 2026"
+fi

@@ -11,6 +11,40 @@
 # port. Naming the old path here — even in a comment — fails the freeze gate by
 # design, so it is described rather than written out.
 
+# The three helpers the screens below render through. They lived in the frozen
+# v1 tree's lib/ui.sh, and the live path never sourced that file —
+# mq-performance-menu.sh sources mq-ui.sh and this file, nothing else. So rows 3
+# to 9 of the Performance menu printed `print_section: command not found` where
+# a heading belongs, for as long as that path existed. Restored verbatim from
+# 94d0eba so the screens render as they were written to.
+#
+# Defined here rather than in ui/terminal-ui/mq-ui.sh, the UI authority, because
+# this file is their only caller and terminal/release/mq-release-check.sh
+# already carries its own print_section. Guarded, so a future definition in the
+# authority wins without this one having to be removed first.
+if ! command -v print_section >/dev/null 2>&1; then
+  # Prints section.
+  print_section() {
+    printf "\n%b\n" "${C_BOLD:-}$1${C_RESET:-}"
+  }
+fi
+
+if ! command -v print_kv >/dev/null 2>&1; then
+  # Prints kv.
+  print_kv() {
+    local key="$1"
+    local value="$2"
+    printf "%-18s %s\n" "$key" "$value"
+  }
+fi
+
+if ! command -v print_divider >/dev/null 2>&1; then
+  # Prints divider.
+  print_divider() {
+    printf '%*s\n' 52 '' | tr ' ' '-'
+  }
+fi
+
 # Handles performance reports dir.
 performance_reports_dir() {
   local dir="$PROJECT_ROOT/backups/performance-reports"

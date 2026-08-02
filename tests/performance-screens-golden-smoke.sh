@@ -23,15 +23,16 @@
 # runs Linux and has no pmset. Stubbing also makes the comparison sharper: with
 # the inputs fixed, almost nothing needs masking.
 #
-# THE GOLDEN PINS FOUR DEFECTS. It records what these screens do, which is not
+# THE GOLDEN PINS FOUR DEFECTS, TWO OF THEM STILL OPEN. It records what these screens do, which is not
 # the same as what they should do, and reconstructing it is what found all four.
 # Every one predates the migration and renders identically on both sides:
 #
-#   1. `print_section: command not found`, 11 times. Seven of the nine screens
-#      call print_section, and one also calls print_kv. Both live only in the
-#      v1 tree's lib/ui.sh, which the live path never sourced — the menu sources
-#      mq-ui.sh and the data layer, nothing else. Rows 3 to 9 have been printing
-#      that error instead of a heading for as long as this path has existed.
+#   1. FIXED. `print_section: command not found`, 11 times — seven screens call
+#      print_section, one also calls print_kv and print_divider. All three lived
+#      only in the v1 tree's lib/ui.sh, which the live path never sourced, so
+#      rows 3 to 9 printed that error where a heading belongs. Restored verbatim
+#      from 94d0eba into the data layer, guarded, and the golden regenerated:
+#      the eleven error lines are gone and every screen carries its heading.
 #   2. `Load (1m)` renders as one run of concatenated decimals ("1.501.251.10").
 #      perf_load_1m splits `uptime` on ", " while macOS separates the three load
 #      averages with spaces, so it keeps all three and `tr -d ' '` glues them.
@@ -87,14 +88,17 @@ render_screen() {
   local perf_file="$1" fn="$2" out="$3" err="$4"
   local rc=0
   # quick_watch refreshes every two seconds by design, so it is bounded. The
-  # timeout's own status (124) is part of the golden.
+  # timeout's own status (124) is part of the golden. 7s, not 6 or 8: those land
+  # exactly on a refresh boundary, so whether the last frame gets printed comes
+  # down to scheduling. 7 sits in the middle of a sleep, one second clear of
+  # either side.
   # The system commands are stubbed with fixed output. Without that the golden
   # is a photograph of one machine: it captured this laptop's battery, load and
   # process list, and CI runs Linux, where pmset and memory_pressure do not
   # exist and gawk rejects `load` as a variable name. Stubbing makes the fixture
   # portable and, more to the point, makes it measure the thing it is for —
   # drift in *rendering*, not whether `df` still works.
-  timeout 6 env \
+  timeout 7 env \
     PATH="$ROOT/tests/fixtures/perf-stubs:$PATH" \
     BASE_DIR="$ROOT" PROJECT_ROOT="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
     NO_COLOR=1 TERM=dumb COLUMNS=92 \
