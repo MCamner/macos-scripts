@@ -1,14 +1,38 @@
 #!/bin/bash
 
 # Colors
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+#
+# Gated on the same condition as the central guard in ui/terminal-ui/mq-ui.sh: a
+# TTY and no NO_COLOR (https://no-color.org). These assignments used to be
+# unconditional, so `mqlaunch pulse > file` wrote the escapes into the file and
+# neither NO_COLOR=1 nor --no-color removed one of them — the P1 output contract
+# held only for commands that went through the shared library.
+#
+# Only the escapes are conditional. The banner, the headings and every
+# measurement below print identically in both modes; the variables expand to
+# nothing rather than to a colour.
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    GREEN='\033[0;32m'
+    RED='\033[0;31m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
+else
+    BLUE=''
+    CYAN=''
+    GREEN=''
+    RED=''
+    YELLOW=''
+    NC=''
+fi
 
-clear 2>/dev/null || true
+# Screen-clear is a terminal action, not output. `clear` writes ^[[3J^[[H^[[2J
+# to whatever stdout is whenever it can read a terminfo entry, so redirecting to
+# a file used to capture three escapes before the first line of the report.
+if [[ -t 1 ]]; then
+    clear 2>/dev/null || true
+fi
 echo -e "${BLUE}"
 echo "  :::::::::  :::    ::: :::        ::::::::  :::::::::: "
 echo "  :+:    :+: :+:    :+: :+:       :+:    :+: :+:        "

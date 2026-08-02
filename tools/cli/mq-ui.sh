@@ -6,34 +6,60 @@
 
 MQ_THEME="${MQ_THEME:-green}"
 
-case "$MQ_THEME" in
-  green)
-    C_OK="\033[1;32m"
-    C_WARN="\033[1;33m"
-    C_ERR="\033[1;31m"
-    C_TITLE="\033[1;36m"
-    ;;
-  amber)
-    C_OK="\033[38;5;214m"
-    C_WARN="\033[38;5;222m"
-    C_ERR="\033[38;5;196m"
-    C_TITLE="\033[38;5;220m"
-    ;;
-  ice)
-    C_OK="\033[38;5;51m"
-    C_WARN="\033[38;5;117m"
-    C_ERR="\033[38;5;39m"
-    C_TITLE="\033[38;5;123m"
-    ;;
-  *)
-    C_OK="\033[1;32m"
-    C_WARN="\033[1;33m"
-    C_ERR="\033[1;31m"
-    C_TITLE="\033[1;36m"
-    ;;
-esac
+# Colour is opt-out here, on the same condition as the central guard in
+# ui/terminal-ui/mq-ui.sh: a TTY and no NO_COLOR (https://no-color.org).
+#
+# This file is sourced by scan.sh, brew-check.sh and doctor.sh, and it used to
+# assign the escapes regardless of where stdout pointed — `mqlaunch scan > file`
+# wrote 36 ANSI sequences into the file, and NO_COLOR=1 changed nothing. The P1
+# output contract was true only for the commands that went through the shared
+# library; these three went around it.
+#
+# The theme still picks the palette, so a real terminal is unaffected. Only the
+# escapes are gated: every heading, rule, glyph and label the helpers below
+# print is emitted either way, because the variables expand to nothing rather
+# than to a colour.
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  case "$MQ_THEME" in
+    green)
+      C_OK="\033[1;32m"
+      C_WARN="\033[1;33m"
+      C_ERR="\033[1;31m"
+      C_TITLE="\033[1;36m"
+      ;;
+    amber)
+      C_OK="\033[38;5;214m"
+      C_WARN="\033[38;5;222m"
+      C_ERR="\033[38;5;196m"
+      C_TITLE="\033[38;5;220m"
+      ;;
+    ice)
+      C_OK="\033[38;5;51m"
+      C_WARN="\033[38;5;117m"
+      C_ERR="\033[38;5;39m"
+      C_TITLE="\033[38;5;123m"
+      ;;
+    *)
+      C_OK="\033[1;32m"
+      C_WARN="\033[1;33m"
+      C_ERR="\033[1;31m"
+      C_TITLE="\033[1;36m"
+      ;;
+  esac
 
-C_RESET="\033[0m"
+  C_RESET="\033[0m"
+  # Blink, used by blink_err for CRITICAL. It lived inline in that function's
+  # printf format, which meant it kept leaking one escape per call even after
+  # the colour variables were emptied.
+  C_BLINK="\033[5m"
+else
+  C_OK=""
+  C_WARN=""
+  C_ERR=""
+  C_TITLE=""
+  C_RESET=""
+  C_BLINK=""
+fi
 
 # ----------------------------
 # Layout
@@ -83,5 +109,5 @@ err()  { printf "${C_ERR}✖ %-30s${C_RESET}\n" "$1"; }
 
 # Blink helper (used for CRITICAL)
 blink_err() {
-  printf "\033[5m${C_ERR}✖ %-30s${C_RESET}\n" "$1"
+  printf "${C_BLINK}${C_ERR}✖ %-30s${C_RESET}\n" "$1"
 }
