@@ -120,9 +120,9 @@ capture_all() {
       printf '===== %s =====\n' "$fn"
       printf '%s\n' "--- exit: $rc"
       printf '%s\n' '--- stdout:'
-      python3 "$NORMALIZE" <"$so"
+      MQ_NORMALIZE_ROOT="$ROOT" python3 "$NORMALIZE" <"$so"
       printf '%s\n' '--- stderr:'
-      python3 "$NORMALIZE" <"$se"
+      MQ_NORMALIZE_ROOT="$ROOT" python3 "$NORMALIZE" <"$se"
     } >>"$dest"
     rm -f "$so" "$se"
   done

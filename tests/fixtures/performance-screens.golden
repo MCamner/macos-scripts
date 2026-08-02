@@ -31,7 +31,7 @@
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<PATH> line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_mem_top =====
 --- exit: 0
 --- stdout:
@@ -41,7 +41,7 @@
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<PATH> line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_disk_usage =====
 --- exit: 0
 --- stdout:
@@ -52,8 +52,8 @@ map auto_home      <SIZE>    <SIZE>    <SIZE>   <PCT>%    /System/Volumes/Data/h
 <SIZE>\t/stub/a
  <SIZE>\t/stub/b
 --- stderr:
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_network =====
 --- exit: 0
 --- stdout:
@@ -64,26 +64,9 @@ Routes:
 stub netstat line
 
 Listening ports:
-COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
-rapportd    <N> mansys   10u  IPv4 0x3523bf213454f25d      0t0  TCP *:<N> (LISTEN)
-rapportd    <N> mansys   12u  IPv6 0x9165ff96a4f8685d      0t0  TCP *:<N> (LISTEN)
-ControlCe   <N> mansys    9u  IPv4 0x6576875bbe16b3dc      0t0  TCP *:<N> (LISTEN)
-ControlCe   <N> mansys   10u  IPv6 0xedf56bba4fbee0c5      0t0  TCP *:<N> (LISTEN)
-ControlCe   <N> mansys   11u  IPv4 0x3840c8c3e09bb458      0t0  TCP *:<N> (LISTEN)
-ControlCe   <N> mansys   12u  IPv6 0xe9c6e5d5967e9428      0t0  TCP *:<N> (LISTEN)
-node      <N> mansys   12u  IPv4 0x15ea516b4555cfb6      0t0  TCP <IP>:<N> (LISTEN)
-node      <N> mansys   29u  IPv6 0x3948a128a45053a1      0t0  TCP [::<N>]:<N> (LISTEN)
-Python    <N> mansys    6u  IPv4  0xa8fdeffa1db7d86      0t0  TCP <IP>:<N> (LISTEN)
-Code\x20H <N> mansys   35u  IPv4 0xa0c2bc99a945e8e7      0t0  TCP <IP>:<N> (LISTEN)
-Code\x20H <N> mansys   67u  IPv4 0x6130cf7b72cbb1d3      0t0  TCP <IP>:<N> (LISTEN)
-Code\x20H <N> mansys   93u  IPv4 0x6dd9e1ff43cfb4e0      0t0  TCP <IP>:<N> (LISTEN)
-Code\x20H <N> mansys   37u  IPv4 0x873b22ecb9231d6d      0t0  TCP <IP>:<N> (LISTEN)
-Code\x20H <N> mansys   20u  IPv4 0x3cd54879cc6ebe5a      0t0  TCP <IP>:<N> (LISTEN)
-Ollama    <N> mansys    4u  IPv4 0xcf9d5d688cfc26a4      0t0  TCP <IP>:<N> (LISTEN)
-ollama    <N> mansys    3u  IPv4 0xa0d7ce4850c144ff      0t0  TCP <IP>:<N> (LISTEN)
-OneDrive  <N> mansys   25u  IPv6 0xf3a6d06071159c71      0t0  TCP [::<N>]:<N> (LISTEN)
+stub lsof line
 --- stderr:
-<PATH> line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_battery =====
 --- exit: 0
 --- stdout:
@@ -93,16 +76,16 @@ Now drawing from 'Battery Power'
 Now drawing from 'Battery Power'
  -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 --- stderr:
-<PATH> line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
 ===== command_perf_snapshot =====
 --- exit: 0
 --- stdout:
-<PATH>
+<REPO>/backups/performance-reports/perf-snapshot-<TIMESTAMP>.txt
 
 --- stderr:
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: ok: command not found
-<PATH> line <N>: command_exists: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: ok: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: command_exists: command not found
 ===== command_perf_quick_watch =====
 --- exit: 124
 --- stdout:
@@ -172,16 +155,16 @@ Top Memory:
 <PROCESS_ROW>
 <PROCESS_ROW>
 --- stderr:
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_divider: command not found
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_divider: command not found
-<PATH> line <N>: print_section: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_kv: command not found
-<PATH> line <N>: print_divider: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_section: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_kv: command not found
+<REPO>/mqlaunch/lib/performance.sh: line <N>: print_divider: command not found

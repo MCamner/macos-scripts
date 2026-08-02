@@ -14,10 +14,17 @@ and the mitigation for R1 was the step that got skipped. The snapshot was
 reconstructed afterwards from a worktree of the commit before the migration; the
 two sides matched on all nine screens, stdout, stderr and exit code.
 """
+import os
 import re
 import sys
 
 ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+# The checkout root, masked before anything else. CI checks out under
+# /home/runner/work and a developer machine under /Users, and the location of
+# the checkout is not part of what a screen renders. Passed in rather than
+# guessed, so no rule has to enumerate every CI provider's layout.
+REPO_ROOT = os.environ.get("MQ_NORMALIZE_ROOT", "")
 
 RULES = [
     # Absolute paths. One marker for every root, so a worktree of an older
@@ -62,6 +69,8 @@ SIZE_ROW = re.compile(r"\s*<SIZE>\s+<PATH>")
 
 def normalize(line: str) -> str:
     line = ANSI.sub("", line.rstrip("\n"))
+    if REPO_ROOT:
+        line = line.replace(REPO_ROOT, "<REPO>")
     for pattern, replacement in RULES:
         line = pattern.sub(replacement, line)
     line = re.sub(r"\s+$", "", line)
