@@ -6,6 +6,52 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `tests/performance-screens-golden-smoke.sh` and
+  `tests/fixtures/performance-screens.golden` — the snapshot
+  `docs/plans/step-12-v1-removal.md` asked for as 12.3 and never got.
+
+  The plan gated the performance migration on a golden of its output. That
+  fixture was never written, so 12.4 shipped verified by looking at the rendered
+  panel, which proves the panel and not the nine `command_perf_*` screens behind
+  it. All nine are live: rows 1–9 of the Performance menu call them directly.
+
+  Reconstructed after the fact from a worktree of `94d0eba`, the commit before
+  the migration, and compared screen by screen — stdout, stderr and exit status.
+  **All nine matched**, and the committed golden was then verified against the
+  pre-migration implementation as well, so it pins the behaviour the migration
+  was supposed to preserve rather than whatever happens to be true now.
+
+  `tools/scripts/normalize-performance-screen.py` masks only what is volatile:
+  paths, load averages, uptime, timestamps, IPs, sizes, percentages, `ps` rows
+  and `du` rows. Labels, section headings, box drawing, row counts, ordering and
+  error text pass through. Step 3 of the test asserts the golden still carries
+  eight of those labels, because a normalizer can be tightened until everything
+  masks to the same thing and the comparison passes vacuously. Step 4 renders
+  against a copy of the data layer with one character changed in a heading and
+  requires the diff to show it.
+
+  **The golden pins three defects, all pre-existing and all found by writing
+  it:**
+
+  * `print_section: command not found`, eleven times. Seven of the nine screens
+    call `print_section` and one also calls `print_kv`; both live only in the v1
+    tree's `lib/ui.sh`, which the live path never sourced — `mq-performance-menu.sh`
+    sources `mq-ui.sh` and the data layer, nothing else. Rows 3 to 9 have been
+    printing that error instead of a heading for as long as this path existed.
+    Verified identical on `94d0eba`, so neither the migration nor the deletion
+    caused it.
+  * `Load (1m)` renders as one run of concatenated decimals — `1.541.481.58`.
+    `perf_load_1m` splits `uptime` on `", "` while macOS separates the three
+    load averages with spaces, so it keeps all three and `tr -d ' '` glues them.
+    The same value appears in the menu's own Signals row.
+  * `command_perf_quick_watch` cannot exit on its own. It is bounded in the
+    harness and its status in the golden is the timeout's 124.
+
+  Recording them rather than fixing them here keeps the deletion PR revertible
+  and single-purpose. They are behaviour changes and belong in their own change.
+
 ### Removed
 
 * `terminal/mqlaunch-v1/` — 23 files, 1125 shell LOC, plus its own

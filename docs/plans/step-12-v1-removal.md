@@ -61,24 +61,32 @@ shrink — the gate already flags stale allowlist entries.
 | --- | --- | --- | --- |
 | 12.1 | ~~Decommission dead dev bridge~~ **Done** | Low | — |
 | 12.2 | ~~Decommission dead tools bridge — deleted outright; neither function had a caller~~ **Done (#160)** | Low | — |
-| 12.3 | ~~Golden-snapshot performance output as a regression fixture~~ **Skipped** — see below | Low | — |
+| 12.3 | ~~Golden-snapshot performance output as a regression fixture~~ **Done, out of order** — see below | Low | — |
 | 12.4 | ~~Migrate `v1/commands/performance.sh` → `mqlaunch/lib/performance.sh`; repoint the menu; drop the v1 fallback~~ **Done (#160)** | **High** | — |
 | 12.5 | ~~`COMPAT_EDGES` empty; freeze gate proves zero live→v1 edges~~ **Done (#160)** | Low | — |
 | 12.6 | ~~Delete `terminal/mqlaunch-v1/`; remove the v1 selftest; reclassify in `AUTHORITY_MAP`~~ **Done** | Medium | — |
 
-### 12.3 was skipped, and that is a real gap
+### 12.3 ran after 12.4, not before it
 
-The plan called for a golden snapshot of performance output *before* the
-migration, so 12.4 could be diffed against it. That fixture was never written.
-12.4 was verified by driving `mqlaunch perf` before and after and comparing the
-rendered panel — same health score, same signals line, same ten rows — which is
-weaker than a committed fixture: it proves the panel, not each of the nine
-`command_perf_*` screens behind it.
+The plan gated the migration on a golden snapshot. That fixture was not written
+in time, and 12.4 shipped verified by comparing the rendered panel — which
+proves the panel, not the nine `command_perf_*` screens behind it. R1 in the
+risk table is specifically unnoticed output drift, and its mitigation was the
+step that got skipped.
 
-The migration was a verbatim file move of a self-contained file, which is the
-weakest possible change and the reason this was acceptable rather than reckless.
-Recording it because R1 in the risk table is specifically about unnoticed output
-drift, and the mitigation for R1 is the thing that was skipped.
+Closed retroactively rather than documented away: the pre-migration code is in
+the history, so the snapshot was reconstructed from a worktree of `94d0eba` and
+compared screen by screen — stdout, stderr and exit status. All nine matched,
+and `tests/fixtures/performance-screens.golden` was then checked against the
+pre-migration implementation too, so it pins what the migration was supposed to
+preserve rather than what happens to be true afterwards.
+
+Writing it found three defects that the panel comparison could not have seen,
+all of them older than this step: `print_section` is undefined on the live path
+and seven screens call it, `perf_load_1m` concatenates the three load averages,
+and `command_perf_quick_watch` cannot exit on its own. They are recorded in the
+test header and left for their own change — they are behaviour, and this step is
+a deletion.
 
 ### Dependency graph
 
