@@ -595,7 +595,7 @@ variable and mostly is not.
 
 ## P2 — Thin delegation polish
 
-Status: In progress — 2 of 5 tasks done, one exit gate closed
+Status: In progress — 3 of 5 tasks done, both exit gates closed
 Priority: P2
 Risk if delayed: Medium
 Owner: `macos-scripts`
@@ -609,7 +609,7 @@ The front door should make the right workflow easy to find, then hand off to the
 
 ### Tasks
 
-* [ ] Review all `mq-agent` delegation commands.
+* [x] Review all `mq-agent` delegation commands.
 
   Measured, by line count of each handler in `terminal/menus/mq-agent-menu.sh`:
 
@@ -631,16 +631,39 @@ The front door should make the right workflow easy to find, then hand off to the
   vocabulary would grow if one ever did. `_run_agent_flow` is the same shape at
   half the size.
 
-  Unchecked because reading them is not reviewing them: the question is whether
-  those 118 lines should be flags `mq-agent` parses itself.
+  Reviewed 2026-08-02. **The 118 lines stay here, and the reason is not that
+  moving them is hard.** `docs/RUNTIME_AUTHORITY.md` grants this repo argument
+  parsing, and what these lines parse is a terminal vocabulary — positional mode
+  words, so an operator types `review file X security` rather than
+  `review file X --security`. Pushing that into `mq-agent` would make the
+  delegate carry `mqlaunch`'s spelling, which is the boundary pointing the wrong
+  way. `_run_agent_flow` is the same shape and already handles the hard case
+  correctly: `_flow_has_repo_flag` checks for an operator-supplied `--repo`
+  before adding its own, so the convenience never overwrites an explicit choice.
+
+  What the review did find is that `_run_agent_review` had no such check and was
+  **lossy**. `--repo` was an undocumented scope alias and is also a real
+  mq-agent option on `review file`; the scope arm won, so
+  `review file X --repo /p` dropped X and ran `review repo /p` — a whole repo
+  reviewed instead of the named file, silently. Scope is positional now, as
+  `docs/COMMANDS.md` always documented, and unrecognised words pass through.
+
+  The conclusion this box reaches is therefore about the gate, not the line
+  count: translation is allowed, and translation must be proved lossless.
+  Steps 3 and 4 of `tests/mq-agent-routing-smoke.sh` grep the menu for strings
+  it should contain, which passes whether or not the arguments survive. Steps 8
+  and 9 run the translation against a stubbed delegate and compare the built
+  command line — the form that was red on the old code.
 
 * [ ] Add `mqlaunch stack status` alignment with `mq-agent ship status` once `ship status` exists.
 
   * `mqlaunch` should display or delegate the release cockpit.
   * It should not reimplement release state logic.
 
-  Still blocked, and verified rather than assumed: there is no `ship` command in
-  `mq_agent/main.py` as of 2026-08-01. Nothing to align with yet.
+  Still blocked, and verified rather than assumed: `mq-agent --help` lists 34
+  commands as of 2026-08-02 and `ship` is not among them. `release-check` and
+  `release-plan` exist, `stack` exists — the release cockpit this task waits for
+  does not. Nothing to align with yet.
 
 * [x] Add a clear “owner” label in help output.
 
@@ -681,14 +704,22 @@ The front door should make the right workflow easy to find, then hand off to the
   owning repo on every delegated group heading, and the unlabelled default is
   documented. Held by `tests/registry-consumer-parity-smoke.sh` and the
   namespace-owner rule in `validate-command-registry.py`.
-* [ ] `mqlaunch` does not duplicate deeper stack logic.
+* [x] `mqlaunch` does not duplicate deeper stack logic.
 
   `tests/mq-stack-contract-smoke.sh` and `docs/architecture/MQ_BOUNDARY.md`
   already hold the boundary that matters — no review, risk, release or memory
-  cognition in shell — and it holds. What is unproven is the weaker claim in the
-  task above: 118 lines across `_run_agent_review` and `_run_agent_flow` are
-  argument translation this repo performs on the delegate's behalf. Not a
-  boundary violation, but not nothing either.
+  cognition in shell — and it holds. The weaker claim left open here was the 118
+  lines across `_run_agent_review` and `_run_agent_flow`: argument translation
+  this repo performs on the delegate's behalf, not a boundary violation but not
+  nothing either.
+
+  Reviewed and closed above. Translation is inside the boundary this repo owns;
+  the risk was never that it duplicated stack logic but that it could quietly
+  change what the delegate was asked to do, which is what `--repo` did. Both
+  handlers now refuse to overwrite an explicit operator argument —
+  `_flow_has_repo_flag` by checking, `_run_agent_review` by no longer claiming
+  the flag — and steps 8 and 9 of `tests/mq-agent-routing-smoke.sh` hold the
+  translation itself rather than the text of the file that performs it.
 
 ---
 

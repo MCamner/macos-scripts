@@ -8,6 +8,31 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `mqlaunch review file <path> --repo <repo>` reviewed the wrong thing. `--repo`
+  was accepted here as a scope selector — an undocumented alias for
+  `review repo` — and it also happens to be a real mq-agent option on
+  `review file`, naming the external repo the file lives in. The scope arm won,
+  so the path was dropped and the invocation became `review repo <repo>`: an
+  entire repository reviewed instead of the one named file, silently, with the
+  operator's argument read as the repo. The option was unreachable from the
+  launcher.
+
+  Scope is positional now — `diff`, `repo`, `file <path>` — which is the only
+  form `docs/COMMANDS.md` ever documented. The `--diff`, `--repo` and `--file`
+  spellings are gone, and anything unrecognised falls through to passthrough, so
+  mq-agent options reach mq-agent.
+
+  Found by reviewing the delegation handlers for the P2 roadmap item rather than
+  by a report. The three existing routing assertions could not have caught it:
+  they grep `mq-agent-menu.sh` for the strings it should contain, which proves
+  the file mentions `_run_agent review file` and nothing about what an operator's
+  arguments turn into. `tests/mq-agent-routing-smoke.sh` steps 8 and 9 run the
+  translation against a stubbed delegate and compare the built command line —
+  red on the old code, and the nine documented forms are pinned with it.
+  Verified end to end through `mq-agent --dry-run`: `review file README.md
+  --repo ~/mq-agent` now reaches `mq-mcp review_file README.md
+  repo_path=/Users/mansys/mq-agent`.
+
 * The three behaviour defects the performance golden pinned. One commit each,
   the golden red before the fix and regenerated after it.
 
