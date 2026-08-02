@@ -65,17 +65,27 @@ _run_agent_review() {
   local file=""
   local passthrough=()
 
+  # Scope is a positional word — `review diff`, `review repo`, `review file X` —
+  # which is the only form docs/COMMANDS.md documents. The flag spellings
+  # `--diff`, `--repo` and `--file` used to be accepted here as scope selectors
+  # too, and `--repo` collided with mq-agent's own `--repo <path>` option on
+  # `review file`: the external repo the file lives in. `review file X --repo /p`
+  # matched the scope arm, dropped X, and ran `review repo /p` — a whole repo
+  # reviewed instead of one file, silently, with the operator's path read as the
+  # repo. Removing the aliases costs an undocumented spelling and makes the
+  # option reachable. Anything unrecognised falls through to passthrough below,
+  # so new mq-agent options work without a change here.
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      diff|--diff)
+      diff)
         scope="diff"
         shift
         ;;
-      repo|--repo)
+      repo)
         scope="repo"
         shift
         ;;
-      file|--file)
+      file)
         scope="file"
         file="${2:-}"
         if [[ $# -gt 1 ]]; then
