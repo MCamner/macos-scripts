@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `mqlaunch brain` and the seven verbs beside it reported success no matter what
+  the bridge did. Both branches ended in an unconditional `return 0` after
+  calling `mq_brain_run`, so a failing brain command exited 0 and a script could
+  not tell that anything had gone wrong.
+
+  `tests/delegated-exit-code-smoke.sh` step 7 already forbids exactly this, and
+  it did not catch it: the structural check only inspects branches that invoke a
+  `$BASE_DIR/...` script, and `mq_brain_run` is a shell function. The rule was
+  right and its reach was short.
+
+  Step 8 runs the branches instead of reading them — `mq_brain_run` stubbed to
+  exit 0, 1, 2 and 127, across all eight verbs (`brain`, `note`, `sessions`,
+  `decisions`, `reviews`, `learn`, `verified`, `systems`) — and was red on the
+  old code. Step 9 pins the `else` arm that was already correct, so fixing the
+  success path could not turn a missing bridge into a silent success.
+
+  Verified on the real path: `mqlaunch brain not-a-real-verb` exits 1, where it
+  exited 0 before.
+
+  Not fixed here, and deliberately: seven other branches call a function
+  delegate and then `return 0` — `workflows`, `review-brain`, `signal-brain`,
+  `learn-promote`, `atlas`, `login`, `shortcuts`. Several open interactive menus,
+  where the exit status of the menu is not obviously the thing to propagate, so
+  each needs a judgment this PR was not scoped to make. Sweeping them together
+  would have hidden that.
+
 ### Removed
 
 * `tools/scripts/srm.sh` — 156 lines that built a system prompt and called
