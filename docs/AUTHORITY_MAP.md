@@ -107,55 +107,61 @@ DEPRECATED section — `mqlaunch git` opens `terminal/launchers/gitlaunch.sh`.
 `open_v1_tools_menu` nor `run_v1_tools_command` had a caller anywhere in the
 tree, so it was deleted rather than kept working.
 
-## Legacy runtime — DEPRECATED
+## Legacy runtime — DELETED
 
-| Path | Class | Reachability |
-| --- | --- | --- |
-| `terminal/mqlaunch-v1/**` (23 files, 1125 shell LOC) | **DEPRECATED** | Nothing live reaches it; `tools/scripts/test-mqlaunch-v1.sh` is the only consumer |
+`terminal/mqlaunch-v1/` is gone as of 2026-08-02: 23 files, 1125 shell LOC, plus
+its own `tools/scripts/test-mqlaunch-v1.sh`. It was the last legacy runtime and
+the last duplicate UI implementation — it shipped its own `lib/ui.sh` alongside
+`ui/terminal-ui/mq-ui.sh` — so removing it closes the v2.0.0 definition-of-done
+items for both.
 
-### The live→legacy edges are gone (2026-08-02)
+### The live→legacy edges went first (#160)
 
-There were four. None of them is left, and none was retired by weakening a
-gate:
+There were four, and none was retired by weakening a gate:
 
-* `terminal/menus/mq-performance-menu.sh:26` sourced
-  `commands/performance.sh` out of the frozen tree — the only direct live-menu →
-  v1 `source`, and the one real dependency. That file was 504 lines of working
-  `perf_*` readings, so the tree was classified live in order to supply code
-  rather than to keep a legacy route open. It moved verbatim to
-  `mqlaunch/lib/performance.sh`.
+* `terminal/menus/mq-performance-menu.sh:26` sourced `commands/performance.sh`
+  out of the tree — the only direct live-menu → v1 `source`, and the one real
+  dependency. 504 lines of working `perf_*` readings, so the tree was classified
+  live in order to supply code rather than to keep a legacy route open. Moved
+  verbatim to `mqlaunch/lib/performance.sh`.
 * `terminal/bridges/tools-bridge.sh` forwarded `tools` to the v1 launcher as a
   subprocess. Deleted: no callers.
-* `terminal/bridges/performance-bridge.sh` fell back to the v1 launcher when
-  `mq-performance-menu.sh` was missing. A missing menu is a broken checkout, and
-  answering it by running a frozen launcher hid that; it reports and returns 1
-  now. `run_performance_command`, `open_v1_performance_menu` and
-  `run_v1_performance_command` went with the fallback — none had a caller.
-* `tools/scripts/create-debug-bundle.sh` ran `bash v1/mqlaunch.sh help` as a
-  health probe from `mq-system-menu.sh` option 6. A bundle reporting on a tree
-  nothing routes to is noise.
+* `terminal/bridges/performance-bridge.sh` fell back to the v1 launcher when the
+  current menu was missing. It reports and returns 1 now.
+* `tools/scripts/create-debug-bundle.sh` ran the v1 launcher's `help` as a
+  health probe from `mq-system-menu.sh` option 6.
 
 `automation/login/mqlogin.sh` was a fifth, fixed a day earlier: it preferred the
-frozen launcher over the current runtime in `detect_mqlaunch_base` and now falls
-back to `bin/mqlaunch`.
+frozen launcher over the current runtime in `detect_mqlaunch_base`.
 
-The dependency now runs the other way. `terminal/mqlaunch-v1/mqlaunch.sh:22`
-sources `mqlaunch/lib/performance.sh` from its new home — legacy depending on
-live, which is the allowed direction — so the tree stays runnable while its
-deletion is decided on its own terms rather than forced by a move.
+### What deleting it edited
 
-**Deleting the tree is the remaining step**, and it is now only a decision: 23
-files and 1125 lines that no runtime path reaches. What still touches it is
-`tools/scripts/test-mqlaunch-v1.sh` in the suite, and the `TOOLING` entries that
-name it to exclude or test it.
+Nothing that ran. Seven tooling files named the tree to exclude, test or police
+it, which is exactly the distinction the gate's two lists were built to make:
+
+```text
+tools/scripts/test-mqlaunch-v1.sh      deleted with the tree
+tools/scripts/test-all.sh              v1 selftest block removed
+tools/scripts/test-mqlaunch.sh         v1 launcher assertions removed
+tools/scripts/lint.sh                  exclusion had nothing left to exclude
+tools/scripts/shellcheck-report.sh     same
+tools/scripts/generate-wiki-command-ref.sh  same
+scripts/check-runtime-authority.sh     became a tombstone gate
+```
+
+The lint surface went from 189 files to 188 and stayed clean at warning
+severity: four of the five exempt SC2034 findings left with the tree.
 
 ### Enforcement (Step 10 freeze)
 
-`scripts/check-runtime-authority.sh` is the freeze gate. It scans every tracked
-shell file except the v1 tree itself and `tests/`, which drives v1 on purpose,
-and fails if any file references `mqlaunch-v1` without being classified. The
-file list comes from `git ls-files`, so an untracked copy of a menu in the
-working tree can neither add an edge nor hide one.
+`scripts/check-runtime-authority.sh` is the freeze gate, and a tombstone gate
+since the tree was deleted: a path that no longer exists cannot be depended on
+by accident, but it can be recreated, and a second runtime is what the v2.0.0
+track spent its length removing. It scans every tracked shell file except
+`tests/`, which plants references on purpose to prove the gate still fires, and
+fails if any file names the deleted tree without being classified. The file list
+comes from `git ls-files`, so an untracked copy of a menu in the working tree can
+neither add an edge nor hide one.
 
 Scope was `terminal/`, `ui/` and `mqlaunch/` until 2026-08-01 — narrower than
 "live runtime shell", which is how the `create-debug-bundle.sh` and `mqlogin.sh`
@@ -165,12 +171,10 @@ about it.
 Two lists, because widening the scan pulled in files that name v1 without
 depending on it:
 
-* `COMPAT_EDGES` — live code that reaches v1 at runtime. **Empty since
-  2026-08-02.** Growing it again must be a conscious, reviewed decision.
-* `TOOLING` — build, lint and documentation scripts that name v1 to exclude it,
-  test it, or police it (`lint.sh`, `shellcheck-report.sh`,
-  `generate-wiki-command-ref.sh`, the `test-*` harnesses, and the gate itself).
-  Not runtime dependencies.
+* `COMPAT_EDGES` — live code that reaches v1 at runtime. **Empty, permanently.**
+  A non-empty list means someone reintroduced the legacy runtime.
+* `TOOLING` — scripts that name the tree without depending on it. Seven when the
+  tree existed; two now, and both name it in order to assert its absence.
 
 Keep both in sync with this file. The check runs in CI (Quality → *Runtime
 authority freeze*) and locally via `tests/runtime-authority-freeze-smoke.sh`,

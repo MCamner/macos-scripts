@@ -199,7 +199,12 @@ perf_health_score() {
 
   if [[ -n "${load_1m:-}" && -n "${cpu_count:-}" ]]; then
     local load_ratio
-    load_ratio="$(awk -v load="$load_1m" -v cpu="$cpu_count" 'BEGIN { if (cpu <= 0) cpu=1; printf "%.2f", load/cpu }')"
+    # `load` is a gawk builtin, so gawk refuses it as a variable name and the
+    # whole health score fails on any system with GNU awk — including CI. BSD
+    # awk on macOS accepts it, which is why this went unseen. Renamed, not
+    # rewritten: the golden is unchanged on macOS, which is the proof it is
+    # behaviour-preserving here.
+    load_ratio="$(awk -v avg="$load_1m" -v cpu="$cpu_count" 'BEGIN { if (cpu <= 0) cpu=1; printf "%.2f", avg/cpu }')"
 
     if awk -v r="$load_ratio" 'BEGIN { exit !(r >= 2.0) }'; then
       score=$((score - 25))

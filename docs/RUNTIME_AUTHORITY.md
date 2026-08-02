@@ -116,29 +116,27 @@ Compatibility paths must not:
 * hide fallback behavior from the authority map
 * remain after their documented removal gate is satisfied
 
-The current compatibility exceptions are listed in
-[AUTHORITY_MAP.md](AUTHORITY_MAP.md#the-exact-livelegacy-edges-remove-these-in-step-12)
-and enforced by `scripts/check-runtime-authority.sh`.
+There are no compatibility exceptions left. The four that existed are recorded
+in [AUTHORITY_MAP.md](AUTHORITY_MAP.md) with what replaced each, and
+`scripts/check-runtime-authority.sh` reports zero.
 
 ### Frozen paths are outside the lint gate
 
-`terminal/mqlaunch-v1/` and `tools/legacy/` are excluded from
-`tools/scripts/lint.sh`, so the enforced ShellCheck threshold does not cover
-them. That is a decision, not an oversight.
+`tools/legacy/` is excluded from `tools/scripts/lint.sh`, so the enforced
+ShellCheck threshold does not cover it. That is a decision, not an oversight:
+clearing its findings would mean editing frozen code to satisfy a linter, on a
+path this document forbids doing new work on. The freeze is the stronger rule.
 
-They hold 5 warnings, all SC2034. Four are colour variables in
-`terminal/mqlaunch-v1/lib/core.sh` that the scripts sourcing it do read — the
-same across-a-`source` blindness that produced 34 of the findings on the live
-surface. The fifth is in an archived one-shot patch script written against a
-launcher that no longer exists in that form.
+`terminal/mqlaunch-v1/` was excluded on the same grounds and reached the end
+state that argument named — it was deleted on 2026-08-02, taking four of the
+five exempt SC2034 warnings with it. They were colour variables in its
+`lib/core.sh` that the scripts sourcing it did read, the same across-a-`source`
+blindness that produced 34 of the findings on the live surface. The fifth is in
+an archived one-shot patch script written against a launcher that no longer
+exists in that form.
 
-Clearing them would mean editing frozen code to satisfy a linter, on paths this
-document forbids doing new work on, for findings that are mostly not defects.
-The freeze is the stronger rule. These paths stay out of the gated surface until
-they are deleted, which is their documented end state.
-
-A path leaving `tools/legacy/` or `terminal/mqlaunch-v1/` for a live location
-enters the gate with it, and must be clean at warning severity to land.
+A path leaving `tools/legacy/` for a live location enters the gate with it, and
+must be clean at warning severity to land.
 
 ## Dependency rules
 
@@ -153,8 +151,9 @@ bin/
             -> terminal/bridges/  # documented delegation or compat only
 ```
 
-New dependencies from live launchers or menus into
-`terminal/mqlaunch-v1/` are forbidden. New logic in bridges is also forbidden
+Recreating `terminal/mqlaunch-v1/`, or any second runtime under another name, is
+forbidden; `scripts/check-runtime-authority.sh` is a tombstone gate that fails on
+any shell file naming the deleted tree. New logic in bridges is also forbidden
 beyond thin routing or adaptation.
 
 ## Command-surface governance

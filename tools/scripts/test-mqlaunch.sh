@@ -5,7 +5,6 @@ PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 LEGACY="$PROJECT_ROOT/terminal/launchers/mqlaunch.sh"
 COMMAND_MODE="$PROJECT_ROOT/terminal/launchers/mqlaunch-command-mode.sh"
 MAIN_MENU="$PROJECT_ROOT/terminal/menus/mq-main-menu.sh"
-V1="$PROJECT_ROOT/terminal/mqlaunch-v1/mqlaunch.sh"
 DEV_BRIDGE="$PROJECT_ROOT/terminal/bridges/dev-bridge.sh"
 PERF_BRIDGE="$PROJECT_ROOT/terminal/bridges/performance-bridge.sh"
 RELEASE_SCRIPT="$PROJECT_ROOT/release.sh"
@@ -57,13 +56,11 @@ assert_cmd_ok() {
 }
 
 assert_file "$LEGACY" "Legacy launcher"
-assert_file "$V1" "V1 launcher"
 assert_file "$DEV_BRIDGE" "Dev bridge"
 assert_file "$PERF_BRIDGE" "Performance bridge"
 assert_file "$RELEASE_SCRIPT" "Release script"
 
 assert_cmd_ok "Legacy launcher help works" zsh "$LEGACY" help
-assert_cmd_ok "V1 launcher help works" bash "$V1" help
 
 # These routes moved: they used to be asserted against mqlaunch.sh because that
 # is where the second dispatcher lived, and it was deleted in #88. Command words

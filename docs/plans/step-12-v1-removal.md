@@ -1,6 +1,6 @@
 # Step 12 — Compat Removal: Migrate Off v1 And Delete It
 
-**Status:** In progress — 12.1 complete
+**Status:** Complete — 12.1 through 12.6 done (12.3 skipped, see below)
 **Target release:** `v2.0.0` (final gate)
 **Theme:** Make `terminal/mqlaunch-v1/` unreachable, then delete it — closing the
 last legacy runtime dependency and the last duplicate UI implementation.
@@ -59,12 +59,34 @@ shrink — the gate already flags stale allowlist entries.
 
 | # | Workstream | Risk | Gate to start |
 | --- | --- | --- | --- |
-| 12.1 | ~~Decommission dead dev bridge → drop `dev-bridge.sh` v1 functions; remove from `ALLOW`~~ **Done** | Low | — |
-| 12.2 | Decommission dead tools bridge → same for `tools-bridge.sh` | Low | — |
-| 12.3 | Golden-snapshot performance output (`mqlaunch performance` + each subcmd) as a regression fixture | Low | — |
-| 12.4 | Migrate `v1/commands/performance.sh` → a live lib (`mqlaunch/lib/performance.sh`); repoint `mq-performance-menu.sh` + `performance-bridge.sh`; drop the v1 subprocess | **High** | 12.3 green |
-| 12.5 | Remove `performance-bridge.sh` / `mq-performance-menu.sh` from `ALLOW`; freeze gate proves zero live→v1 edges | Low | 12.4 |
-| 12.6 | Delete `terminal/mqlaunch-v1/` (all 24 files, incl. duplicate `lib/ui.sh`); remove the v1 selftest from `test-all.sh`; reclassify in `AUTHORITY_MAP` | Medium | 12.5 (ALLOW empty) |
+| 12.1 | ~~Decommission dead dev bridge~~ **Done** | Low | — |
+| 12.2 | ~~Decommission dead tools bridge — deleted outright; neither function had a caller~~ **Done (#160)** | Low | — |
+| 12.3 | ~~Golden-snapshot performance output as a regression fixture~~ **Done, out of order** — see below | Low | — |
+| 12.4 | ~~Migrate `v1/commands/performance.sh` → `mqlaunch/lib/performance.sh`; repoint the menu; drop the v1 fallback~~ **Done (#160)** | **High** | — |
+| 12.5 | ~~`COMPAT_EDGES` empty; freeze gate proves zero live→v1 edges~~ **Done (#160)** | Low | — |
+| 12.6 | ~~Delete `terminal/mqlaunch-v1/`; remove the v1 selftest; reclassify in `AUTHORITY_MAP`~~ **Done** | Medium | — |
+
+### 12.3 ran after 12.4, not before it
+
+The plan gated the migration on a golden snapshot. That fixture was not written
+in time, and 12.4 shipped verified by comparing the rendered panel — which
+proves the panel, not the nine `command_perf_*` screens behind it. R1 in the
+risk table is specifically unnoticed output drift, and its mitigation was the
+step that got skipped.
+
+Closed retroactively rather than documented away: the pre-migration code is in
+the history, so the snapshot was reconstructed from a worktree of `94d0eba` and
+compared screen by screen — stdout, stderr and exit status. All nine matched,
+and `tests/fixtures/performance-screens.golden` was then checked against the
+pre-migration implementation too, so it pins what the migration was supposed to
+preserve rather than what happens to be true afterwards.
+
+Writing it found three defects that the panel comparison could not have seen,
+all of them older than this step: `print_section` is undefined on the live path
+and seven screens call it, `perf_load_1m` concatenates the three load averages,
+and `command_perf_quick_watch` cannot exit on its own. They are recorded in the
+test header and left for their own change — they are behaviour, and this step is
+a deletion.
 
 ### Dependency graph
 
@@ -100,14 +122,17 @@ shrink — the gate already flags stale allowlist entries.
 
 ## Exit criteria (Step 12 done)
 
-* [ ] `dev-bridge.sh` and `tools-bridge.sh` no longer reference `mqlaunch-v1`
-* [ ] performance runs entirely from a live lib; no `source`/`bash` of `v1/*`
-* [ ] `scripts/check-runtime-authority.sh` `ALLOW` list is empty and the gate is green
-* [ ] a grep sweep finds zero live references to `terminal/mqlaunch-v1/`
-* [ ] `terminal/mqlaunch-v1/` is deleted (24 files); the v1 selftest is removed from `test-all.sh`
-* [ ] `AUTHORITY_MAP.md` reflects the removal; no COMPAT row remains for v1
-* [ ] one UI authority: no `lib/ui.sh` duplicate of `mq-ui.sh` remains
-* [ ] full selftest suite green; performance golden snapshot unchanged
+* [x] `dev-bridge.sh` and `tools-bridge.sh` no longer reference `mqlaunch-v1` —
+  the dev bridge is an inert tombstone, the tools bridge is deleted
+* [x] performance runs entirely from a live lib; no `source`/`bash` of `v1/*`
+* [x] the gate's compat list is empty and the gate is green
+* [x] a grep sweep finds zero live references — the only reach left before the
+  delete was test tooling, and the sweep is recorded in the PR
+* [x] `terminal/mqlaunch-v1/` is deleted (23 files, not 24: `performance.sh`
+  left in 12.4); the v1 selftest is removed from `test-all.sh` and deleted
+* [x] `AUTHORITY_MAP.md` reflects the removal; no COMPAT row remains for v1
+* [x] one UI authority: v1's duplicate `lib/ui.sh` went with the tree
+* [x] full selftest suite green — no golden snapshot to compare, see 12.3
 
 ---
 

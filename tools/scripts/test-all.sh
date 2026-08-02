@@ -52,6 +52,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/mq-git-protected-push-smoke.sh"
 "$PROJECT_ROOT/tests/test-inventory-smoke.sh"
 "$PROJECT_ROOT/tests/install-contract-smoke.sh"
+"$PROJECT_ROOT/tests/performance-screens-golden-smoke.sh"
 "$PROJECT_ROOT/tests/markdownlint-routing-smoke.sh"
 "$PROJECT_ROOT/tests/mq-flow-routing-smoke.sh"
 "$PROJECT_ROOT/tests/mq-obsidian-menu-no-promotion-smoke.sh"
@@ -82,10 +83,6 @@ echo "== Running HAL menu checks =="
 "$PROJECT_ROOT/tests/document-functions-quality-smoke.sh"
 "$PROJECT_ROOT/tests/ollama-document-review-smoke.sh"
 "$PROJECT_ROOT/tests/command-discovery-inventory-smoke.sh"
-
-echo
-echo "== Running mqlaunch v1 checks =="
-bash "$ROOT/test-mqlaunch-v1.sh"
 
 echo
 echo "== Running shell lint checks =="

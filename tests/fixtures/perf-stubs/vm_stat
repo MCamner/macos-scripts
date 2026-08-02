@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Fixed-output stub for the performance golden. See
+# tests/performance-screens-golden-smoke.sh.
+printf '%s\n' "Pages free:  123456."

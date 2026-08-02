@@ -6,6 +6,123 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `tests/performance-screens-golden-smoke.sh` and
+  `tests/fixtures/performance-screens.golden` — the snapshot
+  `docs/plans/step-12-v1-removal.md` asked for as 12.3 and never got.
+
+  The plan gated the performance migration on a golden of its output. That
+  fixture was never written, so 12.4 shipped verified by looking at the rendered
+  panel, which proves the panel and not the nine `command_perf_*` screens behind
+  it. All nine are live: rows 1–9 of the Performance menu call them directly.
+
+  Reconstructed after the fact from a worktree of `94d0eba`, the commit before
+  the migration, and compared screen by screen — stdout, stderr and exit status.
+  **All nine matched**, and the committed golden was then verified against the
+  pre-migration implementation as well, so it pins the behaviour the migration
+  was supposed to preserve rather than whatever happens to be true now.
+
+  `tools/scripts/normalize-performance-screen.py` masks only what is volatile:
+  paths, load averages, uptime, timestamps, IPs, sizes, percentages, `ps` rows
+  and `du` rows. Labels, section headings, box drawing, row counts, ordering and
+  error text pass through. Step 3 of the test asserts the golden still carries
+  eight of those labels, because a normalizer can be tightened until everything
+  masks to the same thing and the comparison passes vacuously. Step 4 renders
+  against a copy of the data layer with one character changed in a heading and
+  requires the diff to show it.
+
+  The system commands are stubbed (`tests/fixtures/perf-stubs`) so the fixture
+  is a rendering snapshot rather than a photograph of one laptop. The first
+  version captured this machine's battery, load and process list and failed CI,
+  which runs Linux and has no `pmset`. With the inputs fixed, almost nothing
+  needs masking, which makes the comparison sharper rather than looser.
+
+  **The golden pins four defects, all pre-existing and all found by writing
+  it:**
+
+  * `print_section: command not found`, eleven times. Seven of the nine screens
+    call `print_section` and one also calls `print_kv`; both live only in the v1
+    tree's `lib/ui.sh`, which the live path never sourced — `mq-performance-menu.sh`
+    sources `mq-ui.sh` and the data layer, nothing else. Rows 3 to 9 have been
+    printing that error instead of a heading for as long as this path existed.
+    Verified identical on `94d0eba`, so neither the migration nor the deletion
+    caused it.
+  * `Load (1m)` renders as one run of concatenated decimals — `1.541.481.58`.
+    `perf_load_1m` splits `uptime` on `", "` while macOS separates the three
+    load averages with spaces, so it keeps all three and `tr -d ' '` glues them.
+    The same value appears in the menu's own Signals row.
+  * `command_perf_quick_watch` cannot exit on its own. It is bounded in the
+    harness and its status in the golden is the timeout's 124.
+  * `awk -v load=...` in `perf_health_score`. `load` is a gawk builtin, so gawk
+    rejects it as a variable name and the whole health score fails on any system
+    with GNU awk. BSD awk on macOS accepts it, which is why it went unseen for
+    as long as this code has existed.
+
+  The fourth is **fixed** here, because it is what kept the test from being a CI
+  gate at all — CI runs Linux. The variable is renamed and nothing else changed;
+  the golden is unchanged on macOS, which is the proof the rename preserves
+  behaviour there.
+
+  The other three are recorded, not fixed. They are behaviour changes and this
+  branch is a deletion that has to stay revertible.
+
+  Verified as a chain rather than asserted: the pre-migration implementation
+  extracted from `94d0eba` renders byte-identical to the committed golden, the
+  current one does too, and a one-character change to a heading is reported.
+
+### Removed
+
+* `terminal/mqlaunch-v1/` — 23 files, 1125 shell LOC, plus its own
+  `tools/scripts/test-mqlaunch-v1.sh`. The last legacy runtime, and the last
+  duplicate UI implementation: it shipped its own `lib/ui.sh` alongside
+  `ui/terminal-ui/mq-ui.sh`.
+
+  Its live edges went first, in the PR before this one, which is why this one
+  deletes rather than migrates. Four checks were run against `main` before
+  anything was removed: the freeze gate reported 0 compat edges; a sweep of
+  every tracked `.sh`, `.zsh` and `.py` outside the tree found no `source`,
+  `bash` or `exec` reaching it; the 24 files still naming it were all history,
+  tests, docs or tooling; and the suite passed after the deletion.
+
+  **Nothing that ran was edited.** Seven tooling files named the tree — to
+  exclude it from lint, to test it, or to police it — which is exactly the
+  distinction the freeze gate's two lists were built to make:
+
+  ```text
+  test-mqlaunch-v1.sh            deleted with the tree
+  test-all.sh                    v1 selftest block removed
+  test-mqlaunch.sh               v1 launcher assertions removed
+  lint.sh                        exclusion had nothing left to exclude
+  shellcheck-report.sh           same
+  generate-wiki-command-ref.sh   same
+  check-runtime-authority.sh     became a tombstone gate
+  ```
+
+  The lint surface went from 189 files to 188 and stayed clean at warning
+  severity. Four of the five SC2034 findings that `RUNTIME_AUTHORITY.md`
+  documented as deliberately exempt left with the tree — they were colour
+  variables in its `lib/core.sh` that the scripts sourcing it did read.
+
+  `scripts/check-runtime-authority.sh` keeps running as a tombstone. A path that
+  no longer exists cannot be depended on by accident, but it can be recreated,
+  and a second runtime is what the v2.0.0 track spent its length removing. Its
+  compat list is empty permanently; a non-empty one means the legacy runtime is
+  back.
+
+  Three READMEs still claimed performance routed through v1.
+  `terminal/bridges/README.md` was 109 lines about a migration that is now
+  finished and is rewritten; `terminal/README.md` and
+  `terminal/launchers/README.md` are corrected.
+
+  One gap is recorded rather than papered over: `docs/plans/step-12-v1-removal.md`
+  called for a golden snapshot of performance output *before* the migration, and
+  that fixture was never written. The migration was verified by driving the menu
+  before and after — same score, same signals, same rows — which proves the panel
+  but not each of the nine `command_perf_*` screens behind it. R1 in that plan's
+  risk table is specifically about unnoticed output drift, and its mitigation is
+  the step that was skipped.
+
 ### Changed
 
 * Nothing live reaches `terminal/mqlaunch-v1/` any more. The freeze gate reports

@@ -71,8 +71,6 @@ Keep `mqlaunch` as one coherent entrypoint: easy to navigate, easy to script, an
 Current routing is intentionally mixed:
 
 * `dev` and `tools` are primary in the main launcher flow
-* `performance` is still user-facing as a primary command, but its implementation currently lives behind the compatibility bridge
+* `performance` is user-facing as a primary command and is implemented here: `terminal/menus/mq-performance-menu.sh` renders it, and its readings come from `mqlaunch/lib/performance.sh`.
 
-This is a deliberate choice.
-
-`performance` already has a richer implementation in `terminal/mqlaunch-v1`, so it stays there until a first-class replacement in the main launcher is worth doing as a focused migration rather than a partial rewrite.
+That data layer used to live in `terminal/mqlaunch-v1`, which is why this section said performance stayed behind a compatibility bridge until a focused migration was worth doing. The migration happened on 2026-08-02 and the legacy tree is deleted; `performance-bridge.sh` now only loads the menu.

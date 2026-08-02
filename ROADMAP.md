@@ -990,7 +990,7 @@ demand, which is what `gated` means: they cannot drift without failing CI.
 
 ## P3 — Compatibility cleanup
 
-Status: In progress — the live→legacy edges are gone; the tree itself remains
+Status: Complete — the edges are gone and so is the tree
 Priority: P3
 Risk if delayed: Low
 Owner: `macos-scripts`
@@ -1040,9 +1040,16 @@ remain forever.
   * [x] release-check passes — `status: READY`, 0 blockers
   * [x] no active workflow depends on the old path — nothing live reaches the tree
 
-  Every condition is met. The deletion itself — 23 files, 1125 lines — is left
-  unchecked because it is a decision rather than a blocked task, and this repo's
-  rule is that a box is ticked by evidence.
+  Every condition was met before the deletion, and the deletion followed as its
+  own PR: 23 files and 1125 lines, plus `tools/scripts/test-mqlaunch-v1.sh`.
+  Nothing that ran was edited — seven tooling files named the tree to exclude,
+  test or police it, which is the distinction the gate's two lists exist to
+  make. The lint surface went 189 → 188 files and stayed clean; four of the five
+  exempt SC2034 findings left with the tree.
+
+  `scripts/check-runtime-authority.sh` is a tombstone gate now. A deleted path
+  cannot be depended on by accident, but it can be recreated, and a second
+  runtime is what this track spent its length removing.
 
 ### What was migrated (2026-08-02)
 
