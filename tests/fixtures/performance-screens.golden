@@ -5,9 +5,9 @@
 │ Score:  <SCORE>/<N> (Excellent)                                                              │
 │                                                                                          │
 │ SIGNALS                                                                                  │
-│ Load (1m): <LOADAVG>                      CPU cores: <N>                               │
+│ Load (1m): <LOADAVG>                      CPU cores: <N>                                │
 │ Disk (/): <PCT>                                Battery: <PCT>                                │
-│ Memory: normal                               Network: <IP>                       │
+│ Memory: normal                               Network: <IP>                          │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 --- stderr:
 ===== command_perf_overview =====
@@ -19,22 +19,12 @@
 │ SYSTEM STATE                                                                             │
 │ Load:  <UPTIME_LOAD>
 │ Disk: <PCT>   Memory: normal   Battery: <PCT>                                                │
-│ Network IP: <IP>                                                                 │
+│ Network IP: <IP>                                                                    │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 --- stderr:
 ===== command_perf_cpu_top =====
 --- exit: 0
 --- stdout:
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
@@ -50,54 +40,17 @@
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
-<PROCESS_ROW>
 --- stderr:
 <PATH> line <N>: print_section: command not found
 ===== command_perf_disk_usage =====
 --- exit: 0
 --- stdout:
-Filesystem                                                     Size    Used   Avail Capacity iused ifree %iused  Mounted on
-/dev/disk3s1s1                                                <SIZE>    <SIZE>   <SIZE>    <PCT>    459k   <SIZE>    <PCT>   /
-devfs                                                         <SIZE>   <SIZE>     <SIZE>   <PCT>     <N>     <N>  <PCT>   /dev
-/dev/disk3s6                                                  <SIZE>   <SIZE>   <SIZE>    <PCT>       <N>   <SIZE>    <PCT>   /System/Volumes/VM
-/dev/disk3s2                                                  <SIZE>   <SIZE>   <SIZE>    <PCT>    <N>.4k   <SIZE>    <PCT>   /System/Volumes/Preboot
-/dev/disk3s4                                                  <SIZE>   <SIZE>   <SIZE>     <PCT>     <N>   <SIZE>    <PCT>   /System/Volumes/Update
-/dev/disk1s2                                                  <SIZE>   <SIZE>   <SIZE>     <PCT>       <N>  <SIZE>    <PCT>   /System/Volumes/xarts
-/dev/disk1s1                                                  <SIZE>   <SIZE>   <SIZE>     <PCT>      <N>  <SIZE>    <PCT>   /System/Volumes/iSCPreboot
-/dev/disk1s3                                                  <SIZE>   <SIZE>   <SIZE>     <PCT>      <N>  <SIZE>    <PCT>   /System/Volumes/Hardware
-/dev/disk3s5                                                  <SIZE>   <SIZE>   <SIZE>    <PCT>    <SIZE>   <SIZE>    <PCT>   /System/Volumes/Data
-map auto_home                                                   <SIZE>     <SIZE>     <SIZE>   <PCT>       <N>     <N>     -   /System/Volumes/Data/home
-<PATH> Apps/Thock-<NUM>/Thock.app   <SIZE>   <SIZE>    <SIZE>    <PCT>    <SIZE>  <SIZE>    <PCT>   <PATH>
+Filesystem      Size  Used Avail Capacity  Mounted on
+/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
+map auto_home      <SIZE>    <SIZE>    <SIZE>   <PCT>%    /System/Volumes/Data/home
 
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
-<SIZE_ROW>
+<SIZE>\t/stub/a
+ <SIZE>\t/stub/b
 --- stderr:
 <PATH> line <N>: print_section: command not found
 <PATH> line <N>: print_section: command not found
@@ -108,26 +61,7 @@ Active IP:
 <IP>
 
 Routes:
-Routing tables
-
-Internet:
-Destination        Gateway            Flags               Netif Expire
-default            <IP>        UGScg                 en0
-<PROCESS_ROW>
-<IP>          <IP>          UH                    lo0
-<PROCESS_ROW>
-<IP>    link#<N>            UHLSW                 en0      !
-<PROCESS_ROW>
-<IP>/<N>     link#<N>            UCS                   en0      !
-<IP>        b8:d9:4d:6d:<N>:af  UHLWIir               en0   <N>
-<IP>        ac:bc:b5:e3:<N>:<N>  UHLWI                 en0      !
-<IP>/<N>    link#<N>            UCS                   en0      !
-<IP>       4e:ae:<N>:<N>:<N>:c   UHLWI                 lo0
-<IP>       a0:c1:c5:d9:<N>:<N>  UHLWI                 en0      !
-<IP>       ce:3e:9b:7e:2a:7d  UHLWI                 en0      !
-<NUM>/<N>          link#<N>            UmCS                  en0      !
-<IP>        <N>:<N>:5e:<N>:<N>:fb      UHmLWI                en0
-<IP>/<N> link#<N>            UCS                   en0      !
+stub netstat line
 
 Listening ports:
 COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
@@ -154,10 +88,10 @@ OneDrive  <N> mansys   25u  IPv6 0xf3a6d06071159c71      0t0  TCP [::<N>]:<N> (L
 --- exit: 0
 --- stdout:
 Now drawing from 'Battery Power'
- -InternalBattery-<N> (id=<N>)	<PCT>; discharging; <N>:<N> remaining present: true
+ -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 
 Now drawing from 'Battery Power'
- -InternalBattery-<N> (id=<N>)	<PCT>; discharging; <N>:<N> remaining present: true
+ -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 --- stderr:
 <PATH> line <N>: print_section: command not found
 ===== command_perf_snapshot =====
@@ -178,9 +112,9 @@ Refreshing every <N> seconds. Press Ctrl+C to stop.
 
  <UPTIME_LOAD>
 
-/dev/disk3s1s1   <SIZE>    <SIZE>   <SIZE>    <PCT>    459k   <SIZE>    <PCT>   /
+/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
- -InternalBattery-<N> (id=<N>)	<PCT>; discharging; <N>:<N> remaining present: true
+ -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 
 Top CPU:
 <PROCESS_ROW>
@@ -188,10 +122,8 @@ Top CPU:
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
-<PROCESS_ROW>
 
 Top Memory:
-<PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
@@ -201,9 +133,9 @@ Top Memory:
 
  <UPTIME_LOAD>
 
-/dev/disk3s1s1   <SIZE>    <SIZE>   <SIZE>    <PCT>    459k   <SIZE>    <PCT>   /
+/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
- -InternalBattery-<N> (id=<N>)	<PCT>; discharging; <N>:<N> remaining present: true
+ -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 
 Top CPU:
 <PROCESS_ROW>
@@ -211,10 +143,8 @@ Top CPU:
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
-<PROCESS_ROW>
 
 Top Memory:
-<PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
@@ -224,9 +154,9 @@ Top Memory:
 
  <UPTIME_LOAD>
 
-/dev/disk3s1s1   <SIZE>    <SIZE>   <SIZE>    <PCT>    459k   <SIZE>    <PCT>   /
+/dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
- -InternalBattery-<N> (id=<N>)	<PCT>; discharging; <N>:<N> remaining present: true
+ -InternalBattery-<N> (id=<N>)\t85%%; discharging; <N>:<N> remaining present: true
 
 Top CPU:
 <PROCESS_ROW>
@@ -234,10 +164,8 @@ Top CPU:
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
-<PROCESS_ROW>
 
 Top Memory:
-<PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>
 <PROCESS_ROW>

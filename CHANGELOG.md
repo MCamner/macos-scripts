@@ -32,7 +32,13 @@ All notable changes to this project will be documented in this file.
   against a copy of the data layer with one character changed in a heading and
   requires the diff to show it.
 
-  **The golden pins three defects, all pre-existing and all found by writing
+  The system commands are stubbed (`tests/fixtures/perf-stubs`) so the fixture
+  is a rendering snapshot rather than a photograph of one laptop. The first
+  version captured this machine's battery, load and process list and failed CI,
+  which runs Linux and has no `pmset`. With the inputs fixed, almost nothing
+  needs masking, which makes the comparison sharper rather than looser.
+
+  **The golden pins four defects, all pre-existing and all found by writing
   it:**
 
   * `print_section: command not found`, eleven times. Seven of the nine screens
@@ -48,9 +54,22 @@ All notable changes to this project will be documented in this file.
     The same value appears in the menu's own Signals row.
   * `command_perf_quick_watch` cannot exit on its own. It is bounded in the
     harness and its status in the golden is the timeout's 124.
+  * `awk -v load=...` in `perf_health_score`. `load` is a gawk builtin, so gawk
+    rejects it as a variable name and the whole health score fails on any system
+    with GNU awk. BSD awk on macOS accepts it, which is why it went unseen for
+    as long as this code has existed.
 
-  Recording them rather than fixing them here keeps the deletion PR revertible
-  and single-purpose. They are behaviour changes and belong in their own change.
+  The fourth is **fixed** here, because it is what kept the test from being a CI
+  gate at all — CI runs Linux. The variable is renamed and nothing else changed;
+  the golden is unchanged on macOS, which is the proof the rename preserves
+  behaviour there.
+
+  The other three are recorded, not fixed. They are behaviour changes and this
+  branch is a deletion that has to stay revertible.
+
+  Verified as a chain rather than asserted: the pre-migration implementation
+  extracted from `94d0eba` renders byte-identical to the committed golden, the
+  current one does too, and a one-character change to a heading is reported.
 
 ### Removed
 

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Fixed-output stub for the performance golden. See
+# tests/performance-screens-golden-smoke.sh.
+printf '%s\n' "Now drawing from 'Battery Power'"
+printf '%s\n' " -InternalBattery-0 (id=1234567)\t85%%; discharging; 4:20 remaining present: true"

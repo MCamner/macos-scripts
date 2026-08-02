@@ -17,24 +17,42 @@
 # All nine are live: rows 1-9 of terminal/menus/mq-performance-menu.sh call them
 # directly.
 #
-# THE GOLDEN PINS THREE DEFECTS. It records what these screens do, which is not
-# the same as what they should do, and reconstructing it is what found them —
-# all three predate the migration and appear identically on both sides:
+# The system commands are stubbed (tests/fixtures/perf-stubs) so the fixture is
+# a rendering snapshot rather than a photograph of one laptop. The first version
+# captured this machine's battery, load and process list and failed on CI, which
+# runs Linux and has no pmset. Stubbing also makes the comparison sharper: with
+# the inputs fixed, almost nothing needs masking.
+#
+# THE GOLDEN PINS FOUR DEFECTS. It records what these screens do, which is not
+# the same as what they should do, and reconstructing it is what found all four.
+# Every one predates the migration and renders identically on both sides:
 #
 #   1. `print_section: command not found`, 11 times. Seven of the nine screens
 #      call print_section, and one also calls print_kv. Both live only in the
 #      v1 tree's lib/ui.sh, which the live path never sourced — the menu sources
 #      mq-ui.sh and the data layer, nothing else. Rows 3 to 9 have been printing
 #      that error instead of a heading for as long as this path has existed.
-#   2. `Load (1m)` renders as one run of concatenated decimals ("1.541.481.58").
+#   2. `Load (1m)` renders as one run of concatenated decimals ("1.501.251.10").
 #      perf_load_1m splits `uptime` on ", " while macOS separates the three load
 #      averages with spaces, so it keeps all three and `tr -d ' '` glues them.
 #   3. command_perf_quick_watch cannot exit on its own; it refreshes forever and
 #      is bounded here, so its exit status in the golden is the timeout's 124.
+#   4. `awk -v load=...` in perf_health_score — fixed, because it is what kept
+#      this test from being a CI gate at all. `load` is a gawk builtin, so gawk
+#      rejects it and the whole health score fails on any system with GNU awk.
+#      BSD awk on macOS accepts it, which is why it went unseen. The variable is
+#      renamed; the golden is unchanged on macOS, which is the proof the rename
+#      is behaviour-preserving here.
 #
-# Fixing them changes this output, and the golden must be regenerated in the
-# same commit with the reason written down. Do not regenerate it to make an
-# unexplained diff go away — that is the failure mode a golden exists to catch.
+# Fixing the other three changes this output, and the golden must be regenerated
+# in the same commit with the reason written down. Do not regenerate it to make
+# an unexplained diff go away — that is the failure mode a golden exists to
+# catch.
+#
+# Verified as a chain, not a claim: the pre-migration implementation extracted
+# from 94d0eba renders byte-identical to this golden, the current one does too,
+# and a one-character label change is reported.
+
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -70,7 +88,14 @@ render_screen() {
   local rc=0
   # quick_watch refreshes every two seconds by design, so it is bounded. The
   # timeout's own status (124) is part of the golden.
+  # The system commands are stubbed with fixed output. Without that the golden
+  # is a photograph of one machine: it captured this laptop's battery, load and
+  # process list, and CI runs Linux, where pmset and memory_pressure do not
+  # exist and gawk rejects `load` as a variable name. Stubbing makes the fixture
+  # portable and, more to the point, makes it measure the thing it is for —
+  # drift in *rendering*, not whether `df` still works.
   timeout 6 env \
+    PATH="$ROOT/tests/fixtures/perf-stubs:$PATH" \
     BASE_DIR="$ROOT" PROJECT_ROOT="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
     NO_COLOR=1 TERM=dumb COLUMNS=92 \
     bash -c '

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Fixed-output stub for the performance golden. See
+# tests/performance-screens-golden-smoke.sh.
+printf '%s\n' " 12.5 stub-process-one"
+printf '%s\n' "  8.0 stub-process-two"
+printf '%s\n' "  4.5 stub-process-three"
+printf '%s\n' "  2.0 stub-process-four"
+printf '%s\n' "  1.0 stub-process-five"

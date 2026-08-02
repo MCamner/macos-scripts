@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Fixed-output stub for the performance golden. See
+# tests/performance-screens-golden-smoke.sh.
+if [ "${1:-}" = "-h" ] && [ "${2:-}" = "/" ]; then
+  printf '%s\n' "Filesystem      Size  Used Avail Capacity  Mounted on"
+  printf '%s\n' "/dev/disk3s1s1  228Gi  185Gi   21Gi    64%%    /"
+else
+  printf '%s\n' "Filesystem      Size  Used Avail Capacity  Mounted on"
+  printf '%s\n' "/dev/disk3s1s1  228Gi  185Gi   21Gi    64%%    /"
+  printf '%s\n' "map auto_home      0Bi    0Bi    0Bi   100%%    /System/Volumes/Data/home"
+fi
