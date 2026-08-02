@@ -185,7 +185,7 @@
         "/stack"
       ],
       "namespace": "agent",
-      "summary": "Show stack status and operations",
+      "summary": "Show stack status and the read-only release cockpit",
       "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
