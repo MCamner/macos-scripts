@@ -731,6 +731,44 @@ The front door should make the right workflow easy to find, then hand off to the
 
 * [ ] Keep local quick commands local only when they truly belong to the terminal entrypoint.
 
+  Half done: the rule is defined, gated and applied to 59 of 60. The runtime fix
+  the classification exposed is a separate PR, and this box closes when it lands.
+
+  `owner: macos-scripts` used to say only "not delegated". `local_role` is the
+  positive rule, and every local command now declares one of exactly three,
+  classified by what its own code owns rather than by what it opens:
+
+  ```text
+  terminal-ux      28   menus, help, indexes, pickers, dashboards, theme
+  host-operation   14   network, processes, ports, power, scans, clipboard
+  thin-entrypoint  17   starts something that lives elsewhere, owns the call
+  exempt            1   srm
+  ```
+
+  `validate-command-registry.py` fails a local command with no role, a role
+  outside the three, a `local_role` on a command another repo owns, and an exempt
+  command that also classifies. Four negative fixtures prove each fires.
+
+  **`srm` is the exemption, and finding out why was the point of the exercise.**
+  Its first four verbs delegate to `mq-agent memory-*`. Everything else falls
+  through to `tools/scripts/srm.sh`: 156 lines that build a system prompt and
+  call `https://api.openai.com/v1/responses` directly with `file_search` against
+  a hardcoded vector store. Memory belongs to `mqobsidian` and orchestration to
+  `mq-agent`, and "do not implement memory promotion in shell" is a v2.0.0
+  non-goal on this page. Classifying it `thin-entrypoint` would have recorded the
+  breach as approved, so it is named in `LOCAL_ROLE_EXEMPT` with the removal
+  condition instead, and the smoke test fails if that list ever holds anything
+  other than exactly `srm`.
+
+  **`srm` is not the only one.** `ask`, `fix` and `chat` call the same endpoint
+  from `tools/scripts/*.sh`. They are classified `thin-entrypoint`, which is
+  accurate about their dispatch arms — four lines that run a script — and says
+  nothing about what those scripts own. That is the same shape as `srm` one level
+  down, and it is unexamined. Deciding whether an AI helper calling a provider
+  directly from shell is a thin entrypoint or a boundary breach is the next
+  question this section has to answer; it was not answered here, and the
+  classification should not be read as having answered it.
+
 ### Exit gate
 
 * [x] A user can tell which repo owns each command. `mqlaunch help` prints the

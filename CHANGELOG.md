@@ -6,6 +6,39 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `local_role` — the positive rule for what a command this repo owns is allowed
+  to be. `owner: macos-scripts` used to say only "not delegated", so a command
+  could drift into orchestration, execution or memory and the registry would
+  record nothing unusual. All 60 local commands are now classified by what their
+  own code owns rather than by what they open: 28 `terminal-ux`,
+  14 `host-operation`, 17 `thin-entrypoint`, and one exemption.
+
+  `validate-command-registry.py` fails a local command with no role, a role
+  outside the three, a `local_role` on a command another repo owns, and an exempt
+  command that also classifies. Four negative fixtures in
+  `tests/command-registry-smoke.sh` prove each rule fires.
+
+  **The exemption is `srm`, and it is the finding.** Its first four verbs
+  delegate to `mq-agent memory-*`; everything else falls through to
+  `tools/scripts/srm.sh`, 156 lines that build a system prompt and call
+  `https://api.openai.com/v1/responses` directly with `file_search` against a
+  hardcoded vector store. That is semantic memory cognition in shell — memory
+  belongs to mqobsidian, orchestration to mq-agent, and "do not implement memory
+  promotion in shell" is a v2.0.0 non-goal. Classifying it `thin-entrypoint`
+  would have recorded the breach as approved, so it is named in
+  `LOCAL_ROLE_EXEMPT` with the reason and the removal condition beside it. The
+  smoke test fails if that list ever holds anything other than exactly `srm`, so
+  a second breach cannot be resolved by naming it.
+
+  No runtime changed. The `srm` fix is a separate PR.
+
+  Noted while classifying and deliberately not resolved: `ask`, `fix` and `chat`
+  call the same OpenAI endpoint from their own scripts. They are classified
+  `thin-entrypoint`, which is accurate about their four-line dispatch arms and
+  says nothing about what those scripts own.
+
 ### Fixed
 
 * The `stack` route named three of mq-agent's sixteen verbs and omitted the one

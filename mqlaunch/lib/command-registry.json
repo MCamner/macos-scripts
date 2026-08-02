@@ -21,7 +21,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "workspace",
@@ -70,7 +71,8 @@
           "summary": "Restore a snapshot; defaults to the latest"
         }
       ],
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "host-operation"
     },
     {
       "name": "demo",
@@ -87,7 +89,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "excalidraw",
@@ -105,7 +108,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "review",
@@ -250,7 +254,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "ask",
@@ -268,7 +273,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "ollama-review",
@@ -284,7 +290,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "srm",
@@ -344,7 +351,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "repos",
@@ -401,7 +409,8 @@
           "summary": "Show the git change summary per repo"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "fix",
@@ -419,7 +428,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "chat",
@@ -438,7 +448,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "release-check",
@@ -532,7 +543,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "doctor",
@@ -551,7 +563,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "scan",
@@ -569,7 +582,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "atlas",
@@ -587,7 +601,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "system",
@@ -679,7 +694,8 @@
           "summary": "Show the current date and time"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "git",
@@ -704,7 +720,8 @@
           "summary": "Open the git menu for the current repo"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "release",
@@ -746,7 +763,8 @@
           "summary": "Show release status"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "dev",
@@ -786,7 +804,8 @@
           "summary": "Open the dev menu for the current project"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "help",
@@ -853,7 +872,8 @@
           "summary": "Open the repo in a browser"
         }
       ],
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "perf",
@@ -872,7 +892,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "net",
@@ -890,7 +911,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "host-operation"
     },
     {
       "name": "palette",
@@ -910,7 +932,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "markdownlint",
@@ -928,7 +951,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "ghost",
@@ -944,7 +968,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "pulse",
@@ -960,7 +985,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "reap",
@@ -977,7 +1003,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "guard",
@@ -993,7 +1020,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "mc",
@@ -1010,7 +1038,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "nickname-set",
@@ -1029,7 +1058,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "theme-macos",
@@ -1045,7 +1075,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "theme-reset",
@@ -1061,7 +1092,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "check",
@@ -1079,7 +1111,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "self-check",
@@ -1097,7 +1130,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "debug",
@@ -1117,7 +1151,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "host-operation"
     },
     {
       "name": "apps",
@@ -1155,7 +1190,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "docwrite",
@@ -1174,7 +1210,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "version",
@@ -1190,7 +1227,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "notes",
@@ -1208,7 +1246,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "about",
@@ -1227,7 +1266,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "index",
@@ -1245,7 +1285,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "hal",
@@ -1357,7 +1398,8 @@
       "interactive": false,
       "compat_only": true,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "github",
@@ -1380,7 +1422,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "git-log",
@@ -1400,7 +1443,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "git-branch",
@@ -1420,7 +1464,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "kill-process",
@@ -1440,7 +1485,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "host-operation"
     },
     {
       "name": "kill-port",
@@ -1460,7 +1506,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "host-operation"
     },
     {
       "name": "snippets",
@@ -1480,7 +1527,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "recent",
@@ -1500,7 +1548,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "brain",
@@ -1516,7 +1565,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "note",
@@ -1539,7 +1589,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "b2tui",
@@ -1558,7 +1609,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": false
+      "operator_surface": false,
+      "local_role": "terminal-ux"
     },
     {
       "name": "tools",
@@ -1575,7 +1627,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "login",
@@ -1595,7 +1648,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "shortcuts",
@@ -1615,7 +1669,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "host-operation"
     },
     {
       "name": "theme",
@@ -1662,7 +1717,8 @@
           "aliases": [],
           "summary": "Reset the terminal theme"
         }
-      ]
+      ],
+      "local_role": "terminal-ux"
     },
     {
       "name": "guide",
@@ -1680,7 +1736,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     },
     {
       "name": "repo",
@@ -1696,7 +1753,8 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "thin-entrypoint"
     },
     {
       "name": "focus",
@@ -1712,7 +1770,8 @@
       "interactive": true,
       "compat_only": false,
       "delegates_to": null,
-      "operator_surface": true
+      "operator_surface": true,
+      "local_role": "terminal-ux"
     }
   ]
 }
