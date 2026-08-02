@@ -594,6 +594,19 @@ dispatch_cli_command() {
 
     skills|skill)
       shift
+      # With no verb, answer here rather than letting argparse answer. The
+      # delegate's reply names its own file — "mq-skills.py: error: the
+      # following arguments are required: command" — for a command the operator
+      # typed as `mqlaunch skills`, in phrasing that belongs to Python rather
+      # than to this CLI. mqlaunch already knows the verbs, so it can say so.
+      #
+      # Only the empty case. An invalid verb still goes to the delegate, whose
+      # error names the word the operator actually typed; intercepting that
+      # would mean carrying a second copy of the verb list.
+      if [[ $# -eq 0 ]]; then
+        print_namespace_help skills >&2
+        return 2
+      fi
       # No --json special case here: mq-skills.py has no such flag, so skipping
       # the pause for it only made a rejected argument look like a machine mode.
       "$BASE_DIR/tools/scripts/mq-skills.py" "$@"
@@ -606,6 +619,22 @@ dispatch_cli_command() {
       shift
       case "$sub" in
         ""|menu|hub)
+          # Bare `repos` opens the hub, which is an interactive picker. Without
+          # a terminal that picker refused with "GitHub repo picker needs a
+          # terminal." — a subject the operator never typed, and no way forward,
+          # even though six repos subcommands work perfectly well headless.
+          #
+          # Answer before delegating, so the message names the command that was
+          # typed and the alternatives that exist. The exit status stays 1: the
+          # command is valid with no argument on a terminal, so this is an
+          # environment failure rather than a usage error, and no caller's
+          # exit-code handling moves.
+          if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
+            echo "mqlaunch repos with no command opens the repo hub, which needs a terminal." >&2
+            echo >&2
+            print_namespace_help repos >&2
+            return 1
+          fi
           "$BASE_DIR/bin/mqlaunch" hub
           command_status=$?
           ;;
