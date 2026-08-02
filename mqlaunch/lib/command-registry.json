@@ -300,8 +300,8 @@
         "repo-memory"
       ],
       "namespace": "srm",
-      "summary": "Semantic repo memory and the co-change loop",
-      "owner": "macos-scripts",
+      "summary": "Semantic repo memory, delegated to mq-agent",
+      "owner": "mq-agent",
       "safety": "delegating",
       "output_modes": [
         "human"
@@ -310,7 +310,7 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": "mq-agent memory-*",
-      "unknown_subcommand": "forward",
+      "unknown_subcommand": "reject",
       "subcommands": [
         {
           "name": "cochange",
@@ -331,6 +331,21 @@
           "name": "resolve-supersede",
           "aliases": [],
           "summary": "Accept or reject a supersede proposal"
+        },
+        {
+          "name": "ask",
+          "aliases": [],
+          "summary": "Search semantic memory via mq-agent"
+        },
+        {
+          "name": "search",
+          "aliases": [],
+          "summary": "Search semantic memory via mq-agent"
+        },
+        {
+          "name": "inspect",
+          "aliases": [],
+          "summary": "Show semantic memory availability via mq-agent"
         }
       ],
       "operator_surface": true

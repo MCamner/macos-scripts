@@ -148,6 +148,11 @@ Usage: mqlaunch srm <command> [args]
 
 Commands: ask, search, inspect, cochange, review-status,
           promote-from-review, resolve-supersede
+
+Every verb is delegated to mq-agent, which owns semantic memory:
+  ask, search  -> mq-agent memory search
+  inspect      -> mq-agent memory status
+mqlaunch reaches no memory store and no AI provider itself.
 HELP
       ;;
     stack)
@@ -551,6 +556,23 @@ dispatch_cli_command() {
         review-status)       _mem_verb="memory-review-status" ;;
         promote-from-review) _mem_verb="memory-promote-from-review" ;;
         resolve-supersede)   _mem_verb="memory-resolve-supersede" ;;
+        # ask/search/inspect used to fall through to tools/scripts/srm.sh, which
+        # called api.openai.com directly with file_search against a hardcoded
+        # vector store. `mq-agent memory status` reports that same store, so the
+        # owner already reached this memory through repo-signal/mq-mcp and the
+        # local path was a second route around it. `ask` and `search` were one
+        # query with two spellings; both are `memory-search` now.
+        ask|search)          _mem_verb="memory-search" ;;
+        inspect)             _mem_verb="memory-status" ;;
+        # No fall-through. An unrecognised word used to be sent to an LLM by
+        # tools/scripts/srm.sh; ROADMAP.md lists "do not introduce hidden AI
+        # fallbacks for unknown commands" as a v2.0.0 non-goal. It prints usage
+        # and exits 2 here, in the case itself, so the registry can state
+        # `unknown_subcommand: reject` and the validator can see it.
+        *)
+          print_namespace_help srm >&2
+          return 2
+          ;;
       esac
       if [[ -n "$_mem_verb" ]]; then
         shift
@@ -563,9 +585,6 @@ dispatch_cli_command() {
         fi
         return "$command_status"
       fi
-      "$BASE_DIR/tools/scripts/srm.sh" "$@"
-      command_status=$?
-      return "$command_status"
       ;;
 
     skills|skill)

@@ -132,8 +132,8 @@ AGENT  (owner: mq-agent)
 OBSIDIAN  (owner: mqobsidian)
   mqlaunch obsidian       Durable memory and notes
 
-SRM
-  mqlaunch srm            Semantic repo memory and the co-change loop
+SRM  (owner: mq-agent)
+  mqlaunch srm            Semantic repo memory, delegated to mq-agent
 
 SKILLS
   mqlaunch skills         List and inspect installed skills

@@ -73,27 +73,24 @@ echo "[3/4] srm routes its agent verbs case-insensitively"
 }
 
 echo "[4/4] normalization does not reach past the command word"
-# `srm` with no recognised verb hands the whole line to srm.sh as a question.
-# Lowercasing that would corrupt it, so the raw words must survive.
+# This step used to send `srm "What does HAL do"` to tools/scripts/srm.sh and
+# check the words survived. That fall-through is gone: it handed any
+# unrecognised line to an LLM, which ROADMAP.md lists as a v2.0.0 non-goal, and
+# srm.sh with it. The rule it was protecting is unchanged — only the command
+# word is normalised, arguments keep the case the operator typed — so the same
+# question is asked of the verb that still carries a free-form argument.
 (
   export MACOS_SCRIPTS_HOME="$ROOT"
   # shellcheck source=/dev/null
   source "$COMMAND_MODE"
   pause_enter() { return 0; }
-  # Read by the dispatcher sourced above — this is what points it at the stub
-  # tree instead of the real one. ShellCheck cannot follow the source.
-  # shellcheck disable=SC2034
-  BASE_DIR="$TMPDIR_TEST"
-  mkdir -p "$TMPDIR_TEST/tools/scripts"
-  cat > "$TMPDIR_TEST/tools/scripts/srm.sh" <<'STUB'
-#!/usr/bin/env bash
-printf '%s\n' "$*" > "$TMPDIR_STUB/args"
-STUB
-  chmod +x "$TMPDIR_TEST/tools/scripts/srm.sh"
-  TMPDIR_STUB="$TMPDIR_TEST" dispatch_cli_command srm "What does HAL do" >/dev/null 2>&1
+  run_agent_command() {
+    printf '%s\n' "$*" > "$TMPDIR_TEST/args"
+  }
+  dispatch_cli_command srm SEARCH "What does HAL do" >/dev/null 2>&1
 )
-[[ "$(cat "$TMPDIR_TEST/args" 2>/dev/null)" == "What does HAL do" ]] || {
-  echo "the question was altered on its way to srm.sh: $(cat "$TMPDIR_TEST/args" 2>/dev/null)" >&2
+[[ "$(cat "$TMPDIR_TEST/args" 2>/dev/null)" == "memory-search What does HAL do" ]] || {
+  echo "the query was altered on its way to mq-agent: $(cat "$TMPDIR_TEST/args" 2>/dev/null)" >&2
   exit 1
 }
 

@@ -6,6 +6,47 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+* `tools/scripts/srm.sh` — 156 lines that built a system prompt and called
+  `https://api.openai.com/v1/responses` directly with `file_search` against a
+  hardcoded vector store, reached by `mqlaunch srm ask|search|inspect` and by any
+  unrecognised word after `srm`.
+
+  Retired rather than moved, because the capability already existed at its owner:
+  `mq-agent memory status` reports the *same* vector store,
+  `vs_69ffa9a4ef5c81919d7d237c3ecdc260`, through repo-signal and mq-mcp. The
+  local path was a second route to the same memory, around the repo that owns
+  it. `ask` and `search` were one query with two spellings and are
+  `mq-agent memory search` now; `inspect` is `mq-agent memory status`.
+
+  The fall-through is gone with it. Sending any unrecognised word to an LLM is
+  what ROADMAP.md calls a v2.0.0 non-goal — "do not introduce hidden AI fallbacks
+  for unknown commands" — and an unknown verb prints usage and exits 2. The
+  rejection sits in an explicit `*)` arm inside the nested case rather than after
+  it, so the registry can state `unknown_subcommand: reject` and
+  `validate-command-registry.py` can see that it does.
+
+  `srm` therefore delegates every verb and its owner is `mq-agent`, not
+  `macos-scripts`. `LOCAL_ROLE_EXEMPT` is empty, the quick-command gate covers
+  the whole local surface with no exception, and
+  `tests/command-registry-smoke.sh` step 23 now fails on any entry rather than on
+  any entry other than `srm`.
+
+  Two tests pinned the retired behaviour and were retargeted, not deleted.
+  `tests/command-word-normalization-smoke.sh` step 4 checked that a free-form
+  question reached `srm.sh` with its case intact; the rule it protects — only the
+  command word is normalised — is now asked of `srm SEARCH "What does HAL do"`.
+  `tests/mq-agent-routing-smoke.sh` gained steps 12 and 13: every verb reaches
+  mq-agent, `srm.sh` is absent, no OpenAI endpoint is reachable from the route in
+  code, and an unknown verb prints usage.
+
+  One defect found while verifying the real path and fixed here: `memory status`
+  defaults to `.`, and `_run_agent` runs inside `$MQ_AGENT_BIN`, so
+  `mqlaunch srm inspect` reported `repo: /Users/mansys/mq-agent` instead of the
+  operator's directory. It supplies `$PWD` when no path is given and never
+  overwrites an explicit one — the same shape as `_flow_has_repo_flag`.
+
 ### Added
 
 * `local_role` — the positive rule for what a command this repo owns is allowed

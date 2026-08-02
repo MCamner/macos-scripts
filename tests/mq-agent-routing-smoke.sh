@@ -8,27 +8,27 @@ DOC="$ROOT/docs/COMMANDS.md"
 
 echo "SMOKE: mq-agent review routing boundary"
 
-echo "[1/11] files exist"
+echo "[1/13] files exist"
 test -f "$AGENT_MENU"
 test -f "$COMMAND_MODE"
 
-echo "[2/11] shell syntax"
+echo "[2/13] shell syntax"
 bash -n "$AGENT_MENU"
 bash -n "$COMMAND_MODE"
 
-echo "[3/11] review delegates to mq-agent review command group"
+echo "[3/13] review delegates to mq-agent review command group"
 grep -q "_run_agent review diff" "$AGENT_MENU"
 grep -q "_run_agent review file" "$AGENT_MENU"
 grep -q "_run_agent review repo" "$AGENT_MENU"
 
-echo "[4/11] risk review uses mq-agent risk flag"
+echo "[4/13] risk review uses mq-agent risk flag"
 grep -q "_run_agent review diff --risk" "$AGENT_MENU"
 
-echo "[5/11] repo health targets macos-scripts by default"
+echo "[5/13] repo health targets macos-scripts by default"
 grep -q 'repo_path=\$repo_path' "$AGENT_MENU"
 grep -q 'MQ_REPO_HEALTH_PATH:-\$BASE_DIR' "$AGENT_MENU"
 
-echo "[6/11] mqlaunch command mode exposes top-level routes"
+echo "[6/13] mqlaunch command mode exposes top-level routes"
 grep -q "run_agent_command review" "$COMMAND_MODE"
 grep -q "run_agent_command architecture" "$COMMAND_MODE"
 grep -q "run_agent_command risk-review" "$COMMAND_MODE"
@@ -42,7 +42,7 @@ grep -q "run_agent_command mcp-status" "$COMMAND_MODE"
 # neither proved anything about the boundary in the first place. A roadmap is a
 # plan, and rewriting it is its job. The contract lives in docs/COMMANDS.md and
 # in the routes asserted above.
-echo "[7/11] docs describe delegation boundary"
+echo "[7/13] docs describe delegation boundary"
 grep -q "review current diff via mq-agent -> mq-mcp" "$DOC"
 grep -q "mqlaunch stack status" "$DOC"
 grep -q 'mq-agent stack status' "$DOC"
@@ -79,7 +79,7 @@ expect_translation() {
   fi
 }
 
-echo "[8/11] review translates the operator vocabulary to mq-agent flags"
+echo "[8/13] review translates the operator vocabulary to mq-agent flags"
 expect_translation "mq-agent review diff"                       # scope defaults to diff
 expect_translation "mq-agent review repo" repo
 expect_translation "mq-agent review file lib/x.sh" file lib/x.sh
@@ -87,7 +87,7 @@ expect_translation "mq-agent review file lib/x.sh --security" file lib/x.sh secu
 expect_translation "mq-agent review diff --architecture" diff architecture
 expect_translation "mq-agent review repo --risk" repo --mode risk
 
-echo "[9/11] mq-agent's own options survive the translation"
+echo "[9/13] mq-agent's own options survive the translation"
 # `--repo <path>` is a real mq-agent option on `review file`: the external repo
 # the file lives in. mqlaunch must pass it through rather than read it as a
 # scope word, or the option is unreachable from the launcher.
@@ -126,7 +126,7 @@ expect_dispatch() {
   fi
 }
 
-echo "[10/11] stack forwards every verb to mq-agent, and bare stack means status"
+echo "[10/13] stack forwards every verb to mq-agent, and bare stack means status"
 expect_dispatch "mq-agent stack status" stack
 expect_dispatch "mq-agent stack status" stack status
 expect_dispatch "mq-agent stack status --json" stack status --json
@@ -140,7 +140,7 @@ expect_dispatch "mq-agent stack truth-export" stack truth-export
 # subcommand would need a mqlaunch change to become reachable.
 expect_dispatch "mq-agent stack brain-gate --strict" stack brain-gate --strict
 
-echo "[11/11] the delegate's exit code survives the route"
+echo "[11/13] the delegate's exit code survives the route"
 # `mqlaunch stack --json` really does fail: --json is an option on the
 # subcommands, not on the group, so mq-agent exits 2. A launcher that swallowed
 # that would make the failure invisible to a script.
@@ -155,5 +155,81 @@ for code in 0 1 2 127; do
     exit 1
   fi
 done
+
+# `srm` was the one command that could not carry a local_role. Its first four
+# verbs delegate to `mq-agent memory-*`; everything else fell through to
+# tools/scripts/srm.sh, which called api.openai.com directly with file_search
+# against a hardcoded vector store — semantic memory cognition in shell, on the
+# same vector store `mq-agent memory status` already reports. These steps pin
+# the retirement: every verb reaches mq-agent, and no word reaches an AI from
+# here.
+# `srm` is dispatched in mqlaunch-command-mode.sh, not in run_agent_command, so
+# the harness above tests the wrong layer for it. This one sources the command
+# mode and stubs the bridge it calls, which is the seam the srm route actually
+# crosses.
+cli() {
+  (
+    export MACOS_SCRIPTS_HOME="$ROOT"
+    # shellcheck source=/dev/null
+    source "$COMMAND_MODE" >/dev/null 2>&1
+    run_agent_command() {
+      printf 'mq-agent'
+      printf ' %s' "$@"
+      printf '\n'
+      return "${STUB_EXIT:-0}"
+    }
+    pause_enter() { :; }
+    dispatch_cli_command "$@"
+  )
+}
+
+expect_cli() {
+  local want="$1"
+  shift
+  local got
+  got="$(cli "$@" 2>&1)"
+  if [[ "$got" != "$want" ]]; then
+    printf 'FAIL: mqlaunch %s\n  want: %s\n  got : %s\n' "$*" "$want" "$got" >&2
+    exit 1
+  fi
+}
+
+echo "[12/13] srm delegates every verb to mq-agent, including the read paths"
+expect_cli "mq-agent memory-search vector store upload flow" srm search vector store upload flow
+expect_cli "mq-agent memory-search what is indexed here" srm ask what is indexed here
+expect_cli "mq-agent memory-status" srm inspect
+# `memory status` defaults to `.`, which resolves inside mq-agent's checkout
+# because _run_agent cd's there. The operator's directory is supplied, and an
+# explicit one is never overwritten.
+expect_dispatch "mq-agent memory status $PWD" memory-status
+expect_dispatch "mq-agent memory status /tmp/elsewhere" memory-status /tmp/elsewhere
+expect_cli "mq-agent memory-cochange macos-scripts lib/x.sh" srm cochange macos-scripts lib/x.sh
+expect_cli "mq-agent memory-review-status" srm review-status
+expect_cli "mq-agent memory-promote-from-review 7" srm promote-from-review 7
+expect_cli "mq-agent memory-resolve-supersede 9" srm resolve-supersede 9
+
+echo "[13/13] the retired local AI path is gone and unknown words fail clearly"
+if [[ -e "$ROOT/tools/scripts/srm.sh" ]]; then
+  echo "FAIL: tools/scripts/srm.sh is back — the local OpenAI path was retired" >&2
+  exit 1
+fi
+# Code, not comments: the arm that retired this path explains what it retired,
+# and a plain grep would match that explanation and fail on its own changelog.
+if sed 's/#.*//' "$AGENT_MENU" "$COMMAND_MODE" | grep -q "api\.openai\.com"; then
+  echo "FAIL: an OpenAI endpoint is reachable from the srm route again" >&2
+  exit 1
+fi
+# A word this repo does not route must not become an AI question. ROADMAP.md
+# lists "do not introduce hidden AI fallbacks for unknown commands" as a
+# non-goal, and the fall-through was exactly that.
+if out="$(cli srm not-a-verb 2>&1)"; then
+  echo "FAIL: an unknown srm verb was accepted: $out" >&2
+  exit 1
+fi
+case "$out" in
+  *"Usage: mqlaunch srm"*) ;;
+  *) echo "FAIL: unknown srm verb did not print usage: $out" >&2; exit 1 ;;
+esac
+echo "  ok: srm.sh is gone, no AI fallback, unknown verbs print usage"
 
 echo "OK: mq-agent review routing boundary smoke test passed"

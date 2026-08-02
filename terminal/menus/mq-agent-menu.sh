@@ -472,6 +472,23 @@ run_agent_command() {
       shift || true
       _run_agent_memory_cochange "$@"
       ;;
+    memory-search)
+      shift || true
+      _run_agent memory search "$@"
+      ;;
+    memory-status)
+      shift || true
+      # `memory status [PATH]` defaults to `.`, and `_run_agent` runs inside
+      # $MQ_AGENT_BIN — so the default resolves to mq-agent's own checkout and
+      # the screen reports the wrong repo. The operator's directory is the one
+      # they asked about. Same shape as `_flow_has_repo_flag`: supply the
+      # default, never overwrite an explicit argument.
+      if [[ $# -eq 0 ]]; then
+        _run_agent memory status "$PWD"
+      else
+        _run_agent memory status "$@"
+      fi
+      ;;
     memory-review-status)
       shift || true
       _run_agent memory review-status "$@"
