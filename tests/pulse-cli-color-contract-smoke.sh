@@ -181,8 +181,19 @@ done
 echo "  ok: banner, headings and every measurement survive"
 
 echo "[5/10] mqlaunch pulse --no-color emits zero ANSI end to end"
+# BASE_DIR is passed explicitly. bin/mqlaunch defaults it to $HOME/macos-scripts,
+# which is true on the developer machine and false on a CI runner — without it
+# the launcher exits 1 with "Main launcher not found" and, since that goes to
+# stderr, the step would die on set -e with nothing to read.
+launch_status=0
 PATH="$STUB:$PATH" TERM=xterm-256color MQ_NO_TUI=1 \
-  "$LAUNCH" pulse --no-color > "$STUB/flag.txt" 2>/dev/null
+  BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
+  "$LAUNCH" pulse --no-color > "$STUB/flag.txt" 2>"$STUB/flag.err" || launch_status=$?
+if [[ "$launch_status" -ne 0 ]]; then
+  echo "FAIL: mqlaunch pulse --no-color exited $launch_status" >&2
+  cat "$STUB/flag.err" >&2
+  exit 1
+fi
 flag_esc="$(esc_count "$STUB/flag.txt")"
 if [[ "$flag_esc" != "0" ]]; then
   echo "FAIL: mqlaunch pulse --no-color emitted $flag_esc ANSI escapes" >&2
