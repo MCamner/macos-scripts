@@ -64,7 +64,14 @@ perf_cpu_count() {
 
 # Handles perf load 1m.
 perf_load_1m() {
-  uptime | awk -F'load averages?: ' '{print $2}' | awk -F', ' '{print $1}' | tr -d ' '
+  # Split on whitespace, not on ", ". macOS separates the three load averages
+  # with spaces — "load averages: 1.50 1.25 1.10" — so splitting on ", " kept
+  # all three and `tr -d ' '` glued them into "1.501.251.10". That is what the
+  # Performance Hub's Load (1m) field and the menu's Signals row have been
+  # showing. Linux writes "load average:" with commas between the figures, which
+  # the same awk handles: taking field 1 of a whitespace split gives the 1m
+  # value there too, once its trailing comma is dropped.
+  uptime | awk -F'load averages?: ' '{print $2}' | awk '{print $1}' | tr -d ' ,'
 }
 
 # Handles perf disk percent root.

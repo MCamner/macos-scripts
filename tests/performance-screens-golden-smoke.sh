@@ -23,7 +23,7 @@
 # runs Linux and has no pmset. Stubbing also makes the comparison sharper: with
 # the inputs fixed, almost nothing needs masking.
 #
-# THE GOLDEN PINS FOUR DEFECTS, TWO OF THEM STILL OPEN. It records what these screens do, which is not
+# THE GOLDEN PINS FOUR DEFECTS, ONE OF THEM STILL OPEN. It records what these screens do, which is not
 # the same as what they should do, and reconstructing it is what found all four.
 # Every one predates the migration and renders identically on both sides:
 #
@@ -33,9 +33,16 @@
 #      rows 3 to 9 printed that error where a heading belongs. Restored verbatim
 #      from 94d0eba into the data layer, guarded, and the golden regenerated:
 #      the eleven error lines are gone and every screen carries its heading.
-#   2. `Load (1m)` renders as one run of concatenated decimals ("1.501.251.10").
-#      perf_load_1m splits `uptime` on ", " while macOS separates the three load
-#      averages with spaces, so it keeps all three and `tr -d ' '` glues them.
+#   2. FIXED. `Load (1m)` rendered as one run of concatenated decimals —
+#      "1.501.251.10". perf_load_1m split `uptime` on ", " while macOS separates
+#      the three figures with spaces, so it kept all three and `tr -d ' '` glued
+#      them. It splits on whitespace now and works on both formats: verified
+#      against a Linux-style "load average: 0.15, 0.20, 0.18" as well.
+#
+#      The masking had to go before the fix could be seen. `<LOADAVG>` covered
+#      the field the bug lived in, and the malformed value even matched the IP
+#      rule, so the fixture read `Load (1m): <IP>`. Those lines pass through
+#      unmasked now — `uptime` is stubbed, so they are deterministic.
 #   3. command_perf_quick_watch cannot exit on its own; it refreshes forever and
 #      is bounded here, so its exit status in the golden is the timeout's 124.
 #   4. `awk -v load=...` in perf_health_score — fixed, because it is what kept

@@ -5,7 +5,7 @@
 │ Score:  <SCORE>/<N> (Excellent)                                                              │
 │                                                                                          │
 │ SIGNALS                                                                                  │
-│ Load (1m): <LOADAVG>                      CPU cores: <N>                                │
+│ Load (1m): 1.50                              CPU cores: 8                                │
 │ Disk (/): <PCT>                                Battery: <PCT>                                │
 │ Memory: normal                               Network: <IP>                          │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -17,7 +17,7 @@
 │ Health score: <SCORE>/<N> (Excellent)                                                        │
 │                                                                                          │
 │ SYSTEM STATE                                                                             │
-│ Load:  <UPTIME_LOAD>
+│ Load:  14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10                   │
 │ Disk: <PCT>   Memory: normal   Battery: <PCT>                                                │
 │ Network IP: <IP>                                                                    │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -107,7 +107,7 @@ Health:            <SCORE>/<N> (Excellent)
 
 ----------------------------------------------------
 
- <UPTIME_LOAD>
+ 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
 
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
@@ -133,7 +133,7 @@ Health:            <SCORE>/<N> (Excellent)
 
 ----------------------------------------------------
 
- <UPTIME_LOAD>
+ 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
 
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
@@ -159,7 +159,7 @@ Health:            <SCORE>/<N> (Excellent)
 
 ----------------------------------------------------
 
- <UPTIME_LOAD>
+ 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
 
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
@@ -185,7 +185,7 @@ Health:            <SCORE>/<N> (Excellent)
 
 ----------------------------------------------------
 
- <UPTIME_LOAD>
+ 14:32  up 7 days,  3:21, 2 users, load averages: 1.50 1.25 1.10
 
 /dev/disk3s1s1  <SIZE>  <SIZE>   <SIZE>    <PCT>%    /
 
