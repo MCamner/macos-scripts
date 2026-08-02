@@ -105,14 +105,38 @@ assert "mq-skills.py" not in text, f"script name leaked on a TTY: {text!r}"
 print("  ok: same usage on a TTY, still no script name")
 PY
 
-echo "[4/8] mqlaunch skills <verb> still reaches the delegate"
+echo "[4/8] mqlaunch skills <verb> still reaches the delegate, with its arguments"
 # The guard must fire on the empty argument list only. If it swallowed verbs the
 # message check above would still pass and the command would be dead.
-audit_status=0
-launch skills audit || audit_status=$?
-test "$audit_status" -eq 0
-grep -qE 'skill\(s\)' "$WORK/out"
-echo "  ok: skills audit runs and reports"
+#
+# The delegate is stubbed rather than run. `mq-skills.py audit` scans the MQ
+# repos, so on a machine that has none — a CI runner — it reports nothing and
+# the step would be measuring the checkout rather than the routing. What is
+# being tested here is which command line the arm builds.
+skills_fake="$WORK/skills-fake"
+mkdir -p "$skills_fake/tools/scripts"
+cat > "$skills_fake/tools/scripts/mq-skills.py" <<'EOF'
+#!/usr/bin/env bash
+printf 'DELEGATE:'
+printf ' %s' "$@"
+printf '\n'
+EOF
+chmod +x "$skills_fake/tools/scripts/mq-skills.py"
+
+routed="$(
+  MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 bash -c '
+    source "$1" >/dev/null 2>&1
+    BASE_DIR="$2"
+    pause_enter() { :; }
+    dispatch_cli_command skills audit --repo /tmp/x
+  ' _ "$COMMAND_MODE" "$skills_fake" 2>&1
+)"
+if [[ "$routed" != "DELEGATE: audit --repo /tmp/x" ]]; then
+  echo "FAIL: skills did not forward the verb and its arguments unchanged" >&2
+  printf '  got: %s\n' "$routed" >&2
+  exit 1
+fi
+echo "  ok: verb and arguments forwarded verbatim"
 
 echo "[5/8] an unknown verb still reaches the delegate, which names the word typed"
 # Deliberately not intercepted. mqlaunch would have to carry a second copy of
@@ -200,10 +224,36 @@ fi
 echo "  ok: the terminal path is untouched"
 
 echo "[8/8] repos subcommands still forward unchanged"
-list_status=0
-launch repos list || list_status=$?
-test "$list_status" -eq 0
-grep -qF -- 'macos-scripts' "$WORK/out"
-echo "  ok: repos list still produces the repo table"
+# Stubbed for the same reason as step 4: mq-repos.py reads the MQ repos from
+# disk, and a CI runner has none, so running it for real would measure the
+# checkout instead of the routing.
+repos_fake="$WORK/repos-fake"
+mkdir -p "$repos_fake/tools/scripts"
+cat > "$repos_fake/tools/scripts/mq-repos.py" <<'EOF'
+#!/usr/bin/env bash
+printf 'DELEGATE:'
+printf ' %s' "$@"
+printf '\n'
+EOF
+chmod +x "$repos_fake/tools/scripts/mq-repos.py"
+
+for probe in "list" "status --short" "diff-summary"; do
+  # shellcheck disable=SC2086  # deliberate: the probe is a command line
+  got="$(
+    MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 bash -c '
+      source "$1" >/dev/null 2>&1
+      BASE_DIR="$2"
+      pause_enter() { :; }
+      shift 2
+      dispatch_cli_command repos "$@"
+    ' _ "$COMMAND_MODE" "$repos_fake" $probe 2>&1
+  )"
+  if [[ "$got" != "DELEGATE: $probe" ]]; then
+    echo "FAIL: repos $probe did not forward unchanged" >&2
+    printf '  got: %s\n' "$got" >&2
+    exit 1
+  fi
+done
+echo "  ok: three subcommands forward verbatim, guard fires only on the empty case"
 
 echo "PASS: operator usage messages for skills and repos"
