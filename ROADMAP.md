@@ -804,7 +804,8 @@ The front door should make the right workflow easy to find, then hand off to the
 
 ## P2 — Operator experience polish
 
-Status: Planned
+Status: In progress — the original scope is closed; a measuring pass reopened it
+with five findings, two of them fixed
 Priority: P2
 Risk if delayed: Low
 Owner: `macos-scripts`
@@ -1082,6 +1083,42 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     calls as "1. Save current workspace" and "4. Restore latest snapshot" inside
     the snapshots submenu on the row above them. Eleven to nine, with no submenu
     added and nothing hidden (#149).
+
+* [ ] Fix the paths a measuring pass found unclear, one at a time, each locked
+  by a behaviour test. Not a visual rebuild and not new features.
+
+  The boxes above closed the scope this section was written with. They did not
+  establish that the surface is clear, because none of them looked at it from
+  the outside. On 2026-08-02 every public command was run headless — 36 of them,
+  with the destructive, AI-cost and interactive-only ones excluded — and five
+  problems came back. They are listed here with the measurement, so the next one
+  starts from a fact.
+
+  * [x] `pulse` and `scan` wrote ANSI escapes with stdout redirected, and
+    neither `NO_COLOR=1` nor `--no-color` removed one — 20 and 36 sequences.
+    Both define their own colour variables and so never inherited the central
+    guard this repo already had. Fixed and gated by
+    `tests/pulse-cli-color-contract-smoke.sh` (#169).
+  * [x] `skills` and `repos` answered a bare invocation with something the
+    operator had not asked about: argparse's error naming `mq-skills.py`, and
+    "GitHub repo picker needs a terminal." for a command typed as `repos`.
+    Message, usage and next step only; both exit statuses and every delegation
+    are unchanged, which
+    `tests/operator-usage-message-smoke.sh` checks alongside the new text.
+  * [ ] The menu family disagrees about its headless exit status. `git`,
+    `release`, `shortcuts`, `tools` and `workflows` exit 0; `system` and `theme`
+    exit 1. One surface, two contracts. #168 settled that a menu ending is a
+    deliberate 0, so the two outliers need either the same treatment or a
+    reason written down — that decision is not made yet, and nothing should
+    change until it is.
+
+  Not defects, recorded so they are not re-measured: `review-brain` and
+  `selftest` returned 124 to the sweep, which was its own 25-second timeout.
+
+  One thing the sweep itself caused: running `signal-brain` bare wrote
+  `2026-08-02-repo-signal-mq-ag…` into the mqobsidian vault. `*-brain` commands
+  are writes and belong with the destructive exclusions in any repeat of this
+  measurement.
 
 ### Exit gate
 

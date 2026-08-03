@@ -8,6 +8,53 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The two commands the P2 operator inventory measured as unclear when called
+  with no argument. Both answered with something the operator had not asked
+  about:
+
+  ```text
+  $ mqlaunch skills
+  usage: mq-skills.py [-h] [--repo REPO] {audit,validate,new} ...
+  mq-skills.py: error: the following arguments are required: command   exit 2
+
+  $ mqlaunch repos
+  GitHub repo picker needs a terminal.                                 exit 1
+  ```
+
+  `skills` handed over the delegate's file name and argparse's phrasing for a
+  command typed as `mqlaunch skills`. `repos` named a subject that never
+  appeared in the command line — bare `repos` routes to the hub, which is an
+  interactive picker — and offered no way forward, though six `repos`
+  subcommands work headless. Now:
+
+  ```text
+  $ mqlaunch skills
+  Usage: mqlaunch skills <command> [args]
+
+  Commands: audit, validate, new                                       exit 2
+
+  $ mqlaunch repos
+  mqlaunch repos with no command opens the repo hub, which needs a terminal.
+
+  Usage: mqlaunch repos <command> [args]
+
+  Commands: list, status, roadmaps, skills, wiki-status, diff-summary   exit 1
+  ```
+
+  Message, usage and next step only. Nothing underneath changed, and both exit
+  statuses are deliberately what they already were: 2 for `skills`, because a
+  missing verb is a usage error either way, and 1 for `repos`, because bare
+  `repos` is valid on a terminal — the failure is the environment, not the
+  command line, so no caller's exit-code handling moves.
+
+  Two things left alone on purpose. An invalid `skills` verb still goes to the
+  delegate: its error names the word the operator typed, and intercepting it
+  would mean carrying a second copy of the verb list. And on a terminal, bare
+  `repos` still opens the hub — `tests/operator-usage-message-smoke.sh` asserts
+  that with a stubbed hub under a pty, alongside `skills audit`, `skills bogus`
+  and `repos list` still reaching their delegates. A fix that stopped
+  delegating would pass a message-only check.
+
 * The two colour surfaces that never went through the shared library, and so
   never inherited the P1 output contract. `tools/scripts/pulse.sh` defines its
   own six colour variables; `tools/cli/mq-ui.sh` defines four more and is
