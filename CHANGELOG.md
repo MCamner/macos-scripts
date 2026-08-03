@@ -9,23 +9,27 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * The menu family disagreed about what it returns without a terminal. Measured
-  headless, all eleven ended at their own prompt on EOF and three answered
-  differently:
+  headless, all ten local menus ended at their own prompt on EOF and three
+  answered differently:
 
   ```text
-  git release shortcuts tools workflows dev hal performance   exit 0
-  system theme apps                                           exit 1
+  git release shortcuts tools workflows dev performance   exit 0
+  system theme apps                                       exit 1
   ```
 
   `apps` is a third outlier the first sweep missed, having read it as an AI
-  command and excluded it on cost.
+  command and excluded it on cost. `hal` was in the sweep and answered 0, but
+  it is not on this list: it delegates to `mq_hal_run`, a bridge into the
+  mq-hal repo, so its status is the delegate's and 127 on a machine without
+  mq-hal is the correct answer. The contract covers ten local menus.
 
   #168 had already settled which answer is right: a menu loop exits non-zero
   without a terminal by design (`tests/menu-eof-smoke.sh`), so propagating that
   reports "the command failed" for "there was no terminal". All three now take
   the split #168 gave `workflows` — the menu path returns 0, the argument path
-  is untouched. `theme apply bogus` still exits 1, `theme bogusverb` 1,
-  `system bogusverb` 2, and a failed `apps ask` still carries its status.
+  is untouched. `system bogusverb` still exits 2, `theme apply bogus` and
+  `theme bogusverb` now exit 2 as well (see the entry below), and a failed
+  `apps ask` still carries its status.
 
   **Step 7 of `tests/delegated-exit-code-smoke.sh` could not have caught any of
   this.** It flags a branch only when the branch both invokes a `$BASE_DIR`
@@ -67,8 +71,8 @@ All notable changes to this project will be documented in this file.
   particular value.
 
   `tests/menu-exit-contract-smoke.sh` holds the whole contract end to end
-  through `bin/mqlaunch` rather than through stubs, on both surfaces: eleven
-  interactive entrypoints exit 0 without a terminal and draw their prompt
+  through `bin/mqlaunch` rather than through stubs, on both surfaces: ten local
+  menus exit 0 without a terminal and draw their prompt
   exactly once, the same holds on a real pty whose stdin is closed, four
   operations still report their own result, four usage errors are 2, and
   `repos` keeps 1 as the documented exception — it asks for a

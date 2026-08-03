@@ -1110,16 +1110,21 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     because the first sweep read it as an AI command.
 
     ```text
-    git release shortcuts tools workflows dev hal performance   exit 0
-    system theme apps                                           exit 1
+    git release shortcuts tools workflows dev performance   exit 0
+    system theme apps                                       exit 1
     ```
 
-    All eleven ended at their own prompt with the same EOF. #168 had already
-    settled the answer: a menu loop exits non-zero without a terminal by
-    design, so propagating it reports "the command failed" for "there was no
-    terminal". The three outliers took the split #168 gave `workflows` — menu
-    path 0, argument path unchanged. `theme apply bogus` still exits 1,
-    `system bogusverb` still exits 2.
+    All ten ended at their own prompt with the same EOF. `hal` answered 0 in
+    the sweep but is not one of them: it delegates to `mq_hal_run`, a bridge
+    into the mq-hal repo, so its status is the delegate's and 127 without
+    mq-hal checked out is correct. The contract covers ten local menus.
+
+    #168 had already settled the answer: a menu loop exits non-zero without a
+    terminal by design, so propagating it reports "the command failed" for
+    "there was no terminal". The three outliers took the split #168 gave
+    `workflows` — menu path 0, argument path unchanged. `system bogusverb`
+    still exits 2, and `theme apply bogus` exits 2 now too, under the third
+    contract point below.
 
     The contract this settles, written out because three commands had been
     guessing at it:
