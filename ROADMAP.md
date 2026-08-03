@@ -804,8 +804,8 @@ The front door should make the right workflow easy to find, then hand off to the
 
 ## P2 — Operator experience polish
 
-Status: In progress — the original scope is closed; a measuring pass reopened it
-with five findings, two of them fixed
+Status: Complete — the original scope closed, and the five findings a measuring
+pass added are closed too
 Priority: P2
 Risk if delayed: Low
 Owner: `macos-scripts`
@@ -1084,7 +1084,7 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     the snapshots submenu on the row above them. Eleven to nine, with no submenu
     added and nothing hidden (#149).
 
-* [ ] Fix the paths a measuring pass found unclear, one at a time, each locked
+* [x] Fix the paths a measuring pass found unclear, one at a time, each locked
   by a behaviour test. Not a visual rebuild and not new features.
 
   The boxes above closed the scope this section was written with. They did not
@@ -1105,12 +1105,49 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     Message, usage and next step only; both exit statuses and every delegation
     are unchanged, which
     `tests/operator-usage-message-smoke.sh` checks alongside the new text.
-  * [ ] The menu family disagrees about its headless exit status. `git`,
-    `release`, `shortcuts`, `tools` and `workflows` exit 0; `system` and `theme`
-    exit 1. One surface, two contracts. #168 settled that a menu ending is a
-    deliberate 0, so the two outliers need either the same treatment or a
-    reason written down — that decision is not made yet, and nothing should
-    change until it is.
+  * [x] The menu family disagreed about its headless exit status, and there
+    were three outliers rather than the two first reported — `apps` was missed
+    because the first sweep read it as an AI command.
+
+    ```text
+    git release shortcuts tools workflows dev performance   exit 0
+    system theme apps                                       exit 1
+    ```
+
+    All ten ended at their own prompt with the same EOF. `hal` answered 0 in
+    the sweep but is not one of them: it delegates to `mq_hal_run`, a bridge
+    into the mq-hal repo, so its status is the delegate's and 127 without
+    mq-hal checked out is correct. The contract covers ten local menus.
+
+    #168 had already settled the answer: a menu loop exits non-zero without a
+    terminal by design, so propagating it reports "the command failed" for
+    "there was no terminal". The three outliers took the split #168 gave
+    `workflows` — menu path 0, argument path unchanged. `system bogusverb`
+    still exits 2, and `theme apply bogus` exits 2 now too, under the third
+    contract point below.
+
+    The contract this settles, written out because three commands had been
+    guessing at it:
+
+    * a valid interactive menu with no terminal available renders at most once
+      and exits 0
+    * an operation given arguments propagates its real status
+    * an invalid argument is 2 — which `theme` was not doing, so
+      `mq-zsh-theme-switcher.sh` moved its three usage errors from 1 to 2 while
+      its runtime failures kept 1
+    * `repos` keeps 1 as a documented exception: it asks for a
+      terminal-dependent repo picker while also offering headless subcommands,
+      so "there was no terminal" is the true answer there
+
+    `tests/menu-exit-contract-smoke.sh` holds all four end to end through
+    `bin/mqlaunch`, headless and on a pty with closed stdin.
+
+    Step 7 of `tests/delegated-exit-code-smoke.sh` could not see any of this:
+    it only flags a branch that both invokes a `$BASE_DIR` script and ends in a
+    bare `return 0`, which describes neither `theme` nor the mixed shape. It
+    now carries a named exception list, and an entry is honoured only when the
+    same branch propagates somewhere — so an exception cannot cover a branch
+    that discards status everywhere, and a stale entry fails the step.
 
   Not defects, recorded so they are not re-measured: `review-brain` and
   `selftest` returned 124 to the sweep, which was its own 25-second timeout.

@@ -8,6 +8,98 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* The menu family disagreed about what it returns without a terminal. Measured
+  headless, all ten local menus ended at their own prompt on EOF and three
+  answered differently:
+
+  ```text
+  git release shortcuts tools workflows dev performance   exit 0
+  system theme apps                                       exit 1
+  ```
+
+  `apps` is a third outlier the first sweep missed, having read it as an AI
+  command and excluded it on cost. `hal` was in the sweep and answered 0, but
+  it is not on this list: it delegates to `mq_hal_run`, a bridge into the
+  mq-hal repo, so its status is the delegate's and 127 on a machine without
+  mq-hal is the correct answer. The contract covers ten local menus.
+
+  #168 had already settled which answer is right: a menu loop exits non-zero
+  without a terminal by design (`tests/menu-eof-smoke.sh`), so propagating that
+  reports "the command failed" for "there was no terminal". All three now take
+  the split #168 gave `workflows` — the menu path returns 0, the argument path
+  is untouched. `system bogusverb` still exits 2, `theme apply bogus` and
+  `theme bogusverb` now exit 2 as well (see the entry below), and a failed
+  `apps ask` still carries its status.
+
+  **Step 7 of `tests/delegated-exit-code-smoke.sh` could not have caught any of
+  this.** It flags a branch only when the branch both invokes a `$BASE_DIR`
+  script and ends in a bare `return 0`. `theme` invokes no script, and the
+  mixed shape — deliberate 0 on one path, propagation on the other — is not
+  what the pattern describes. Applying the fix then made the step fail for the
+  wrong reason: `system` and `apps` do call scripts, and now hold a deliberate
+  `return 0`.
+
+  Rather than reword the rule until it passed, the step now carries a named
+  exception list with the reason beside each entry, and honours an entry only
+  when the same branch propagates somewhere. An exception therefore cannot
+  cover a branch that discards status on every path, and an entry describing a
+  branch that no longer looks that way fails the step instead of passing
+  quietly. The behavioural proof is separate: step 10 grew to ten propagating
+  paths, step 11 to eight deliberate zeros, and step 12 stubs
+  `hal-terminal-guide.sh` through a fake `BASE_DIR` to observe both `apps`
+  paths.
+
+  Both gates were proven able to fail. Restoring the `theme` defect stops the
+  run at step 11; removing the propagating path from `apps` stops it at step 7.
+
+  One more thing the fix surfaced: lifting the menu case into a guard above the
+  `case` removed the literal `menu)` arm, and the registry validator reads that
+  arm to confirm the declared subcommand exists. The menu path went back inside
+  the `case` and returns 0 from within it.
+
+* An invalid `theme` argument reported 1 where the rest of the surface reports
+  2. `mqlaunch system bogusverb` has always answered 2, and so does the `srm`
+  namespace; `mq-zsh-theme-switcher.sh` answered 1 for an unknown command word,
+  for `apply` with no variant, and for a variant that does not exist. 1 is the
+  code a caller reads as "the theme could not be applied" rather than "that is
+  not a theme". All three are 2 now.
+
+  The runtime failures keep 1 — a missing UI library, a missing theme file —
+  because the distinction is the point of using 2 at all.
+  `tests/theme-command-surface-smoke.sh` was unaffected: its exit-code step
+  stubs `theme_cmd` with an arbitrary status and asserts propagation, not a
+  particular value.
+
+  `tests/menu-exit-contract-smoke.sh` holds the whole contract end to end
+  through `bin/mqlaunch` rather than through stubs, on both surfaces: ten local
+  menus exit 0 without a terminal and draw their prompt
+  exactly once, the same holds on a real pty whose stdin is closed, four
+  operations still report their own result, four usage errors are 2, and
+  `repos` keeps 1 as the documented exception — it asks for a
+  terminal-dependent picker while offering headless subcommands, so "there was
+  no terminal" is the true answer there. Proven able to fail: putting `theme
+  apply` back to 1 stops it at step 6, and letting the theme menu propagate
+  again stops it at step 2.
+
+  Writing that test found a second thing. `mq-zsh-theme-switcher.sh` resolved
+  its own root as `${HOME}/macos-scripts` outright, where
+  `tools/scripts/doctor.sh` and `tools/scripts/scan.sh` both read
+  `${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}`. A checkout anywhere else could
+  not run the switcher at all — it exited 1 with `Missing UI library` before
+  reaching its first command. It uses the same resolution as its siblings now.
+  (`terminal/themes/mq-theme-manager.sh` still hardcodes the path; it is
+  untouched here and outside this change.)
+
+  That also made the runtime branch testable without side effects. `apply` with
+  a valid variant rewrites `$ZSHRC`, and a first version of the step tried to
+  steer it by setting `THEME_FILE` — which the switcher assigns
+  unconditionally and never reads from the environment, so the override did
+  nothing and the theme was applied to the machine running the suite.
+  `MACOS_SCRIPTS_HOME` is the handle that works: the step now runs the switcher
+  against an isolated tree and an isolated `HOME`, requires exit 1 and the
+  `Missing theme file` message, and requires that no `.zshrc` was written on
+  the way to that verdict.
+
 * The two commands the P2 operator inventory measured as unclear when called
   with no argument. Both answered with something the operator had not asked
   about:

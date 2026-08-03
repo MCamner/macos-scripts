@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+# Same resolution as tools/scripts/doctor.sh and tools/scripts/scan.sh. This
+# read `${HOME}/macos-scripts` outright, so a checkout anywhere else could not
+# run the switcher at all: it exited 1 with "Missing UI library" before reaching
+# its first command. Found by a CI runner, where the checkout is under
+# /home/runner/work.
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_FILE="$BASE_DIR/terminal/themes/mq-zsh-theme-v3.zsh"
 ZSHRC="${HOME}/.zshrc"
@@ -97,7 +102,9 @@ apply_theme() {
 
   if ! theme_description "$variant" >/dev/null 2>&1; then
     ui_err "Unknown theme: $variant"
-    return 1
+    # A variant that does not exist is an invalid argument, the same class as
+    # an unknown command word above — 2, not 1.
+    return 2
   fi
 
   if [[ ! -f "$THEME_FILE" ]]; then
@@ -259,7 +266,13 @@ main() {
       fi
       ;;
     apply)
-      [[ $# -ge 2 ]] || { usage; exit 1; }
+      # 2, not 1. A command line that cannot be acted on is a usage error, and
+      # the rest of mqlaunch already says so — `mqlaunch system bogusverb` and
+      # the srm namespace both answer 2. This surface said 1, which is the code
+      # a caller reads as "the theme could not be applied" rather than "there
+      # was no theme to apply". 1 is kept below for the failures that really are
+      # runtime: a missing UI library, a missing theme file.
+      [[ $# -ge 2 ]] || { usage; exit 2; }
       apply_theme "$2"
       ;;
     reset)
@@ -272,7 +285,7 @@ main() {
       ui_err "Unknown command: $cmd"
       echo
       usage
-      exit 1
+      exit 2
       ;;
   esac
 }
