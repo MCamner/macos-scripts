@@ -40,10 +40,17 @@ echo "[1/6] files exist"
 test -x "$LAUNCH"
 
 echo "[2/6] every interactive entrypoint exits 0 without a terminal"
-# Eleven commands, measured together because the defect was that they disagreed.
-# `system`, `theme` and `apps` were the three answering 1 while the other eight
-# ended at the identical prompt and answered 0.
-menus=(git release shortcuts tools workflows system theme apps dev hal performance)
+# Ten commands, measured together because the defect was that they disagreed.
+# `system`, `theme` and `apps` were the three answering 1 while the rest ended at
+# the identical prompt and answered 0.
+#
+# `hal` is not on this list even though the headless sweep found it answering 0.
+# It is not a local menu: it delegates to `mq_hal_run`, a bridge into the mq-hal
+# repo, and its status is that delegate's. On a machine without mq-hal checked
+# out it returns 127, which is the correct answer and not a contract breach —
+# CI is exactly that machine. `agent`, `obsidian` and `stack` are absent for the
+# same reason. Every command below runs a menu or a script inside this repo.
+menus=(git release shortcuts tools workflows system theme apps dev performance)
 bad=()
 for menu in "${menus[@]}"; do
   st=0
