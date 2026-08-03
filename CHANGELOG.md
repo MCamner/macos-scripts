@@ -53,6 +53,39 @@ All notable changes to this project will be documented in this file.
   arm to confirm the declared subcommand exists. The menu path went back inside
   the `case` and returns 0 from within it.
 
+* An invalid `theme` argument reported 1 where the rest of the surface reports
+  2. `mqlaunch system bogusverb` has always answered 2, and so does the `srm`
+  namespace; `mq-zsh-theme-switcher.sh` answered 1 for an unknown command word,
+  for `apply` with no variant, and for a variant that does not exist. 1 is the
+  code a caller reads as "the theme could not be applied" rather than "that is
+  not a theme". All three are 2 now.
+
+  The runtime failures keep 1 — a missing UI library, a missing theme file —
+  because the distinction is the point of using 2 at all.
+  `tests/theme-command-surface-smoke.sh` was unaffected: its exit-code step
+  stubs `theme_cmd` with an arbitrary status and asserts propagation, not a
+  particular value.
+
+  `tests/menu-exit-contract-smoke.sh` holds the whole contract end to end
+  through `bin/mqlaunch` rather than through stubs, on both surfaces: eleven
+  interactive entrypoints exit 0 without a terminal and draw their prompt
+  exactly once, the same holds on a real pty whose stdin is closed, four
+  operations still report their own result, four usage errors are 2, and
+  `repos` keeps 1 as the documented exception — it asks for a
+  terminal-dependent picker while offering headless subcommands, so "there was
+  no terminal" is the true answer there. Proven able to fail: putting `theme
+  apply` back to 1 stops it at step 6, and letting the theme menu propagate
+  again stops it at step 2.
+
+  **The missing-theme-file case is checked by reading the switcher, not by
+  running it, and that is a deliberate retreat.** `apply` with a valid variant
+  rewrites the caller's `~/.zshrc`, and `THEME_FILE` is assigned
+  unconditionally at line 6 with no override to steer it somewhere harmless. A
+  first version of the step tried to force the runtime branch by setting
+  `THEME_FILE`, which did nothing — so the switcher applied the theme to the
+  machine running the suite. Anything that drives `apply` for real needs that
+  override to exist first.
+
 * The two commands the P2 operator inventory measured as unclear when called
   with no argument. Both answered with something the operator had not asked
   about:

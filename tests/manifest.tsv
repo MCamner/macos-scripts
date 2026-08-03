@@ -91,3 +91,4 @@ install-contract-smoke.sh	active	-
 performance-screens-golden-smoke.sh	active	-
 pulse-cli-color-contract-smoke.sh	active	-
 operator-usage-message-smoke.sh	active	-
+menu-exit-contract-smoke.sh	active	-

@@ -804,7 +804,7 @@ The front door should make the right workflow easy to find, then hand off to the
 
 ## P2 — Operator experience polish
 
-Status: Done — the original scope closed, and the five findings a measuring
+Status: Complete — the original scope closed, and the five findings a measuring
 pass added are closed too
 Priority: P2
 Risk if delayed: Low
@@ -1120,6 +1120,22 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     terminal". The three outliers took the split #168 gave `workflows` — menu
     path 0, argument path unchanged. `theme apply bogus` still exits 1,
     `system bogusverb` still exits 2.
+
+    The contract this settles, written out because three commands had been
+    guessing at it:
+
+    * a valid interactive menu with no terminal available renders at most once
+      and exits 0
+    * an operation given arguments propagates its real status
+    * an invalid argument is 2 — which `theme` was not doing, so
+      `mq-zsh-theme-switcher.sh` moved its three usage errors from 1 to 2 while
+      its runtime failures kept 1
+    * `repos` keeps 1 as a documented exception: it asks for a
+      terminal-dependent repo picker while also offering headless subcommands,
+      so "there was no terminal" is the true answer there
+
+    `tests/menu-exit-contract-smoke.sh` holds all four end to end through
+    `bin/mqlaunch`, headless and on a pty with closed stdin.
 
     Step 7 of `tests/delegated-exit-code-smoke.sh` could not see any of this:
     it only flags a branch that both invokes a `$BASE_DIR` script and ends in a
