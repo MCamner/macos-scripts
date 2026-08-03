@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+# Same resolution as tools/scripts/doctor.sh and tools/scripts/scan.sh. This
+# read `${HOME}/macos-scripts` outright, so a checkout anywhere else could not
+# run the switcher at all: it exited 1 with "Missing UI library" before reaching
+# its first command. Found by a CI runner, where the checkout is under
+# /home/runner/work.
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_FILE="$BASE_DIR/terminal/themes/mq-zsh-theme-v3.zsh"
 ZSHRC="${HOME}/.zshrc"

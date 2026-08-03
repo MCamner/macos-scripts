@@ -77,14 +77,24 @@ All notable changes to this project will be documented in this file.
   apply` back to 1 stops it at step 6, and letting the theme menu propagate
   again stops it at step 2.
 
-  **The missing-theme-file case is checked by reading the switcher, not by
-  running it, and that is a deliberate retreat.** `apply` with a valid variant
-  rewrites the caller's `~/.zshrc`, and `THEME_FILE` is assigned
-  unconditionally at line 6 with no override to steer it somewhere harmless. A
-  first version of the step tried to force the runtime branch by setting
-  `THEME_FILE`, which did nothing — so the switcher applied the theme to the
-  machine running the suite. Anything that drives `apply` for real needs that
-  override to exist first.
+  Writing that test found a second thing. `mq-zsh-theme-switcher.sh` resolved
+  its own root as `${HOME}/macos-scripts` outright, where
+  `tools/scripts/doctor.sh` and `tools/scripts/scan.sh` both read
+  `${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}`. A checkout anywhere else could
+  not run the switcher at all — it exited 1 with `Missing UI library` before
+  reaching its first command. It uses the same resolution as its siblings now.
+  (`terminal/themes/mq-theme-manager.sh` still hardcodes the path; it is
+  untouched here and outside this change.)
+
+  That also made the runtime branch testable without side effects. `apply` with
+  a valid variant rewrites `$ZSHRC`, and a first version of the step tried to
+  steer it by setting `THEME_FILE` — which the switcher assigns
+  unconditionally and never reads from the environment, so the override did
+  nothing and the theme was applied to the machine running the suite.
+  `MACOS_SCRIPTS_HOME` is the handle that works: the step now runs the switcher
+  against an isolated tree and an isolated `HOME`, requires exit 1 and the
+  `Missing theme file` message, and requires that no `.zshrc` was written on
+  the way to that verdict.
 
 * The two commands the P2 operator inventory measured as unclear when called
   with no argument. Both answered with something the operator had not asked

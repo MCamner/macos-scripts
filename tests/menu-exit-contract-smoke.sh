@@ -162,26 +162,31 @@ done
 # Runtime failures keep 1, and the distinction is the whole point of using 2
 # above: 2 says "that is not a theme", 1 says "the theme could not be applied".
 #
-# Checked by reading the switcher, not by running it. `apply` with a valid
-# variant rewrites the caller's ~/.zshrc — there is no THEME_FILE override to
-# steer it somewhere harmless, since line 6 assigns it unconditionally — so
-# running it to observe a runtime failure would edit the machine running the
-# suite. It did, once, during the writing of this test.
-switcher="$ROOT/terminal/themes/mq-zsh-theme-switcher.sh"
-apply_body="$(awk '/^apply_theme\(\) \{/,/^\}/' "$switcher")"
-test -n "$apply_body"
-# The two runtime guards keep `return 1` ...
-missing_file_guard="$(grep -A2 'Missing theme file' <<<"$apply_body")"
-grep -q 'return 1' <<<"$missing_file_guard" || {
-  echo "FAIL: a missing theme file no longer returns 1" >&2
+# `apply` with a valid variant rewrites `$ZSHRC`, so this runs against an
+# isolated tree and an isolated HOME rather than the machine running the suite.
+# An earlier version of this step tried to force the branch by setting
+# THEME_FILE, which the switcher assigns unconditionally and never reads from
+# the environment — so the override did nothing and the theme was applied for
+# real. MACOS_SCRIPTS_HOME is the handle that does work.
+fake_tree="$WORK/switcher-tree"
+mkdir -p "$fake_tree/terminal/themes" "$WORK/switcher-home"
+ln -s "$ROOT/ui" "$fake_tree/ui"
+
+missing_status=0
+MACOS_SCRIPTS_HOME="$fake_tree" HOME="$WORK/switcher-home" \
+  bash "$ROOT/terminal/themes/mq-zsh-theme-switcher.sh" apply amber \
+  >/dev/null 2>"$WORK/switcher.err" || missing_status=$?
+if [[ "$missing_status" -ne 1 ]]; then
+  echo "FAIL: a missing theme file exited $missing_status, want 1 (runtime, not usage)" >&2
+  cat "$WORK/switcher.err" >&2
   exit 1
-}
-# ... and the argument guard returns 2.
-unknown_variant_guard="$(grep -A4 'Unknown theme' <<<"$apply_body")"
-grep -q 'return 2' <<<"$unknown_variant_guard" || {
-  echo "FAIL: an unknown variant no longer returns 2" >&2
+fi
+grep -qF 'Missing theme file' "$WORK/switcher.err"
+# Nothing may have been written on the way to that verdict.
+if [[ -e "$WORK/switcher-home/.zshrc" ]]; then
+  echo "FAIL: the switcher wrote a .zshrc while failing" >&2
   exit 1
-}
-echo "  ok: four usage errors are 2, and a missing theme file is still 1"
+fi
+echo "  ok: four usage errors are 2, a missing theme file is 1, and nothing was written"
 
 echo "PASS: exit-status contract for interactive entrypoints"
