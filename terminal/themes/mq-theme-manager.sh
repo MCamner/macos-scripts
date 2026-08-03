@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="${HOME}/macos-scripts"
+# Same resolution as tools/scripts/doctor.sh, tools/scripts/scan.sh and — since
+# #172 — mq-zsh-theme-switcher.sh, which carried this identical line. Reading
+# `${HOME}/macos-scripts` outright meant `preview` could not run from a checkout
+# anywhere else: it died sourcing a UI library that was not there. The other
+# four verbs never touch BASE_DIR, which is why the defect stayed invisible.
+BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
+# Not BASE_DIR. The selected theme is user state, the same class as ~/.zshrc,
+# and belongs in $HOME wherever the checkout lives.
 THEME_FILE="${HOME}/.mq-theme"
 
 # Handles theme list.
