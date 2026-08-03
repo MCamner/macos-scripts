@@ -8,6 +8,42 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* `terminal/themes/mq-theme-manager.sh` could only run from
+  `$HOME/macos-scripts`. It read `${HOME}/macos-scripts` outright, where
+  `tools/scripts/doctor.sh`, `tools/scripts/scan.sh` and — since #172 —
+  `mq-zsh-theme-switcher.sh` all read
+  `${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}`. This is the sibling #172 named
+  and deliberately left alone.
+
+  Measured with `HOME` pointed away from the checkout:
+
+  ```text
+  list      exit 0
+  current   exit 0
+  reset     exit 0
+  apply     exit 0
+  preview   exit 1   line 140: .../macos-scripts/ui/terminal-ui/mq-ui.sh
+  ```
+
+  Only `preview` reads `BASE_DIR`, through `UI_LIB`, which is why this stayed
+  invisible: four of the five verbs work anywhere, and on a developer machine
+  `$HOME/macos-scripts` exists so the fifth does too.
+
+  `THEME_FILE` is untouched at `${HOME}/.mq-theme`. The selected theme is user
+  state, the same class as `~/.zshrc`, and belongs in `$HOME` wherever the
+  checkout lives.
+
+  `tests/theme-manager-path-smoke.sh` runs the manager from a temporary tree
+  holding nothing but a symlinked `ui/`, requires `preview` to render its panel
+  rather than merely exit 0, and drives the other four verbs through
+  apply → current → reset. Proven able to fail: with the hard-coded path put
+  back it stops at step 2.
+
+  Every run gets its own `HOME`, and the last step compares a checksum of the
+  real `~/.mq-theme` from before the test. `apply` writes and `reset` deletes
+  that file, and a probe against a real `HOME` earlier in this work applied a
+  theme to the machine running it — the suite does not get to do that.
+
 * The menu family disagreed about what it returns without a terminal. Measured
   headless, all ten local menus ended at their own prompt on EOF and three
   answered differently:
