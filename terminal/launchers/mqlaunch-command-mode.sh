@@ -769,7 +769,13 @@ dispatch_cli_command() {
     system)
       case "$sub" in
         ""|menu)
+          # Same split as `theme` and `workflows`. A menu that ends is not a
+          # failure: without a terminal the loop exits non-zero by design
+          # (tests/menu-eof-smoke.sh), so propagating it reported "the command
+          # failed" for "there was no terminal". Every subcommand below keeps
+          # its own status through the tail of this branch.
           open_system_menu
+          return 0
           ;;
         perf|performance)
           open_performance_menu
@@ -958,7 +964,15 @@ dispatch_cli_command() {
       # ignored.
       case "$sub" in
         ""|menu)
+          # A menu that ends is not a failure: without a terminal the loop exits
+          # non-zero by design (tests/menu-eof-smoke.sh), so propagating that
+          # reported "the command failed" for "there was no terminal". Measured
+          # headless, `theme` exited 1 where `tools`, `git`, `release`,
+          # `shortcuts`, `workflows`, `dev`, `hal` and `performance` all ended at
+          # the identical prompt and exited 0. Same split as `workflows`; every
+          # verb below still keeps its status.
           open_themes_menu
+          return 0
           ;;
         apply)
           theme_cmd apply "${@:3}"
@@ -1064,14 +1078,18 @@ dispatch_cli_command() {
       ;;
 
     apps|guide-ai|terminal-guide-ai)
+      # Third case of the same split. With a question this is real work and its
+      # status is the answer's; without one it opens the interactive guide,
+      # which ends at its prompt with no terminal — reported as exit 1 before,
+      # for the same reason `theme` and `system` did.
       if [[ -n "${2:-}" ]]; then
         shift
         "$BASE_DIR/tools/scripts/hal-terminal-guide.sh" ask "$@"
-      else
-        "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+        command_status=$?
+        return "$command_status"
       fi
-      command_status=$?
-      return "$command_status"
+      "$BASE_DIR/tools/scripts/hal-terminal-guide.sh"
+      return 0
       ;;
 
     docfunc|document-functions)

@@ -32,23 +32,23 @@ assert_status() {
 
 echo "SMOKE: delegated exit-code contract"
 
-echo "[1/11] missing backend is non-zero"
+echo "[1/12] missing backend is non-zero"
 unset -f run_agent_command 2>/dev/null || true
 assert_status 1 dispatch_cli_command review
 grep -q 'bridge not loaded' "$TMPDIR_TEST/stderr"
 
-echo "[2/11] usage and runtime failures propagate"
+echo "[2/12] usage and runtime failures propagate"
 run_agent_command() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 MQ_TEST_BACKEND_STATUS=2 assert_status 2 dispatch_cli_command review
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command stack status
 
-echo "[3/11] HAL pause does not overwrite backend status"
+echo "[3/12] HAL pause does not overwrite backend status"
 mq_hal_run() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 rm -f "$TMPDIR_TEST/pause.log"
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command hal brief
 [[ -s "$TMPDIR_TEST/pause.log" ]]
 
-echo "[4/11] JSON stdout stays clean"
+echo "[4/12] JSON stdout stays clean"
 mq_hal_run() {
   printf '{"schema":"hal.test.v1"}\n'
   return 42
@@ -59,7 +59,7 @@ assert_status 42 dispatch_cli_command hal brief --json
 [[ ! -e "$TMPDIR_TEST/pause.log" ]]
 [[ ! -s "$TMPDIR_TEST/stderr" ]]
 
-echo "[5/11] full launcher returns backend status without double dispatch"
+echo "[5/12] full launcher returns backend status without double dispatch"
 mkdir -p "$TMPDIR_TEST/bin" "$TMPDIR_TEST/agent"
 cat > "$TMPDIR_TEST/bin/uv" <<EOF
 #!/usr/bin/env bash
@@ -87,7 +87,7 @@ set -e
   exit 1
 }
 
-echo "[6/11] external script delegates propagate their status"
+echo "[6/12] external script delegates propagate their status"
 # Steps 1-5 stub shell functions, which only reaches the agent and HAL families.
 # Most of the surface delegates to scripts under $BASE_DIR instead, and those
 # were never covered. Both cases below are real argparse failures.
@@ -120,7 +120,7 @@ run_launcher repos list || {
   exit 1
 }
 
-echo "[7/11] no delegating branch ends in an unconditional return 0"
+echo "[7/12] no delegating branch ends in an unconditional return 0"
 # The behavioural cases above pin two branches. This keeps the other nineteen
 # from drifting back, and stops new ones from being written that way.
 python3 - "$COMMAND_MODE" <<'PY'
@@ -153,13 +153,35 @@ for i in range(start, len(lines)):
     elif current is not None:
         bodies[current].append(s)
 
+# Branches that hold a deliberate `return 0` beside a path that does propagate.
+# The shape is always the same: bare command opens something interactive, and a
+# menu or session ending is not a failure (tests/menu-eof-smoke.sh); the same
+# branch with an argument runs real work and keeps its status.
+#
+# Being named here is not enough. Each entry must also propagate somewhere in
+# the same branch, checked below, so an exception cannot cover a branch that
+# discards status on every path — and a stale entry is an error rather than a
+# silent pass. The behavioural proof for each lives in steps 10 to 12.
+DELIBERATE_ZERO = {
+    "system": "bare `system` opens the system menu; every subcommand propagates",
+    "apps|guide-ai|terminal-guide-ai":
+        "bare `apps` opens the interactive guide; `apps ask` propagates",
+}
+
+PROPAGATES = re.compile(r'^return "\$command_status"$|^return \$\?$', re.M)
+
 offenders = []
+excused = set()
 for (name, line), body in bodies.items():
     text = "\n".join(body)
     if not re.search(r"\$BASE_DIR/(tools|terminal|bin|automation)", text):
         continue
-    if re.search(r"^return 0$", text, re.M):
-        offenders.append(f"  line {line}: {name}")
+    if not re.search(r"^return 0$", text, re.M):
+        continue
+    if name in DELIBERATE_ZERO and PROPAGATES.search(text):
+        excused.add(name)
+        continue
+    offenders.append(f"  line {line}: {name}")
 
 if offenders:
     print(
@@ -168,9 +190,19 @@ if offenders:
     )
     print("\n".join(offenders), file=sys.stderr)
     sys.exit(1)
+
+stale = set(DELIBERATE_ZERO) - excused
+if stale:
+    print(
+        "these exceptions no longer describe the tree and must be removed:",
+        file=sys.stderr,
+    )
+    for name in sorted(stale):
+        print(f"  {name}: {DELIBERATE_ZERO[name]}", file=sys.stderr)
+    sys.exit(1)
 PY
 
-echo "[8/11] the brain bridge's exit status reaches the caller"
+echo "[8/12] the brain bridge's exit status reaches the caller"
 # Step 7 only inspects branches that invoke a $BASE_DIR script. The brain
 # branches call a shell function, mq_brain_run, so the structural check never
 # looked at them and both ended in an unconditional `return 0` — the delegate
@@ -195,7 +227,7 @@ for code in 0 1 2 127; do
 done
 echo "  ok: 8 brain verbs propagate 0, 1, 2 and 127"
 
-echo "[9/11] a missing brain bridge still fails, and says so"
+echo "[9/12] a missing brain bridge still fails, and says so"
 # The `else` arm was already correct. It is pinned here so fixing the success
 # path cannot quietly turn a missing bridge into a silent success.
 (
@@ -211,7 +243,7 @@ echo "[9/11] a missing brain bridge still fails, and says so"
 )
 echo "  ok: a missing bridge fails with a named reason"
 
-echo "[10/11] function delegates that run an operation propagate their status"
+echo "[10/12] function delegates that run an operation propagate their status"
 # Seven branches called a shell-function delegate and ended in `return 0`. Step
 # 7 never looked at them, because it only inspects branches invoking a
 # $BASE_DIR script. Each was measured with the delegate stubbed to exit 7
@@ -248,9 +280,17 @@ expect_status 7 _run_agent       learn-promote some-slug
 expect_status 7 run_mqworkflows  workflows save
 expect_status 7 run_mqlogin      login status
 expect_status 7 run_mqshortcuts  shortcuts list
-echo "  ok: six operation paths propagate a failing delegate"
+# `theme` and `system` are the same mixed shape, found by the P2 operator sweep
+# rather than by this test: both propagated in *both* directions, so their menu
+# path reported failure with no terminal. Their argument paths are real work and
+# must keep propagating, which is what these four lines hold.
+expect_status 7 theme_cmd        theme apply amber
+expect_status 7 theme_cmd        theme current
+expect_status 7 system_check     system check
+expect_status 7 show_network_info system network
+echo "  ok: ten operation paths propagate a failing delegate"
 
-echo "[11/11] a menu ending is not a failure"
+echo "[11/12] a menu ending is not a failure"
 # Deliberate exit 0, and the reason is in tests/menu-eof-smoke.sh: without a
 # terminal a menu loop exits non-zero by design. Propagating that would report
 # "the command failed" for "there was no terminal". Pinned so the deliberate
@@ -262,7 +302,55 @@ expect_status 0 run_mqshortcuts  shortcuts
 # result for a caller to act on.
 expect_status 0 mq_ai_run_atlas  atlas
 expect_status 0 mq_ai_run_atlas  atlas "some prompt"
-echo "  ok: four interactive entrypoints return 0 on purpose"
+# The two the P2 sweep caught. Measured headless: `git`, `release`, `shortcuts`,
+# `tools`, `workflows`, `dev`, `hal` and `performance` all ended at their prompt
+# and exited 0; `system` and `theme` ended at the identical prompt and exited 1.
+# One surface, two answers, and the difference was invisible to step 7 because
+# neither branch invokes a $BASE_DIR script.
+expect_status 0 open_themes_menu theme
+expect_status 0 open_themes_menu theme menu
+expect_status 0 open_system_menu system
+expect_status 0 open_system_menu system menu
+echo "  ok: eight interactive entrypoints return 0 on purpose"
+
+echo "[12/12] apps splits the same way, with an external delegate"
+# `apps` is the third outlier and does not fit the harness above: it runs
+# tools/scripts/hal-terminal-guide.sh rather than a shell function. Stubbed
+# through a fake BASE_DIR so both paths are observed rather than reasoned about.
+apps_fake="$(mktemp -d)"
+mkdir -p "$apps_fake/tools/scripts"
+cat > "$apps_fake/tools/scripts/hal-terminal-guide.sh" <<'STUB'
+#!/usr/bin/env bash
+exit 7
+STUB
+chmod +x "$apps_fake/tools/scripts/hal-terminal-guide.sh"
+
+apps_status() {
+  local got=0
+  (
+    # shellcheck disable=SC2034  # read by the dispatcher, which is sourced above
+    BASE_DIR="$apps_fake"
+    dispatch_cli_command "$@" >/dev/null 2>&1
+  ) || got=$?
+  printf '%s' "$got"
+}
+
+bare_got="$(apps_status apps)"
+if [[ "$bare_got" != "0" ]]; then
+  printf 'FAIL: bare `mqlaunch apps` returned %s, want 0 (the guide is interactive)\n' \
+    "$bare_got" >&2
+  rm -rf "$apps_fake"
+  exit 1
+fi
+ask_got="$(apps_status apps ask what is this)"
+if [[ "$ask_got" != "7" ]]; then
+  printf 'FAIL: `mqlaunch apps ask ...` returned %s, want 7 (a real question failed)\n' \
+    "$ask_got" >&2
+  rm -rf "$apps_fake"
+  exit 1
+fi
+rm -rf "$apps_fake"
+echo "  ok: the guide opening is 0, a failed question is 7"
 
 bash -n "$0"
 echo "OK: delegated failures preserve their exit status"
