@@ -10,7 +10,7 @@ path-by-path classification is maintained in
 | Tier | Examples | Purpose |
 | --- | --- | --- |
 | Core | `mqlaunch`, `doctor`, `selftest`, `release-check` | Stable repo and launcher baseline |
-| MQ bridge | `review`, `risk-review`, `repo-health`, `mcp-status` | Delegation into MQ stack tooling |
+| MQ bridge | `review`, `route`, `risk-review`, `repo-health`, `mcp-status` | Delegation into MQ stack tooling |
 | HAL/operator | `hal`, `hal brief`, `hal audit`, `hal ci` | Operator status and local briefings |
 | B2/Prompt OS | `mq b2`, `mq b2 compose`, `mq b2 route` | Prompt cockpit and read-only source use |
 | Local utilities | `perf`, `network`, `scan`, `workspace` | Local macOS workflows |

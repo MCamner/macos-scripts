@@ -70,6 +70,7 @@ echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/release-menu-smoke.sh"
 "$PROJECT_ROOT/tests/skills-repos-smoke.sh"
 "$PROJECT_ROOT/tests/mq-agent-routing-smoke.sh"
+"$PROJECT_ROOT/tests/mq-route-entrypoint-smoke.sh"
 "$PROJECT_ROOT/tests/mq-memory-cochange-routing-smoke.sh"
 "$PROJECT_ROOT/tests/mq-obsidian-command-routes-smoke.sh"
 

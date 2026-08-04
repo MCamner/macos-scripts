@@ -398,6 +398,8 @@ mqlaunch stack status                           # canonical stack truth status v
 mqlaunch stack cockpit                          # the release cockpit, read-only, via mq-agent
 mqlaunch stack contract-check                   # delegate stack contract check to mq-agent
 mqlaunch stack truth-export                     # delegate stack truth export to mq-agent
+mqlaunch route inspect "task"                   # inspect a routing decision, read-only
+mqlaunch route report --json                    # show verified routing outcomes
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
@@ -426,6 +428,11 @@ documents; `mqlaunch stack --json` exits 2 from mq-agent with
 `No such option '--json'`, and that exit code reaches the caller. The registry
 records `json: false` for `stack` for exactly this reason: the claim is about
 the command as typed, and the bare command has no JSON mode.
+
+`mqlaunch route` delegates every argument to `mq-agent route` unchanged and
+returns the delegate's exact exit status. The entrypoint contains no model call,
+fallback, confidence threshold, or routing policy. `mq-agent` owns the command,
+its help, validation, shadow behavior, reports, and JSON contract.
 
 ### Workflow orchestration (flow)
 

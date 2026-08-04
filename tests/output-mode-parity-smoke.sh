@@ -81,6 +81,7 @@ EXERCISED=(
 # that the real producer emits repo_release_check.v1 on stdout.
 COVERED_ELSEWHERE=(
   "release-check	tests/release-check-contract-smoke.sh"
+  "route	tests/mq-route-entrypoint-smoke.sh"
 )
 
 run_dir="$(mktemp -d)"
