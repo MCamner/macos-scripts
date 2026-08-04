@@ -202,6 +202,23 @@
       "operator_surface": true
     },
     {
+      "name": "route",
+      "aliases": [],
+      "namespace": "agent",
+      "summary": "Inspect model routing through mq-agent",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent route",
+      "operator_surface": true
+    },
+    {
       "name": "mcp-status",
       "aliases": [
         "/mcp-status"

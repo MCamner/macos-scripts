@@ -77,6 +77,7 @@ mq-obsidian-regenerate-placeholder-ui-smoke.sh	active	-
 mq-obsidian-triage-ui-smoke.sh	active	-
 brain-bridge-smoke.sh	active	-
 mq-agent-routing-smoke.sh	active	-
+mq-route-entrypoint-smoke.sh	active	-
 mq-memory-cochange-routing-smoke.sh	active	-
 mq-obsidian-command-routes-smoke.sh	active	-
 skills-repos-smoke.sh	active	-

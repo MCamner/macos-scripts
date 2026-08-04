@@ -126,6 +126,7 @@ AGENT  (owner: mq-agent)
   mqlaunch review         Review a diff
   mqlaunch review-brain   Review a repo and save it to the brain
   mqlaunch risk-review    Review a diff for risk
+  mqlaunch route          Inspect model routing through mq-agent
   mqlaunch signal-brain   Repo signal report saved to the brain
   mqlaunch stack          Show stack status and the read-only release cockpit
 

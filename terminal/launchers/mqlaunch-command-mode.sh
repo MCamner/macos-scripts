@@ -62,7 +62,7 @@ nearest_cli_command() {
     about agent architecture ask brain bundle check commands demo dev doctor \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory network notes obsidian palette perf pulse release release-check \
-    repo-health repos review risk-review scan selftest skills srm stack system \
+    repo-health repos review risk-review route scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
       function distance(a, b, d, i, j, cost, deletion, insertion, substitution) {
         delete d
@@ -489,6 +489,18 @@ dispatch_cli_command() {
         else
           run_agent_command stack "$@"
         fi
+        command_status=$?
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return "$command_status"
+      ;;
+
+    route)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command route "$@"
         command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2

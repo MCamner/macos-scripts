@@ -460,6 +460,10 @@ run_agent_command() {
         _run_agent stack "$@"
       fi
       ;;
+    route)
+      shift || true
+      _run_agent route "$@"
+      ;;
     mcp-status)
       shift || true
       _run_agent mcp status "$@"

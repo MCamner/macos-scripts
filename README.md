@@ -119,6 +119,7 @@ mqlaunch workflows save          # save workspace snapshot
 mqlaunch release-check           # release readiness gate
 mqlaunch repos status            # MQ ecosystem repo status
 mqlaunch stack status            # canonical stack truth status via mq-agent
+mqlaunch route report --json     # show verified routing outcomes via mq-agent
 ```
 
 ---
@@ -191,6 +192,7 @@ mqlaunch risk-review             # risk review via mq-agent -> mq-mcp
 mqlaunch architecture            # show mq-mcp architecture memory
 mqlaunch repo-health             # repo-signal + mq-mcp contract health
 mqlaunch stack status            # canonical stack truth status via mq-agent
+mqlaunch route inspect "task"    # explain the recommended model route
 mqlaunch mcp-status              # mq-mcp status and tool count
 mqlaunch hal                     # open HAL menu
 mqlaunch hal "your request"      # local Ollama-powered safe command router
