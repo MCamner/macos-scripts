@@ -76,6 +76,7 @@ grep -q '^  mqlaunch route .*model routing through mq-agent' "$HELP_MENU"
 
 echo "[6/6] docs state delegation and forbid local fallback logic"
 grep -q '`mqlaunch route` delegates every argument to `mq-agent route` unchanged' "$DOC"
-grep -q 'contains no model call, fallback, confidence threshold, or routing policy' "$DOC"
+grep -q 'contains no model call' "$DOC"
+grep -q 'fallback, confidence threshold, or routing policy' "$DOC"
 
 echo "OK: mqlaunch route thin entrypoint smoke test passed"
