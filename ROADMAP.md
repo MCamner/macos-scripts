@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 2.0.0
+Current version: 2.0.1
 
 ## Current direction
 
@@ -14,7 +14,7 @@ v2.0.0 — Runtime Authority and Command Surface Governance
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
-v2.0.0 shipped on 2026-07-28. Every P0 and P1 block below is Done and its Definition of Done is closed against the tree, with the two stack-level checks noted as out of this repo's reach. What remains is P2 and P3: delegation polish, operator experience, and compatibility cleanup. None of it is release-blocking.
+v2.0.0 shipped on 2026-07-28. Every P0–P3 block below is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release; no roadmap implementation remains open in this repo.
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -1038,7 +1038,7 @@ demand, which is what `gated` means: they cannot drift without failing CI.
     splitting a long menu into submenus, which is the fix, could never improve
     the number.
 
-  * [ ] <= 190 total options — **retire this target.** It is 301 now against 246
+  * [x] Retire the <= 190 total-options target. It is 301 now against 246
     before, and the increase is not regression. Two thirds of it is the widened
     measurement seeing four more menu files and the multi-line arms it used to
     skip; the rest is that every submenu adds a parent row and a Back arm of its
@@ -1216,7 +1216,7 @@ remain forever.
   contributor reading it learns where the concern moved rather than that it
   disappeared.
 
-* [ ] Remove only after:
+* [x] Remove only after:
 
   * [x] runtime authority is stable — freeze gate green with **0** compat edges
   * [x] command registry drift tests are green — `command-registry-smoke.sh`
@@ -1275,31 +1275,31 @@ terms rather than forced by a move.
 
 ## v2.0.0 Non-goals
 
-* [ ] Do not add more menu items just because a command exists.
+* [x] Do not add more menu items just because a command exists.
 
   * Better product means clearer choices, not more choices.
 
-* [ ] Do not move orchestration logic from `mq-agent` into shell.
+* [x] Do not move orchestration logic from `mq-agent` into shell.
 
   * `mqlaunch` delegates.
 
-* [ ] Do not call `mq-mcp` directly when `mq-agent` owns the workflow.
+* [x] Do not call `mq-mcp` directly when `mq-agent` owns the workflow.
 
   * Keep the stack boundary clean.
 
-* [ ] Do not implement memory promotion in shell.
+* [x] Do not implement memory promotion in shell.
 
   * Memory promotion belongs behind reviewed `mq-agent` / `mqobsidian` flows.
 
-* [ ] Do not introduce hidden AI fallbacks for unknown commands.
+* [x] Do not introduce hidden AI fallbacks for unknown commands.
 
   * Unknown commands should fail clearly.
 
-* [ ] Do not make all commands JSON-capable by default.
+* [x] Do not make all commands JSON-capable by default.
 
   * JSON must be stable and schema-backed.
 
-* [ ] Do not remove legacy paths before the new runtime authority is proven.
+* [x] Do not remove legacy paths before the new runtime authority is proven.
 
 ---
 
@@ -1536,13 +1536,14 @@ step in the `Quality` workflow, so these are gates, not local habits.
 * [x] Release-check is READY. — `mqlaunch release-check --json` returns
   `status: READY` with no blockers
 
-Deliberately not checked here, because this repo cannot prove them:
+External ownership assertions, deliberately not represented as completion
+checkboxes because this repo cannot prove them:
 
-* [ ] `mq-agent` still owns orchestration.
-* [ ] `mq-mcp` still owns execution/review tools.
-* [ ] `mqobsidian` still owns durable truth and memory.
-* [ ] `repo-signal` still owns repo readiness.
-* [ ] `mq-hal` still owns local operator summaries.
+* `mq-agent` still owns orchestration.
+* `mq-mcp` still owns execution/review tools.
+* `mqobsidian` still owns durable truth and memory.
+* `repo-signal` still owns repo readiness.
+* `mq-hal` still owns local operator summaries.
 
   `macos-scripts` enforces its own side of the boundary — it delegates rather
   than reimplements, and the boundary tests above fail if that stops being
@@ -1550,8 +1551,8 @@ Deliberately not checked here, because this repo cannot prove them:
   their trees, not this one. Ticking these from here would be asserting
   something unverified.
 
-* [ ] Contract-check is READY.
-* [ ] Stack-preflight has 0 blockers.
+* Contract-check is READY.
+* Stack-preflight has 0 blockers.
 
   Neither is a `mqlaunch` command: both return `Unknown command`. They are
   stack-level checks that belong to whoever owns them, and this repo has no way
