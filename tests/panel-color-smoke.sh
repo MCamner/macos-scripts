@@ -174,7 +174,10 @@ echo "[8/8] the dashboard header keeps its colour through a command substitution
 #
 # Checked by rendering the banner the way print_dashboard_header does, not by
 # reading the guard: the two files have to agree, and only running it shows that.
-dashboard_banner="$(MQ_DASHBOARD_FORCE_COLOR=1 bash \
+# Isolate this positive colour assertion from a host-level NO_COLOR setting.
+# NO_COLOR must still win in normal use; this step specifically proves the
+# internal capture path used by print_dashboard_header.
+dashboard_banner="$(NO_COLOR='' MQ_DASHBOARD_FORCE_COLOR=1 bash \
   "$ROOT/ui/ascii/mqlaunch-dashboard-v7.1.sh" "MQ" "test" "ONLINE" 2>/dev/null \
   | grep -a "READY //" || true)"
 if [[ -z "$dashboard_banner" ]]; then
