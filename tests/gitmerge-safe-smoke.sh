@@ -60,7 +60,12 @@ tmpdir="$(mktemp -d)"
   printf 'base\n' > file.txt
   git add file.txt
   git commit -qm base
-  "$MERGE_SCRIPT" >/tmp/gitmerge-safe-smoke.out 2>&1 && exit 1
+  # stdin must be redirected explicitly, not inherited. The gate is [[ -t 0 ]],
+  # so this step only proved anything when the suite happened to run without a
+  # TTY. Run from mqlaunch's SELF-CHECK in a real terminal the gate correctly
+  # passed, the script walked on to "No candidate branches found to merge", and
+  # the assertion below failed against a script that was behaving properly.
+  "$MERGE_SCRIPT" </dev/null >/tmp/gitmerge-safe-smoke.out 2>&1 && exit 1
   grep -q 'interactive terminal' /tmp/gitmerge-safe-smoke.out
 )
 
