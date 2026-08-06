@@ -8,27 +8,27 @@ DOC="$ROOT/docs/COMMANDS.md"
 
 echo "SMOKE: mq-agent review routing boundary"
 
-echo "[1/13] files exist"
+echo "[1/14] files exist"
 test -f "$AGENT_MENU"
 test -f "$COMMAND_MODE"
 
-echo "[2/13] shell syntax"
+echo "[2/14] shell syntax"
 bash -n "$AGENT_MENU"
 bash -n "$COMMAND_MODE"
 
-echo "[3/13] review delegates to mq-agent review command group"
+echo "[3/14] review delegates to mq-agent review command group"
 grep -q "_run_agent review diff" "$AGENT_MENU"
 grep -q "_run_agent review file" "$AGENT_MENU"
 grep -q "_run_agent review repo" "$AGENT_MENU"
 
-echo "[4/13] risk review uses mq-agent risk flag"
+echo "[4/14] risk review uses mq-agent risk flag"
 grep -q "_run_agent review diff --risk" "$AGENT_MENU"
 
-echo "[5/13] repo health targets macos-scripts by default"
+echo "[5/14] repo health targets macos-scripts by default"
 grep -q 'repo_path=\$repo_path' "$AGENT_MENU"
 grep -q 'MQ_REPO_HEALTH_PATH:-\$BASE_DIR' "$AGENT_MENU"
 
-echo "[6/13] mqlaunch command mode exposes top-level routes"
+echo "[6/14] mqlaunch command mode exposes top-level routes"
 grep -q "run_agent_command review" "$COMMAND_MODE"
 grep -q "run_agent_command architecture" "$COMMAND_MODE"
 grep -q "run_agent_command risk-review" "$COMMAND_MODE"
@@ -42,7 +42,7 @@ grep -q "run_agent_command mcp-status" "$COMMAND_MODE"
 # neither proved anything about the boundary in the first place. A roadmap is a
 # plan, and rewriting it is its job. The contract lives in docs/COMMANDS.md and
 # in the routes asserted above.
-echo "[7/13] docs describe delegation boundary"
+echo "[7/14] docs describe delegation boundary"
 grep -q "review current diff via mq-agent -> mq-mcp" "$DOC"
 grep -q "mqlaunch stack status" "$DOC"
 grep -q 'mq-agent stack status' "$DOC"
@@ -79,7 +79,7 @@ expect_translation() {
   fi
 }
 
-echo "[8/13] review translates the operator vocabulary to mq-agent flags"
+echo "[8/14] review translates the operator vocabulary to mq-agent flags"
 expect_translation "mq-agent review diff"                       # scope defaults to diff
 expect_translation "mq-agent review repo" repo
 expect_translation "mq-agent review file lib/x.sh" file lib/x.sh
@@ -87,7 +87,7 @@ expect_translation "mq-agent review file lib/x.sh --security" file lib/x.sh secu
 expect_translation "mq-agent review diff --architecture" diff architecture
 expect_translation "mq-agent review repo --risk" repo --mode risk
 
-echo "[9/13] mq-agent's own options survive the translation"
+echo "[9/14] mq-agent's own options survive the translation"
 # `--repo <path>` is a real mq-agent option on `review file`: the external repo
 # the file lives in. mqlaunch must pass it through rather than read it as a
 # scope word, or the option is unreachable from the launcher.
@@ -126,7 +126,7 @@ expect_dispatch() {
   fi
 }
 
-echo "[10/13] stack forwards every verb to mq-agent, and bare stack means status"
+echo "[10/14] stack forwards every verb to mq-agent, and bare stack means status"
 expect_dispatch "mq-agent stack status" stack
 expect_dispatch "mq-agent stack status" stack status
 expect_dispatch "mq-agent stack status --json" stack status --json
@@ -140,7 +140,7 @@ expect_dispatch "mq-agent stack truth-export" stack truth-export
 # subcommand would need a mqlaunch change to become reachable.
 expect_dispatch "mq-agent stack brain-gate --strict" stack brain-gate --strict
 
-echo "[11/13] the delegate's exit code survives the route"
+echo "[11/14] the delegate's exit code survives the route"
 # `mqlaunch stack --json` really does fail: --json is an option on the
 # subcommands, not on the group, so mq-agent exits 2. A launcher that swallowed
 # that would make the failure invisible to a script.
@@ -194,7 +194,7 @@ expect_cli() {
   fi
 }
 
-echo "[12/13] srm delegates every verb to mq-agent, including the read paths"
+echo "[12/14] srm delegates every verb to mq-agent, including the read paths"
 expect_cli "mq-agent memory-search vector store upload flow" srm search vector store upload flow
 expect_cli "mq-agent memory-search what is indexed here" srm ask what is indexed here
 expect_cli "mq-agent memory-status" srm inspect
@@ -208,7 +208,7 @@ expect_cli "mq-agent memory-review-status" srm review-status
 expect_cli "mq-agent memory-promote-from-review 7" srm promote-from-review 7
 expect_cli "mq-agent memory-resolve-supersede 9" srm resolve-supersede 9
 
-echo "[13/13] the retired local AI path is gone and unknown words fail clearly"
+echo "[13/14] the retired local AI path is gone and unknown words fail clearly"
 if [[ -e "$ROOT/tools/scripts/srm.sh" ]]; then
   echo "FAIL: tools/scripts/srm.sh is back — the local OpenAI path was retired" >&2
   exit 1
@@ -231,5 +231,15 @@ case "$out" in
   *) echo "FAIL: unknown srm verb did not print usage: $out" >&2; exit 1 ;;
 esac
 echo "  ok: srm.sh is gone, no AI fallback, unknown verbs print usage"
+
+echo "[14/14] the interactive menu exposes the truth export, not just command mode"
+# `mqlaunch stack truth-export` has always worked, but the export was reachable
+# only by typing it. The stack sweep reports the note as stale without offering
+# any way to refresh it, which is how it went fourteen days without running.
+grep -q "Stack truth export" "$AGENT_MENU"
+grep -Eq "^\s*[0-9]+\) _run_agent stack truth-export;" "$AGENT_MENU" || {
+  echo "FAIL: no agent menu option routes to stack truth-export" >&2
+  exit 1
+}
 
 echo "OK: mq-agent review routing boundary smoke test passed"
