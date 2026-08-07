@@ -91,6 +91,7 @@ nearest_cli_command() {
     '
 }
 
+# Prints unknown command error.
 print_unknown_command_error() {
   local command_name="${1:-}"
   local nearest

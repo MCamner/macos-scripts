@@ -17,6 +17,7 @@ trap 'rm -rf "$WORK"' EXIT
 
 echo "SMOKE: wiki Command-Reference metadata"
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $*" >&2
   exit 1

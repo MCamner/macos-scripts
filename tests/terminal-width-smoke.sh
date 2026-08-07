@@ -25,6 +25,7 @@ trap 'rm -rf "$WORK"' EXIT
 
 echo "SMOKE: terminal width"
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $*" >&2
   exit 1

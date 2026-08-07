@@ -17,6 +17,7 @@ EOF
   chmod +x "$TMPDIR_TEST/bin/$command_name"
 done
 
+# Runs unknown.
 run_unknown() {
   local label="$1"
   local unknown="${2:-definitely-not-a-command}"
@@ -46,6 +47,7 @@ run_unknown() {
   grep -q 'mqlaunch ask' "$stderr_file"
 }
 
+# Runs tty unknown.
 run_tty_unknown() {
   local output_file="$TMPDIR_TEST/tty.output"
   local status
@@ -90,6 +92,7 @@ PY
   grep -q 'Unknown command: doctro' "$output_file"
 }
 
+# Runs discover input contract.
 run_discover_input_contract() {
   local output expected exit_output
 
@@ -100,14 +103,20 @@ BASE_DIR="$ROOT_UNDER_TEST"
 APP_TITLE="MQLAUNCH"
 source "$ROOT_UNDER_TEST/terminal/menus/mq-main-menu.sh"
 
+# Opens command palette or help.
 open_command_palette_or_help() { printf 'palette\n'; }
+# Opens help or index.
 open_help_or_index() { printf 'help\n'; }
+# Runs main shell command.
 run_main_shell_command() { printf 'shell:%s\n' "$1"; }
+# Runs mqworkflows.
 run_mqworkflows() { printf 'command:workflows\n'; }
+# Routes cli command to the matching command handler.
 dispatch_cli_command() {
   printf 'unknown:%s\n' "$*"
   return 0
 }
+# Pauses until Enter is pressed.
 pause_enter() { :; }
 
 for original in "/" "/." "/ Palette" "/. Palette" "?" "?." "? Help" "?. Help index" "!printf contract-shell" "workflows"; do

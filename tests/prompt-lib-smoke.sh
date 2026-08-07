@@ -7,6 +7,7 @@ LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"
 TMPDIR_TEST="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_TEST"' EXIT
 
+# Marks a failing check.
 fail() { printf '[FAIL] %s\n' "$1" >&2; exit 1; }
 
 echo "[1/5] shared prompt library exists and is sourced"

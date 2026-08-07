@@ -17,6 +17,7 @@ echo "SMOKE: apps menu surface"
 echo "[1/4] syntax check"
 bash -n "$MENU"
 
+# Coordinates check loop behavior.
 check_loop() {
   local label="$1" panel="$2" loop="$3" limit="$4"
 

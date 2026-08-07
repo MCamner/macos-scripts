@@ -71,6 +71,7 @@ EOF
 
 chmod +x "$STUB"/networksetup "$STUB"/wdutil "$STUB"/ping "$STUB"/route
 
+# Coordinates esc count behavior.
 esc_count() {
   # Count ESC bytes, not lines: several escapes share a line.
   LC_ALL=C python3 -c 'import sys; sys.stdout.write(str(open(sys.argv[1],"rb").read().count(b"\x1b")))' "$1"

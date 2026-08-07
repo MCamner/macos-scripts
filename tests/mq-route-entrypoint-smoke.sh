@@ -10,6 +10,7 @@ DOC="$ROOT/docs/COMMANDS.md"
 
 echo "SMOKE: mqlaunch route thin entrypoint"
 
+# Coordinates dispatch behavior.
 dispatch() {
   (
     export MACOS_SCRIPTS_HOME="$ROOT"
@@ -17,12 +18,14 @@ dispatch() {
     source "$AGENT_MENU" >/dev/null 2>&1
     # shellcheck source=/dev/null
     source "$COMMAND_MODE" >/dev/null 2>&1
+# Coordinates run agent behavior.
     _run_agent() {
       printf 'mq-agent'
       printf ' <%s>' "$@"
       printf '\n'
       return "${STUB_EXIT:-0}"
     }
+# Pauses until Enter is pressed.
     pause_enter() { :; }
     dispatch_cli_command "$@"
   )

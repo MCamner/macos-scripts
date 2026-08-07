@@ -38,12 +38,14 @@ STUB
 chmod +x "$TMPDIR_TEST/release-check.sh" \
   "$TMPDIR_TEST/terminal/release/mq-release-check.sh"
 
+# Coordinates dispatch behavior.
 dispatch() {
   (
     export MACOS_SCRIPTS_HOME="$ROOT"
     export STUB_LOG="$TMPDIR_TEST/calls.log"
     # shellcheck source=/dev/null
     source "$COMMAND_MODE"
+# Pauses until Enter is pressed.
     pause_enter() { return 0; }
     # Read by the dispatcher sourced above — this is what points it at the stub
     # tree instead of the real one. ShellCheck cannot follow the source.

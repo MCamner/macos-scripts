@@ -101,6 +101,7 @@ else
 fi
 
 section "MQOBSIDIAN MANIFEST CONTRACT"
+# Coordinates check mqobsidian manifest contract behavior.
 check_mqobsidian_manifest_contract() {
   local manifest="$BASE_DIR/mqlaunch/config/mqobsidian/views.json"
 

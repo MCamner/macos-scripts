@@ -351,11 +351,13 @@ printf 'x\n' > "$repo_probe/tracked.txt"
 git -C "$repo_probe" add tracked.txt
 git -C "$repo_probe" -c user.email=t@t -c user.name=t commit -qm init
 
+# Coordinates state of behavior.
 state_of() {
   bash -c 'source "$1/ui/terminal-ui/mq-ui.sh" >/dev/null 2>&1; mq_repo_state "$2"' \
     _ "$ROOT" "$1"
 }
 
+# Coordinates expect state behavior.
 expect_state() {
   # expect_state <repo> <expected> <what>
   local got
