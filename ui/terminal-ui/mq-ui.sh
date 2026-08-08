@@ -613,3 +613,87 @@ ui_err() {
 ui_info() {
   printf "%b%s%b\n" "$C_INFO" "$1" "$C_RESET"
 }
+
+# Braille frames, deliberately the same set rich uses on the mq-agent side, so
+# `mqlaunch mq-agent 4` and a shell menu waiting on gh look like one tool.
+MQ_SPINNER_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+
+# Runs a command and animates a spinner while it works.
+#
+#   ui_spinner "Reading pull requests" gh pr list --state open
+#
+# The shell surface had no progress primitive at all: every menu that shelled
+# out to gh (~0.75s per call), ollama (tens of seconds) or a test run simply
+# went quiet, and a quiet terminal reads as a hang. mq-agent has had
+# console.status for this since it grew rich panels; this is the same idea for
+# the half of the stack written in shell.
+#
+# Three promises, locked by tests/ui-spinner-smoke.sh:
+#
+#   * the wrapped command's exit status is returned unchanged, so this composes
+#     with the delegated-exit-code contract instead of fighting it
+#   * stdout and stderr pass through untouched — frames go to /dev/tty, never
+#     into a pipe (the same rule the banner follows, docs/RUNTIME_AUTHORITY.md),
+#     so `repos="$(ui_spinner 'Fetching' gh repo list)"` animates *and* captures
+#   * nothing is drawn unless there is a terminal to draw on
+#
+# Two limits come from running the command in the background, and both are
+# deliberate: it cannot wrap something that prompts on stdin, and variables it
+# sets do not reach the caller. Wrap the slow, silent, non-interactive part —
+# that is the part you are waiting on anyway.
+#
+# The cursor is left visible on purpose. Hiding it means restoring it, and the
+# only reliable restore is an INT/TERM trap — which gitlaunch and the git menu
+# already use to put a repo back on its base branch. A spinner that clobbers
+# that trap trades a cosmetic win for a real one, and a terminal left without a
+# cursor is worse than one that kept it.
+ui_spinner() {
+  local label="$1"
+  shift
+
+  if [[ $# -eq 0 ]]; then
+    ui_err "ui_spinner: no command given"
+    return 2
+  fi
+
+  # What a spinner needs is a terminal to draw *on*, which is not the same as a
+  # terminal on stdout — the whole point is that `out="$(ui_spinner … )"` still
+  # animates while the caller keeps the output. So this gates on /dev/tty, not
+  # on mq_wants_plain_output. No controlling terminal (CI, a hook, a pipeline
+  # with no tty at all) means no audience, and then no animation.
+  if [[ -n "${MQ_NO_SPINNER:-}" || -n "${MQ_NO_TUI:-}" ]] || ! { true >/dev/tty; } 2>/dev/null; then
+    "$@"
+    return $?
+  fi
+
+  # zsh in monitor mode announces every background job ("[1] 12345"). The menus
+  # run as scripts, where monitor is already off, but mq-ui.sh is sourceable.
+  if [[ -n "${ZSH_VERSION:-}" ]]; then
+    setopt local_options no_monitor
+  fi
+
+  local width max_label
+  width="$(surface_terminal_width)"
+  max_label=$((width - 4))
+  if ((max_label > 0)) && ((${#label} > max_label)); then
+    label="${label:0:$((max_label - 1))}…"
+  fi
+
+  "$@" &
+  local pid=$!
+  local frame rc=0
+
+  while kill -0 "$pid" 2>/dev/null; do
+    for frame in "${MQ_SPINNER_FRAMES[@]}"; do
+      kill -0 "$pid" 2>/dev/null || break
+      printf '\r%b%s%b %s\033[K' "${C_INFO:-}" "$frame" "${C_RESET:-}" "$label" >/dev/tty
+      sleep "${MQ_SPINNER_INTERVAL:-0.08}"
+    done
+  done
+
+  # `|| rc=$?` because a caller under `set -e` must not die on the wrapped
+  # command's failure before we have had a chance to clean the line.
+  wait "$pid" || rc=$?
+  printf '\r\033[K' >/dev/tty
+  return "$rc"
+}

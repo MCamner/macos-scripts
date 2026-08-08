@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# Resolved at source time because dev_repo_path's fallback needs it and cannot
+# recompute it: BASH_SOURCE is unset under zsh (the interactive launcher), and
+# inside a zsh function $0 holds the function name, not the file. `-` rather
+# than `:-` so it survives a caller running under `set -u`. Same idiom as
+# ui/terminal-ui/mq-ui.sh and mqlaunch/lib/mqobsidian/manifest.sh.
+_mq_dev_menu_self="${BASH_SOURCE[0]-}"
+[ -n "$_mq_dev_menu_self" ] || _mq_dev_menu_self="$0"
+_MQ_DEV_MENU_DIR="$(cd "$(dirname "$_mq_dev_menu_self")" 2>/dev/null && pwd)"
+unset _mq_dev_menu_self
+
 # Runs a bundled dev script with a clear missing-file fallback.
 run_dev_script() {
   local label="$1"
@@ -32,7 +42,11 @@ dev_repo_path() {
     return
   fi
 
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  script_dir="${_MQ_DEV_MENU_DIR:-}"
+  if [[ -z "$script_dir" ]]; then
+    printf '%s\n' "$relative_path"
+    return 1
+  fi
   repo_root="$(cd "$script_dir/../.." && pwd)"
   printf '%s/%s\n' "$repo_root" "$relative_path"
 }

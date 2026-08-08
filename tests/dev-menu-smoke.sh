@@ -14,11 +14,11 @@ MENU="$ROOT/terminal/menus/mq-dev-menu.sh"
 
 echo "SMOKE: dev menu"
 
-echo "[1/6] the menu file exists and parses"
+echo "[1/7] the menu file exists and parses"
 test -f "$MENU"
 bash -n "$MENU"
 
-echo "[2/6] every action reachable before the regrouping still has a route"
+echo "[2/7] every action reachable before the regrouping still has a route"
 # Listed as the handler or script each choice must reach, not as menu text.
 # Anything dropped from the front menu has to reappear in a submenu; this is the
 # check that a regrouping did not quietly become a deletion.
@@ -56,7 +56,7 @@ if [[ -n "$missing" ]]; then
 fi
 echo "  ok: all 17 original actions still reachable"
 
-echo "[3/6] the numbers printed are the numbers answered"
+echo "[3/7] the numbers printed are the numbers answered"
 # Compares the two lists, so it fails on a gap, a duplicate, or an option with
 # no arm.
 #
@@ -91,7 +91,7 @@ if sorted(printed) != answered:
 print(f"  ok: 1-{len(printed)}, in order, each with an arm")
 PY
 
-echo "[4/6] the front menu is within the operator-choice limit"
+echo "[4/7] the front menu is within the operator-choice limit"
 # Counted from the numbered rows the panel prints, which is what the ROADMAP
 # limit is about — what an operator is asked to choose between on one screen.
 count="$(python3 - "$MENU" <<'PY'
@@ -112,7 +112,7 @@ if (( count > 10 )); then
 fi
 echo "  ok: $count numbered choices on the front menu"
 
-echo "[5/6] each submenu answers every row it prints"
+echo "[5/7] each submenu answers every row it prints"
 python3 - "$MENU" <<'PY'
 import re, sys
 
@@ -136,7 +136,7 @@ sys.exit(1 if failed else 0)
 PY
 echo "  ok: submenu rows and arms agree"
 
-echo "[6/6] each grouped row actually opens its submenu"
+echo "[6/7] each grouped row actually opens its submenu"
 # Steps 2-5 read the file. This runs the menu, because a case arm that names a
 # function proves nothing about whether the function opens.
 #
@@ -173,5 +173,24 @@ for expected in Prompts Folders Menus; do
   }
 done
 echo "  ok: Prompts, Folders and Menus all open"
+
+echo "[7/7] dev_repo_path resolves without BASE_DIR, under both shells"
+# The fallback branch read ${BASH_SOURCE[0]} inside a function, which is unset
+# under zsh — the same split that broke the mqobsidian manifest reader from the
+# menu while command mode kept working. Only reachable with BASE_DIR unset, so
+# assert it directly rather than trusting that the launcher always sets it.
+for shell in bash zsh; do
+  out="$("$shell" -c "
+    set -u
+    unset BASE_DIR
+    source '$MENU'
+    dev_repo_path tools/scripts/lint.sh
+  " 2>&1)"
+  test "$out" = "$ROOT/tools/scripts/lint.sh" || {
+    echo "FAIL: $shell resolved dev_repo_path to: $out" >&2
+    exit 1
+  }
+done
+echo "  ok: bash and zsh agree"
 
 echo "OK: dev menu smoke test passed"
