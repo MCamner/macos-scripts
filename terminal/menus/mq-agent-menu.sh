@@ -584,6 +584,7 @@ print_agent_review_brain_menu() {
   surface_panel_header "Review to Brain" "mq-agent" "$width" "$panel_color"
   surface_row "WRITES TO mqobsidian" "$width" "$panel_color"
   surface_split_row "1. Review repo → brain" "2. Signal + save to brain" "$width" "$panel_color"
+  surface_split_row "3. Stack truth export → brain" "" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -602,6 +603,9 @@ agent_review_brain_menu_loop() {
     case "$choice" in
       1) _run_agent review repo . --brain; pause_enter ;;
       2) _run_agent signal --brain .; pause_enter ;;
+      # The note the stack sweep reports on. Nothing schedules it, so the only
+      # thing keeping it fresh is an operator finding this row.
+      3) _run_agent stack truth-export; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
