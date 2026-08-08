@@ -140,6 +140,26 @@ def index_state(repo: Path, skill: Skill) -> str:
     return "not-indexed"
 
 
+def discovery_state(repo: Path, skill: Skill) -> str:
+    """Can an agent actually load this skill?
+
+    The MQ convention keeps skills in <repo>/skills/ and indexes them in
+    SKILLS.md. Claude Code discovers skills somewhere else entirely: under
+    <repo>/.claude/skills/. Those two facts were never checked against each
+    other, so the whole stack — 63 skills across eight repos — audited as "ok,
+    indexed" while not one of them could be loaded. Being indexed says a human
+    can find the file; this says a tool can run it.
+    """
+    entry = repo / ".claude" / "skills" / skill.path.parent.name
+    if entry.is_symlink() and not entry.exists():
+        return "broken-link"
+    if not entry.exists():
+        return "not-discoverable"
+    if not (entry / "SKILL.md").is_file():
+        return "broken-link"
+    return "discoverable"
+
+
 def roadmap_text(repo: Path) -> str:
     parts = []
     for path in (repo / "ROADMAP.md", repo / "docs" / "ROADMAP.md"):
@@ -153,12 +173,17 @@ def audit(args: argparse.Namespace) -> int:
     for repo in repo_paths(args.repo):
         skills = find_skills(repo)
         states = [index_state(repo, skill) for skill in skills]
+        discovery = [discovery_state(repo, skill) for skill in skills]
         indexed_count = sum(1 for state in states if state == "indexed")
-        print(f"{repo.name}: {len(skills)} skill(s), {indexed_count} indexed")
-        for skill, idx in zip(skills, states):
+        loadable = sum(1 for state in discovery if state == "discoverable")
+        print(
+            f"{repo.name}: {len(skills)} skill(s), {indexed_count} indexed, "
+            f"{loadable} discoverable"
+        )
+        for skill, idx, disc in zip(skills, states, discovery):
             status = "ok" if skill.name and skill.description else "frontmatter-missing"
-            print(f"  - {skill.path.parent.name}: {status}, {idx}")
-            if status != "ok" or idx != "indexed":
+            print(f"  - {skill.path.parent.name}: {status}, {idx}, {disc}")
+            if status != "ok" or idx != "indexed" or disc != "discoverable":
                 any_warn = True
 
         text = roadmap_text(repo)
@@ -201,6 +226,11 @@ def validate(args: argparse.Namespace) -> int:
                 warnings.append(f"{repo.name}/{folder}: not referenced by local skill index")
             elif idx == "no-index-file":
                 warnings.append(f"{repo.name}/{folder}: repo has no local skill index")
+            disc = discovery_state(repo, skill)
+            if disc == "not-discoverable":
+                warnings.append(f"{repo.name}/{folder}: not linked into .claude/skills")
+            elif disc == "broken-link":
+                warnings.append(f"{repo.name}/{folder}: .claude/skills entry does not resolve")
 
     if args.ecosystem:
         by_name: dict[str, list[str]] = {}
@@ -243,6 +273,10 @@ def fix_suggestion(message: str) -> str:
         return "add the skill to SKILLS.md or skills/platform-skills.md"
     if "repo has no local skill index" in message:
         return "create SKILLS.md and list the repo skills"
+    if "not linked into .claude/skills" in message:
+        return "ln -s ../../skills/<name> .claude/skills/<name> — indexed is not the same as loadable"
+    if ".claude/skills entry does not resolve" in message:
+        return "repoint or remove the .claude/skills entry; it has no SKILL.md behind it"
     if "repo not found" in message:
         return "clone the repo locally or pass --repo with the correct path"
     if "duplicate skill name" in message:
