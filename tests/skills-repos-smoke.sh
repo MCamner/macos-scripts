@@ -84,7 +84,10 @@ echo "[11/12] audit reports whether each skill is discoverable by Claude Code"
 # "ok, indexed" while not one of them was loadable. It validated the MQ
 # convention (skills/ plus a local index) and knew nothing about Claude Code's
 # search path, which is .claude/skills/. An index nobody reads is not discovery.
-out="$("$SKILLS" audit --repo macos-scripts)"
+# --repo takes a path, and it has to be this checkout: a bare name resolves
+# under $HOME, which on a CI runner is not where the repo lives. Step 10 already
+# skips its listing assertions for exactly that reason.
+out="$("$SKILLS" audit --repo "$ROOT")"
 grep -q "discoverable" <<<"$out"
 
 echo "[12/12] an unlinked skill is reported, and a linked one is not"
