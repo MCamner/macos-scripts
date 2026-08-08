@@ -74,6 +74,7 @@ mq-flow-routing-smoke.sh	active	-
 mq-obsidian-menu-no-promotion-smoke.sh	active	-
 mq-obsidian-python-smoke.sh	active	-
 mq-obsidian-regenerate-placeholder-ui-smoke.sh	active	-
+mq-obsidian-regenerate-views-smoke.sh	active	-
 mq-obsidian-triage-ui-smoke.sh	active	-
 brain-bridge-smoke.sh	active	-
 mq-agent-routing-smoke.sh	active	-

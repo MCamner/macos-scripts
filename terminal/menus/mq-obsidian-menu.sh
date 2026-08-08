@@ -345,31 +345,55 @@ mq_obsidian_triage_learning_inbox() {
   printf "  mq-agent\n"
 }
 
-# Regenerates memory views when a supported script exists.
-mq_obsidian_regenerate_views() {
-  local python
+# mqobsidian's view renderers, repo-relative. Each reads local memory data and
+# rewrites markdown under its own views/ directory. They sit next to their data
+# rather than in mqobsidian/scripts/ on purpose: scripts/ is the export surface
+# other repos consume, and these render nothing anyone else reads. Rendering is
+# not curation — promotion, scoring and aging stay manual passes in mqobsidian.
+MQ_OBSIDIAN_VIEW_RENDERERS=(
+  "memory/commands/build_views.py"
+  "memory/workflows/build_workflow_views.py"
+)
 
-  if [[ -x "$MQ_OBSIDIAN_DIR/scripts/regenerate-memory-views.py" || -f "$MQ_OBSIDIAN_DIR/scripts/regenerate-memory-views.py" ]]; then
-    python="$(mq_obsidian_python)" || return
-    mq_obsidian_run "$python" scripts/regenerate-memory-views.py
-  else
-    printf "────────────────────────────────────────────────────────────\n"
-    printf " mqlaunch · Option 13 · Regenerate memory views\n"
-    printf "────────────────────────────────────────────────────────────\n\n"
-    printf "Status\n"
-    printf "  not implemented yet\n\n"
-    printf "Current state\n"
-    printf "  No regenerate-memory-views script is registered.\n\n"
-    printf "Expected owner\n"
-    printf "  mq-agent orchestration\n\n"
-    printf "Local producer\n"
-    printf "  mqobsidian regenerate-memory-views script\n\n"
-    printf "mqlaunch role\n"
-    printf "  menu entry and read-only status only\n\n"
-    printf "Available here\n"
-    printf "  Enter  return to menu\n"
-    printf "  x      exit mqlaunch\n"
+# Regenerates memory views by running every renderer the vault actually ships.
+# Returns the first nonzero status so a broken renderer is not reported as a
+# successful regeneration.
+mq_obsidian_regenerate_views() {
+  # `rc`, not `status`: menus run under zsh, where $status is read-only.
+  local python renderer rc=0 ran=0
+
+  for renderer in "${MQ_OBSIDIAN_VIEW_RENDERERS[@]}"; do
+    [[ -f "$MQ_OBSIDIAN_DIR/$renderer" ]] || continue
+    if [[ "$ran" -eq 0 ]]; then
+      python="$(mq_obsidian_python)" || return 1
+    fi
+    ran=1
+    printf "── %s\n" "$renderer"
+    if ! mq_obsidian_run "$python" "$renderer"; then
+      rc=1
+    fi
+  done
+
+  if [[ "$ran" -eq 1 ]]; then
+    return "$rc"
   fi
+
+  printf "────────────────────────────────────────────────────────────\n"
+  printf " mqlaunch · Option 13 · Regenerate memory views\n"
+  printf "────────────────────────────────────────────────────────────\n\n"
+  printf "Status\n"
+  printf "  not implemented yet\n\n"
+  printf "Current state\n"
+  printf "  This vault ships no view renderer.\n\n"
+  printf "Local producers\n"
+  for renderer in "${MQ_OBSIDIAN_VIEW_RENDERERS[@]}"; do
+    printf "  %s\n" "$renderer"
+  done
+  printf "\nmqlaunch role\n"
+  printf "  runs the renderers; mqobsidian owns curation\n\n"
+  printf "Available here\n"
+  printf "  Enter  return to menu\n"
+  printf "  x      exit mqlaunch\n"
 }
 
 # Runs the MQ Obsidian menu loop.
