@@ -509,6 +509,12 @@ run_agent_command() {
       shift || true
       _run_agent obsidian promote "$@"
       ;;
+    obsidian-learn-writeback)
+      # mqobsidian owns the writeback; mq-agent owns the decision to run it.
+      # Dry-run unless the operator passes --apply, which forwards verbatim.
+      shift || true
+      _run_agent memory learn-writeback "$@"
+      ;;
     mcp-tools)
       shift || true
       _run_agent mcp tools "$@"

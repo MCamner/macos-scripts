@@ -1412,6 +1412,13 @@
           "name": "promote",
           "aliases": [],
           "summary": "Promote a memory through mq-agent"
+        },
+        {
+          "name": "learn-writeback",
+          "aliases": [
+            "writeback"
+          ],
+          "summary": "Write durable memory for promoted items through mq-agent"
         }
       ],
       "operator_surface": true

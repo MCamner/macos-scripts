@@ -32,7 +32,17 @@ grep -q 'mq_obsidian_regenerate_views' "$COMMAND_MODE"
 grep -q 'run_agent_command obsidian-promote' "$COMMAND_MODE"
 grep -q 'obsidian-promote)' "$AGENT_MENU"
 grep -q '_run_agent obsidian promote' "$AGENT_MENU"
-grep -q 'Commands: status, inbox, views, regenerate-views, promote' "$COMMAND_MODE"
+grep -q 'Commands: status, inbox, views, regenerate-views, promote, learn-writeback' "$COMMAND_MODE"
+
+echo "[3b/5] learn-writeback routes to mq-agent, never to mqobsidian directly"
+grep -q 'learn-writeback|writeback)' "$COMMAND_MODE"
+grep -q 'run_agent_command obsidian-learn-writeback' "$COMMAND_MODE"
+grep -q 'obsidian-learn-writeback)' "$AGENT_MENU"
+grep -q '_run_agent memory learn-writeback' "$AGENT_MENU"
+# The whole point of the route: mqlaunch owns no memory logic, so nothing here
+# may reach mqobsidian's memory_cli.py.
+! grep -q 'memory_cli' "$COMMAND_MODE"
+! grep -q 'memory_cli' "$AGENT_MENU"
 
 echo "[4/5] docs expose direct routes and boundary"
 grep -q 'mqlaunch obsidian status' "$README"
@@ -40,6 +50,7 @@ grep -q 'mqlaunch obsidian inbox' "$COMMANDS"
 grep -q 'mqlaunch obsidian views' "$COMMANDS"
 grep -q 'mqlaunch obsidian regenerate-views' "$COMMANDS"
 grep -q 'mqlaunch obsidian promote --dry-run' "$COMMANDS"
+grep -q 'mqlaunch obsidian learn-writeback' "$COMMANDS"
 grep -q 'do not score, promote, reject, or' "$COMMANDS"
 grep -q 'mq-agent obsidian promote' "$COMMANDS"
 

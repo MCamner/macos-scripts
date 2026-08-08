@@ -126,7 +126,7 @@ HELP
       cat <<'HELP'
 Usage: mqlaunch obsidian <command> [args]
 
-Commands: status, inbox, views, regenerate-views, promote
+Commands: status, inbox, views, regenerate-views, promote, learn-writeback
 HELP
       ;;
     repos)
@@ -1206,6 +1206,18 @@ dispatch_cli_command() {
           shift 2 || true
           if declare -f run_agent_command >/dev/null; then
             run_agent_command obsidian-promote "$@"
+          else
+            echo "ERROR: mq-agent bridge not loaded" >&2
+            return 1
+          fi
+          ;;
+        learn-writeback|writeback)
+          # Materialise durable memory for PROMOTED memories. mqlaunch owns no
+          # memory logic: this goes through mq-agent, which delegates to
+          # mqobsidian's own CLI. Dry-run unless --apply is passed through.
+          shift 2 || true
+          if declare -f run_agent_command >/dev/null; then
+            run_agent_command obsidian-learn-writeback "$@"
           else
             echo "ERROR: mq-agent bridge not loaded" >&2
             return 1
