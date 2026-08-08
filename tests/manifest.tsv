@@ -96,3 +96,4 @@ operator-usage-message-smoke.sh	active	-
 menu-exit-contract-smoke.sh	active	-
 theme-manager-path-smoke.sh	active	-
 ui-spinner-smoke.sh	active	-
+mqobsidian-manifest-shell-parity-smoke.sh	active	-

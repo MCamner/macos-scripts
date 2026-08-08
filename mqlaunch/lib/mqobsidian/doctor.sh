@@ -47,20 +47,23 @@ doctor_mqobsidian_manifest() {
 
 # Coordinates doctor mqobsidian views behavior.
 doctor_mqobsidian_views() {
-  local root key rel type path status=0
+  # Both renames are zsh survival, not style: $path is tied to $PATH, and
+  # $status is read-only. This line used to declare locals for both, so the
+  # doctor worked from bash command mode and died from the zsh menu.
+  local root key rel type target rc=0
   root="$(resolve_mqobsidian_dir)"
   while IFS= read -r key; do
     rel="$(resolve_view_relative_path "$key" 2>/dev/null)"
     type="$(resolve_view_type "$key" 2>/dev/null)"
-    path="$root/$rel"
-    if { [[ "$type" == "folder" && -d "$path" ]] || [[ "$type" == "file" && -f "$path" ]]; }; then
+    target="$root/$rel"
+    if { [[ "$type" == "folder" && -d "$target" ]] || [[ "$type" == "file" && -f "$target" ]]; }; then
       _doc_ok "view $key -> $rel"
     else
       _doc_missing "view $key -> $rel"
-      status=1
+      rc=1
     fi
   done < <(list_supported_views)
-  return $status
+  return $rc
 }
 
 # Coordinates doctor mqobsidian open command behavior.
