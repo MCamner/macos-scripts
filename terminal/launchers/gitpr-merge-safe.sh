@@ -31,6 +31,21 @@ require_cmd() {
 require_cmd git
 require_cmd gh
 
+# ui_spinner, so the gh round trips below read as work rather than as a hang.
+# This script runs as its own process (the git menu launches it, never sources
+# it), so it has to load the UI library itself — and degrade to a no-op if the
+# library is not there, because a missing spinner must not cost you the merge
+# tool. MQ_UI_LIB is an override for tests.
+_mq_ui_lib="${MQ_UI_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../ui/terminal-ui" 2>/dev/null && pwd)/mq-ui.sh}"
+if [[ -f "$_mq_ui_lib" ]]; then
+  # shellcheck source=../../ui/terminal-ui/mq-ui.sh
+  source "$_mq_ui_lib"
+fi
+if ! declare -f ui_spinner >/dev/null; then
+  ui_spinner() { local _label="$1"; shift; "$@"; }
+fi
+unset _mq_ui_lib
+
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "Not inside a Git repository."
 
 # Class C interactive action: refuse before any network operation if there is no
@@ -57,16 +72,21 @@ pr_number="${1:-}"
 
 if [[ -z "$pr_number" ]]; then
   # Try the PR whose head is the current branch.
-  pr_number="$(gh pr view --json number --jq '.number' 2>/dev/null || true)"
+  pr_number="$(ui_spinner "Looking for a PR on $current_branch" \
+    gh pr view --json number --jq '.number' 2>/dev/null || true)"
 fi
 
 if [[ -z "$pr_number" ]]; then
   yellow "No PR argument and no PR for the current branch. Open pull requests:"
   echo
-  gh pr list --state open --limit 30 \
-    --json number,title,headRefName,baseRefName \
-    --template '{{range .}}{{printf "  %v) #%v  %s  (%s -> %s)\n" .number .number .title .headRefName .baseRefName}}{{end}}' \
+  # Captured rather than streamed, so the spinner has somewhere to sit while
+  # the list is fetched and the list still prints in one piece afterwards.
+  open_prs="$(ui_spinner "Listing open pull requests" \
+    gh pr list --state open --limit 30 \
+      --json number,title,headRefName,baseRefName \
+      --template '{{range .}}{{printf "  %v) #%v  %s  (%s -> %s)\n" .number .number .title .headRefName .baseRefName}}{{end}}')" \
     || die "Could not list pull requests."
+  printf '%s\n' "$open_prs"
   echo
   read -r -p "PR number to merge (or q to quit): " pr_number
   [[ "${pr_number:-}" =~ ^[Qq]$ ]] && exit 0
@@ -77,23 +97,28 @@ fi
 # ------------------------
 # SHOW MERGE PLAN
 # ------------------------
-gh pr view "$pr_number" --json number >/dev/null 2>&1 || die "Could not read PR #$pr_number."
+# One request for the whole plan, still through gh's built-in --jq so there is
+# no dependency on a standalone jq binary. This used to be nine `gh pr view`
+# calls, one per field, which measured 3.44s of silence against 0.47s for the
+# batched read. The separate existence check was a tenth call saying what this
+# one already says by failing.
+#
+# Fields are joined on U+001F, not on a tab: tab counts as IFS whitespace, so
+# `read` collapses a run of them and an empty field shifts every later field
+# left. reviewDecision is empty on any PR nobody has reviewed — which is most
+# of them — so a tab-separated read would have silently swapped the review
+# decision for the URL. Nulls are mapped to "" for the same reason: jq's join
+# refuses to join null.
+pr_plan="$(ui_spinner "Reading PR #$pr_number" \
+  gh pr view "$pr_number" \
+    --json title,state,isDraft,baseRefName,headRefName,mergeable,mergeStateStatus,reviewDecision,url \
+    --jq '[.title,.state,.isDraft,.baseRefName,.headRefName,.mergeable,.mergeStateStatus,.reviewDecision,.url]
+          | map(if . == null then "" else tostring end) | join("\u001f")' \
+    2>/dev/null)" || die "Could not read PR #$pr_number."
+[[ -n "$pr_plan" ]] || die "Could not read PR #$pr_number."
 
-# Read one field at a time via gh's built-in --jq, so we do not depend on a
-# standalone jq binary being installed.
-pr_field() {
-  gh pr view "$pr_number" --json "$1" --jq ".$1" 2>/dev/null || true
-}
-
-title="$(pr_field title)"
-state="$(pr_field state)"
-is_draft="$(pr_field isDraft)"
-base_ref="$(pr_field baseRefName)"
-head_ref="$(pr_field headRefName)"
-mergeable="$(pr_field mergeable)"
-merge_state="$(pr_field mergeStateStatus)"
-review_decision="$(pr_field reviewDecision)"
-pr_url="$(pr_field url)"
+IFS=$'\037' read -r title state is_draft base_ref head_ref \
+  mergeable merge_state review_decision pr_url <<<"$pr_plan"
 
 echo
 blue "Merge plan"
@@ -113,9 +138,18 @@ if [[ "$is_draft" == "true" ]]; then
   die "PR #$pr_number is a draft. Mark it ready for review first."
 fi
 
-# CI / check summary.
+# CI / check summary. Fetched once and reused below: this used to run twice,
+# once to print and once to decide, paying for the same round trip either way.
+checks_rc=0
+checks_output="$(ui_spinner "Reading checks for #$pr_number" \
+  gh pr checks "$pr_number" 2>/dev/null)" || checks_rc=$?
+
 yellow "Checks:"
-gh pr checks "$pr_number" 2>/dev/null || yellow "  (no checks reported)"
+if [[ -n "$checks_output" ]]; then
+  printf '%s\n' "$checks_output"
+else
+  yellow "  (no checks reported)"
+fi
 echo
 
 # ------------------------
@@ -134,7 +168,7 @@ if [[ "$review_decision" == "CHANGES_REQUESTED" ]]; then
   yellow "Review decision is CHANGES_REQUESTED."
   risky=1
 fi
-if ! gh pr checks "$pr_number" >/dev/null 2>&1; then
+if [[ "$checks_rc" -ne 0 ]]; then
   yellow "One or more checks are failing or pending."
   risky=1
 fi
