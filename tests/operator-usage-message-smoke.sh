@@ -127,6 +127,7 @@ routed="$(
   MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 bash -c '
     source "$1" >/dev/null 2>&1
     BASE_DIR="$2"
+# Pauses until Enter is pressed.
     pause_enter() { :; }
     dispatch_cli_command skills audit --repo /tmp/x
   ' _ "$COMMAND_MODE" "$skills_fake" 2>&1
@@ -243,6 +244,7 @@ for probe in "list" "status --short" "diff-summary"; do
     MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 bash -c '
       source "$1" >/dev/null 2>&1
       BASE_DIR="$2"
+# Pauses until Enter is pressed.
       pause_enter() { :; }
       shift 2
       dispatch_cli_command repos "$@"

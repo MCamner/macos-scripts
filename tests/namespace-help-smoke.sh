@@ -14,6 +14,7 @@ TIMEOUT_BIN="$(command -v timeout || command -v gtimeout || true)"
   exit 1
 }
 
+# Runs help.
 run_help() {
   local namespace="$1"
   local flag="$2"

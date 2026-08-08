@@ -40,6 +40,7 @@ run_agent_missing() {
     MQ_AGENT_BIN="/nonexistent-delegate-for-this-test"
     # Stubs for the UI helpers the menu expects from mq-ui.sh.
     ui_err() { echo "$*" >&2; }
+# Pauses until Enter is pressed.
     pause_enter() { :; }
     source "'"$AGENT_MENU"'" >/dev/null 2>&1 || true
     _run_agent doctor

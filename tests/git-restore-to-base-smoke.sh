@@ -14,8 +14,10 @@ GIT_MENU="$ROOT/terminal/menus/mq-git-menu.sh"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Coordinates git behavior.
 _git() { git -C "$1" "${@:2}"; }
 
+# Coordinates assert restored behavior.
 assert_restored() {
   local repo="$1"
 

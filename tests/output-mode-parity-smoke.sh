@@ -316,6 +316,7 @@ json.dump(doc, open(sys.argv[2], "w"))
 PY
 }
 
+# Coordinates expect parity failure behavior.
 expect_parity_failure() {
   # expect_parity_failure <fixture> <what> <expected stderr substring> [observed]
   local fixture="$1" what="$2" reason="$3" observed="${4:-$run_dir/observed.txt}" out

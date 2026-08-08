@@ -78,6 +78,7 @@ plants=(
   "automation/login/mqlogin.sh"
   "tools/scripts/doctor.sh"
 )
+# Restores plants from saved script state.
 restore_plants() {
   local rel
   for rel in "${plants[@]}"; do

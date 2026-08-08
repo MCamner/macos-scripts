@@ -16,6 +16,7 @@ trap 'rm -rf "$TMPDIR_TEST"' EXIT
 
 echo "SMOKE: command word normalization"
 
+# Runs launcher.
 run_launcher() {
   set +e
   MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 MQLAUNCH_HEADLESS=1 \
@@ -60,7 +61,9 @@ echo "[3/4] srm routes its agent verbs case-insensitively"
   export MACOS_SCRIPTS_HOME="$ROOT"
   # shellcheck source=/dev/null
   source "$COMMAND_MODE"
+# Pauses until Enter is pressed.
   pause_enter() { return 0; }
+# Runs agent command.
   run_agent_command() {
     printf '%s\n' "$1" > "$TMPDIR_TEST/verb"
     return 0
@@ -83,7 +86,9 @@ echo "[4/4] normalization does not reach past the command word"
   export MACOS_SCRIPTS_HOME="$ROOT"
   # shellcheck source=/dev/null
   source "$COMMAND_MODE"
+# Pauses until Enter is pressed.
   pause_enter() { return 0; }
+# Runs agent command.
   run_agent_command() {
     printf '%s\n' "$*" > "$TMPDIR_TEST/args"
   }

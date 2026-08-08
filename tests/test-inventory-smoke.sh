@@ -17,6 +17,7 @@ SUITE="$ROOT/tools/scripts/test-all.sh"
 
 echo "SMOKE: test inventory"
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $*" >&2
   exit 1

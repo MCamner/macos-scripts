@@ -59,6 +59,7 @@ translate() {
   (
     # shellcheck source=/dev/null
     source "$AGENT_MENU" >/dev/null 2>&1
+# Coordinates run agent behavior.
     _run_agent() {
       printf 'mq-agent'
       printf ' %s' "$@"
@@ -68,6 +69,7 @@ translate() {
   )
 }
 
+# Coordinates expect translation behavior.
 expect_translation() {
   local want="$1"
   shift
@@ -105,6 +107,7 @@ dispatch() {
   (
     # shellcheck source=/dev/null
     source "$AGENT_MENU" >/dev/null 2>&1
+# Coordinates run agent behavior.
     _run_agent() {
       printf 'mq-agent'
       printf ' %s' "$@"
@@ -115,6 +118,7 @@ dispatch() {
   )
 }
 
+# Coordinates expect dispatch behavior.
 expect_dispatch() {
   local want="$1"
   shift
@@ -172,17 +176,20 @@ cli() {
     export MACOS_SCRIPTS_HOME="$ROOT"
     # shellcheck source=/dev/null
     source "$COMMAND_MODE" >/dev/null 2>&1
+# Runs agent command.
     run_agent_command() {
       printf 'mq-agent'
       printf ' %s' "$@"
       printf '\n'
       return "${STUB_EXIT:-0}"
     }
+# Pauses until Enter is pressed.
     pause_enter() { :; }
     dispatch_cli_command "$@"
   )
 }
 
+# Coordinates expect cli behavior.
 expect_cli() {
   local want="$1"
   shift

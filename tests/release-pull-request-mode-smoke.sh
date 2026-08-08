@@ -23,6 +23,7 @@ export GIT_CONFIG_GLOBAL="$WORK/gitconfig"
 
 echo "SMOKE: release.sh pull_request mode"
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $*" >&2
   exit 1
@@ -78,6 +79,7 @@ exit 0
 STUB
 chmod +x "$WORK/bin/gh"
 
+# Runs release.
 run_release() {
   local repo="$1"
   shift

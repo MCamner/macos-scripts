@@ -7,6 +7,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Marks a failing check.
 fail() { printf '[FAIL] %s\n' "$1" >&2; exit 1; }
 
 for f in terminal/launchers/mqlaunch-repl.sh terminal/menus/mq-main-menu.sh; do

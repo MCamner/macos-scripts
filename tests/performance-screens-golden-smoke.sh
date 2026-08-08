@@ -121,6 +121,7 @@ render_screen() {
   return "$rc"
 }
 
+# Coordinates capture all behavior.
 capture_all() {
   local perf_file="$1" dest="$2" fn rc so se
   : >"$dest"

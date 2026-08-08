@@ -93,6 +93,7 @@ cat >"$probe_dir/collide.sh" <<'PROBE'
 #!/usr/bin/env bash
 # Same handler names the real menus use, wired to the dispatcher instead.
 open_system_menu() { "$BASE_DIR/bin/mqlaunch" system; }
+# Runs network ghost.
 run_network_ghost() { "$BASE_DIR/bin/mqlaunch" ghost; }
 PROBE
 with_untracked="$("$TOOL" --json)"
@@ -170,6 +171,7 @@ echo "[10/10] the inventory still notices a bypass and a duplication"
 PLANT_MENU="$ROOT/terminal/menus/mq-net-menu.sh"
 PLANT_BACKUP="$(mktemp)"
 cp "$PLANT_MENU" "$PLANT_BACKUP"
+# Restores plant from saved script state.
 restore_plant() { cp "$PLANT_BACKUP" "$PLANT_MENU"; rm -f "$PLANT_BACKUP"; }
 trap restore_plant EXIT
 

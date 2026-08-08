@@ -10,6 +10,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"
 
+# Marks a failing check.
 fail() { printf '[FAIL] %s\n' "$1" >&2; exit 1; }
 
 # Each concern: "lib_relpath : space-separated function names"

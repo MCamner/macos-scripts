@@ -35,7 +35,9 @@ echo "[3/7] command mode intercepts 'memory cochange' and routes to the agent br
   # shellcheck source=/dev/null
   source "$COMMAND_MODE"
 
+# Pauses until Enter is pressed.
   pause_enter() { return 0; }
+# Runs agent command.
   run_agent_command() { printf '%s\n' "$*" >"$DELEGATE_DIR/call"; return 0; }
 
   dispatch_cli_command memory cochange >/dev/null 2>&1

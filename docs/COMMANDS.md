@@ -772,6 +772,8 @@ mqlaunch obsidian views           # open manifest-defined views
 mqlaunch obsidian regenerate-views # option 13 handler; aliases: regen-views, rebuild-views
 mqlaunch obsidian promote --dry-run    # delegate promotion preview to mq-agent
 mqlaunch obsidian promote --confirm    # delegate confirmed promotion to mq-agent
+mqlaunch obsidian learn-writeback      # preview durable memory for promoted items
+mqlaunch obsidian learn-writeback --apply  # write it; alias: writeback
 ```
 
 `mqlaunch obsidian status` is the direct alias for the existing read-only
@@ -781,7 +783,11 @@ write durable memory. `regenerate-views` and menu option 13 share
 `mq_obsidian_regenerate_views`; the handler reports a planned placeholder until
 mqobsidian registers `scripts/regenerate-memory-views.py`. `promote` is a thin delegation surface to
 `mq-agent obsidian promote`; mqlaunch does not inspect, score, approve, or write
-the memory item itself.
+the memory item itself. `learn-writeback` follows the same route to
+`mq-agent memory learn-writeback`, which delegates to mqobsidian's own CLI: it
+materialises durable agent-readable notes for memories mqobsidian has already
+promoted, and writes nothing without `--apply`. Candidate and observed memories
+are never written, and mqlaunch never decides which is which.
 
 ### HAL Repo Status
 

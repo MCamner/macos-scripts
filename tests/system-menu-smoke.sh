@@ -174,8 +174,11 @@ echo "[7/7] each grouped row actually opens its submenu"
 routes="$(timeout 60 bash -c '
   export MACOS_SCRIPTS_HOME="'"$ROOT"'" BASE_DIR="'"$ROOT"'" MQ_NO_TUI=1
   source "'"$ROOT"'/terminal/launchers/mqlaunch.sh" >/dev/null 2>&1 || true
+# Reads menu choice from user input or stdin.
   read_menu_choice() { IFS= read -r REPLY || return 1; return 0; }
+# Prints header.
   print_header() { :; }
+# Pauses until Enter is pressed.
   pause_enter() { :; }
   for choice in 2 5 7 8; do
     printf "%s\nb\nb\n" "$choice" \

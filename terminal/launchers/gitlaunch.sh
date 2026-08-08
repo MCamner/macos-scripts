@@ -528,6 +528,7 @@ start_dev_mode() {
   sleep 1
 }
 
+# Renders the menu view for terminal output.
 function render_menu() {
   local git_state host_name
   local repo_label branch_label

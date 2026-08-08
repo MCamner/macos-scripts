@@ -68,6 +68,7 @@ json.dump(doc, open(sys.argv[2], "w"))
 PY
 }
 
+# Coordinates expect reject behavior.
 expect_reject() {
   # expect_reject <fixture> <what> <expected stderr substring>
   local fixture="$1" what="$2" reason="$3" out

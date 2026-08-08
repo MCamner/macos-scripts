@@ -25,10 +25,14 @@ done
 : "$DRY_RUN"
 
 BLOCKERS=()
+# Coordinates say behavior.
 say()  { [[ "$JSON" -eq 1 ]] || echo "$1"; }
+# Coordinates ok behavior.
 ok()   { [[ "$JSON" -eq 1 ]] || echo "  ok: $1"; }
+# Marks a failing check.
 fail() { BLOCKERS+=("$1"); [[ "$JSON" -eq 1 ]] || echo "FAIL: $1" >&2; }
 
+# Coordinates run behavior.
 run() {
   local label="$1"; shift
   local out

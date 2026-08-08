@@ -26,18 +26,22 @@ source "$COMMAND_MODE"
 
 CALLS="$TMPDIR_TEST/calls.log"
 
+# Reads or applies the theme cmd setting.
 theme_cmd() {
   printf 'theme_cmd %s\n' "$*" >> "$CALLS"
   return 0
 }
 
+# Opens themes menu.
 open_themes_menu() {
   printf 'menu\n' >> "$CALLS"
   return 0
 }
 
+# Pauses until Enter is pressed.
 pause_enter() { return 0; }
 
+# Coordinates assert call behavior.
 assert_call() {
   local expected="$1"
   shift
@@ -97,6 +101,7 @@ theme_cmd() {
   return "${MQ_TEST_THEME_STATUS:-0}"
 }
 
+# Coordinates assert status behavior.
 assert_status() {
   local expected="$1"
   shift

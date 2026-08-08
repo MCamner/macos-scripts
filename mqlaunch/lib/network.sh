@@ -210,6 +210,7 @@ run_network_quality() {
   pause_enter
 }
 
+# Shows network info.
 show_network_info() {
   local report
 
