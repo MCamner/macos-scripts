@@ -95,3 +95,4 @@ pulse-cli-color-contract-smoke.sh	active	-
 operator-usage-message-smoke.sh	active	-
 menu-exit-contract-smoke.sh	active	-
 theme-manager-path-smoke.sh	active	-
+ui-spinner-smoke.sh	active	-

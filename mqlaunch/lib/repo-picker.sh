@@ -50,11 +50,25 @@ run_github_repo_picker() {
 
   row_bold "GITHUB REPO PICKER"
   empty_row
-  row "Hämtar dina repos från GitHub..."
   print_footer
 
+  # The gh call is about three quarters of a second of nothing before fzf takes
+  # over the screen, and the old static "Hämtar..." row could not tell a slow
+  # network from a hung one. Fetching first, behind ui_spinner, makes the wait
+  # legible. It has to be a fetch-then-pipe rather than wrapping the whole
+  # pipeline: fzf owns stdin, and ui_spinner backgrounds what it wraps.
+  local repos=""
+  repos="$(ui_spinner "Hämtar dina repos från GitHub" \
+    "$gh_bin" repo list --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner' 2>/dev/null)" || repos=""
+
+  if [[ -z "$repos" ]]; then
+    ui_err "Kunde inte hämta repos från GitHub. Kontrollera gh auth status."
+    pause_enter
+    return 1
+  fi
+
   selected="$(
-    "$gh_bin" repo list --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner' 2>/dev/null \
+    printf '%s\n' "$repos" \
       | "$fzf_bin" \
           --reverse \
           --border \
