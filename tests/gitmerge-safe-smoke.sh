@@ -65,8 +65,10 @@ tmpdir="$(mktemp -d)"
   # TTY. Run from mqlaunch's SELF-CHECK in a real terminal the gate correctly
   # passed, the script walked on to "No candidate branches found to merge", and
   # the assertion below failed against a script that was behaving properly.
-  "$MERGE_SCRIPT" </dev/null >/tmp/gitmerge-safe-smoke.out 2>&1 && exit 1
-  grep -q 'interactive terminal' /tmp/gitmerge-safe-smoke.out
+  out="$(mktemp)"
+  "$MERGE_SCRIPT" </dev/null >"$out" 2>&1 && exit 1
+  grep -q 'interactive terminal' "$out"
+  rm -f "$out"
 )
 
 echo "[10/10] TTY gate precedes network fetch"
