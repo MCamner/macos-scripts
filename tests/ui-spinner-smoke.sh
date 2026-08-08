@@ -22,31 +22,35 @@ UI="$ROOT/ui/terminal-ui/mq-ui.sh"
 
 echo "SMOKE: ui_spinner progress helper"
 
-echo "[1/8] the helper exists"
+echo "[1/9] the helper exists"
 test -f "$UI"
 grep -q "^ui_spinner()" "$UI"
 
-echo "[2/8] a successful command exits 0 and its stdout passes through"
+echo "[2/9] a successful command exits 0 and its stdout passes through"
 output="$(bash -c "source '$UI'; ui_spinner 'Working' printf 'hello\n'")"
 test "$output" = "hello"
 
-echo "[3/8] a failing command's exit status is the helper's exit status"
+echo "[3/9] a failing command's exit status is the helper's exit status"
 rc=0
 bash -c "source '$UI'; ui_spinner 'Working' sh -c 'exit 7'" || rc=$?
 test "$rc" -eq 7
 
-echo "[4/8] headless output is byte-identical to running the command directly"
+echo "[4/9] headless output is byte-identical to running the command directly"
 # No frames, no \r, no erase-line. A caller that pipes ui_spinner into a parser
 # must not have to strip anything.
 captured="$(bash -c "source '$UI'; ui_spinner 'Working' printf 'a\nb\n'" | od -c | head -3)"
 direct="$(printf 'a\nb\n' | od -c | head -3)"
 test "$captured" = "$direct"
 
-echo "[5/8] MQ_NO_SPINNER=1 disables animation even on a terminal"
+echo "[5/9] MQ_NO_SPINNER=1 disables animation even on a terminal"
 python3 - "$UI" <<'PY'
 import os, pty, sys
 
 ui = sys.argv[1]
+# CI runs the whole suite with MQ_NO_TUI=1 (.github/workflows/quality.yml),
+# which also suppresses the spinner. Drop it so this step proves MQ_NO_SPINNER
+# and nothing else.
+os.environ.pop("MQ_NO_TUI", None)
 os.environ["MQ_NO_SPINNER"] = "1"
 seen = bytearray()
 
@@ -62,7 +66,7 @@ assert os.waitstatus_to_exitcode(status) == 0
 assert b"\xe2\xa0" not in seen, "braille frame leaked with MQ_NO_SPINNER=1"
 PY
 
-echo "[6/8] on a real terminal a human sees frames, and they are cleaned up"
+echo "[6/9] on a real terminal a human sees frames, and they are cleaned up"
 # The capture case is the one that matters: `out="$(ui_spinner … )"` is how a
 # shell caller actually uses a slow command, and gating the animation on stdout
 # being a terminal would silently disable the spinner in exactly that shape.
@@ -72,6 +76,10 @@ python3 - "$UI" <<'PY'
 import os, pty, sys
 
 ui = sys.argv[1]
+# Same reason as step 5: this step is *about* the interactive path, so the
+# headless switch CI sets globally has to come off first.
+os.environ.pop("MQ_NO_TUI", None)
+os.environ.pop("MQ_NO_SPINNER", None)
 seen = bytearray()
 
 
@@ -95,11 +103,32 @@ assert b"\x1b[K" in seen, "the spinner line was never erased"
 assert b"GOT:captured" in seen, "command substitution lost the wrapped output"
 PY
 
-echo "[7/8] a wrapped command that writes to stderr keeps writing to stderr"
+echo "[7/9] MQ_NO_TUI=1 suppresses the spinner, which is what CI relies on"
+python3 - "$UI" <<'PYNOTUI'
+import os, pty, sys
+
+ui = sys.argv[1]
+os.environ.pop("MQ_NO_SPINNER", None)
+os.environ["MQ_NO_TUI"] = "1"
+seen = bytearray()
+
+
+def read(fd):
+    chunk = os.read(fd, 1024)
+    seen.extend(chunk)
+    return chunk
+
+
+status = pty.spawn(["bash", "-c", f"source '{ui}'; ui_spinner 'Working' sleep 0.3"], read)
+assert os.waitstatus_to_exitcode(status) == 0
+assert b"\xe2\xa0" not in seen, "braille frame leaked with MQ_NO_TUI=1"
+PYNOTUI
+
+echo "[8/9] a wrapped command that writes to stderr keeps writing to stderr"
 err="$(bash -c "source '$UI'; ui_spinner 'Working' sh -c 'echo oops >&2'" 2>&1 >/dev/null)"
 test "$err" = "oops"
 
-echo "[8/8] it runs under zsh, which is the shell the menus actually use"
+echo "[9/9] it runs under zsh, which is the shell the menus actually use"
 # The regenerate-views fix was a bash-clean function that died under zsh on a
 # read-only builtin. Background jobs plus `wait` are exactly the kind of
 # construct that diverges between the two, so assert it here rather than assume.
