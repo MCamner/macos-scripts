@@ -12,32 +12,32 @@ DOC="$ROOT/docs/COMMANDS.md"
 
 echo "SMOKE: skills and repos command surface"
 
-echo "[1/10] scripts exist and are executable"
+echo "[1/12] scripts exist and are executable"
 test -x "$SKILLS"
 test -x "$REPOS"
 
-echo "[2/10] script syntax checks"
+echo "[2/12] script syntax checks"
 PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/mqlaunch-pycache" python3 -m py_compile "$SKILLS" "$REPOS"
 
-echo "[3/10] command-mode syntax check"
+echo "[3/12] command-mode syntax check"
 bash -n "$CMD"
 
-echo "[4/10] launcher syntax check"
+echo "[4/12] launcher syntax check"
 zsh -n "$LAUNCHER"
 
-echo "[5/10] tools menu syntax check"
+echo "[5/12] tools menu syntax check"
 bash -n "$TOOLS_MENU"
 
-echo "[6/10] command-mode routes skills and repos"
+echo "[6/12] command-mode routes skills and repos"
 grep -q "mq-skills.py" "$CMD"
 grep -q "mq-repos.py" "$CMD"
 
 # Same as brain-bridge: the skills/repos case arms live in command mode (step 6),
 # and mqlaunch.sh reaches them by sourcing that module.
-echo "[7/10] main launcher reaches that routing (sources command mode)"
+echo "[7/12] main launcher reaches that routing (sources command mode)"
 grep -q 'source "\$BASE_DIR/terminal/launchers/mqlaunch-command-mode.sh"' "$LAUNCHER"
 
-echo "[8/10] tools menu exposes ecosystem actions"
+echo "[8/12] tools menu exposes ecosystem actions"
 # Asserted as reachable actions rather than as label text. The labels were
 # "Skills audit" and "Repos diff" while those sat flat in the Tools menu; they
 # are "Audit" and "Diff summary" inside the Skills and Repos submenus now, and
@@ -50,13 +50,13 @@ for handler in run_mq_skills_audit run_mq_repos_diff_summary; do
   }
 done
 
-echo "[9/10] docs mention commands"
+echo "[9/12] docs mention commands"
 grep -q "mqlaunch skills audit" "$DOC"
 grep -q "mqlaunch skills validate --ecosystem" "$DOC"
 grep -q "mqlaunch repos status" "$DOC"
 grep -q "mqlaunch repos diff-summary" "$DOC"
 
-echo "[10/10] scripts run read-only summaries"
+echo "[10/12] scripts run read-only summaries"
 "$SKILLS" validate >/tmp/mq-skills-validate.out
 "$SKILLS" validate --ecosystem >/tmp/mq-skills-validate-ecosystem.out
 "$REPOS" list >/tmp/mq-repos-list.out
@@ -78,5 +78,45 @@ if [[ -d "$HOME/mq-mcp" && -d "$HOME/mq-ums" && -d "$HOME/mq-agent" ]]; then
 else
   echo "  skip: sibling MQ repos not checked out; listing assertions need them"
 fi
+
+echo "[11/12] audit reports whether each skill is discoverable by Claude Code"
+# The blind spot this closes: mq-skills.py called all 63 skills in the stack
+# "ok, indexed" while not one of them was loadable. It validated the MQ
+# convention (skills/ plus a local index) and knew nothing about Claude Code's
+# search path, which is .claude/skills/. An index nobody reads is not discovery.
+# --repo takes a path, and it has to be this checkout: a bare name resolves
+# under $HOME, which on a CI runner is not where the repo lives. Step 10 already
+# skips its listing assertions for exactly that reason.
+out="$("$SKILLS" audit --repo "$ROOT")"
+grep -q "discoverable" <<<"$out"
+
+echo "[12/12] an unlinked skill is reported, and a linked one is not"
+# A scratch repo, so the assertion is about the checker rather than about
+# whichever skills happen to be wired up in the real tree today.
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+mkdir -p "$work/repo/skills/ghost-skill" "$work/repo/.claude/skills"
+cat >"$work/repo/skills/ghost-skill/SKILL.md" <<'SKILL'
+---
+name: ghost-skill
+description: Exists on disk, indexed, and reachable by nobody.
+---
+SKILL
+printf 'skills/ghost-skill/SKILL.md\n' >"$work/repo/SKILLS.md"
+
+out="$("$SKILLS" audit --repo "$work/repo" 2>&1)"
+grep -q "not-discoverable" <<<"$out" || {
+  echo "FAIL: an unlinked skill was not reported as undiscoverable" >&2
+  printf '%s\n' "$out" >&2
+  exit 1
+}
+
+ln -s ../../skills/ghost-skill "$work/repo/.claude/skills/ghost-skill"
+out="$("$SKILLS" audit --repo "$work/repo" 2>&1)"
+grep -q "not-discoverable" <<<"$out" && {
+  echo "FAIL: a linked skill is still reported as undiscoverable" >&2
+  printf '%s\n' "$out" >&2
+  exit 1
+}
 
 echo "OK: skills and repos command surface smoke test passed"
