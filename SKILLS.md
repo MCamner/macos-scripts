@@ -15,6 +15,7 @@ it documents actually live.
 <!-- BEGIN GENERATED SKILLS TABLE -->
 | Skill | Description |
 | ----- | ----------- |
+| [branch-supersede-check](skills/branch-supersede-check/SKILL.md) | Decide whether an unmerged branch still holds work that trunk does not have, before deleting or reviving it. Compares every touched file against main as it is now, instead of trusting the three-dot diff — which looks identical for a branch carrying real work and one whose work already landed by another route. Use when a branch looks unmerged but might be superseded, when triaging stale branches, or when `git diff main...branch` shows changes and you need to know whether they still matter. |
 | [docs-maintainer](skills/docs-maintainer/SKILL.md) | Use when keeping repository documentation consistent after code, CLI, release, workflow, README, wiki, or GitHub Pages changes. Helps update docs surfaces without inventing behavior. |
 | [mqlaunch-command-surface](skills/mqlaunch-command-surface/SKILL.md) | Use when changing macos-scripts mqlaunch commands, terminal GUI menus, HAL routing, command aliases, help text, or CLI/TUI command-surface behavior. |
 | [mqlaunch-menu-template](skills/mqlaunch-menu-template/SKILL.md) | > |
