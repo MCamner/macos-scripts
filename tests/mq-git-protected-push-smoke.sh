@@ -45,4 +45,23 @@ grep -Fq "Staged:" "$LEGACY_MENU"
 grep -Fq "if [[ -t 0 && -t 1 ]]" "$LEGACY_MENU"
 grep -Fq "PR branch" "$DOCS"
 
+# gitlaunch runs under zsh, where `status` is a read-only special parameter.
+# Exercise the successful, non-protected push path: assigning a local named
+# `status` terminates the submenu after a commit and returns to the main menu.
+{
+  sed -n '/^function pr_aware_push()/,/^}/p' "$LEGACY_MENU"
+  cat <<'ZSH_TEST'
+function is_protected_branch() { return 1; }
+function git() {
+  case "$1" in
+    branch) print -r -- "test/menu-loop" ;;
+    push) print -r -- "local push ok" ;;
+    *) return 1 ;;
+  esac
+}
+
+pr_aware_push "menu loop regression"
+ZSH_TEST
+} | zsh >/dev/null
+
 echo "mq git protected-push smoke OK"

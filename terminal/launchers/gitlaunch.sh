@@ -11,6 +11,8 @@ REQUESTED_REPO="${MQ_GIT_REPO:-${1:-}}"
 WORK_DIR=""
 _BANNER_SHOWN=0
 BACK_MARKER="${MQ_GITLAUNCH_BACK_MARKER:-}"
+PR_RESTORE_BASE_BRANCH=""
+PR_RESTORE_REPO=""
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null)" -ge 8 ]]; then
   C_RESET=$'\e[0m'
@@ -816,11 +818,41 @@ function branch_slug() {
   echo "${slug:0:48}"
 }
 
+# Restores the checkout after a protected-branch push. Keeping this state in
+# the gitlaunch process lets the EXIT trap recover even if a later command
+# terminates the menu before normal cleanup runs.
+function restore_pr_push_checkout() {
+  local restore_script
+
+  if [[ -z "$PR_RESTORE_BASE_BRANCH" || -z "$PR_RESTORE_REPO" ]]; then
+    return 0
+  fi
+
+  restore_script="${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh"
+  if "$restore_script" "$PR_RESTORE_BASE_BRANCH" "$PR_RESTORE_REPO"; then
+    PR_RESTORE_BASE_BRANCH=""
+    PR_RESTORE_REPO=""
+    return 0
+  fi
+
+  echo "Gitlaunch could not restore the checkout after the PR push." >&2
+  return 1
+}
+
+# Arms recovery before switching away from the protected base branch.
+function arm_pr_push_restore() {
+  PR_RESTORE_BASE_BRANCH="$1"
+  PR_RESTORE_REPO="${2:-$PWD}"
+  trap 'restore_pr_push_checkout || true' EXIT
+  trap 'restore_pr_push_checkout || true; exit 130' INT
+  trap 'restore_pr_push_checkout || true; exit 143' TERM
+}
+
 # Creates pr branch for push through the configured workflow.
 function create_pr_branch_for_push() {
   local base_branch="$1"
   local commit_message="$2"
-  local slug pr_branch confirm output status
+  local slug pr_branch confirm output push_status
 
   slug="$(branch_slug "$commit_message")"
   pr_branch="mq/${slug}-$(date +%Y%m%d-%H%M%S)"
@@ -837,16 +869,15 @@ function create_pr_branch_for_push() {
     return 1
   fi
 
-  trap '"${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true; exit 130' INT
-  trap '"${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true; exit 143' TERM
+  arm_pr_push_restore "$base_branch" "$PWD"
 
   git switch -c "$pr_branch" 2>/dev/null || git checkout -b "$pr_branch"
   output=$(git push -u origin "$pr_branch" 2>&1)
-  status=$?
+  push_status=$?
   echo "$output"
 
-  local rc="$status"
-  if [[ "$status" -eq 0 ]]; then
+  local rc="$push_status"
+  if [[ "$push_status" -eq 0 ]]; then
     if command -v gh >/dev/null 2>&1; then
       echo ""
       printf "%bCreate the pull request now? [Y/n]: %b" "$C_LABEL" "$C_RESET"
@@ -867,15 +898,18 @@ function create_pr_branch_for_push() {
     fi
   fi
 
-  "${GITLAUNCH_DIR}/../../tools/scripts/git-restore-to-base.sh" "$base_branch" "." || true
-  trap - INT TERM
+  if restore_pr_push_checkout; then
+    trap - EXIT INT TERM
+  else
+    rc=1
+  fi
   return "$rc"
 }
 
 # Coordinates pr aware push behavior.
 function pr_aware_push() {
   local commit_message="${1:-update project files}"
-  local branch output status
+  local branch output push_status
   local -a push_args
 
   push_args=("${@:2}")
@@ -896,15 +930,15 @@ function pr_aware_push() {
   else
     output=$(git push 2>&1)
   fi
-  status=$?
+  push_status=$?
   echo "$output"
 
-  if [[ "$status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
+  if [[ "$push_status" -ne 0 ]] && echo "$output" | grep -E "GH013|Changes must be made through a pull request" >/dev/null; then
     create_pr_branch_for_push "$branch" "$commit_message"
     return $?
   fi
 
-  return "$status"
+  return "$push_status"
 }
 
 # Runs push through guardrails before acting.
@@ -1043,6 +1077,10 @@ function run_ai_commit() {
 # ------------------------
 # WORKSPACE RESUME
 # ------------------------
+if [[ -n "${GITLAUNCH_SOURCE_ONLY:-}" ]]; then
+  return 0 2>/dev/null || exit 0
+fi
+
 if [[ -z "$REQUESTED_REPO" ]] && load_state; then
   echo "🔁 Resume last workspace?"
   echo "Repo: $REPO"
