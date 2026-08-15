@@ -9,12 +9,14 @@ Current version: 2.0.1
 The next major product step is:
 
 ```text
-v2.0.0 — Runtime Authority and Command Surface Governance
+v2.1.0 — MQ Pulse Operator Cockpit
 ```
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
-v2.0.0 shipped on 2026-07-28. Every P0–P3 block below is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release; no roadmap implementation remains open in this repo.
+v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release.
+
+v2.1.0 is the next planned release. It does not add a new source of truth — it adds one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects.
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -1557,6 +1559,856 @@ checkboxes because this repo cannot prove them:
   Neither is a `mqlaunch` command: both return `Unknown command`. They are
   stack-level checks that belong to whoever owns them, and this repo has no way
   to run them.
+
+---
+
+## v2.1.0 — MQ Pulse Operator Cockpit
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Add `mqlaunch pulse` as the canonical read-only operator cockpit for `macos-scripts` and the wider MQ stack.
+
+The command should answer:
+
+```text
+Is the environment healthy?
+What needs attention?
+Which existing command should I run next?
+```
+
+`pulse` must remain a thin operator surface.
+
+```text
+mqlaunch collects -> normalizes -> renders -> points to existing commands
+```
+
+It must not move orchestration, review logic, memory logic, repo scoring, or other domain intelligence into shell.
+
+### Why this matters
+
+`macos-scripts` already has strong runtime authority, command governance, delegation, safety gates, repo status, stack status, memory status, Git workflows, release readiness, and health checks.
+
+The remaining operator problem is fragmentation.
+
+Today the user may need several commands to understand the current state:
+
+```bash
+mqlaunch doctor
+mqlaunch repos status
+mqlaunch stack status
+mqlaunch mcp-status
+mqlaunch obsidian status
+mqlaunch release-check
+mqlaunch skills
+```
+
+`mqlaunch pulse` should combine those existing signals into one coherent read-only view without becoming a new source of truth.
+
+---
+
+## P0 — Pulse contract and ownership
+
+Status: Planned
+Priority: P0
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] Define `mqlaunch pulse` as a read-only operator surface.
+* [ ] Document that `macos-scripts` owns collection, normalization, rendering, and navigation only.
+* [ ] Preserve current ownership boundaries:
+
+  * `mq-agent` owns orchestration and routing.
+  * `mq-mcp` owns execution and review tools.
+  * `mqobsidian` owns durable truth and memory.
+  * `mq-hal` owns local operator summaries.
+  * `repo-signal` owns repo readiness signals.
+
+* [ ] Prohibit mutation from all Pulse collectors.
+* [ ] Prohibit new review, scoring, promotion, routing, or architecture logic in shell.
+* [ ] Define canonical Pulse states:
+
+  * `PASS`
+  * `WARN`
+  * `FAIL`
+  * `UNAVAILABLE`
+  * `SKIPPED`
+
+* [ ] Require unavailable checks to report `UNAVAILABLE` rather than silently passing.
+* [ ] Define exit-code contract:
+
+  * `0` — healthy / no attention required.
+  * `1` — one or more warnings.
+  * `2` — one or more failures.
+  * `3` — Pulse itself could not complete reliably.
+
+### Exit gate
+
+* [ ] Pulse ownership is documented.
+* [ ] Runtime authority remains unchanged.
+* [ ] No new domain logic is introduced into `macos-scripts`.
+
+---
+
+## P1 — Canonical Pulse model
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+All collectors should return the same small internal status model.
+
+### Tasks
+
+* [ ] Define the internal Pulse item model.
+
+Example:
+
+```json
+{
+  "source": "github",
+  "area": "git",
+  "status": "WARN",
+  "subject": "PR #184",
+  "summary": "Open and mergeable",
+  "evidence": "GitHub reports the PR as mergeable",
+  "next_command": "mqlaunch git",
+  "priority": 60
+}
+```
+
+* [ ] Require `source`.
+* [ ] Require `area`.
+* [ ] Require `status`.
+* [ ] Require `subject`.
+* [ ] Require `summary`.
+* [ ] Support optional `evidence`.
+* [ ] Support optional `next_command`.
+* [ ] Add `priority` for deterministic attention ordering.
+* [ ] Add optional freshness metadata.
+* [ ] Add optional collector duration metadata.
+* [ ] Ensure the complete model can be serialized losslessly to JSON.
+
+### Exit gate
+
+* [ ] Human and JSON output use the same underlying model.
+* [ ] Rendering contains no independent health logic.
+* [ ] Attention can be derived entirely from Pulse items.
+
+---
+
+## P1 — Core Pulse collectors
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### System
+
+* [ ] Reuse the existing doctor/environment checks.
+* [ ] Report required dependency health.
+* [ ] Report environment/configuration failures.
+* [ ] Preserve existing source diagnostics where useful.
+
+Example:
+
+```text
+SYSTEM
+✓ Environment healthy
+✓ Required tools available
+```
+
+### Repositories
+
+* [ ] Reuse existing repo-status functionality.
+* [ ] Show clean/dirty state.
+* [ ] Show current branch.
+* [ ] Show ahead/behind where already available.
+* [ ] Report inaccessible repos explicitly.
+* [ ] Summarize how many repos require attention.
+
+Example:
+
+```text
+REPOSITORIES
+✓ mq-agent        main · clean
+✓ mq-mcp          main · clean
+! macos-scripts   feature/pulse · dirty
+```
+
+### MQ Stack
+
+* [ ] Reuse canonical stack truth from `mq-agent`.
+* [ ] Surface `mq-agent` availability.
+* [ ] Surface `mq-mcp` availability.
+* [ ] Surface `mq-hal` availability.
+* [ ] Surface `mqobsidian` availability.
+* [ ] Surface `repo-signal` availability.
+
+Example:
+
+```text
+MQ STACK
+✓ mq-agent
+✓ mq-mcp
+✓ mq-hal
+✓ mqobsidian
+✓ repo-signal
+```
+
+### Memory
+
+* [ ] Surface semantic repository memory availability.
+* [ ] Surface vector-store availability.
+* [ ] Surface vector-store source where already exposed.
+* [ ] Surface stack-truth freshness.
+* [ ] Surface existing held/review queues when a read-only interface exists.
+* [ ] Never infer memory state from missing data.
+
+Example:
+
+```text
+MEMORY
+✓ semantic store
+! stack truth aging
+✓ review queue empty
+```
+
+### Git / GitHub
+
+* [ ] Surface open PR count for the current repo.
+* [ ] Surface mergeability where GitHub reports it.
+* [ ] Surface failing CI.
+* [ ] Surface pending CI.
+* [ ] Surface dirty worktree.
+* [ ] Surface unpushed local commits where already available.
+* [ ] Perform no push, merge, checkout, or branch mutation.
+
+Example:
+
+```text
+GIT / GITHUB
+! 2 open PRs
+✓ CI passing
+✓ worktree clean
+```
+
+### Quality
+
+* [ ] Reuse command-registry validation.
+* [ ] Reuse runtime-authority validation.
+* [ ] Reuse skill-discoverability validation.
+* [ ] Reuse documentation parity checks.
+* [ ] Reuse existing test/shell inventory checks.
+* [ ] Do not implement parallel quality validators.
+
+Example:
+
+```text
+QUALITY
+✓ command registry
+✓ runtime authority
+✓ skills discoverable
+✓ docs parity
+```
+
+### Exit gate
+
+* [ ] Every collector can run independently.
+* [ ] One failed collector does not crash the whole Pulse.
+* [ ] Collector failures become `FAIL` or `UNAVAILABLE`.
+* [ ] All collectors are read-only.
+
+---
+
+## P1 — Attention engine
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Turn status into an actionable operator view without making decisions that belong elsewhere.
+
+### Tasks
+
+* [ ] Collect all `WARN` and `FAIL` items.
+* [ ] Sort deterministically by priority.
+* [ ] Deduplicate repeated manifestations of the same problem.
+* [ ] Show a maximum of 5 items in the default view.
+* [ ] Show additional count when more issues exist.
+
+Example:
+
+```text
++ 3 additional warnings
+```
+
+* [ ] Prioritize in this order:
+
+```text
+FAIL
+security / destructive risk
+broken runtime
+failing CI
+repo divergence
+stale state
+maintenance
+```
+
+* [ ] Allow an Attention item to contain an existing `next_command`.
+* [ ] Require every recommendation to be backed by actual evidence.
+* [ ] Never convert a technical state into an unsupported decision.
+
+Allowed:
+
+```text
+Stack truth is stale
+Run: mqlaunch stack truth-export
+```
+
+Not allowed:
+
+```text
+Merge PR #184 now
+```
+
+### Exit gate
+
+* [ ] Attention ordering is deterministic.
+* [ ] Every recommendation has a traceable source.
+* [ ] No recommendation performs a write automatically.
+
+---
+
+## P1 — `mqlaunch pulse` command surface
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] Add:
+
+```bash
+mqlaunch pulse
+```
+
+* [ ] Add machine-readable output:
+
+```bash
+mqlaunch pulse --json
+```
+
+* [ ] Add scoped views:
+
+```bash
+mqlaunch pulse system
+mqlaunch pulse repos
+mqlaunch pulse stack
+mqlaunch pulse memory
+mqlaunch pulse git
+mqlaunch pulse quality
+mqlaunch pulse attention
+```
+
+* [ ] Add:
+
+```bash
+mqlaunch pulse --no-network
+```
+
+Network-dependent checks should become `SKIPPED`.
+
+* [ ] Add:
+
+```bash
+mqlaunch pulse --verbose
+```
+
+Show evidence and collector details.
+
+* [ ] Add:
+
+```bash
+mqlaunch pulse --plain
+```
+
+Stable non-panel output.
+
+* [ ] Respect `NO_COLOR=1`.
+* [ ] Keep JSON stdout free from ANSI and diagnostics.
+* [ ] Preserve stable exit codes.
+* [ ] Register Pulse in the canonical command registry.
+* [ ] Keep help, palette, dispatch, README, and `docs/COMMANDS.md` in sync.
+
+### Exit gate
+
+* [ ] Direct CLI works.
+* [ ] Registry and dispatch agree.
+* [ ] Human and JSON output are covered by tests.
+* [ ] All exit codes are tested.
+
+---
+
+## P1 — Pulse menu
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Add one compact menu for status inspection and drill-down.
+
+### Menu
+
+```text
+╔══════════════════════════════════════════════════════════════╗
+║ MQ PULSE // Operator Status                                  ║
+╚══════════════════════════════════════════════════════════════╝
+
+OVERVIEW
+1. Full Pulse
+2. Attention
+
+ENVIRONMENT
+3. System
+4. Repositories
+5. MQ Stack
+
+STATE
+6. Memory
+7. Git / GitHub
+8. Quality
+
+TOOLS
+9. Refresh
+
+b. Back
+q. Quit
+```
+
+### Tasks
+
+* [ ] Add `Full Pulse`.
+* [ ] Add `Attention`.
+* [ ] Add `System`.
+* [ ] Add `Repositories`.
+* [ ] Add `MQ Stack`.
+* [ ] Add `Memory`.
+* [ ] Add `Git / GitHub`.
+* [ ] Add `Quality`.
+* [ ] Add `Refresh`.
+* [ ] Keep the menu within the repo's existing menu-size guardrail.
+* [ ] Route drill-down to existing command surfaces rather than implementing duplicate behavior.
+
+### Exit gate
+
+* [ ] The menu stays within the existing option-count contract.
+* [ ] Every menu item routes through the authoritative dispatcher or an approved delegation path.
+* [ ] No menu item bypasses runtime authority.
+
+---
+
+## P1 — Full Pulse view
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Header
+
+* [ ] Show host.
+* [ ] Show current repo.
+* [ ] Show current branch.
+* [ ] Show check time.
+* [ ] Show total duration where useful.
+
+Example:
+
+```text
+MQ PULSE
+Host: Zephyr
+Repo: macos-scripts
+Branch: main
+Checked: 01:31
+```
+
+### Overall
+
+* [ ] Add one simple aggregate state.
+
+Example:
+
+```text
+OVERALL
+WARN · 2 items need attention
+```
+
+* [ ] Avoid introducing a complex health score in v2.1.0.
+
+### Sections
+
+* [ ] `SYSTEM`
+* [ ] `REPOSITORIES`
+* [ ] `MQ STACK`
+* [ ] `MEMORY`
+* [ ] `GIT / GITHUB`
+* [ ] `QUALITY`
+* [ ] `ATTENTION`
+* [ ] `NEXT COMMANDS`
+
+### Default rendering
+
+Example:
+
+```text
+SYSTEM
+✓ environment
+✓ dependencies
+
+REPOSITORIES
+✓ 7 clean
+! 1 dirty
+
+MQ STACK
+✓ 5/5 available
+
+MEMORY
+✓ semantic store
+! stack truth aging
+
+GIT / GITHUB
+! 2 open PRs
+✓ CI passing
+
+QUALITY
+✓ registry
+✓ runtime authority
+✓ skills
+
+ATTENTION
+
+1. Stack truth is stale
+   Run: mqlaunch stack truth-export
+
+2. 2 pull requests are open
+   Run: mqlaunch git
+```
+
+### Exit gate
+
+* [ ] The default view fits comfortably in one terminal screen under normal conditions.
+* [ ] Detailed evidence is hidden unless requested.
+* [ ] Attention is visually more prominent than raw diagnostics.
+
+---
+
+## P1 — Pulse test coverage
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### State tests
+
+* [ ] `PASS`
+* [ ] `WARN`
+* [ ] `FAIL`
+* [ ] `UNAVAILABLE`
+* [ ] `SKIPPED`
+
+### Aggregation tests
+
+* [ ] Overall PASS.
+* [ ] Overall WARN.
+* [ ] Overall FAIL.
+* [ ] Attention priority ordering.
+* [ ] Attention deduplication.
+
+### CLI tests
+
+* [ ] `mqlaunch pulse`
+* [ ] `mqlaunch pulse --json`
+* [ ] `mqlaunch pulse --plain`
+* [ ] `mqlaunch pulse --verbose`
+* [ ] `mqlaunch pulse --no-network`
+* [ ] Every scoped Pulse command.
+
+### Environment tests
+
+* [ ] bash.
+* [ ] zsh.
+* [ ] TTY.
+* [ ] non-TTY.
+* [ ] `NO_COLOR=1`.
+
+### Failure injection
+
+* [ ] GitHub unavailable.
+* [ ] `mq-agent` unavailable.
+* [ ] `mqobsidian` unavailable.
+* [ ] malformed delegated JSON.
+* [ ] collector timeout.
+* [ ] dirty repository.
+* [ ] failing CI.
+
+### Governance tests
+
+* [ ] command registry parity.
+* [ ] docs parity.
+* [ ] runtime authority.
+* [ ] test inventory.
+* [ ] shell lint.
+
+### Exit gate
+
+* [ ] Pulse is included in the full selftest suite.
+* [ ] Failure-path tests prove degraded behavior instead of only happy-path rendering.
+
+---
+
+## P2 — Interactive drill-down
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] System drill-down opens the existing doctor/system surface.
+* [ ] Repository drill-down opens the repo hub.
+* [ ] Stack drill-down opens the existing stack surface.
+* [ ] Memory drill-down opens the existing memory/obsidian surface.
+* [ ] Git/GitHub drill-down opens the Git surface.
+* [ ] Quality drill-down opens the relevant validation/selftest surface.
+* [ ] Attention details may expose:
+
+  * View evidence.
+  * Open owning menu.
+  * Copy suggested command.
+  * Back.
+
+* [ ] Do not duplicate existing command implementations inside Pulse.
+
+### Exit gate
+
+* [ ] Pulse navigation remains thin.
+* [ ] Existing owners execute existing workflows.
+
+---
+
+## P2 — `mq.pulse.v1` JSON contract
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] Version the public machine contract as:
+
+```text
+mq.pulse.v1
+```
+
+* [ ] Use a stable top-level structure.
+
+Example:
+
+```json
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "summary": {
+    "pass": 18,
+    "warn": 2,
+    "fail": 0,
+    "unavailable": 0,
+    "skipped": 0
+  },
+  "sections": {
+    "system": [],
+    "repos": [],
+    "stack": [],
+    "memory": [],
+    "git": [],
+    "quality": []
+  },
+  "attention": []
+}
+```
+
+* [ ] Guarantee no ANSI in JSON output.
+* [ ] Send diagnostics to stderr.
+* [ ] Add schema/contract validation.
+* [ ] Add fixtures for stable output.
+* [ ] Test malformed delegate responses.
+
+### Exit gate
+
+* [ ] `mqlaunch pulse --json | jq .` succeeds.
+* [ ] Human and JSON views represent the same state.
+* [ ] Contract changes require an explicit schema version decision.
+
+---
+
+## P2 — Pulse performance and degradation
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Goal
+
+Pulse should feel like a status command, not a long-running workflow.
+
+### Tasks
+
+* [ ] Measure each collector.
+* [ ] Record collector duration in verbose mode.
+* [ ] Parallelize independent read-only collectors where safe.
+* [ ] Add timeouts to network-dependent collectors.
+* [ ] Do not let one slow GitHub request block all other output.
+* [ ] Allow local-only execution with `--no-network`.
+* [ ] Cache only where a clear TTL exists.
+* [ ] Mark cached data explicitly.
+* [ ] Never render stale cached data as live state.
+
+### Performance targets
+
+* [ ] Local-only Pulse target: `< 1s`.
+* [ ] Full Pulse target: `< 3s` under normal conditions.
+
+### Exit gate
+
+* [ ] A slow external dependency degrades gracefully.
+* [ ] Local status remains usable during network failure.
+
+---
+
+## P2 — Pulse documentation
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] Add Pulse to README.
+* [ ] Add Pulse to `docs/COMMANDS.md`.
+* [ ] Document the Pulse menu.
+* [ ] Document status meanings.
+* [ ] Document exit codes.
+* [ ] Document `mq.pulse.v1`.
+* [ ] Document network-dependent checks.
+* [ ] Document `--no-network`.
+* [ ] Document that Pulse is read-only.
+* [ ] Document ownership boundaries.
+
+### Exit gate
+
+* [ ] README, command reference, registry, help, and dispatcher agree.
+* [ ] Users can understand why a check is `UNAVAILABLE` or `SKIPPED`.
+
+---
+
+## Recommended PR sequence for v2.1.0
+
+### PR 1 — Pulse contract
+
+* [ ] Architecture and ownership.
+* [ ] Status model.
+* [ ] Exit codes.
+* [ ] Initial tests.
+
+### PR 2 — Core collectors
+
+* [ ] System.
+* [ ] Repositories.
+* [ ] MQ Stack.
+* [ ] Initial human renderer.
+
+### PR 3 — State collectors
+
+* [ ] Memory.
+* [ ] Git/GitHub.
+* [ ] Quality.
+
+### PR 4 — Attention
+
+* [ ] Priority model.
+* [ ] Deduplication.
+* [ ] Suggested commands.
+* [ ] Overall state.
+
+### PR 5 — Pulse menu
+
+* [ ] Menu.
+* [ ] Drill-down.
+* [ ] Refresh.
+
+### PR 6 — Machine surface
+
+* [ ] `mq.pulse.v1`.
+* [ ] `--json`.
+* [ ] `--plain`.
+* [ ] `--no-network`.
+* [ ] Exit-code tests.
+
+### PR 7 — Performance and polish
+
+* [ ] Timeouts.
+* [ ] Collector timing.
+* [ ] Degraded-state handling.
+* [ ] Documentation.
+* [ ] Full regression verification.
+
+---
+
+## Definition of Done for v2.1.0
+
+* [ ] `mqlaunch pulse` provides one coherent operator status view.
+* [ ] System, repositories, MQ stack, memory, Git/GitHub, and quality are represented.
+* [ ] Attention surfaces the most important actionable states.
+* [ ] Suggested actions only point to existing commands.
+* [ ] Pulse performs no mutation.
+* [ ] Pulse duplicates no MQ domain logic.
+* [ ] Failed dependencies degrade to explicit status rather than crashing the command.
+* [ ] `mq.pulse.v1` provides a stable machine-readable contract.
+* [ ] `NO_COLOR`, TTY, non-TTY, and plain output contracts are preserved.
+* [ ] Command registry, help, palette, dispatch, README, and command docs remain synchronized.
+* [ ] Full selftest and release checks pass.
+* [ ] `mqlaunch` remains a thin operator surface.
+
+---
+
+## Post-v2.1.0 candidate — `mqlaunch next`
+
+Do not include this in the v2.1.0 completion gate.
+
+Once Pulse has proven stable, a later release may add:
+
+```bash
+mqlaunch next
+```
+
+It should consume `mq.pulse.v1` rather than perform its own scanning and return one deterministic primary next action.
+
+```text
+Pulse observes -> Attention prioritizes -> Next selects
+```
+
+This preserves Pulse as the canonical status substrate and avoids creating another independent operator model.
 
 ---
 
