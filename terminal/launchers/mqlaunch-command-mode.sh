@@ -61,7 +61,7 @@ nearest_cli_command() {
   printf '%s\n' \
     about agent architecture ask brain bundle check commands demo dev doctor \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
-    memory network notes obsidian palette perf pulse release release-check \
+    memory netpulse network notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
       function distance(a, b, d, i, j, cost, deletion, insertion, substitution) {
@@ -1031,8 +1031,8 @@ dispatch_cli_command() {
       return $?
       ;;
 
-    pulse)
-      "$BASE_DIR/tools/scripts/pulse.sh"
+    netpulse)
+      "$BASE_DIR/tools/scripts/netpulse.sh"
       return $?
       ;;
 

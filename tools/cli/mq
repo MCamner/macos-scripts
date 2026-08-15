@@ -19,7 +19,7 @@ if [ $# -eq 0 ]; then
       "config" \
       "reload" \
       "scan" \
-      "pulse" \
+      "netpulse" \
       "exit" \
       | fzf --prompt="mq > " --height=40% --border)
 
@@ -29,7 +29,7 @@ if [ $# -eq 0 ]; then
       config) mq_config ;;
       reload) mq_reload ;;
       scan) mq_scan ;;
-      pulse) mq_pulse ;;
+      netpulse) mq_pulse ;;
       *) exit 0 ;;
     esac
     exit 0
@@ -52,6 +52,6 @@ case "$cmd" in
   config)   mq_config "$@" ;;
   reload)   mq_reload "$@" ;;
   scan)     mq_scan "$@" ;;
-  pulse)    mq_pulse "$@" ;;
+  netpulse) mq_pulse "$@" ;;
   help|*)   mq_help ;;
 esac

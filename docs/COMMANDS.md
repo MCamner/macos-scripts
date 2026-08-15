@@ -497,7 +497,7 @@ SRM_VECTOR_STORE_ID=vs_xxx mqlaunch srm search "upload flow"   # query a specifi
 
 ```bash
 mqlaunch ghost          # network cloaking (MAC/DNS spoof)
-mqlaunch pulse          # network latency + WiFi diagnostic
+mqlaunch netpulse       # network latency + WiFi diagnostic
 mqlaunch scan           # system + port scan
 mqlaunch reap           # CPU/MEM process reaper
 mqlaunch guard          # USB/Power perimeter watchdog

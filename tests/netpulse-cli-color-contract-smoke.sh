@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Locks the ANSI colour contract for the two surfaces that still wrote escapes
-# unconditionally: tools/scripts/pulse.sh, which defines its own colour
+# unconditionally: tools/scripts/netpulse.sh, which defines its own colour
 # variables, and tools/cli/mq-ui.sh, which is sourced by scan.sh, brew-check.sh
 # and doctor.sh.
 #
-# Measured before the fix: `mqlaunch pulse` wrote 20 ANSI sequences with stdout
+# Measured before the fix: `mqlaunch netpulse` wrote 20 ANSI sequences with stdout
 # redirected to a file, and neither NO_COLOR=1 nor --no-color removed one of
 # them; `mqlaunch scan` wrote 36. Both bypassed the central guard in
 # ui/terminal-ui/mq-ui.sh that plain-output-contract-smoke.sh already enforces,
@@ -20,25 +20,25 @@
 #
 # Colour is TTY-gated, so the "colour is still there" half runs under a
 # pseudo-terminal via python3 (portable on macOS and Linux), the same technique
-# plain-output-contract-smoke.sh uses. The network and Wi-Fi tools pulse.sh
+# plain-output-contract-smoke.sh uses. The network and Wi-Fi tools netpulse.sh
 # calls are stubbed, which keeps the run fast, deterministic, and off the
 # network — and lets every colour branch fire, including the ones that only
 # appear when the probes succeed.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PULSE="$ROOT/tools/scripts/pulse.sh"
+PULSE="$ROOT/tools/scripts/netpulse.sh"
 CLI_UI="$ROOT/tools/cli/mq-ui.sh"
 LAUNCH="$ROOT/bin/mqlaunch"
 
-echo "SMOKE: colour contract for pulse.sh and tools/cli/mq-ui.sh"
+echo "SMOKE: colour contract for netpulse.sh and tools/cli/mq-ui.sh"
 
 echo "[1/10] files exist"
 test -f "$PULSE"
 test -f "$CLI_UI"
 test -x "$LAUNCH"
 
-# --- stub the probes pulse.sh shells out to -------------------------------
+# --- stub the probes netpulse.sh shells out to -------------------------------
 # Values chosen so the success branches run: a present RSSI reaches the
 # GREEN/YELLOW/CYAN metrics block instead of the RED "could not retrieve" one,
 # and a round-trip line reaches the GREEN latency branch instead of RED TIMEOUT.
@@ -77,22 +77,22 @@ esc_count() {
   LC_ALL=C python3 -c 'import sys; sys.stdout.write(str(open(sys.argv[1],"rb").read().count(b"\x1b")))' "$1"
 }
 
-# --- pulse.sh --------------------------------------------------------------
+# --- netpulse.sh --------------------------------------------------------------
 
-echo "[2/10] pulse.sh emits zero ANSI when stdout is not a TTY"
+echo "[2/10] netpulse.sh emits zero ANSI when stdout is not a TTY"
 # TERM is set deliberately. `clear` writes ^[[3J^[[H^[[2J to a pipe whenever it
 # can read a terminfo entry, so a run with TERM unset would pass this check
 # without the screen-clear ever being gated.
 PATH="$STUB:$PATH" TERM=xterm-256color bash "$PULSE" > "$STUB/plain.txt" 2>/dev/null
 plain_esc="$(esc_count "$STUB/plain.txt")"
 if [[ "$plain_esc" != "0" ]]; then
-  echo "FAIL: pulse.sh emitted $plain_esc ANSI escapes with stdout redirected" >&2
+  echo "FAIL: netpulse.sh emitted $plain_esc ANSI escapes with stdout redirected" >&2
   LC_ALL=C cat -v "$STUB/plain.txt" | head -5 >&2
   exit 1
 fi
 echo "  ok: 0 escapes headless (TERM=xterm-256color)"
 
-echo "[3/10] pulse.sh emits zero ANSI under NO_COLOR=1 on a real TTY"
+echo "[3/10] netpulse.sh emits zero ANSI under NO_COLOR=1 on a real TTY"
 python3 - "$ROOT" "$STUB" <<'PY'
 import os, pty, subprocess, sys
 
@@ -106,7 +106,7 @@ def run_on_tty(no_color: bool) -> bytes:
     else:
         env.pop("NO_COLOR", None)
     master, slave = pty.openpty()
-    proc = subprocess.Popen(["bash", f"{root}/tools/scripts/pulse.sh"],
+    proc = subprocess.Popen(["bash", f"{root}/tools/scripts/netpulse.sh"],
                             stdout=slave, stderr=subprocess.DEVNULL,
                             stdin=subprocess.DEVNULL, env=env)
     os.close(slave)
@@ -134,7 +134,7 @@ assert b"\x1b[0;32m" in colored, "expected GREEN on a TTY — stubs did not reac
 # On a real terminal NO_COLOR removes every colour escape. The screen clear is
 # not one: it is a terminal action rather than output, and clear_screen() in
 # ui/terminal-ui/mq-ui.sh gates it on `[[ ! -t 1 ]]` alone, so every other
-# mqlaunch screen still clears under NO_COLOR. pulse.sh follows that rule, and
+# mqlaunch screen still clears under NO_COLOR. netpulse.sh follows that rule, and
 # the check below names the sequences it is allowed to keep instead of waving
 # escapes through in bulk.
 import re
@@ -159,7 +159,7 @@ if strip(colored) != strip(plain):
 print("  ok: colour on TTY, none under NO_COLOR, identical text and layout")
 PY
 
-echo "[4/10] pulse.sh keeps its ASCII banner and every heading in plain mode"
+echo "[4/10] netpulse.sh keeps its ASCII banner and every heading in plain mode"
 for needed in \
   '  :::::::::  :::    ::: :::        ::::::::  :::::::::: ' \
   '  ###         ########  ########## ########  ########## ' \
@@ -175,13 +175,13 @@ for needed in \
   'Pulse diagnostic complete.'
 do
   if ! grep -qF -- "$needed" "$STUB/plain.txt"; then
-    echo "FAIL: plain pulse.sh output lost: $needed" >&2
+    echo "FAIL: plain netpulse.sh output lost: $needed" >&2
     exit 1
   fi
 done
 echo "  ok: banner, headings and every measurement survive"
 
-echo "[5/10] mqlaunch pulse --no-color emits zero ANSI end to end"
+echo "[5/10] mqlaunch netpulse --no-color emits zero ANSI end to end"
 # BASE_DIR is passed explicitly. bin/mqlaunch defaults it to $HOME/macos-scripts,
 # which is true on the developer machine and false on a CI runner — without it
 # the launcher exits 1 with "Main launcher not found" and, since that goes to
@@ -189,15 +189,15 @@ echo "[5/10] mqlaunch pulse --no-color emits zero ANSI end to end"
 launch_status=0
 PATH="$STUB:$PATH" TERM=xterm-256color MQ_NO_TUI=1 \
   BASE_DIR="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
-  "$LAUNCH" pulse --no-color > "$STUB/flag.txt" 2>"$STUB/flag.err" || launch_status=$?
+  "$LAUNCH" netpulse --no-color > "$STUB/flag.txt" 2>"$STUB/flag.err" || launch_status=$?
 if [[ "$launch_status" -ne 0 ]]; then
-  echo "FAIL: mqlaunch pulse --no-color exited $launch_status" >&2
+  echo "FAIL: mqlaunch netpulse --no-color exited $launch_status" >&2
   cat "$STUB/flag.err" >&2
   exit 1
 fi
 flag_esc="$(esc_count "$STUB/flag.txt")"
 if [[ "$flag_esc" != "0" ]]; then
-  echo "FAIL: mqlaunch pulse --no-color emitted $flag_esc ANSI escapes" >&2
+  echo "FAIL: mqlaunch netpulse --no-color emitted $flag_esc ANSI escapes" >&2
   exit 1
 fi
 grep -qF -- 'Pulse diagnostic complete.' "$STUB/flag.txt"
@@ -300,6 +300,6 @@ for f in "$PULSE" "$CLI_UI"; do
     exit 1
   fi
 done
-echo "  ok: pulse.sh and tools/cli/mq-ui.sh both use the TTY + NO_COLOR guard"
+echo "  ok: netpulse.sh and tools/cli/mq-ui.sh both use the TTY + NO_COLOR guard"
 
-echo "PASS: colour contract for pulse.sh and tools/cli/mq-ui.sh"
+echo "PASS: colour contract for netpulse.sh and tools/cli/mq-ui.sh"
