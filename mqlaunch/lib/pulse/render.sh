@@ -93,6 +93,17 @@ pulse_render_area() {
       "$(pulse_colour "$status")" "$(pulse_glyph "$status")" "$PULSE_C_RESET" \
       "$subject" "$summary"
 
+    # --verbose prints what the collector saw. It is off by default because the
+    # default screen is for scanning, and on when asked because "why does it say
+    # that" is the next question — answered without a second command.
+    if [[ "${PULSE_VERBOSE:-0}" == "1" ]]; then
+      local evidence duration
+      evidence="$(pulse_item_field "$record" evidence)"
+      duration="$(pulse_item_field "$record" duration_ms)"
+      [[ -n "$evidence" ]] && printf '      %b· %s%b\n' "$PULSE_C_MUTED" "$evidence" "$PULSE_C_RESET"
+      [[ -n "$duration" ]] && printf '      %b· %s ms%b\n' "$PULSE_C_MUTED" "$duration" "$PULSE_C_RESET"
+    fi
+
     # The next command is printed only where the row is not already fine.
     # Telling an operator what to run about something that passed is noise, and
     # `next_command` on a PASS item is still carried in the machine document.
@@ -143,6 +154,25 @@ pulse_render_attention() {
     # withholding what the run found.
     printf '  %b+ %d more%b\n' "$PULSE_C_MUTED" "$remaining" "$PULSE_C_RESET"
   fi
+}
+
+# Prints only the attention list — `mqlaunch pulse attention`.
+#
+# The whole run is still collected: attention is a view over every area, and
+# scoping the collection instead of the rendering would make the most important
+# screen the least informed. When nothing needs attention it says so, rather
+# than printing an empty screen an operator would read as a broken command.
+pulse_render_attention_only() {
+  local overall="$1" rendered
+
+  rendered="$(pulse_render_attention)"
+  if [[ -z "$rendered" ]]; then
+    printf '\n%bNothing needs attention.%b\n' "$PULSE_C_PASS" "$PULSE_C_RESET"
+  else
+    printf '%s\n' "$rendered"
+  fi
+
+  printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "Pulse: $overall" "$PULSE_C_RESET"
 }
 
 # Prints the whole run: every known area in order, then any area a collector

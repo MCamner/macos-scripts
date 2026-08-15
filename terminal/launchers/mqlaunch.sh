@@ -184,6 +184,12 @@ if [[ -f "$BASE_DIR/terminal/menus/mq-net-menu.sh" ]]; then
   source "$BASE_DIR/terminal/menus/mq-net-menu.sh"
 fi
 
+# Pulse menu module
+if [[ -f "$BASE_DIR/terminal/menus/mq-pulse-menu.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$BASE_DIR/terminal/menus/mq-pulse-menu.sh"
+fi
+
 # Tools menu module
 if [[ -f "$BASE_DIR/terminal/menus/mq-tools-menu.sh" ]]; then
   # shellcheck disable=SC1091

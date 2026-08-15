@@ -99,7 +99,7 @@ MENUS
 CHECKS
   mqlaunch check          Run the system check
   mqlaunch doctor         Check the environment and dependencies
-  mqlaunch pulse          Operator cockpit: system, repos and MQ stack
+  mqlaunch pulse          Operator cockpit: six areas in one read-only view
   mqlaunch selftest       Run the smoke suite and shell lint
 
 OPS

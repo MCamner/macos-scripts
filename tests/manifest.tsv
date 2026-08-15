@@ -103,3 +103,4 @@ pulse-contract-smoke.sh	active	-
 pulse-collectors-smoke.sh	active	-
 pulse-state-collectors-smoke.sh	active	-
 pulse-attention-smoke.sh	active	-
+pulse-menu-smoke.sh	active	-
