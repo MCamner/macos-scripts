@@ -302,6 +302,13 @@ screen — a run with a flag must not look like a run where the subject was fine
 `--no-stack` covers `MEMORY` too: both spend mq-agent calls, and skipping one
 while paying for the other would misrepresent what the flag saves.
 
+Every collector is bounded — 10s for local delegates, 30s for mq-agent through
+`uv`, 8s for each `gh` call — and a spent budget is reported as `UNAVAILABLE`
+with the timeout named, never as a failure of the thing being looked at. A slow
+GitHub does not mean broken CI, and a gate that was killed did not fail.
+A local-only run costs about 1s; a full run about 4s, most of it four calls into
+other repos.
+
 `--json` prints the `mq.pulse.v1` document, and it is the surface to automate
 against:
 

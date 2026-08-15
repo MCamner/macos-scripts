@@ -184,6 +184,31 @@ them. `--no-stack` covers `MEMORY` as well as `MQ STACK`, because both spend
 mq-agent calls and a flag that skipped one while paying for the other would be
 lying about what the run costs.
 
+### Timeouts
+
+Every collector is bounded, and a spent budget is a fact about the observation:
+
+```text
+timeout   is not   FAIL on the subject
+timeout   is       UNAVAILABLE on the observation
+```
+
+GitHub taking too long to answer does not mean CI is broken, and a quality gate
+killed at its budget is not a failing gate — reporting one as `FAIL` would put
+"run `mqlaunch selftest`" in front of an operator whose selftest is exactly what
+timed out. The item names the timeout (`timed out after 8s`) rather than reusing
+the wording for a delegate that answered with nothing, because "could not ask"
+and "asked, got nothing" send an operator to different places.
+
+The budgets are ceilings on a hang, not performance targets, and they are sized
+from measurement — the numbers are in ROADMAP.md:
+
+| Budget | Seconds | Covers |
+| --- | --- | --- |
+| `PULSE_COLLECTOR_TIMEOUT` | 10 | doctor, repos, each quality gate |
+| `PULSE_STACK_TIMEOUT` | 30 | every mq-agent call, through `uv` |
+| `PULSE_GH_TIMEOUT` | 8 | each `gh` call |
+
 ## What absence means
 
 Four distinctions the collectors are built to keep, and the attention engine

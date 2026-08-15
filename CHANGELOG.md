@@ -6,6 +6,55 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* A Pulse collector that ran past its budget reported the subject as broken.
+
+  ```text
+  timeout   is not   FAIL on the subject
+  timeout   is       UNAVAILABLE on the observation
+  ```
+
+  A quality gate killed at its budget was reported as `FAIL` — "failing", with
+  "run `mqlaunch selftest`" next to it, which is the advice to run the thing that
+  had just timed out. It now reports `UNAVAILABLE` and names the timeout, and so
+  does every other collector: GitHub not answering is not broken CI, and a slow
+  `uv` is not a broken stack. The item says `timed out after 8s` rather than
+  reusing the wording for a delegate that answered with nothing, because "could
+  not ask" and "asked, got nothing" send an operator to different places.
+
+  `tests/pulse-degradation-smoke.sh` holds it, with a hanging gate, a hanging
+  doctor and a hanging `gh`.
+
+### Changed
+
+* Pulse got faster, in the two places measurement pointed at.
+
+  ```text
+  quality    1351 ms  →  574 ms
+  local-only 1787 ms  →  982 ms
+  full       5365 ms  →  3850 ms
+  ```
+
+  The clock was a process: `pulse_now_ms` shelled out to python3 twice per
+  collector, which was 287 ms of a local-only run spent asking what time it was.
+  bash 5 publishes `EPOCHREALTIME`; the fallback stays for bash 3.2 and for
+  locales whose decimal separator is not a point.
+
+  The five quality gates now run concurrently. They are independent and
+  read-only, and they are still reported in list order — never the order they
+  finish in, which the test holds by planting the slowest gate second. The six
+  collectors are deliberately still serial: two of them shell into mq-agent
+  through the same `uv` project, and the item order is the screen's order.
+
+  The budgets are sized from the same measurements: 10s for local delegates,
+  30s for mq-agent through `uv` (which keeps room for a cold cache), 8s for each
+  `gh` call.
+
+  The full-run target of `< 3s` is not met and is not reachable by tuning: 3.4 s
+  of the 3.85 s is four calls to delegates in other repos. It stays open in
+  ROADMAP.md with that number against it.
+
 ### Added
 
 * `mq.pulse.v1` — the machine surface for Pulse.

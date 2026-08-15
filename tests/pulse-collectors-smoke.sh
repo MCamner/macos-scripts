@@ -23,7 +23,7 @@ echo "SMOKE: pulse item model and core collectors"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/10] the model, the collectors and the entrypoint exist"
+echo "[1/11] the model, the collectors and the entrypoint exist"
 test -f "$ROOT/mqlaunch/lib/pulse/item.sh"
 test -f "$ROOT/mqlaunch/lib/pulse/collectors.sh"
 test -f "$ROOT/mqlaunch/lib/pulse/render.sh"
@@ -43,7 +43,7 @@ source "$ROOT/mqlaunch/lib/pulse/render.sh"
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/document.sh"
 
-echo "[2/10] an item requires its five fields and a real state"
+echo "[2/11] an item requires its five fields and a real state"
 pulse_items_reset
 if pulse_item_add doctor system PASS "Subject" 2>/dev/null; then
   echo "FAIL: an item with four fields was accepted" >&2
@@ -67,7 +67,7 @@ if [[ "${#PULSE_ITEMS[@]}" -ne 0 ]]; then
 fi
 echo "  ok: four malformed items refused, none recorded"
 
-echo "[3/10] the model round-trips to JSON without losing a field"
+echo "[3/11] the model round-trips to JSON without losing a field"
 # Values chosen to break a hand-rolled serializer: a quote, a comma, a colon,
 # a backslash and a non-ASCII character. This is why JSON is emitted by python3
 # rather than assembled in shell.
@@ -97,7 +97,7 @@ assert second["duration_ms"] == 142 and isinstance(second["duration_ms"], int)
 print("  ok: 2 items, every field intact, numbers restored as numbers")
 '
 
-echo "[4/10] rendering derives nothing of its own"
+echo "[4/11] rendering derives nothing of its own"
 # The screen must be a function of the items. Asserted by rendering a run whose
 # states disagree with what a naive renderer would infer from the words.
 pulse_items_reset
@@ -120,7 +120,24 @@ make_doctor() {
   chmod +x "$stub_root/tools/scripts/doctor.sh"
 }
 
-echo "[5/10] the system collector maps doctor's verdict, and never invents one"
+echo "[5/11] --verbose prints what the collector saw, and nothing it did not"
+# The flag prints evidence and timing that were already on the item; it must not
+# make the collector look at anything more, and the default screen must stay
+# short enough to scan.
+pulse_items_reset
+pulse_item_add repos repositories WARN 'macos-scripts' 'dirty' \
+  evidence='git status --short' duration_ms=142
+quiet="$(PULSE_VERBOSE=0 pulse_render WARN 2>&1)"
+loud="$(PULSE_VERBOSE=1 pulse_render WARN 2>&1)"
+grep -qF 'git status --short' <<< "$quiet" && {
+  echo "FAIL: the default screen printed the evidence" >&2; exit 1; }
+grep -qF 'git status --short' <<< "$loud" || {
+  echo "FAIL: --verbose did not print the evidence" >&2; exit 1; }
+grep -qF '142 ms' <<< "$loud" || {
+  echo "FAIL: --verbose did not print the collector's duration" >&2; exit 1; }
+echo "  ok: evidence and timing on demand, off by default"
+
+echo "[6/11] the system collector maps doctor's verdict, and never invents one"
 make_doctor <<'EOF'
 #!/usr/bin/env bash
 cat <<'JSON'
@@ -170,7 +187,7 @@ EOF
 )
 echo "  ok: warn maps to WARN, fail to FAIL, and a non-zero exit does not end the run"
 
-echo "[6/10] a missing or unreadable delegate is UNAVAILABLE, never PASS"
+echo "[7/11] a missing or unreadable delegate is UNAVAILABLE, never PASS"
 # The whole point of the state. A collector that cannot reach its subject must
 # not report the subject as healthy.
 rm -f "$stub_root/tools/scripts/doctor.sh"
@@ -198,7 +215,7 @@ EOF
 )
 echo "  ok: missing, unreadable and silent all report UNAVAILABLE"
 
-echo "[7/10] the repositories collector reports per repo and summarises the rest"
+echo "[8/11] the repositories collector reports per repo and summarises the rest"
 cat > "$stub_root/tools/scripts/mq-repos.py" <<'EOF'
 #!/usr/bin/env python3
 import json
@@ -230,7 +247,7 @@ EOF
 )
 echo "  ok: dirty, unpushed and non-git repos each reported, clean ones counted"
 
-echo "[8/10] the stack collector delegates, and says so when it cannot"
+echo "[9/11] the stack collector delegates, and says so when it cannot"
 ( BASE_DIR="$stub_root"; export MQ_AGENT_BIN="$run_dir/absent"; pulse_items_reset
   pulse_collect_stack
   states="$(pulse_items_states)"
@@ -266,7 +283,7 @@ chmod +x "$run_dir/bin/uv"
 )
 echo "  ok: absent mq-agent is one UNAVAILABLE item; present, its verdict is mapped"
 
-echo "[9/10] the entrypoint honours --no-stack, and its exit code is the verdict"
+echo "[10/11] the entrypoint honours --no-stack, and its exit code is the verdict"
 # Driven end to end against the stubs, because the exit code is the part a
 # script reads and the part a renderer could quietly overwrite.
 cat > "$stub_root/tools/scripts/doctor.sh" <<'EOF'
@@ -343,7 +360,7 @@ MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" --nonse
 [[ "$status" -eq 2 ]] || { echo "FAIL: an unknown flag exited $status, expected 2" >&2; exit 1; }
 echo "  ok: 1 on a warning, 2 on a usage error, both skips stay visible"
 
-echo "[10/10] a directory that is not a repository is never reported as clean"
+echo "[11/11] a directory that is not a repository is never reported as clean"
 # The failure this closes: `git status --short` fails in a non-repository, its
 # output is empty, and empty reads exactly like a clean tree. The collector
 # reported "Worktree: clean" about a directory with no .git at all — a wrong

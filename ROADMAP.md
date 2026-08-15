@@ -2298,64 +2298,75 @@ ATTENTION
 
 ## P1 — Pulse test coverage
 
-Status: Planned
+Status: Done — seven files, all in `tools/scripts/test-all.sh`
 Priority: P1
 Owner: `macos-scripts`
 
+Ticked against a test that actually exercises the case, not against a file whose
+name suggests it. Two boxes were still open when this block was closed and were
+closed by writing the missing test: `--verbose` and failing CI.
+
 ### State tests
 
-* [ ] `PASS`
-* [ ] `WARN`
-* [ ] `FAIL`
-* [ ] `UNAVAILABLE`
-* [ ] `SKIPPED`
+* [x] `PASS`
+* [x] `WARN`
+* [x] `FAIL`
+* [x] `UNAVAILABLE`
+* [x] `SKIPPED`
 
 ### Aggregation tests
 
-* [ ] Overall PASS.
-* [ ] Overall WARN.
-* [ ] Overall FAIL.
-* [ ] Attention priority ordering.
-* [ ] Attention deduplication.
+* [x] Overall PASS.
+* [x] Overall WARN.
+* [x] Overall FAIL.
+* [x] Attention priority ordering.
+* [x] Attention deduplication.
 
 ### CLI tests
 
-* [ ] `mqlaunch pulse`
+* [x] `mqlaunch pulse`
 * [x] `mqlaunch pulse --json`
 * [x] `mqlaunch pulse --plain`
-* [ ] `mqlaunch pulse --verbose`
-* [ ] `mqlaunch pulse --no-network`
-* [ ] Every scoped Pulse command.
+* [x] `mqlaunch pulse --verbose` — evidence and timing on demand, absent by
+  default, added in PR 7 when this box turned out to be the only untested flag.
+* [x] `mqlaunch pulse --no-network`
+* [x] Every scoped Pulse command.
 
 ### Environment tests
 
-* [ ] bash.
-* [ ] zsh.
-* [ ] TTY.
-* [ ] non-TTY.
-* [ ] `NO_COLOR=1`.
+* [x] bash.
+* [ ] zsh. The entrypoint is bash and is always invoked as `bash pulse.sh`, so
+  there is no zsh path to test. What is zsh is the launcher that dispatches to
+  it, and `tests/menu-shell-guard-smoke.sh` covers that. Ticking this would
+  claim coverage of a path that does not exist.
+* [x] TTY.
+* [x] non-TTY.
+* [x] `NO_COLOR=1`.
 
 ### Failure injection
 
-* [ ] GitHub unavailable.
-* [ ] `mq-agent` unavailable.
-* [ ] `mqobsidian` unavailable.
-* [ ] malformed delegated JSON.
-* [ ] collector timeout.
-* [ ] dirty repository.
-* [ ] failing CI.
+* [x] GitHub unavailable.
+* [x] `mq-agent` unavailable.
+* [ ] `mqobsidian` unavailable. Pulse never reads mqobsidian: memory comes from
+  mq-agent, which owns that reading. There is nothing here to inject.
+* [x] malformed delegated JSON.
+* [x] collector timeout.
+* [x] dirty repository.
+* [x] failing CI — added in PR 7. GitHub's own verdict arrives as `FAIL` and
+  names the workflow, which is the other half of the timeout rule: the collector
+  may not invent a verdict, and may not drop one it was given.
 
 ### Governance tests
 
-* [ ] command registry parity.
-* [ ] docs parity.
-* [ ] runtime authority.
-* [ ] test inventory.
-* [ ] shell lint.
+* [x] command registry parity.
+* [x] docs parity.
+* [x] runtime authority.
+* [x] test inventory.
+* [x] shell lint.
 
 ### Exit gate
 
-* [ ] Pulse is included in the full selftest suite.
+* [x] Pulse is included in the full selftest suite.
 * [ ] Failure-path tests prove degraded behavior instead of only happy-path rendering.
 
 ---
@@ -2459,7 +2470,8 @@ Example:
 
 ## P2 — Pulse performance and degradation
 
-Status: Planned
+Status: Mostly done — degradation and the local-only target are gated by
+`tests/pulse-degradation-smoke.sh`; the full-run target is not met, see below
 Priority: P2
 Owner: `macos-scripts`
 
@@ -2467,27 +2479,97 @@ Owner: `macos-scripts`
 
 Pulse should feel like a status command, not a long-running workflow.
 
+### Measured
+
+M-series Mac, warm `uv` cache, `--json` per scope. Taken before any tuning:
+
+```text
+system      132 ms
+repos       519 ms
+stack      1437 ms      mq-agent through uv
+memory     1226 ms      mq-agent through uv, two calls
+git        1626 ms      two gh calls
+quality    1351 ms      five gates, serial
+
+local-only 1787 ms      --no-network --no-stack
+full       5365 ms
+```
+
+Two changes came out of that, and nothing else was tuned on a guess:
+
+* the clock was a process. `pulse_now_ms` shelled out to python3 twice per
+  collector — fifteen spawns, 287 ms, 16% of a local-only run spent asking what
+  time it was. bash 5 publishes `EPOCHREALTIME`; the fallback stays for bash 3.2
+  and for locales whose decimal separator is not a point.
+* the five quality gates were serial. They are independent and read-only, so
+  they now run concurrently and are reported in list order — never the order
+  they finish in, which `tests/pulse-degradation-smoke.sh` holds by planting the
+  slowest gate second.
+
+```text
+quality    1351 ms  →  574 ms
+local-only 1787 ms  →  982 ms
+full       5365 ms  →  3850 ms
+```
+
 ### Tasks
 
-* [ ] Measure each collector.
-* [ ] Record collector duration in verbose mode.
-* [ ] Parallelize independent read-only collectors where safe.
-* [ ] Add timeouts to network-dependent collectors.
-* [ ] Do not let one slow GitHub request block all other output.
-* [ ] Allow local-only execution with `--no-network`.
-* [ ] Cache only where a clear TTL exists.
-* [ ] Mark cached data explicitly.
-* [ ] Never render stale cached data as live state.
+* [x] Measure each collector.
+* [x] Record collector duration in verbose mode.
+* [x] Parallelize independent read-only collectors where safe — the five quality
+  gates. Deliberately not the six collectors: two of them shell into mq-agent
+  through the same `uv` project, and the item order is the screen's order.
+  "Where safe" is doing real work in that sentence.
+* [x] Add timeouts to network-dependent collectors.
+* [ ] Do not let one slow GitHub request block all other output. Bounded, not
+  concurrent: a slow `gh` delays the rest by at most `PULSE_GH_TIMEOUT` and
+  costs nothing else — every other area is still collected and rendered. Making
+  it genuinely non-blocking needs the collectors themselves parallel, which is
+  the change ruled out above.
+* [x] Allow local-only execution with `--no-network`.
+* [ ] Cache only where a clear TTL exists. Still open, and it may stay open: no
+  owner in the stack publishes a TTL for its status, so a cache here would be
+  Pulse inventing a freshness claim — the one thing this contract forbids.
+* [ ] Mark cached data explicitly. Nothing is cached, so there is nothing to
+  mark.
+* [ ] Never render stale cached data as live state. Held by there being no
+  cache, not by a check.
+
+### Degradation
+
+```text
+timeout   is not   FAIL on the subject
+timeout   is       UNAVAILABLE on the observation
+```
+
+A gate killed at its budget is not a failing gate, and GitHub not answering is
+not broken CI. Before this block, a slow machine reported the repo's own quality
+as `FAIL` with "run `mqlaunch selftest`" next to it — the advice being to run the
+thing that had just timed out.
+
+| Budget | Seconds | Covers |
+| --- | --- | --- |
+| `PULSE_COLLECTOR_TIMEOUT` | 10 | doctor, repos, each quality gate |
+| `PULSE_STACK_TIMEOUT` | 30 | every mq-agent call, through `uv` |
+| `PULSE_GH_TIMEOUT` | 8 | each `gh` call |
+
+The stack budget keeps room for a cold `uv` cache, which is slower than anything
+measured here by an order of magnitude. Cutting a first run off would make Pulse
+look broken exactly once per dependency change.
 
 ### Performance targets
 
-* [ ] Local-only Pulse target: `< 1s`.
-* [ ] Full Pulse target: `< 3s` under normal conditions.
+* [x] Local-only Pulse target: `< 1s` — 982 ms measured.
+* [ ] Full Pulse target: `< 3s` under normal conditions. 3850 ms measured, and
+  not reachable by tuning: 3.4 s of it is four calls to delegates in other repos
+  (two `uv`, two `gh`). Reaching it means running the collectors concurrently,
+  which is a change to how the run is ordered rather than a bound on how long it
+  takes, and it belongs in its own block.
 
 ### Exit gate
 
-* [ ] A slow external dependency degrades gracefully.
-* [ ] Local status remains usable during network failure.
+* [x] A slow external dependency degrades gracefully.
+* [x] Local status remains usable during network failure.
 
 ---
 
@@ -2580,28 +2662,37 @@ Owner: `macos-scripts`
 
 ### PR 7 — Performance and polish
 
-* [ ] Timeouts.
-* [ ] Collector timing.
-* [ ] Degraded-state handling.
-* [ ] Documentation.
-* [ ] Full regression verification.
+* [x] Timeouts — sized from measurement, and a spent budget reports UNAVAILABLE
+  with the timeout named.
+* [x] Collector timing.
+* [x] Degraded-state handling.
+* [x] Documentation.
+* [x] Full regression verification — the test-coverage block above, closed box
+  by box against tests that run.
 
 ---
 
 ## Definition of Done for v2.1.0
 
-* [ ] `mqlaunch pulse` provides one coherent operator status view.
-* [ ] System, repositories, MQ stack, memory, Git/GitHub, and quality are represented.
-* [ ] Attention surfaces the most important actionable states.
-* [ ] Suggested actions only point to existing commands.
-* [ ] Pulse performs no mutation.
-* [ ] Pulse duplicates no MQ domain logic.
-* [ ] Failed dependencies degrade to explicit status rather than crashing the command.
+* [x] `mqlaunch pulse` provides one coherent operator status view.
+* [x] System, repositories, MQ stack, memory, Git/GitHub, and quality are represented.
+* [x] Attention surfaces the most important actionable states.
+* [x] Suggested actions only point to existing commands — gated in PR 7. It was
+  the one contract rule nothing checked, and the check found `mqlaunch stack
+  cockpit`, which resolves only because `stack` declares a delegation. A
+  suggestion that does not resolve is worse than none: an operator types it
+  before doubting it.
+* [x] Pulse performs no mutation — the only write in `mqlaunch/lib/pulse` is the
+  `mktemp -d` the quality collector cleans up after itself.
+* [x] Pulse duplicates no MQ domain logic.
+* [x] Failed dependencies degrade to explicit status rather than crashing the command.
 * [x] `mq.pulse.v1` provides a stable machine-readable contract.
-* [ ] `NO_COLOR`, TTY, non-TTY, and plain output contracts are preserved.
-* [ ] Command registry, help, palette, dispatch, README, and command docs remain synchronized.
-* [ ] Full selftest and release checks pass.
-* [ ] `mqlaunch` remains a thin operator surface.
+* [x] `NO_COLOR`, TTY, non-TTY, and plain output contracts are preserved.
+* [x] Command registry, help, palette, dispatch, README, and command docs remain
+  synchronized — README was the gap, and closing this box is what found it.
+* [x] Full selftest and release checks pass — 84 active tests, shell lint at
+  warning severity over 214 files, `release-check --json` READY with no blockers.
+* [x] `mqlaunch` remains a thin operator surface.
 
 ---
 

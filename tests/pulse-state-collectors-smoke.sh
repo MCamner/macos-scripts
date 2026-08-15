@@ -25,7 +25,7 @@ echo "SMOKE: pulse memory, git and quality collectors"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/8] the state collectors exist and load"
+echo "[1/9] the state collectors exist and load"
 test -f "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
@@ -45,7 +45,7 @@ write_agent() {
   chmod +x "$run_dir/bin/uv"
 }
 
-echo "[2/8] memory maps the owner's words, and carries the vector store as evidence"
+echo "[2/9] memory maps the owner's words, and carries the vector store as evidence"
 write_agent <<'EOF'
 #!/bin/sh
 case "$*" in
@@ -67,7 +67,7 @@ truth="$(pulse_item_field "${PULSE_ITEMS[1]}" summary)"
   echo "FAIL: freshness summary was '$truth'" >&2; exit 1; }
 echo "  ok: ready and fresh both PASS, store id is evidence not summary"
 
-echo "[3/8] memory never translates an unknown state into a pass"
+echo "[3/9] memory never translates an unknown state into a pass"
 # The owner's word is reported as it came. Anything that is not the word it uses
 # for working is a reason to look, and a state it does not report at all is a
 # gap rather than health.
@@ -105,7 +105,7 @@ states="$(pulse_items_states | tr '\n' ' ')"
   echo "FAIL: a report with no state gave '$states'" >&2; exit 1; }
 echo "  ok: degraded and stale warn, an unreported state is UNAVAILABLE"
 
-echo "[4/8] memory reports the gap when mq-agent is not installed"
+echo "[4/9] memory reports the gap when mq-agent is not installed"
 ( export MQ_AGENT_BIN="$run_dir/absent"
   pulse_items_reset
   pulse_collect_memory
@@ -115,7 +115,7 @@ echo "[4/8] memory reports the gap when mq-agent is not installed"
 )
 echo "  ok: two UNAVAILABLE items, no guesses"
 
-echo "[5/8] the git collector reads the worktree and never writes to it"
+echo "[5/9] the git collector reads the worktree and never writes to it"
 # A scratch repo, so the assertions do not depend on the state of this checkout.
 work="$run_dir/repo"
 mkdir -p "$work"
@@ -158,7 +158,7 @@ status_after="$(git -C "$work" status --short | wc -l | tr -d ' ')"
   echo "FAIL: the git collector changed the worktree" >&2; exit 1; }
 echo "  ok: clean, dirty and no-upstream all read correctly, nothing mutated"
 
-echo "[6/8] --no-network marks GitHub SKIPPED rather than dropping it"
+echo "[6/9] --no-network marks GitHub SKIPPED rather than dropping it"
 ( export BASE_DIR="$work"
   pulse_items_reset
   pulse_collect_git 1
@@ -194,7 +194,45 @@ done
 )
 echo "  ok: skipped when asked, UNAVAILABLE when gh is missing"
 
-echo "[7/8] quality runs the real gates and reports each verdict separately"
+echo "[7/9] a failing CI run is FAIL on the subject, not on the reading"
+# The other half of the timeout rule. GitHub answering "this run failed" is a
+# fact about the branch, and it must arrive as FAIL — the collector is only
+# forbidden from inventing a verdict, not from reporting one it was given.
+ci_stub="$run_dir/ci"
+mkdir -p "$ci_stub"
+for tool in bash git grep python3 timeout gtimeout; do
+  target="$(command -v "$tool" 2>/dev/null)" || continue
+  ln -sf "$target" "$ci_stub/$tool"
+done
+cat > "$ci_stub/gh" <<'EOF'
+#!/usr/bin/env bash
+# `gh pr list` first, then `gh run list` — the collector asks in that order.
+if [[ "$1" == "pr" ]]; then
+  echo '[]'
+else
+  echo '[{"status":"completed","conclusion":"failure","workflowName":"Quality"}]'
+fi
+EOF
+chmod +x "$ci_stub/gh"
+( export BASE_DIR="$work"; export PATH="$ci_stub"
+  pulse_items_reset
+  pulse_collect_git 0
+  found=0
+  for record in "${PULSE_ITEMS[@]}"; do
+    [[ "$(pulse_item_field "$record" subject)" == "CI" ]] || continue
+    found=1
+    status="$(pulse_item_field "$record" status)"
+    [[ "$status" == "FAIL" ]] || {
+      echo "FAIL: a failed CI run reported $status" >&2; exit 1; }
+    summary="$(pulse_item_field "$record" summary)"
+    [[ "$summary" == *"Quality"* ]] || {
+      echo "FAIL: the failing workflow was not named: '$summary'" >&2; exit 1; }
+  done
+  [[ $found -eq 1 ]] || { echo "FAIL: no CI row at all" >&2; exit 1; }
+)
+echo "  ok: GitHub's verdict is carried, and it names the workflow"
+
+echo "[8/9] quality runs the real gates and reports each verdict separately"
 # The rule this step exists for: no aggregate verdict. One failing gate must
 # show as that gate failing, next to the others still passing.
 gate_root="$run_dir/gates"
@@ -240,7 +278,7 @@ chmod +x "$gate_root/tools/scripts/validate-command-registry.py" \
 )
 echo "  ok: five items, one per gate, no aggregate verdict"
 
-echo "[8/8] one unreachable delegate does not take the run with it"
+echo "[9/9] one unreachable delegate does not take the run with it"
 # The P1 exit gate: every collector runs independently, and a failure becomes a
 # state rather than a crash. Driven end to end with mq-agent absent, gh absent,
 # and one quality gate failing — the run must still finish and report 2.
