@@ -12,6 +12,13 @@
 # bash, so it carries a bash shebang and is covered by shellcheck.
 
 # Opens git menu.
+git_menu_exit_is_restartable() {
+  case "${1:-1}" in
+    0|130|143) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"
@@ -49,10 +56,10 @@ open_git_menu() {
 
     [[ -f "$back_marker" ]] && break
 
-    # A non-zero exit is a failure to start, not the mid-session crash the
-    # restart counter is for. Restarting five times would print the same
-    # "Repo path not found" five times before giving up.
-    if (( menu_status != 0 )); then
+    # Ordinary non-zero exits are startup or validation failures. Signal-safe
+    # exits from an active Git operation (130/143) are restartable so an
+    # interrupted post-push cleanup returns to Gitlaunch, not the main menu.
+    if ! git_menu_exit_is_restartable "$menu_status"; then
       break
     fi
 
