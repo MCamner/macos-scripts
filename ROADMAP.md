@@ -1564,8 +1564,8 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: In progress — six collectors and the attention engine are done; the
-command surface and the menu are next
+Status: In progress — six collectors, the attention engine, the scoped
+command surface and the menu are done; the machine contract is next
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2044,13 +2044,14 @@ Merge PR #184 now
 
 ## P1 — `mqlaunch pulse` command surface
 
-Status: Planned
+Status: In progress — the command, the scopes, `--no-network` and `--verbose`
+are done; `--json` and `--plain` are PR 6
 Priority: P1
 Owner: `macos-scripts`
 
 ### Tasks
 
-* [ ] Add:
+* [x] Add:
 
 ```bash
 mqlaunch pulse
@@ -2062,7 +2063,10 @@ mqlaunch pulse
 mqlaunch pulse --json
 ```
 
-* [ ] Add scoped views:
+* [x] Add scoped views — one area's collector runs, and only that area
+  renders. `attention` is the exception: it collects everything and narrows the
+  rendering, because a view over every area cannot be scoped to one collector
+  without becoming the least informed screen in the product.
 
 ```bash
 mqlaunch pulse system
@@ -2074,7 +2078,7 @@ mqlaunch pulse quality
 mqlaunch pulse attention
 ```
 
-* [ ] Add:
+* [x] Add:
 
 ```bash
 mqlaunch pulse --no-network
@@ -2082,13 +2086,14 @@ mqlaunch pulse --no-network
 
 Network-dependent checks should become `SKIPPED`.
 
-* [ ] Add:
+* [x] Add:
 
 ```bash
 mqlaunch pulse --verbose
 ```
 
-Show evidence and collector details.
+Show evidence and collector details. Both were already on the item — the flag
+prints them rather than collecting anything more.
 
 * [ ] Add:
 
@@ -2098,10 +2103,10 @@ mqlaunch pulse --plain
 
 Stable non-panel output.
 
-* [ ] Respect `NO_COLOR=1`.
+* [x] Respect `NO_COLOR=1`.
 * [ ] Keep JSON stdout free from ANSI and diagnostics.
-* [ ] Preserve stable exit codes.
-* [ ] Register Pulse in the canonical command registry.
+* [x] Preserve stable exit codes.
+* [x] Register Pulse in the canonical command registry.
 * [ ] Keep help, palette, dispatch, README, and `docs/COMMANDS.md` in sync.
 
 ### Exit gate
@@ -2115,7 +2120,8 @@ Stable non-panel output.
 
 ## P1 — Pulse menu
 
-Status: Planned
+Status: Done — `terminal/menus/mq-pulse-menu.sh`, gated by
+`tests/pulse-menu-smoke.sh`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2153,23 +2159,41 @@ q. Quit
 
 ### Tasks
 
-* [ ] Add `Full Pulse`.
-* [ ] Add `Attention`.
-* [ ] Add `System`.
-* [ ] Add `Repositories`.
-* [ ] Add `MQ Stack`.
-* [ ] Add `Memory`.
-* [ ] Add `Git / GitHub`.
-* [ ] Add `Quality`.
-* [ ] Add `Refresh`.
-* [ ] Keep the menu within the repo's existing menu-size guardrail.
-* [ ] Route drill-down to existing command surfaces rather than implementing duplicate behavior.
+* [x] Add `Full Pulse`.
+* [x] Add `Attention`.
+* [x] Add `System`.
+* [x] Add `Repositories`.
+* [x] Add `MQ Stack`.
+* [x] Add `Memory`.
+* [x] Add `Git / GitHub`.
+* [x] Add `Quality`.
+* [x] Add `Refresh` — which repeats the view the operator last opened rather
+  than always returning to the full run. Nothing here caches, so a Refresh that
+  meant "run the full view again" would be row 1 under a second name, and the
+  repo's inventory gate counts that as a duplication for good reason.
+* [x] Keep the menu within the repo's existing menu-size guardrail — nine
+  options against a limit of ten, enforced by
+  `tests/command-discovery-inventory-smoke.sh` rather than counted here.
+* [x] Route drill-down to existing command surfaces rather than implementing duplicate behavior.
 
 ### Exit gate
 
-* [ ] The menu stays within the existing option-count contract.
-* [ ] Every menu item routes through the authoritative dispatcher or an approved delegation path.
-* [ ] No menu item bypasses runtime authority.
+* [x] The menu stays within the existing option-count contract.
+* [x] Every menu item routes through the authoritative dispatcher or an approved delegation path.
+* [x] No menu item bypasses runtime authority. Every row runs
+  `bin/mqlaunch pulse <scope>`, never `tools/scripts/pulse.sh`, so a menu row
+  and a typed command are the same thing.
+
+The menu's exit key is `x`, not the `q` sketched above: `read_menu_choice`
+prints "or x to exit" and `tests/menu-exit-contract-smoke.sh` holds every menu
+to it. A screen offering a key the prompt does not mention would be the
+inconsistency this release exists to remove.
+
+The menu holds no status logic, and that is gated structurally as well as by
+behaviour — the smoke test fails if the file ever calls `git`, `gh`, `uv` or
+`curl`, or names a Pulse state. It is the easiest place in the product to add a
+second definition of "healthy", one level above the collectors the contract
+gates, so it is the place worth pinning.
 
 ---
 
@@ -2522,9 +2546,12 @@ Owner: `macos-scripts`
 
 ### PR 5 — Pulse menu
 
-* [ ] Menu.
-* [ ] Drill-down.
-* [ ] Refresh.
+* [x] Menu.
+* [x] Drill-down — needing the scoped views from the command-surface block,
+  since a menu that could only run the full view has nothing to drill into.
+* [x] Refresh.
+* [x] `--verbose`, from the same block: the drill-down screens are where "why
+  does it say that" gets asked, and the evidence was already on the item.
 
 ### PR 6 — Machine surface
 

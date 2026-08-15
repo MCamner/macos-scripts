@@ -604,7 +604,7 @@
         "/pulse"
       ],
       "namespace": "checks",
-      "summary": "Operator cockpit: system, repos and MQ stack",
+      "summary": "Operator cockpit: six areas in one read-only view",
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
@@ -614,6 +614,19 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
+      "unknown_subcommand": "forward",
+      "subcommands": [
+        {
+          "name": "menu",
+          "aliases": [],
+          "summary": "Open the Pulse menu",
+          "output_modes": [
+            "human",
+            "interactive"
+          ],
+          "json": false
+        }
+      ],
       "operator_surface": true,
       "local_role": "terminal-ux"
     },

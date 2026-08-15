@@ -8,6 +8,39 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Scoped Pulse views and a Pulse menu.
+
+  ```bash
+  mqlaunch pulse menu        # the eight views as a menu
+  mqlaunch pulse attention   # only what needs attention
+  mqlaunch pulse quality     # one area, and only that area's collector runs
+  mqlaunch pulse --verbose   # the evidence behind each row
+  ```
+
+  A scope runs that area's collector and nothing else, so `pulse quality` costs
+  the five gates rather than the whole run. `attention` is the exception: it
+  collects every area and narrows only what is printed, because a view over
+  everything cannot be scoped to one collector without becoming the least
+  informed screen in the product. A scoped run reports on its scope — `pulse
+  quality` exits 0 when the gates pass, whatever the rest of the machine looks
+  like.
+
+  The menu holds no status logic. Every row runs `bin/mqlaunch pulse <scope>`
+  through the dispatcher, never `tools/scripts/pulse.sh`, so a menu row and a
+  typed command are the same thing. `tests/pulse-menu-smoke.sh` fails if the
+  menu file ever calls `git`, `gh`, `uv` or `curl`, or names a Pulse state: it
+  is the easiest place in the product to grow a second definition of "healthy",
+  one level above the collectors the contract gates.
+
+  `Refresh` repeats the view last opened rather than returning to the full run.
+  Nothing caches, so a Refresh that meant "run the full view again" would be row
+  1 under a second name — which the repo's inventory gate counts as a
+  duplication for good reason.
+
+  `--verbose` prints the evidence and the collector's duration. Both were
+  already on the item; the flag prints them rather than collecting anything
+  more.
+
 * The Pulse attention engine — `mqlaunch/lib/pulse/attention.sh` and an
   `ATTENTION` section that puts the run's findings in front of the operator,
   five at a time, with a count of the rest.

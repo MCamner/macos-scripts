@@ -234,6 +234,10 @@ Auto Release flow (option 11 inside the menu):
 
 ```bash
 mqlaunch pulse                      # operator cockpit, six areas in one view
+mqlaunch pulse menu                 # the same views as a menu
+mqlaunch pulse attention            # only what needs attention
+mqlaunch pulse quality              # one area: system, repos, stack, memory, git, quality
+mqlaunch pulse --verbose            # show the evidence behind each row
 mqlaunch pulse --no-stack           # skip the mq-agent collectors (the slow ones)
 mqlaunch pulse --no-network         # skip everything that talks to GitHub
 mqlaunch doctor                     # interactive environment check
@@ -277,6 +281,18 @@ Exit status is the verdict, and it is the one contract a script should read:
 2  failures
 3  pulse itself could not complete
 ```
+
+A scope runs that area's collector and nothing else, so `mqlaunch pulse quality`
+costs the five gates rather than the whole run. `attention` is the exception: it
+collects every area and narrows only what is printed, because a view over
+everything cannot be scoped to one collector without becoming the least informed
+screen in the product. A scoped run reports on its scope — `pulse quality` exits
+0 when the gates pass, whatever the rest of the machine looks like.
+
+`mqlaunch pulse menu` opens the same views as a menu. Every row runs
+`mqlaunch pulse <scope>` through the dispatcher, so a menu row and a typed
+command are the same thing; `Refresh` repeats the view last opened rather than
+returning to the full run.
 
 `--no-stack` and `--no-network` mark their areas `SKIPPED` rather than dropping
 them. A skipped check does not count against the verdict, but it stays on the

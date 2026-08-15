@@ -764,14 +764,26 @@ dispatch_cli_command() {
       ;;
 
     pulse|/pulse)
-      # The exit code is the whole contract here — 0/1/2/3 per
-      # docs/PULSE_CONTRACT.md — so it is returned untouched, and pause_enter
-      # only runs where a human is watching. A pause on a non-zero pulse would
-      # block a script that read the status correctly.
-      "$BASE_DIR/tools/scripts/pulse.sh" "${@:2}"
-      command_status=$?
-      [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
-      return "$command_status"
+      case "$sub" in
+        menu)
+          # The menu needs the launcher's UI helpers, which live in this zsh
+          # process. Everything else is a scope or a flag and belongs to the
+          # entrypoint, which forwards it verbatim.
+          open_pulse_menu
+          command_status=$?
+          return "$command_status"
+          ;;
+        *)
+          # The exit code is the whole contract here — 0/1/2/3 per
+          # docs/PULSE_CONTRACT.md — so it is returned untouched, and pause_enter
+          # only runs where a human is watching. A pause on a non-zero pulse would
+          # block a script that read the status correctly.
+          "$BASE_DIR/tools/scripts/pulse.sh" "${@:2}"
+          command_status=$?
+          [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
+          return "$command_status"
+          ;;
+      esac
       ;;
 
     scan|/scan)
