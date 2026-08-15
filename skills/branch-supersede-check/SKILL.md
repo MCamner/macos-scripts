@@ -61,7 +61,12 @@ Read-only. It never checks out, merges, resets, or deletes. The one network
 call is the merged-PR lookup, skipped with `--no-pr` or when `gh` is absent.
 
 Accepts a branch name, tag, or SHA. Exit status: `0` superseded, `1` needs
-review, `2` bad usage or unknown ref.
+review, `2` the comparison could not run.
+
+`2` covers bad usage, an unknown ref, and the case worth naming: a branch with
+no merge base against trunk. Unrelated histories make every comparison below
+fail to nothing, and a tool that answers from nothing would say `superseded`
+about a branch that shares not one commit with trunk. It refuses instead.
 
 ---
 
@@ -118,9 +123,11 @@ If you are checking a SHA whose branch is already deleted, the lookup is
 skipped — pass the name instead, or check by hand:
 
 ```bash
-gh pr list --state merged --limit 200 --json number,headRefName,mergedAt \
-  --jq '.[] | select(.headRefName == "<branch>")'
+gh pr list --state merged --head "<branch>" --json number,mergedAt
 ```
+
+If the lookup itself fails, the report says so. Not finding a merged PR and not
+being able to look are different facts, and only one of them is reassuring.
 
 **Commits after the merge.** A PR can be merged and the branch keep moving.
 Compare the branch tip date against the PR's `mergedAt`; anything later is not
