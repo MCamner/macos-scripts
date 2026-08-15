@@ -99,3 +99,4 @@ ui-spinner-smoke.sh	active	-
 mqobsidian-manifest-shell-parity-smoke.sh	active	-
 gitpr-merge-safe-smoke.sh	active	-
 pulse-contract-smoke.sh	active	-
+pulse-collectors-smoke.sh	active	-

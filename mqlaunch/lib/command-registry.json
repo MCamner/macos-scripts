@@ -599,6 +599,25 @@
       "local_role": "host-operation"
     },
     {
+      "name": "pulse",
+      "aliases": [
+        "/pulse"
+      ],
+      "namespace": "checks",
+      "summary": "Operator cockpit: system, repos and MQ stack",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": true,
+      "local_role": "terminal-ux"
+    },
+    {
       "name": "scan",
       "aliases": [
         "/scan"

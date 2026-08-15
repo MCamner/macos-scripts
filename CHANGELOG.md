@@ -8,6 +8,58 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch pulse` — the read-only operator cockpit, with its first three
+  collectors. One screen where the usual sequence was three commands:
+
+  ```text
+  SYSTEM
+    ✔ Environment            12 of 12 checks pass
+
+  REPOSITORIES
+    ⚠ repo-signal            fix/wiki-export · 1 modified, 0 untracked
+        → mqlaunch repos status
+    ✔ Repositories           6 of 9 repos clean
+
+  MQ STACK
+    ✔ MQ stack               8 of 8 repos present, none flagged
+
+  Pulse: WARN
+  ```
+
+  | Area | Reads | Owner of the signal |
+  | --- | --- | --- |
+  | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
+  | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
+  | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+
+  Every collector reads a machine document rather than a screen, because a
+  screen is not a contract. None of them derives a verdict: where a delegate
+  publishes one it is mapped, and where it does not the collector reports
+  `UNAVAILABLE`. `--no-stack` skips the slow one and marks the area `SKIPPED`
+  rather than dropping it — a run with the flag must not look like a run where
+  the stack was fine.
+
+  Memory, Git/GitHub and quality are later blocks. They are absent rather than
+  stubbed: a collector that reports nothing and a subject that is healthy must
+  never look the same.
+
+* The canonical Pulse item model — `mqlaunch/lib/pulse/item.sh`. Five required
+  fields, five optional, and nothing else accepted; a collector that invents a
+  field name is refused rather than carried into the JSON as though the contract
+  allowed it. Records are joined with RS and their pairs with US, and python3
+  writes the JSON, so a summary holding a quote, a comma, a backslash or a
+  non-ASCII glyph survives the round trip. The first version inferred record
+  boundaries from seeing the `source` key again — a heuristic, and a heuristic
+  in a serializer fails on the first item that omits a field.
+
+* `--json` on `tools/scripts/mq-repos.py status`, and an ahead/behind reading to
+  go in it. The repositories collector needed a machine contract to read;
+  parsing the human output would have made the screen format a contract. Human
+  and JSON modes now share `status_records()`, so they cannot disagree about
+  what dirty means. Ahead/behind was in the roadmap as "where already
+  available", and it was available nowhere — a clean tree that is two commits
+  ahead is a warning in Pulse, and nothing in this repo could see it before.
+
 * The v2.1.0 Pulse contract — `docs/PULSE_CONTRACT.md` for the ownership
   boundary, `mqlaunch/lib/pulse/model.sh` for the rules that can be executed,
   `tests/pulse-contract-smoke.sh` for the gate. PR 1 of the sequence, landed
