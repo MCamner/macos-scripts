@@ -237,6 +237,8 @@ mqlaunch pulse                      # operator cockpit, six areas in one view
 mqlaunch pulse menu                 # the same views as a menu
 mqlaunch pulse attention            # only what needs attention
 mqlaunch pulse quality              # one area: system, repos, stack, memory, git, quality
+mqlaunch pulse --json               # the mq.pulse.v1 document
+mqlaunch pulse --plain              # one tab-separated line per item
 mqlaunch pulse --verbose            # show the evidence behind each row
 mqlaunch pulse --no-stack           # skip the mq-agent collectors (the slow ones)
 mqlaunch pulse --no-network         # skip everything that talks to GitHub
@@ -299,6 +301,36 @@ them. A skipped check does not count against the verdict, but it stays on the
 screen — a run with a flag must not look like a run where the subject was fine.
 `--no-stack` covers `MEMORY` too: both spend mq-agent calls, and skipping one
 while paying for the other would misrepresent what the flag saves.
+
+`--json` prints the `mq.pulse.v1` document, and it is the surface to automate
+against:
+
+```bash
+mqlaunch pulse --json | jq -r '.attention[] | "\(.status)\t\(.subject)\t\(.next_command)"'
+mqlaunch pulse repos --json | jq -e '.summary.fail == 0'
+```
+
+```json
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "scope": null,
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
+  "sections": { "system": [], "repositories": [] },
+  "attention": []
+}
+```
+
+Read `collected` before reading `sections`. A section that is not there means
+its collector did not run, not that the area was healthy — a scoped run is one
+area collected, not five areas found fine. `attention` holds the same item
+objects the sections hold, in the engine's order.
+
+`--plain` is the same run as five tab-separated fields per item —
+`area, status, subject, summary, next_command` — with the verdict on a `#`
+comment line, so `grep -v '^#'` leaves exactly the rows. The exit code is the
+same in every output mode.
 
 JSON output shape:
 

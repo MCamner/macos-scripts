@@ -238,6 +238,48 @@ allowed      Stack truth is stale · run mqlaunch stack truth-export
 not allowed  Merge PR #184 now
 ```
 
+## The machine document
+
+`mqlaunch pulse --json` prints one `mq.pulse.v1` document. It is the public
+surface: a script may build on these keys, and changing what they mean requires
+a new schema version rather than a quiet edit.
+
+```json
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "scope": null,
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
+  "sections": { "system": [], "repositories": [] },
+  "attention": []
+}
+```
+
+`collected` is the reason a scoped run is safe to consume. A section that is not
+in `sections` means its collector did not run — never that the area was fine —
+and `collected` is what says which happened. It is recorded by the entrypoint as
+each collector runs, not derived from the items, because a collector that ran
+and found nothing is a different fact from one that never ran.
+
+A section key is the item's `area` verbatim. A translation table between area
+names and document keys would drop the first area a new collector introduces,
+which is the one case where silence costs most.
+
+`attention` holds the same item objects that are in `sections`, in the attention
+engine's order. It is a view, not a second data kind:
+`tests/pulse-machine-surface-smoke.sh` holds every entry to appearing in a
+section byte for byte, so the two can never describe the run differently.
+
+`SKIPPED` and `UNAVAILABLE` items are serialized like any other. Dropping them
+would make a skipped run and a healthy run the same document, which is the whole
+of "What absence means" undone in one line of serializer.
+
+Full and scoped runs use the same schema, and every output mode exits with the
+same code. `--plain` prints one tab-separated line per item —
+`area, status, subject, summary, next_command` — with the verdict on a `#`
+comment line, for the operator who is piping rather than reading.
+
 ## Where the rules live
 
 | Rule | Enforced by |
@@ -245,7 +287,8 @@ not allowed  Merge PR #184 now
 | the five check states, and their severity | `pulse_state_is_valid`, `pulse_state_severity` |
 | aggregation to an overall state | `pulse_overall_state` |
 | overall state to exit code | `pulse_exit_code`, `pulse_run_exit_code` |
-| the item shape, and lossless serialization | `pulse_item_add`, `pulse_items_json` |
+| the item shape, and lossless serialization | `pulse_item_add`, `pulse_document` |
+| the public machine document | `pulse_document`, `mq.pulse.v1` |
 | what needs attention, in what order | `pulse_attention_rank`, `pulse_attention_list` |
 
 The states and exit codes are in `mqlaunch/lib/pulse/model.sh` and the item model

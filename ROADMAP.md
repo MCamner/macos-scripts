@@ -2044,8 +2044,8 @@ Merge PR #184 now
 
 ## P1 — `mqlaunch pulse` command surface
 
-Status: In progress — the command, the scopes, `--no-network` and `--verbose`
-are done; `--json` and `--plain` are PR 6
+Status: Done — the command, the scopes, `--json`, `--plain`, `--no-network`
+and `--verbose`, gated by `tests/pulse-machine-surface-smoke.sh`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2057,11 +2057,13 @@ Owner: `macos-scripts`
 mqlaunch pulse
 ```
 
-* [ ] Add machine-readable output:
+* [x] Add machine-readable output:
 
 ```bash
 mqlaunch pulse --json
 ```
+
+One `mq.pulse.v1` document on stdout, exit code unchanged.
 
 * [x] Add scoped views — one area's collector runs, and only that area
   renders. `attention` is the exception: it collects everything and narrows the
@@ -2095,26 +2097,29 @@ mqlaunch pulse --verbose
 Show evidence and collector details. Both were already on the item — the flag
 prints them rather than collecting anything more.
 
-* [ ] Add:
+* [x] Add:
 
 ```bash
 mqlaunch pulse --plain
 ```
 
-Stable non-panel output.
+Stable non-panel output — five tab-separated fields per item, the verdict on a
+`#` comment line. `--json` and `--plain` together are refused rather than
+resolved by precedence: picking one for the caller is how a pipeline ends up
+parsing the other.
 
 * [x] Respect `NO_COLOR=1`.
-* [ ] Keep JSON stdout free from ANSI and diagnostics.
+* [x] Keep JSON stdout free from ANSI and diagnostics — including a delegate that prints a warning line before its own document.
 * [x] Preserve stable exit codes.
 * [x] Register Pulse in the canonical command registry.
-* [ ] Keep help, palette, dispatch, README, and `docs/COMMANDS.md` in sync.
+* [x] Keep help, palette, dispatch, README, and `docs/COMMANDS.md` in sync.
 
 ### Exit gate
 
-* [ ] Direct CLI works.
-* [ ] Registry and dispatch agree.
-* [ ] Human and JSON output are covered by tests.
-* [ ] All exit codes are tested.
+* [x] Direct CLI works.
+* [x] Registry and dispatch agree.
+* [x] Human and JSON output are covered by tests.
+* [x] All exit codes are tested — 0, 1 and 2 driven end to end, 3 in `pulse-contract-smoke.sh`.
 
 ---
 
@@ -2316,8 +2321,8 @@ Owner: `macos-scripts`
 ### CLI tests
 
 * [ ] `mqlaunch pulse`
-* [ ] `mqlaunch pulse --json`
-* [ ] `mqlaunch pulse --plain`
+* [x] `mqlaunch pulse --json`
+* [x] `mqlaunch pulse --plain`
 * [ ] `mqlaunch pulse --verbose`
 * [ ] `mqlaunch pulse --no-network`
 * [ ] Every scoped Pulse command.
@@ -2387,19 +2392,26 @@ Owner: `macos-scripts`
 
 ## P2 — `mq.pulse.v1` JSON contract
 
-Status: Planned
+Status: Done — `mqlaunch/lib/pulse/document.sh`, gated by
+`tests/pulse-machine-surface-smoke.sh`
 Priority: P2
 Owner: `macos-scripts`
 
 ### Tasks
 
-* [ ] Version the public machine contract as:
+* [x] Version the public machine contract as:
 
 ```text
 mq.pulse.v1
 ```
 
-* [ ] Use a stable top-level structure.
+* [x] Use a stable top-level structure. Two additions to the sketch below, both
+  of them the contract's "absence" rule in a data structure: `scope`, and
+  `collected` — the areas that actually ran. A section missing from `sections`
+  means its collector did not run, never that the area was fine, and without
+  `collected` a scoped document reads as five healthy areas. Section keys are
+  the item's `area` verbatim (`repositories`, not `repos`): a translation table
+  would drop the first area a new collector introduces.
 
 Example:
 
@@ -2426,17 +2438,22 @@ Example:
 }
 ```
 
-* [ ] Guarantee no ANSI in JSON output.
-* [ ] Send diagnostics to stderr.
-* [ ] Add schema/contract validation.
-* [ ] Add fixtures for stable output.
-* [ ] Test malformed delegate responses.
+* [x] Guarantee no ANSI in JSON output.
+* [x] Send diagnostics to stderr.
+* [x] Add schema/contract validation.
+* [ ] Add fixtures for stable output. Still open, and deliberately: a golden
+  document would pin `duration_ms` and this machine's repo list along with the
+  schema, so it would fail for reasons that have nothing to do with the
+  contract. What the gate asserts instead is the shape — key set, section keys,
+  `collected`, and attention being section items. A fixture belongs here once
+  the timing fields are pinnable, which is PR 7's block.
+* [x] Test malformed delegate responses — noise before the document leaves the area `UNAVAILABLE`, never empty and never healthy.
 
 ### Exit gate
 
-* [ ] `mqlaunch pulse --json | jq .` succeeds.
-* [ ] Human and JSON views represent the same state.
-* [ ] Contract changes require an explicit schema version decision.
+* [x] `mqlaunch pulse --json | jq .` succeeds.
+* [x] Human, `--plain` and JSON views represent the same state, and exit alike.
+* [x] Contract changes require an explicit schema version decision.
 
 ---
 
@@ -2555,11 +2572,11 @@ Owner: `macos-scripts`
 
 ### PR 6 — Machine surface
 
-* [ ] `mq.pulse.v1`.
-* [ ] `--json`.
-* [ ] `--plain`.
-* [ ] `--no-network`.
-* [ ] Exit-code tests.
+* [x] `mq.pulse.v1`.
+* [x] `--json`.
+* [x] `--plain`.
+* [x] `--no-network` — landed in PR 3.
+* [x] Exit-code tests.
 
 ### PR 7 — Performance and polish
 
@@ -2580,7 +2597,7 @@ Owner: `macos-scripts`
 * [ ] Pulse performs no mutation.
 * [ ] Pulse duplicates no MQ domain logic.
 * [ ] Failed dependencies degrade to explicit status rather than crashing the command.
-* [ ] `mq.pulse.v1` provides a stable machine-readable contract.
+* [x] `mq.pulse.v1` provides a stable machine-readable contract.
 * [ ] `NO_COLOR`, TTY, non-TTY, and plain output contracts are preserved.
 * [ ] Command registry, help, palette, dispatch, README, and command docs remain synchronized.
 * [ ] Full selftest and release checks pass.

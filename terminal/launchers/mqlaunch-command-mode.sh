@@ -778,9 +778,16 @@ dispatch_cli_command() {
           # docs/PULSE_CONTRACT.md — so it is returned untouched, and pause_enter
           # only runs where a human is watching. A pause on a non-zero pulse would
           # block a script that read the status correctly.
+          #
+          # The machine modes never pause: the prompt would land on stdout after
+          # the document, and `mqlaunch pulse --json | jq .` would fail on a
+          # trailing line that has nothing to do with the run.
           "$BASE_DIR/tools/scripts/pulse.sh" "${@:2}"
           command_status=$?
-          [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
+          if [[ -z "${MQ_NO_TUI:-}" ]] && ! has_json_flag "$@" \
+             && [[ " $* " != *" --plain "* ]]; then
+            pause_enter
+          fi
           return "$command_status"
           ;;
       esac

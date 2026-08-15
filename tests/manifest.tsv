@@ -104,3 +104,4 @@ pulse-collectors-smoke.sh	active	-
 pulse-state-collectors-smoke.sh	active	-
 pulse-attention-smoke.sh	active	-
 pulse-menu-smoke.sh	active	-
+pulse-machine-surface-smoke.sh	active	-

@@ -20,6 +20,9 @@
 source "${BASH_SOURCE[0]%/*}/model.sh"
 
 PULSE_ITEM_US=$'\x1f'
+# Read by the files that source this one — attention.sh sorts on it and
+# document.sh joins records with it — which shellcheck cannot see from here.
+# shellcheck disable=SC2034
 PULSE_ITEM_RS=$'\x1e'
 
 # The fields a collector must supply, in the order pulse_item_add takes them.
@@ -135,54 +138,11 @@ pulse_items_states() {
   done
 }
 
-# Prints the run as one JSON document on stdout.
-#
-# python3 does the escaping. Building JSON by hand in shell is where a summary
-# containing a quote turns a status command into invalid output, and this repo
-# already requires JSON mode to print exactly one valid document.
+# Serialization lives in document.sh, which turns these records into the public
+# `mq.pulse.v1` document.
 #
 # Records are joined with RS (0x1e) and their pairs with US (0x1f), so the split
 # is unambiguous in both directions. Neither byte can appear in a value — the
 # first alternative tried here was to infer a record boundary from seeing the
 # `source` key again, which is a heuristic, and a heuristic in a serializer
 # fails on the first item that omits a field.
-#
-# The `--json` flag itself belongs to a later block; this is here now because
-# the model has to be provably lossless before collectors start filling it.
-pulse_items_json() {
-  local overall
-  overall="$(pulse_overall_state < <(pulse_items_states))" || return 3
-
-  local record joined=""
-  for record in "${PULSE_ITEMS[@]}"; do
-    joined+="${record}${PULSE_ITEM_RS}"
-  done
-
-  printf '%s' "$joined" | PULSE_OVERALL="$overall" python3 -c '
-import json, os, sys
-
-RS, US = "\x1e", "\x1f"
-raw = sys.stdin.read()
-
-items = []
-for record in raw.split(RS):
-    if not record:
-        continue
-    item = {}
-    for pair in record.split(US):
-        if not pair:
-            continue
-        key, _, value = pair.partition("=")
-        item[key] = value
-    # The two numeric fields are carried as text through shell and restored
-    # here, so a consumer sorting on priority compares numbers rather than
-    # strings — where "9" would sort above "80".
-    for numeric in ("priority", "duration_ms"):
-        if numeric in item and item[numeric].lstrip("-").isdigit():
-            item[numeric] = int(item[numeric])
-    item.setdefault("priority", 0)
-    items.append(item)
-
-print(json.dumps({"overall": os.environ["PULSE_OVERALL"], "items": items}, indent=2))
-'
-}
