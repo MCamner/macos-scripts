@@ -1564,8 +1564,7 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: In progress — P0 and the core collectors are done; memory, Git/GitHub
-and quality are next
+Status: In progress — all six collectors are done; the attention engine is next
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1774,8 +1773,8 @@ Example:
 
 ## P1 — Core Pulse collectors
 
-Status: In progress — system, repositories and MQ stack are done; memory,
-Git/GitHub and quality are the next PR
+Status: Done — six collectors, gated by `tests/pulse-collectors-smoke.sh` and
+`tests/pulse-state-collectors-smoke.sh`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1866,12 +1865,21 @@ MQ STACK
 
 ### Memory
 
-* [ ] Surface semantic repository memory availability.
-* [ ] Surface vector-store availability.
-* [ ] Surface vector-store source where already exposed.
-* [ ] Surface stack-truth freshness.
+* [x] Surface semantic repository memory availability.
+* [x] Surface vector-store availability.
+* [x] Surface vector-store source where already exposed.
+* [x] Surface stack-truth freshness.
 * [ ] Surface existing held/review queues when a read-only interface exists.
-* [ ] Never infer memory state from missing data.
+
+  **Not done, and the condition is the reason.** `mq-agent memory review-status`
+  exists and is read-only, but it prints for a human — no `--json`. Reading it
+  would make mq-agent's screen layout a contract this repo depends on, which is
+  the mistake `--json` on `mq-repos.py` was added to avoid one level down.
+
+  So the queue is absent from `MEMORY` rather than guessed at. Closing this box
+  needs a machine-readable mode on `mq-agent memory review-status`, in mq-agent.
+  Nothing in `macos-scripts` can close it.
+* [x] Never infer memory state from missing data.
 
 Example:
 
@@ -1884,13 +1892,13 @@ MEMORY
 
 ### Git / GitHub
 
-* [ ] Surface open PR count for the current repo.
-* [ ] Surface mergeability where GitHub reports it.
-* [ ] Surface failing CI.
-* [ ] Surface pending CI.
-* [ ] Surface dirty worktree.
-* [ ] Surface unpushed local commits where already available.
-* [ ] Perform no push, merge, checkout, or branch mutation.
+* [x] Surface open PR count for the current repo.
+* [x] Surface mergeability where GitHub reports it.
+* [x] Surface failing CI.
+* [x] Surface pending CI.
+* [x] Surface dirty worktree.
+* [x] Surface unpushed local commits where already available.
+* [x] Perform no push, merge, checkout, or branch mutation.
 
 Example:
 
@@ -1903,12 +1911,12 @@ GIT / GITHUB
 
 ### Quality
 
-* [ ] Reuse command-registry validation.
-* [ ] Reuse runtime-authority validation.
-* [ ] Reuse skill-discoverability validation.
-* [ ] Reuse documentation parity checks.
-* [ ] Reuse existing test/shell inventory checks.
-* [ ] Do not implement parallel quality validators.
+* [x] Reuse command-registry validation.
+* [x] Reuse runtime-authority validation.
+* [x] Reuse skill-discoverability validation.
+* [x] Reuse documentation parity checks.
+* [x] Reuse existing test/shell inventory checks.
+* [x] Do not implement parallel quality validators.
 
 Example:
 
@@ -1922,10 +1930,17 @@ QUALITY
 
 ### Exit gate
 
-* [ ] Every collector can run independently.
-* [ ] One failed collector does not crash the whole Pulse.
-* [ ] Collector failures become `FAIL` or `UNAVAILABLE`.
-* [ ] All collectors are read-only.
+* [x] Every collector can run independently.
+* [x] One failed collector does not crash the whole Pulse.
+
+  Held end to end: a run with mq-agent absent, `gh` absent and one quality gate
+  failing still renders all six areas and exits 2. Getting there closed four
+  real `set -e` hazards — `var="$(cmd)"` ends the caller when the command fails,
+  and every collector reads a delegate that legitimately exits non-zero.
+* [x] Collector failures become `FAIL` or `UNAVAILABLE`.
+* [x] All collectors are read-only. Asserted rather than asserted-to: the git
+  collector runs against a scratch repository and the test compares `HEAD` and
+  the worktree before and after.
 
 ---
 
@@ -2450,9 +2465,14 @@ Owner: `macos-scripts`
 
 ### PR 3 — State collectors
 
-* [ ] Memory.
-* [ ] Git/GitHub.
-* [ ] Quality.
+* [x] Memory — semantic store, vector store and stack-truth freshness. The
+  held/review queue is not here; see the box in the collector block for why the
+  gap is left open rather than guessed at.
+* [x] Git/GitHub.
+* [x] Quality.
+* [x] `--no-network`, which the Git collector needed to be testable and an
+  operator needs on a plane. Its place in the `mq.pulse.v1` contract is still
+  PR 6's.
 
 ### PR 4 — Attention
 

@@ -11,7 +11,8 @@
 # answers with garbage, and one that reports trouble.
 #
 # The rule under all of it: a collector must never turn "could not measure" into
-# a pass. Steps 5 to 8 are that rule, once per collector.
+# a pass. Steps 5, 6 and 10 are that rule — the last one for the case that
+# reached it through a silent error rather than a missing delegate.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -22,7 +23,7 @@ echo "SMOKE: pulse item model and core collectors"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/9] the model, the collectors and the entrypoint exist"
+echo "[1/10] the model, the collectors and the entrypoint exist"
 test -f "$ROOT/mqlaunch/lib/pulse/item.sh"
 test -f "$ROOT/mqlaunch/lib/pulse/collectors.sh"
 test -f "$ROOT/mqlaunch/lib/pulse/render.sh"
@@ -30,10 +31,15 @@ test -x "$ROOT/tools/scripts/pulse.sh"
 
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/collectors.sh"
+# The git collector lives with the state collectors, and step 10 needs it: the
+# non-repository case is a core reading failure, so it is held here next to the
+# other "could not measure" cases rather than filed by which file it sits in.
+# shellcheck source=/dev/null
+source "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/render.sh"
 
-echo "[2/9] an item requires its five fields and a real state"
+echo "[2/10] an item requires its five fields and a real state"
 pulse_items_reset
 if pulse_item_add doctor system PASS "Subject" 2>/dev/null; then
   echo "FAIL: an item with four fields was accepted" >&2
@@ -57,7 +63,7 @@ if [[ "${#PULSE_ITEMS[@]}" -ne 0 ]]; then
 fi
 echo "  ok: four malformed items refused, none recorded"
 
-echo "[3/9] the model round-trips to JSON without losing a field"
+echo "[3/10] the model round-trips to JSON without losing a field"
 # Values chosen to break a hand-rolled serializer: a quote, a comma, a colon,
 # a backslash and a non-ASCII character. This is why JSON is emitted by python3
 # rather than assembled in shell.
@@ -86,7 +92,7 @@ assert second["duration_ms"] == 142 and isinstance(second["duration_ms"], int)
 print("  ok: 2 items, every field intact, numbers restored as numbers")
 '
 
-echo "[4/9] rendering derives nothing of its own"
+echo "[4/10] rendering derives nothing of its own"
 # The screen must be a function of the items. Asserted by rendering a run whose
 # states disagree with what a naive renderer would infer from the words.
 pulse_items_reset
@@ -109,7 +115,7 @@ make_doctor() {
   chmod +x "$stub_root/tools/scripts/doctor.sh"
 }
 
-echo "[5/9] the system collector maps doctor's verdict, and never invents one"
+echo "[5/10] the system collector maps doctor's verdict, and never invents one"
 make_doctor <<'EOF'
 #!/usr/bin/env bash
 cat <<'JSON'
@@ -138,9 +144,28 @@ EOF
   states="$(pulse_items_states)"
   [[ "$states" == "FAIL" ]] || { echo "FAIL: a failing check gave $states" >&2; exit 1; }
 )
-echo "  ok: warn maps to WARN, fail to FAIL, names and next carried through"
 
-echo "[6/9] a missing or unreadable delegate is UNAVAILABLE, never PASS"
+# A delegate that reports correctly *and* exits non-zero. This is the ordinary
+# case, not an edge: `doctor --json` exits 1 whenever any check needs attention.
+# `document="$(cmd)"` on its own ends the run under `set -e` — which this file
+# sets — so the collector would die on exactly the input it exists to read. The
+# exit status is deliberately not consulted: it is doctor's verdict about the
+# machine, and the collector takes that from the document.
+make_doctor <<'EOF'
+#!/usr/bin/env bash
+echo '{"checks":[{"name":"git","status":"ok"},{"name":"jq","status":"warn"}]}'
+exit 1
+EOF
+( BASE_DIR="$stub_root"; pulse_items_reset; pulse_collect_system
+  states="$(pulse_items_states)"
+  [[ "$states" == "WARN" ]] || {
+    echo "FAIL: a delegate that exited 1 with a valid report gave '$states'" >&2
+    exit 1
+  }
+)
+echo "  ok: warn maps to WARN, fail to FAIL, and a non-zero exit does not end the run"
+
+echo "[6/10] a missing or unreadable delegate is UNAVAILABLE, never PASS"
 # The whole point of the state. A collector that cannot reach its subject must
 # not report the subject as healthy.
 rm -f "$stub_root/tools/scripts/doctor.sh"
@@ -168,7 +193,7 @@ EOF
 )
 echo "  ok: missing, unreadable and silent all report UNAVAILABLE"
 
-echo "[7/9] the repositories collector reports per repo and summarises the rest"
+echo "[7/10] the repositories collector reports per repo and summarises the rest"
 cat > "$stub_root/tools/scripts/mq-repos.py" <<'EOF'
 #!/usr/bin/env python3
 import json
@@ -200,7 +225,7 @@ EOF
 )
 echo "  ok: dirty, unpushed and non-git repos each reported, clean ones counted"
 
-echo "[8/9] the stack collector delegates, and says so when it cannot"
+echo "[8/10] the stack collector delegates, and says so when it cannot"
 ( BASE_DIR="$stub_root"; export MQ_AGENT_BIN="$run_dir/absent"; pulse_items_reset
   pulse_collect_stack
   states="$(pulse_items_states)"
@@ -236,7 +261,7 @@ chmod +x "$run_dir/bin/uv"
 )
 echo "  ok: absent mq-agent is one UNAVAILABLE item; present, its verdict is mapped"
 
-echo "[9/9] the entrypoint honours --no-stack, and its exit code is the verdict"
+echo "[9/10] the entrypoint honours --no-stack, and its exit code is the verdict"
 # Driven end to end against the stubs, because the exit code is the part a
 # script reads and the part a renderer could quietly overwrite.
 cat > "$stub_root/tools/scripts/doctor.sh" <<'EOF'
@@ -257,33 +282,80 @@ ln -sfn "$ROOT/mqlaunch/lib/pulse" "$stub_root/mqlaunch/lib/pulse"
 cp "$ROOT/tools/scripts/pulse.sh" "$stub_root/tools/scripts/pulse.sh"
 chmod +x "$stub_root/tools/scripts/pulse.sh"
 
+# The stub tree needs the quality gates too, or this step measures whether they
+# are present rather than what --no-stack does. Each is the smallest passing
+# command that satisfies the gate's contract.
+mkdir -p "$stub_root/scripts" "$stub_root/tests"
+for gate in "scripts/check-runtime-authority.sh" "scripts/check-skills.sh" \
+            "tests/registry-consumer-parity-smoke.sh" "tests/test-inventory-smoke.sh"; do
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$stub_root/$gate"
+  chmod +x "$stub_root/$gate"
+done
+# The registry gate is run with `python3`, not by its shebang, so a bash stub
+# here would fail to parse and report the gate as broken rather than passing.
+printf 'raise SystemExit(0)\n' > "$stub_root/tools/scripts/validate-command-registry.py"
+chmod +x "$stub_root/tools/scripts/validate-command-registry.py"
+# git init, because the git collector reads this tree — and reports UNAVAILABLE
+# rather than "clean" when it is not a repository, which step 10 covers.
+git -C "$stub_root" init -q
+git -C "$stub_root" config user.email t@example.com
+git -C "$stub_root" config user.name Test
+git -C "$stub_root" add -A >/dev/null 2>&1
+git -C "$stub_root" commit -qm "stub"
+
 status=0
-out="$(MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" --no-stack </dev/null 2>&1)" || status=$?
-if [[ "$status" -ne 0 ]]; then
-  echo "FAIL: an all-clear run exited $status, expected 0" >&2
+out="$(MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" \
+  --no-stack --no-network </dev/null 2>&1)" || status=$?
+if [[ "$status" -ne 1 ]]; then
+  # 1, not 0: the scratch repo has no upstream, which the git collector reports
+  # as UNAVAILABLE rather than claiming nothing is unpushed. A run where one
+  # thing genuinely cannot be measured is a warning, and that is the contract.
+  echo "FAIL: the stub run exited $status, expected 1" >&2
   printf '%s\n' "$out" >&2
   exit 1
 fi
-grep -qF 'skipped by --no-stack' <<< "$out" || {
-  echo "FAIL: --no-stack dropped the area instead of marking it SKIPPED" >&2
-  printf '%s\n' "$out" >&2
-  exit 1
-}
-grep -qF 'Pulse: PASS' <<< "$out"
+for needed in 'skipped by --no-stack' 'skipped by --no-network' 'Pulse: WARN'; do
+  grep -qF "$needed" <<< "$out" || {
+    echo "FAIL: the run lost: $needed" >&2
+    printf '%s\n' "$out" >&2
+    exit 1
+  }
+done
 
-# A skipped area must not be able to raise the verdict either.
+# A skipped area must not be able to raise the verdict, and a warning must.
 cat > "$stub_root/tools/scripts/doctor.sh" <<'EOF'
 #!/usr/bin/env bash
 echo '{"checks":[{"name":"git","status":"ok"},{"name":"jq","status":"warn"}]}'
 EOF
 chmod +x "$stub_root/tools/scripts/doctor.sh"
 status=0
-MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" --no-stack </dev/null >/dev/null 2>&1 || status=$?
+MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" \
+  --no-stack --no-network </dev/null >/dev/null 2>&1 || status=$?
 [[ "$status" -eq 1 ]] || { echo "FAIL: a warning run exited $status, expected 1" >&2; exit 1; }
 
 status=0
 MACOS_SCRIPTS_HOME="$stub_root" bash "$stub_root/tools/scripts/pulse.sh" --nonsense </dev/null >/dev/null 2>&1 || status=$?
 [[ "$status" -eq 2 ]] || { echo "FAIL: an unknown flag exited $status, expected 2" >&2; exit 1; }
-echo "  ok: 0 clean, 1 on a warning, 2 on a usage error, skip stays visible"
+echo "  ok: 1 on a warning, 2 on a usage error, both skips stay visible"
+
+echo "[10/10] a directory that is not a repository is never reported as clean"
+# The failure this closes: `git status --short` fails in a non-repository, its
+# output is empty, and empty reads exactly like a clean tree. The collector
+# reported "Worktree: clean" about a directory with no .git at all — a wrong
+# answer arrived at through a silent error, which is the shape docs/PULSE_CONTRACT.md
+# exists to forbid.
+not_a_repo="$run_dir/plain"
+mkdir -p "$not_a_repo"
+( export BASE_DIR="$not_a_repo"
+  pulse_items_reset
+  pulse_collect_git 1
+  states="$(pulse_items_states | tr '\n' ' ')"
+  [[ "$states" == "UNAVAILABLE " ]] || {
+    echo "FAIL: a non-repository gave '$states'" >&2; exit 1; }
+  summary="$(pulse_item_field "${PULSE_ITEMS[0]}" summary)"
+  [[ "$summary" == "not a git repository" ]] || {
+    echo "FAIL: summary was '$summary'" >&2; exit 1; }
+)
+echo "  ok: UNAVAILABLE, and the run stops before asking GitHub about no branch"
 
 echo "PASS: pulse item model and core collectors"

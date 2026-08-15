@@ -233,8 +233,9 @@ Auto Release flow (option 11 inside the menu):
 ## Doctor / health
 
 ```bash
-mqlaunch pulse                      # operator cockpit: system, repos, MQ stack
-mqlaunch pulse --no-stack           # skip the mq-agent collector (the slow one)
+mqlaunch pulse                      # operator cockpit, six areas in one view
+mqlaunch pulse --no-stack           # skip the mq-agent collectors (the slow ones)
+mqlaunch pulse --no-network         # skip everything that talks to GitHub
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
@@ -251,17 +252,22 @@ a source of truth: every state comes from the repo that owns it, and every
 suggested command already exists. The contract is
 [PULSE_CONTRACT.md](PULSE_CONTRACT.md).
 
-Three collectors today:
+Six collectors:
 
 | Area | Reads | Owner |
 | --- | --- | --- |
 | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
 | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
 | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+| `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent` |
+| `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
+| `QUALITY` | the repo's own gates, run one by one | `macos-scripts` |
 
-Memory, Git/GitHub and quality are later blocks. They are absent rather than
-stubbed: a collector that reports nothing and a subject that is healthy must
-never look the same.
+`QUALITY` reports each gate separately and never adds them up — "some checks
+passed" is not a verdict this repo publishes, so Pulse does not invent it. The
+held/review queue is absent from `MEMORY` for the same reason: `mq-agent memory
+review-status` has no machine-readable mode, and reading its screen would make
+that layout a contract.
 
 Exit status is the verdict, and it is the one contract a script should read:
 
@@ -272,9 +278,11 @@ Exit status is the verdict, and it is the one contract a script should read:
 3  pulse itself could not complete
 ```
 
-`--no-stack` marks the stack area `SKIPPED` rather than dropping it. A skipped
-check does not count against the verdict, but it stays on the screen — a run
-with the flag must not look like a run where the stack was fine.
+`--no-stack` and `--no-network` mark their areas `SKIPPED` rather than dropping
+them. A skipped check does not count against the verdict, but it stays on the
+screen — a run with a flag must not look like a run where the subject was fine.
+`--no-stack` covers `MEMORY` too: both spend mq-agent calls, and skipping one
+while paying for the other would misrepresent what the flag saves.
 
 JSON output shape:
 

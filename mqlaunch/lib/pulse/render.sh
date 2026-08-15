@@ -53,13 +53,16 @@ pulse_colour() {
 #
 # Areas an item may carry but this list does not name still print, under their
 # own name uppercased — a collector added later shows up rather than vanishing.
-PULSE_AREA_ORDER=(system repositories stack)
+PULSE_AREA_ORDER=(system repositories stack memory git quality)
 
 pulse_area_heading() {
   case "$1" in
     system)       printf 'SYSTEM' ;;
     repositories) printf 'REPOSITORIES' ;;
     stack)        printf 'MQ STACK' ;;
+    memory)       printf 'MEMORY' ;;
+    git)          printf 'GIT / GITHUB' ;;
+    quality)      printf 'QUALITY' ;;
     *)            printf '%s' "$(printf '%s' "$1" | tr '[:lower:]' '[:upper:]')" ;;
   esac
 }
