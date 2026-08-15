@@ -102,6 +102,52 @@ register.
 `INCOMPLETE` is an overall state only. No check reports it, and it is the exit
 code for Pulse failing at its own job rather than for anything it found.
 
+## The item
+
+Every collector returns items of one shape. Five fields are required, five are
+optional, and nothing else is accepted — a collector that invents a field name
+is refused rather than carried into the document as though the contract allowed
+it.
+
+```json
+{
+  "source": "repos",
+  "area": "repositories",
+  "status": "WARN",
+  "subject": "macos-scripts",
+  "summary": "feat/pulse · 3 modified, 1 untracked",
+  "evidence": "git status --short",
+  "next_command": "mqlaunch repos status",
+  "priority": 0,
+  "freshness": "just now",
+  "duration_ms": 142
+}
+```
+
+`priority` defaults to 0 and is never derived from the status: ordering belongs
+to the attention engine, and putting it in the model would be the one place
+nothing could change it. `next_command` must be a command that already exists.
+
+The human screen and the machine document are rendered from the same items, so
+the two cannot disagree, and the renderer computes nothing — the glyph follows
+the state, never the prose.
+
+## Collectors
+
+| Area | Reads | Owner of the signal |
+| --- | --- | --- |
+| `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
+| `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
+| `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+
+Each one reads a machine document rather than a screen, because a screen is not
+a contract. Each one is bounded by a timeout: a status command that hangs is
+worse than one that reports a gap.
+
+Memory, Git/GitHub and quality are not implemented yet. They are absent from the
+output rather than stubbed — a collector that reports nothing and a subject that
+is healthy must never look the same.
+
 ## Where the rules live
 
 | Rule | Enforced by |
@@ -109,9 +155,12 @@ code for Pulse failing at its own job rather than for anything it found.
 | the five check states, and their severity | `pulse_state_is_valid`, `pulse_state_severity` |
 | aggregation to an overall state | `pulse_overall_state` |
 | overall state to exit code | `pulse_exit_code`, `pulse_run_exit_code` |
+| the item shape, and lossless serialization | `pulse_item_add`, `pulse_items_json` |
 
-All of them are in `mqlaunch/lib/pulse/model.sh`, on the authority-owned runtime
-path, and gated by `tests/pulse-contract-smoke.sh`.
+The states and exit codes are in `mqlaunch/lib/pulse/model.sh` and the item model
+in `mqlaunch/lib/pulse/item.sh`, both on the authority-owned runtime path. They
+are gated by `tests/pulse-contract-smoke.sh` and
+`tests/pulse-collectors-smoke.sh`.
 
 Pulse inherits the output contract every other `mqlaunch` command is held to —
 `NO_COLOR`, non-TTY plain output, JSON-only stdout, diagnostics on stderr — from

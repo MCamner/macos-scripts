@@ -763,6 +763,17 @@ dispatch_cli_command() {
       return "$command_status"
       ;;
 
+    pulse|/pulse)
+      # The exit code is the whole contract here — 0/1/2/3 per
+      # docs/PULSE_CONTRACT.md — so it is returned untouched, and pause_enter
+      # only runs where a human is watching. A pause on a non-zero pulse would
+      # block a script that read the status correctly.
+      "$BASE_DIR/tools/scripts/pulse.sh" "${@:2}"
+      command_status=$?
+      [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
+      return "$command_status"
+      ;;
+
     scan|/scan)
       "$BASE_DIR/tools/scripts/scan.sh"
       command_status=$?

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -229,7 +230,78 @@ def origin_url(repo: Path) -> str:
     return output
 
 
+def ahead_behind(repo: Path) -> tuple[int, int] | None:
+    """Commits ahead of and behind the upstream, or None when there is none.
+
+    `git rev-list --count --left-right @{u}...HEAD` prints "behind<TAB>ahead"
+    and fails when the branch has no upstream, which is a normal state rather
+    than an error — a fresh branch has nowhere to be ahead of.
+    """
+    code, output = git_output(repo, ["rev-list", "--count", "--left-right", "@{u}...HEAD"])
+    if code != 0:
+        return None
+    parts = output.split()
+    if len(parts) != 2 or not all(p.isdigit() for p in parts):
+        return None
+    return int(parts[1]), int(parts[0])
+
+
+def status_records(selected: list[str] | None) -> list[dict]:
+    """One record per known repo — the data `status` prints, before formatting.
+
+    Shared by the human and the JSON mode so the two cannot disagree about what
+    "dirty" means. Callers that need a machine contract read this; nothing here
+    decides how any of it is displayed.
+    """
+    records: list[dict] = []
+    for repo in repo_paths(selected):
+        if not (repo / ".git").exists():
+            records.append({"name": repo.name, "path": str(repo), "git": False})
+            continue
+        branch, tracking = branch_summary(repo)
+        changes = git_status(repo)
+        modified = len([line for line in changes if not line.startswith("??")])
+        untracked = len([line for line in changes if line.startswith("??")])
+        counts = ahead_behind(repo)
+        records.append(
+            {
+                "name": repo.name,
+                "path": str(repo),
+                "git": True,
+                "clean": not changes,
+                "modified": modified,
+                "untracked": untracked,
+                "branch": branch,
+                "upstream": tracking,
+                "ahead": counts[0] if counts else None,
+                "behind": counts[1] if counts else None,
+                "origin": origin_url(repo),
+                "last_commit": last_commit(repo),
+                "changes": changes,
+            }
+        )
+    return records
+
+
 def cmd_status(args: argparse.Namespace) -> int:
+    if getattr(args, "json", False):
+        records = status_records(args.repo)
+        # Drop the file list: it is a display detail, unbounded, and no consumer
+        # of the machine contract has asked for it. The counts stay.
+        for record in records:
+            record.pop("changes", None)
+        dirty = sum(1 for r in records if not r.get("git") or not r.get("clean"))
+        print(
+            json.dumps(
+                {
+                    "repos": records,
+                    "summary": {"total": len(records), "dirty": dirty},
+                },
+                indent=2,
+            )
+        )
+        return 1 if dirty and args.fail_on_dirty else 0
+
     dirty = 0
     for repo in repo_paths(args.repo):
         if not (repo / ".git").exists():
@@ -355,6 +427,7 @@ def main(argv: list[str]) -> int:
     p.add_argument("--repo", action="append", help="Repo name/path; may be repeated")
     p.add_argument("--limit", type=int, default=6, help="Changed-file preview limit per repo")
     p.add_argument("--fail-on-dirty", action="store_true")
+    p.add_argument("--json", action="store_true", help="Print one JSON document instead")
     p.set_defaults(func=cmd_status)
     p = sub.add_parser("wiki-status", help="Show local docs and GitHub Wiki freshness signals")
     p.add_argument("--repo", action="append", help="Repo name/path; may be repeated")

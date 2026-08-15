@@ -233,6 +233,8 @@ Auto Release flow (option 11 inside the menu):
 ## Doctor / health
 
 ```bash
+mqlaunch pulse                      # operator cockpit: system, repos, MQ stack
+mqlaunch pulse --no-stack           # skip the mq-agent collector (the slow one)
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
@@ -240,6 +242,39 @@ mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
 mqlaunch self-check                 # launcher self-check (lighter than selftest)
 ```
+
+### Pulse
+
+One read-only view over signals this repo already collects, so the usual
+sequence — `doctor`, `repos status`, `stack` — is one command. It is a view, not
+a source of truth: every state comes from the repo that owns it, and every
+suggested command already exists. The contract is
+[PULSE_CONTRACT.md](PULSE_CONTRACT.md).
+
+Three collectors today:
+
+| Area | Reads | Owner |
+| --- | --- | --- |
+| `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
+| `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
+| `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+
+Memory, Git/GitHub and quality are later blocks. They are absent rather than
+stubbed: a collector that reports nothing and a subject that is healthy must
+never look the same.
+
+Exit status is the verdict, and it is the one contract a script should read:
+
+```text
+0  healthy
+1  warnings, including anything that could not be measured
+2  failures
+3  pulse itself could not complete
+```
+
+`--no-stack` marks the stack area `SKIPPED` rather than dropping it. A skipped
+check does not count against the verdict, but it stays on the screen — a run
+with the flag must not look like a run where the stack was fine.
 
 JSON output shape:
 

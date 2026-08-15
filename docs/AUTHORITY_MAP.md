@@ -93,6 +93,7 @@ DEPRECATED section — `mqlaunch git` opens `terminal/launchers/gitlaunch.sh`.
 | `mqlaunch/lib/diagnostics.sh` | `terminal/launchers/mqlaunch.sh` (sourced) — version/self-check/debug-bundle/release-notes/system-check de-layered out of the monolith (Step 11a) |
 | `mqlaunch/lib/git-menus.sh` | `terminal/launchers/mqlaunch.sh` (sourced) — git & release menu launchers de-layered out of the monolith (Step 11a) |
 | `mqlaunch/lib/repo-picker.sh` | `terminal/launchers/mqlaunch.sh` (sourced) — GitHub repo picker de-layered out of the monolith (Step 11a) |
+| `mqlaunch/lib/pulse/*` | `tools/scripts/pulse.sh`, which `dispatch_cli_command` runs for `mqlaunch pulse` — status model, item model, collectors and renderer ([PULSE_CONTRACT.md](PULSE_CONTRACT.md)) |
 
 ## Bridges
 
@@ -260,12 +261,6 @@ so the list should return to empty each time it is acted on.
 * `tests/**`
 * `tools/scripts/test-all.sh`, `test-mqlaunch.sh`, `test-mqlaunch-v1.sh`, `lint.sh`
 * `scripts/install-smoke.sh` (smoke harness)
-* `mqlaunch/lib/pulse/model.sh` — the v2.1.0 Pulse status model
-  ([PULSE_CONTRACT.md](PULSE_CONTRACT.md)). It sits on the authority-owned path
-  and is written for the runtime, but nothing on the runtime sources it yet:
-  the contract landed before the first collector, deliberately, so the states
-  and exit codes were fixed before anything depended on them. It moves to the
-  support-library table when `mqlaunch pulse` dispatches.
 
 ## Allowed dependency directions
 

@@ -1564,7 +1564,8 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: In progress — P0 done, the collectors are next
+Status: In progress — P0 and the core collectors are done; memory, Git/GitHub
+and quality are next
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1707,7 +1708,8 @@ condition; that is why the first run of the suite passed over it.
 
 ## P1 — Canonical Pulse model
 
-Status: Planned
+Status: Done — `mqlaunch/lib/pulse/item.sh`, gated by
+`tests/pulse-collectors-smoke.sh`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1717,7 +1719,7 @@ All collectors should return the same small internal status model.
 
 ### Tasks
 
-* [ ] Define the internal Pulse item model.
+* [x] Define the internal Pulse item model.
 
 Example:
 
@@ -1734,38 +1736,55 @@ Example:
 }
 ```
 
-* [ ] Require `source`.
-* [ ] Require `area`.
-* [ ] Require `status`.
-* [ ] Require `subject`.
-* [ ] Require `summary`.
-* [ ] Support optional `evidence`.
-* [ ] Support optional `next_command`.
-* [ ] Add `priority` for deterministic attention ordering.
-* [ ] Add optional freshness metadata.
-* [ ] Add optional collector duration metadata.
-* [ ] Ensure the complete model can be serialized losslessly to JSON.
+* [x] Require `source`.
+* [x] Require `area`.
+* [x] Require `status`.
+* [x] Require `subject`.
+* [x] Require `summary`.
+* [x] Support optional `evidence`.
+* [x] Support optional `next_command`.
+* [x] Add `priority` for deterministic attention ordering.
+* [x] Add optional freshness metadata.
+* [x] Add optional collector duration metadata.
+* [x] Ensure the complete model can be serialized losslessly to JSON.
+
+  `priority` defaults to 0 and is never derived from the status. Mapping
+  `FAIL` to a number is the attention engine's job, and doing it here would
+  put the ordering in the model where nothing could change it.
+
+  Records are joined with RS (0x1e) and their pairs with US (0x1f), and the
+  JSON is written by python3 rather than assembled in shell. The first version
+  inferred a record boundary from seeing the `source` key again — a heuristic,
+  and a heuristic in a serializer fails on the first item that omits a field.
+  Step 3 of the gate round-trips a summary holding a quote, a comma, a
+  backslash, a colon and a non-ASCII glyph.
 
 ### Exit gate
 
-* [ ] Human and JSON output use the same underlying model.
-* [ ] Rendering contains no independent health logic.
-* [ ] Attention can be derived entirely from Pulse items.
+* [x] Human and JSON output use the same underlying model — `pulse_render` and
+  `pulse_items_json` both read `PULSE_ITEMS` and neither computes a state.
+* [x] Rendering contains no independent health logic. Held by rendering a run
+  whose prose disagrees with its states: an item that says "everything is fine"
+  with status `FAIL` must still draw the failure glyph.
+* [x] Attention can be derived entirely from Pulse items — every field the
+  attention engine needs is on the item, including `priority` and
+  `next_command`.
 
 ---
 
 ## P1 — Core Pulse collectors
 
-Status: Planned
+Status: In progress — system, repositories and MQ stack are done; memory,
+Git/GitHub and quality are the next PR
 Priority: P1
 Owner: `macos-scripts`
 
 ### System
 
-* [ ] Reuse the existing doctor/environment checks.
-* [ ] Report required dependency health.
-* [ ] Report environment/configuration failures.
-* [ ] Preserve existing source diagnostics where useful.
+* [x] Reuse the existing doctor/environment checks.
+* [x] Report required dependency health.
+* [x] Report environment/configuration failures.
+* [x] Preserve existing source diagnostics where useful.
 
 Example:
 
@@ -1777,12 +1796,31 @@ SYSTEM
 
 ### Repositories
 
-* [ ] Reuse existing repo-status functionality.
-* [ ] Show clean/dirty state.
-* [ ] Show current branch.
-* [ ] Show ahead/behind where already available.
-* [ ] Report inaccessible repos explicitly.
-* [ ] Summarize how many repos require attention.
+* [x] Reuse existing repo-status functionality.
+
+  `tools/scripts/mq-repos.py status --json` — the same code path
+  `mqlaunch repos status` prints from, so the two cannot disagree about what
+  dirty means. The flag is new; the readings are not. Parsing the human output
+  instead would have made the screen format a contract, and a screen is not a
+  contract.
+
+* [x] Show clean/dirty state.
+* [x] Show current branch.
+* [x] Show ahead/behind where already available.
+
+  "Where already available" turned out to be nowhere: nothing in this repo read
+  ahead/behind. `mq-repos.py` now derives it from
+  `git rev-list --count --left-right @{u}...HEAD`, which fails on a branch with
+  no upstream — a normal state, reported as such rather than as an error. A
+  clean tree that is two commits ahead is a warning in Pulse, and that is the
+  reading the flag was added for.
+
+* [x] Report inaccessible repos explicitly.
+* [x] Summarize how many repos require attention.
+
+  One item per repo that needs attention, then one summary item for the rest.
+  A row per clean repo is what `mqlaunch repos status` is for; Pulse exists to
+  be shorter than the commands it summarises.
 
 Example:
 
@@ -1795,12 +1833,25 @@ REPOSITORIES
 
 ### MQ Stack
 
-* [ ] Reuse canonical stack truth from `mq-agent`.
-* [ ] Surface `mq-agent` availability.
-* [ ] Surface `mq-mcp` availability.
-* [ ] Surface `mq-hal` availability.
-* [ ] Surface `mqobsidian` availability.
-* [ ] Surface `repo-signal` availability.
+* [x] Reuse canonical stack truth from `mq-agent`.
+
+  `mq-agent stack status --json`, run through `uv` in the mq-agent checkout —
+  the same route `mqlaunch stack` takes. Pulse reads `exists` and
+  `next_action` and maps them; it derives no readiness of its own.
+
+* [x] Surface `mq-agent` availability.
+* [x] Surface `mq-mcp` availability.
+* [x] Surface `mq-hal` availability.
+* [x] Surface `mqobsidian` availability.
+* [x] Surface `repo-signal` availability.
+
+  Five boxes, one rule: availability comes from the delegate's own `exists`
+  field, per repo, whatever repos it lists. Hard-coding these five names in the
+  collector would make Pulse wrong the day the stack gains a sixth.
+
+  When mq-agent itself is not installed the whole area is one `UNAVAILABLE`
+  item — not five. Five rows saying "unknown" would be five guesses dressed as
+  readings, and the gate asserts the count.
 
 Example:
 
@@ -2387,10 +2438,15 @@ Owner: `macos-scripts`
 
 ### PR 2 — Core collectors
 
-* [ ] System.
-* [ ] Repositories.
-* [ ] MQ Stack.
-* [ ] Initial human renderer.
+* [x] System.
+* [x] Repositories.
+* [x] MQ Stack.
+* [x] Initial human renderer.
+* [x] The canonical item model, which PR 1 did not carry and the collectors
+  could not be written without.
+* [x] `--json` on `tools/scripts/mq-repos.py status` — the repositories
+  collector needed a machine contract to read, and the alternative was parsing
+  a screen.
 
 ### PR 3 — State collectors
 
