@@ -11,7 +11,11 @@
       "Bash(mqlaunch doctor *)",
       "Read(//tmp/**)",
       "Bash(bash tools/scripts/doctor.sh --json)",
-      "Bash(bash tools/scripts/install-smoke.sh)"
+      "Bash(bash tools/scripts/install-smoke.sh)",
+      "Bash(bash tools/scripts/markdownlint.sh *)",
+      "Bash(bash tools/scripts/test-all.sh)",
+      "Bash(bash tests/mq-stack-contract-smoke.sh)",
+      "Bash(terminal/launchers/mqlaunch.sh release-check *)"
     ]
   },
   "hooks": {
