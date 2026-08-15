@@ -179,12 +179,16 @@ show_dns_gateway() {
 
 # Runs network pulse diagnostics.
 #
-# Through the dispatcher, not tools/scripts/pulse.sh. Unlike `doctor`, the pulse
-# and ghost routes end in `return $?` without a pause of their own, so the
-# pause_enter stays here — dropping it would return straight to the menu and
+# Through the dispatcher, not tools/scripts/netpulse.sh. Unlike `doctor`, the
+# netpulse and ghost routes end in `return $?` without a pause of their own, so
+# the pause_enter stays here — dropping it would return straight to the menu and
 # repaint over the output.
+#
+# The command word is `netpulse`, not `pulse`: `pulse` is reserved for the
+# v2.1.0 operator cockpit. The function keeps its name because it is the
+# network menu's own route, not the command surface.
 run_network_pulse() {
-  "$BASE_DIR/bin/mqlaunch" pulse
+  "$BASE_DIR/bin/mqlaunch" netpulse
   pause_enter
 }
 

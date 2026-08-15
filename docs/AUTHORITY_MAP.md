@@ -260,6 +260,12 @@ so the list should return to empty each time it is acted on.
 * `tests/**`
 * `tools/scripts/test-all.sh`, `test-mqlaunch.sh`, `test-mqlaunch-v1.sh`, `lint.sh`
 * `scripts/install-smoke.sh` (smoke harness)
+* `mqlaunch/lib/pulse/model.sh` — the v2.1.0 Pulse status model
+  ([PULSE_CONTRACT.md](PULSE_CONTRACT.md)). It sits on the authority-owned path
+  and is written for the runtime, but nothing on the runtime sources it yet:
+  the contract landed before the first collector, deliberately, so the states
+  and exit codes were fixed before anything depended on them. It moves to the
+  support-library table when `mqlaunch pulse` dispatches.
 
 ## Allowed dependency directions
 

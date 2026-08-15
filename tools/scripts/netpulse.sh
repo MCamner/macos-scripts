@@ -4,7 +4,7 @@
 #
 # Gated on the same condition as the central guard in ui/terminal-ui/mq-ui.sh: a
 # TTY and no NO_COLOR (https://no-color.org). These assignments used to be
-# unconditional, so `mqlaunch pulse > file` wrote the escapes into the file and
+# unconditional, so `mqlaunch netpulse > file` wrote the escapes into the file and
 # neither NO_COLOR=1 nor --no-color removed one of them — the P1 output contract
 # held only for commands that went through the shared library.
 #

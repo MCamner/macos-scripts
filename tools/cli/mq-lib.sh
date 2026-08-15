@@ -42,9 +42,9 @@ mq_reload() {
   return 1
 }
 
-# Handles mq pulse.
+# Handles mq netpulse.
 mq_pulse() {
-  "$BASE_DIR/tools/scripts/pulse.sh"
+  "$BASE_DIR/tools/scripts/netpulse.sh"
 }
 
 # Handles mq help.
@@ -55,7 +55,7 @@ mq_help() {
   echo "  config"
   echo "  reload"
   echo "  scan"
-  echo "  pulse"
+  echo "  netpulse"
   echo "  test"
 }
 

@@ -1004,7 +1004,7 @@
       "local_role": "host-operation"
     },
     {
-      "name": "pulse",
+      "name": "netpulse",
       "aliases": [],
       "namespace": "ops",
       "summary": "Network latency and WiFi overview",

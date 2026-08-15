@@ -105,7 +105,7 @@ OPS
   mqlaunch ghost          Network cloaking (MAC and DNS spoof)
   mqlaunch guard          Watch USB and power events
   mqlaunch mc             Open mission control
-  mqlaunch pulse          Network latency and WiFi overview
+  mqlaunch netpulse       Network latency and WiFi overview
   mqlaunch reap           Find and kill heavy processes
   mqlaunch scan           System and port scan
 
