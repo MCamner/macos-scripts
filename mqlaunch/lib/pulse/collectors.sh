@@ -227,8 +227,13 @@ print(f"CLEAN\t{len(clean)}\t{len(repos)}\t")
         duration_ms="$((ended - started))"
       continue
     fi
+    # The dedupe key names the thing observed, not the collector that saw it.
+    # The Git collector reads the same worktree from the other end — it looks at
+    # the repo mqlaunch is running in, which is one of the repos walked here —
+    # and both use `worktree:<repo>` so the attention list raises it once.
     pulse_item_add repos repositories "$state" "$subject" "$summary" \
-      next_command="mqlaunch repos status"
+      next_command="mqlaunch repos status" \
+      dedupe_key="worktree:$subject"
   done <<< "$rows"
 }
 

@@ -184,6 +184,60 @@ them. `--no-stack` covers `MEMORY` as well as `MQ STACK`, because both spend
 mq-agent calls and a flag that skipped one while paying for the other would be
 lying about what the run costs.
 
+## What absence means
+
+Four distinctions the collectors are built to keep, and the attention engine
+inherits. Each of them was a real defect before it was a rule:
+
+```text
+command failed + empty output   is not   healthy
+missing collector               is not   healthy
+skipped collector               is not   missing collector
+unavailable signal              is not   failed subject
+```
+
+A directory that was not a git repository reported "Worktree: clean" because
+`git status` failed and empty output reads like a clean tree. A collector whose
+delegate exits non-zero used to end the whole run. These are the same mistake
+wearing different clothes, and the states exist to make it impossible to write
+by accident.
+
+## Attention
+
+The attention engine orders the run's findings and shows the first five, with a
+count of the rest. It reads Pulse items and nothing else — no command, no file,
+no probe of its own. That restriction is what keeps the failure above from
+reappearing one level up, further from the collectors this contract gates.
+
+Ordering is the roadmap's, derived from what an item already carries:
+
+```text
+FAIL                          any area
+security / destructive risk   no collector publishes this yet
+broken runtime                system
+failing CI                    git · CI
+repo divergence               repositories, git worktree, unpushed, PRs
+stale state                   memory, stack
+maintenance                   everything else
+```
+
+Ties break on the item's `priority`, then area, then subject, under `LC_ALL=C` —
+so two runs over the same items produce the same list on any machine.
+
+Two rows are the same problem only when a collector said so, through
+`dedupe_key`. The repositories and Git collectors both notice this checkout is
+dirty, from opposite ends, and both label it `worktree:<repo>`. Items without a
+key are never merged: rows that look alike are not evidence that they are one
+finding.
+
+The engine repeats a `next_command` an item supplied and cannot produce one.
+That is the line between ordering and deciding:
+
+```text
+allowed      Stack truth is stale · run mqlaunch stack truth-export
+not allowed  Merge PR #184 now
+```
+
 ## Where the rules live
 
 | Rule | Enforced by |
@@ -192,6 +246,7 @@ lying about what the run costs.
 | aggregation to an overall state | `pulse_overall_state` |
 | overall state to exit code | `pulse_exit_code`, `pulse_run_exit_code` |
 | the item shape, and lossless serialization | `pulse_item_add`, `pulse_items_json` |
+| what needs attention, in what order | `pulse_attention_rank`, `pulse_attention_list` |
 
 The states and exit codes are in `mqlaunch/lib/pulse/model.sh` and the item model
 in `mqlaunch/lib/pulse/item.sh`, both on the authority-owned runtime path. They

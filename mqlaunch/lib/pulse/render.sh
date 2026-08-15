@@ -11,6 +11,9 @@
 # `mqlaunch pulse > file` and `NO_COLOR=1 mqlaunch pulse` write the same plain
 # text, per docs/RUNTIME_AUTHORITY.md.
 
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/attention.sh"
+
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   PULSE_C_PASS='\033[0;32m'
   PULSE_C_WARN='\033[1;33m'
@@ -101,8 +104,49 @@ pulse_render_area() {
   [[ $printed -eq 1 ]]
 }
 
+# Prints the ATTENTION section: the run's findings, most important first.
+#
+# Prints nothing at all when there are none — a heading over an empty list reads
+# as a section that failed to load. The engine decides the order and the
+# deduplication; this only draws what it hands over, and repeats the
+# `next_command` the item already carried.
+pulse_render_attention() {
+  local -a findings=()
+  local line
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && findings+=("$line")
+  done < <(pulse_attention_list)
+
+  [[ "${#findings[@]}" -eq 0 ]] && return 0
+
+  printf '\n%b%s%b\n' "$PULSE_C_MUTED" "ATTENTION" "$PULSE_C_RESET"
+
+  local shown=0 record status subject summary next
+  for record in "${findings[@]}"; do
+    [[ $shown -ge $PULSE_ATTENTION_LIMIT ]] && break
+    status="$(pulse_item_field "$record" status)"
+    subject="$(pulse_item_field "$record" subject)"
+    summary="$(pulse_item_field "$record" summary)"
+    next="$(pulse_item_field "$record" next_command)"
+
+    printf '  %b%s%b %-22s %s\n' \
+      "$(pulse_colour "$status")" "$(pulse_glyph "$status")" "$PULSE_C_RESET" \
+      "$subject" "$summary"
+    [[ -n "$next" ]] && printf '      %b→ %s%b\n' "$PULSE_C_MUTED" "$next" "$PULSE_C_RESET"
+    shown=$((shown + 1))
+  done
+
+  local remaining=$(( ${#findings[@]} - shown ))
+  if [[ $remaining -gt 0 ]]; then
+    # The count is the whole point of the limit: five rows an operator will read
+    # beats twenty they will not, but a hidden remainder would be the screen
+    # withholding what the run found.
+    printf '  %b+ %d more%b\n' "$PULSE_C_MUTED" "$remaining" "$PULSE_C_RESET"
+  fi
+}
+
 # Prints the whole run: every known area in order, then any area a collector
-# introduced that this file has never heard of.
+# introduced that this file has never heard of, then the attention list.
 pulse_render() {
   local overall="$1" area record seen known
 
@@ -124,6 +168,8 @@ pulse_render() {
     seen="$seen $area"
     pulse_render_area "$area" || true
   done
+
+  pulse_render_attention
 
   printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "Pulse: $overall" "$PULSE_C_RESET"
 }

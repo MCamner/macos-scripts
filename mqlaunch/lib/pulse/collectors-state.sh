@@ -190,6 +190,16 @@ pulse_collect_git() {
     return 0
   fi
 
+  # The repositories collector walks the MQ repos and sees this checkout among
+  # them; this one reads the same worktree from the other end. Both label the
+  # observation `worktree:<repo>` so the attention list raises one dirty tree
+  # once instead of twice.
+  # Parameter expansion, not `basename`: one less external command on a path
+  # that already reports what it cannot reach, and the collector should not be
+  # the thing that fails when PATH is thin.
+  local repo_name="${BASE_DIR%/}"
+  repo_name="${repo_name##*/}"
+
   local changes modified untracked
   # `|| true` for the same reason as everywhere else in these collectors: an
   # assignment from a failing command ends the run under `set -e`. The guard
@@ -204,7 +214,8 @@ pulse_collect_git() {
     untracked="$(printf '%s\n' "$changes" | grep -c '^??' || true)"
     pulse_item_add git git WARN "Worktree" \
       "$modified modified, $untracked untracked" \
-      next_command="mqlaunch git"
+      next_command="mqlaunch git" \
+      dedupe_key="worktree:$repo_name"
   fi
 
   local ahead

@@ -33,7 +33,14 @@ PULSE_ITEM_REQUIRED=(source area status subject summary)
 # attention engine, which is a later block and belongs to it. `freshness` and
 # `duration_ms` are the optional metadata the model calls for, carried on the
 # item that knows them rather than in a table beside it.
-PULSE_ITEM_OPTIONAL=(evidence next_command priority freshness duration_ms)
+# `dedupe_key` is how two collectors say they are looking at the same thing.
+# The repositories collector and the Git collector both notice that this
+# checkout is dirty, from opposite ends — one walking the MQ repos, one reading
+# the repo mqlaunch is running in — and the attention list should raise that
+# once. The alternative is for the attention engine to guess which rows describe
+# one problem, which is exactly the kind of conclusion Pulse does not get to
+# reach: the collector knows what it read, so the collector says so.
+PULSE_ITEM_OPTIONAL=(evidence next_command priority freshness duration_ms dedupe_key)
 
 PULSE_ITEMS=()
 
