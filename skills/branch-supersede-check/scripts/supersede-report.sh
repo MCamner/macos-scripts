@@ -59,7 +59,17 @@ done
 
 branch_sha="$(git rev-parse --short "$BRANCH")"
 base_sha="$(git rev-parse --short "$BASE")"
-merge_base="$(git merge-base "$BASE" "$BRANCH" 2>/dev/null || echo '')"
+merge_base="$(git merge-base "$BASE" "$BRANCH" 2>/dev/null || true)"
+
+# Without a merge base there is nothing to compare, and every comparison below
+# fails to empty. Empty output would then be counted as zero unique files and
+# printed as "superseded" — a delete recommendation for a branch that shares no
+# history with trunk at all. A comparison that could not run is an error, not a
+# verdict.
+if [[ -z "$merge_base" ]]; then
+  echo "no merge base between $BASE and $BRANCH — unrelated histories" >&2
+  exit 2
+fi
 
 echo "=== $BRANCH ($branch_sha) vs $BASE ($base_sha) ==="
 
@@ -79,8 +89,16 @@ echo "  commits: $ahead not in $BASE, $behind in $BASE not here"
 echo "  last commit: $(git log -1 --format='%ar (%ai)' "$BRANCH")"
 echo
 
-# The misleading view, printed on purpose so the two can be compared.
-three_dot="$(git diff --name-only "$BASE...$BRANCH" 2>/dev/null | wc -l | tr -d ' ')"
+# The misleading view, printed on purpose so the two can be compared. Taken
+# once and kept: running it twice invites the count and the loop to disagree,
+# and a failure here has to stop the run rather than empty it.
+if ! changed="$(git diff --name-only "$BASE...$BRANCH" 2>&1)"; then
+  echo "cannot compare $BASE...$BRANCH: $changed" >&2
+  exit 2
+fi
+
+three_dot=0
+[[ -n "$changed" ]] && three_dot="$(printf '%s\n' "$changed" | wc -l | tr -d ' ')"
 echo "  three-dot diff ($BASE...$BRANCH) touches $three_dot file(s)"
 echo "  — that is measured against the fork point, so it looks the same"
 echo "    whether or not trunk already has the content. Per-file, vs $BASE now:"
@@ -124,7 +142,7 @@ while IFS= read -r f; do
   if [[ "$VERBOSE" -eq 1 ]]; then
     git diff "$BASE" "$BRANCH" -- "$f" | sed 's/^/      /' | head -20
   fi
-done < <(git diff --name-only "$BASE...$BRANCH" 2>/dev/null)
+done <<< "$changed"
 
 total=$((identical + base_ahead + branch_ahead + diverged + only_branch))
 echo
@@ -136,17 +154,35 @@ echo
 # destroys: no ancestry, no identical files, and the work is still in trunk.
 # Checked last because it is the only step that touches the network.
 pr_note=""
+pr_lookup_failed=0
 if [[ "$NO_PR" -eq 0 ]] && command -v gh >/dev/null 2>&1; then
   name="$BRANCH"
   if ! git show-ref --verify --quiet "refs/heads/$name"; then
     name="$(git for-each-ref --format='%(refname:short)' --points-at "$BRANCH" refs/heads 2>/dev/null | head -1)"
   fi
   if [[ -n "$name" ]]; then
-    pr_note="$(gh pr list --state merged --limit 200 --json number,headRefName,mergedAt \
-      --jq ".[] | select(.headRefName == \"$name\") | \"#\(.number) merged \(.mergedAt[0:10])\"" 2>/dev/null | head -1)"
+    # Filtered by GitHub, not locally: a page of recent PRs has a cap, and the
+    # branch this question is being asked about is usually an old one.
+    if gh_out="$(gh pr list --state merged --head "$name" \
+        --json number,mergedAt \
+        --jq '.[] | "#\(.number) merged \(.mergedAt[0:10])"' 2>/dev/null)"; then
+      pr_note="$(printf '%s\n' "$gh_out" | head -1)"
+    else
+      pr_lookup_failed=1
+    fi
   fi
 fi
-[[ -n "$pr_note" ]] && echo "  merged PR for this head: $pr_note" && echo
+
+if [[ -n "$pr_note" ]]; then
+  echo "  merged PR for this head: $pr_note"
+  echo
+elif [[ "$pr_lookup_failed" -eq 1 ]]; then
+  # The lookup is the evidence a squash merge destroys. Not finding one and not
+  # being able to look are different facts, and only one of them is reassuring.
+  echo "  could not check for a merged PR — the lookup failed, so its absence"
+  echo "  below is not evidence. Re-run with gh working, or check by hand."
+  echo
+fi
 
 unique=$((branch_ahead + diverged + only_branch))
 settled=$((identical + base_ahead))
