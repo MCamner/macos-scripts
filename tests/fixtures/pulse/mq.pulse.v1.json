@@ -1,0 +1,142 @@
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "scope": null,
+  "collected": [
+    "system",
+    "repositories",
+    "stack",
+    "memory",
+    "git",
+    "quality"
+  ],
+  "summary": {
+    "pass": 8,
+    "warn": 0,
+    "fail": 0,
+    "unavailable": 1,
+    "skipped": 3
+  },
+  "sections": {
+    "system": [
+      {
+        "source": "doctor",
+        "area": "system",
+        "status": "PASS",
+        "subject": "Environment",
+        "summary": "1 of 1 checks pass",
+        "priority": 0
+      }
+    ],
+    "repositories": [
+      {
+        "source": "repos",
+        "area": "repositories",
+        "status": "PASS",
+        "subject": "Repositories",
+        "summary": "1 of 1 repos clean",
+        "priority": 0
+      }
+    ],
+    "stack": [
+      {
+        "source": "stack",
+        "area": "stack",
+        "status": "SKIPPED",
+        "subject": "MQ stack",
+        "summary": "skipped by --no-stack",
+        "priority": 0
+      }
+    ],
+    "memory": [
+      {
+        "source": "memory",
+        "area": "memory",
+        "status": "SKIPPED",
+        "subject": "Memory",
+        "summary": "skipped by --no-stack",
+        "priority": 0
+      }
+    ],
+    "git": [
+      {
+        "source": "git",
+        "area": "git",
+        "status": "PASS",
+        "subject": "Worktree",
+        "summary": "clean",
+        "priority": 0
+      },
+      {
+        "source": "git",
+        "area": "git",
+        "status": "UNAVAILABLE",
+        "subject": "Unpushed commits",
+        "summary": "this branch has no upstream",
+        "next_command": "mqlaunch git",
+        "priority": 0
+      },
+      {
+        "source": "git",
+        "area": "git",
+        "status": "SKIPPED",
+        "subject": "GitHub",
+        "summary": "skipped by --no-network",
+        "priority": 0
+      }
+    ],
+    "quality": [
+      {
+        "source": "quality",
+        "area": "quality",
+        "status": "PASS",
+        "subject": "Command registry",
+        "summary": "passing",
+        "priority": 0
+      },
+      {
+        "source": "quality",
+        "area": "quality",
+        "status": "PASS",
+        "subject": "Runtime authority",
+        "summary": "passing",
+        "priority": 0
+      },
+      {
+        "source": "quality",
+        "area": "quality",
+        "status": "PASS",
+        "subject": "Skills",
+        "summary": "passing",
+        "priority": 0
+      },
+      {
+        "source": "quality",
+        "area": "quality",
+        "status": "PASS",
+        "subject": "Docs parity",
+        "summary": "passing",
+        "priority": 0
+      },
+      {
+        "source": "quality",
+        "area": "quality",
+        "status": "PASS",
+        "subject": "Test inventory",
+        "summary": "passing",
+        "priority": 0
+      }
+    ]
+  },
+  "attention": [
+    {
+      "source": "git",
+      "area": "git",
+      "status": "UNAVAILABLE",
+      "subject": "Unpushed commits",
+      "summary": "this branch has no upstream",
+      "next_command": "mqlaunch git",
+      "priority": 0
+    }
+  ]
+}

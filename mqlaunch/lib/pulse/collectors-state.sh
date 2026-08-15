@@ -15,7 +15,10 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/collectors.sh"
 
-PULSE_GH_TIMEOUT="${PULSE_GH_TIMEOUT:-15}"
+# GitHub answers in about 800 ms per call, measured. The budget is ten times
+# that: enough for a bad connection, short enough that an operator on a plane
+# gets the local half of the run without wondering whether it hung.
+PULSE_GH_TIMEOUT="${PULSE_GH_TIMEOUT:-8}"
 
 # Runs mq-agent with the same invocation the agent bridge uses.
 #
@@ -45,11 +48,16 @@ pulse_collect_memory() {
   local started ended
   started="$(pulse_now_ms)"
 
-  local document
-  if ! document="$(pulse_agent_json memory status "$BASE_DIR" --json)" || [[ -z "$document" ]]; then
+  local document read_status=0
+  # The status is captured rather than swallowed by `if !`, so that a spent
+  # budget can be named as one. mq-agent that is not installed returns 1 and
+  # keeps the fallback wording.
+  document="$(pulse_agent_json memory status "$BASE_DIR" --json)" || read_status=$?
+  if [[ $read_status -ne 0 || -z "$document" ]]; then
     ended="$(pulse_now_ms)"
     pulse_item_add memory memory UNAVAILABLE "Semantic memory" \
-      "mq-agent did not report memory status" \
+      "$(pulse_gap_reason "$read_status" "mq-agent did not report memory status" \
+         "$PULSE_STACK_TIMEOUT")" \
       next_command="mqlaunch srm inspect" \
       duration_ms="$((ended - started))"
   else
@@ -102,11 +110,13 @@ print(store)
 
   # Stack truth freshness, from the cockpit's brain_export block.
   started="$(pulse_now_ms)"
-  local cockpit
-  if ! cockpit="$(pulse_agent_json stack cockpit --json)" || [[ -z "$cockpit" ]]; then
+  local cockpit truth_status=0
+  cockpit="$(pulse_agent_json stack cockpit --json)" || truth_status=$?
+  if [[ $truth_status -ne 0 || -z "$cockpit" ]]; then
     ended="$(pulse_now_ms)"
     pulse_item_add memory memory UNAVAILABLE "Stack truth" \
-      "mq-agent did not report stack-truth freshness" \
+      "$(pulse_gap_reason "$truth_status" "mq-agent did not report stack-truth freshness" \
+         "$PULSE_STACK_TIMEOUT")" \
       next_command="mqlaunch stack cockpit" \
       duration_ms="$((ended - started))"
     return 0
@@ -246,15 +256,15 @@ pulse_collect_git() {
     return 0
   fi
 
-  local prs
+  local prs pr_read=0
   prs="$(pulse_run_bounded "$PULSE_GH_TIMEOUT" \
     gh pr list --state open --limit 30 \
-    --json number,isDraft,mergeable 2>/dev/null || true)"
+    --json number,isDraft,mergeable 2>/dev/null)" || pr_read=$?
   ended="$(pulse_now_ms)"
 
   if [[ -z "$prs" ]]; then
     pulse_item_add git git UNAVAILABLE "Pull requests" \
-      "GitHub did not answer" \
+      "$(pulse_gap_reason "$pr_read" "GitHub did not answer" "$PULSE_GH_TIMEOUT")" \
       next_command="mqlaunch git" \
       duration_ms="$((ended - started))"
   else
@@ -316,15 +326,16 @@ print(summary)
     return 0
   fi
   started="$(pulse_now_ms)"
-  local runs
+  local runs ci_read=0
   runs="$(pulse_run_bounded "$PULSE_GH_TIMEOUT" \
     gh run list --branch "$branch" --limit 10 \
-    --json status,conclusion,workflowName 2>/dev/null || true)"
+    --json status,conclusion,workflowName 2>/dev/null)" || ci_read=$?
   ended="$(pulse_now_ms)"
 
   if [[ -z "$runs" ]]; then
     pulse_item_add git git UNAVAILABLE "CI" \
-      "GitHub did not answer for $branch" \
+      "$(pulse_gap_reason "$ci_read" "GitHub did not answer for $branch" \
+         "$PULSE_GH_TIMEOUT")" \
       duration_ms="$((ended - started))"
     return 0
   fi
@@ -386,18 +397,25 @@ else:
 # runs it and reports what it said, as its own item, so a failure names the gate
 # an operator has to go and read.
 #
-# All five are read-only and take under half a second each, measured. A gate
-# that is missing reports UNAVAILABLE, because a check that is not there is not
-# a check that passed.
-pulse_quality_gate() {
-  local subject="$1" command_path="$2"
-  shift 2
+# The five run concurrently and are reported in the order they are listed, never
+# the order they finish in. They are independent and read-only, so concurrency
+# changes what the area costs and nothing about what it says: serially the gates
+# were 1196 ms of a 1562 ms local-only run, at roughly 240 ms each.
+#
+# Deliberately not parallel: the six collectors themselves. Two of them shell
+# into mq-agent through the same uv project, and the item order is the screen's
+# order — the gates are the case where independence is actually true.
 
-  if [[ ! -e "$command_path" ]]; then
-    pulse_item_add quality quality UNAVAILABLE "$subject" \
-      "gate is missing" evidence="$command_path"
-    return 0
-  fi
+# Runs one gate and writes what happened to a file, as three lines: exit status,
+# duration in ms, and the gate's own last line.
+#
+# It runs in a background subshell, so it must not touch PULSE_ITEMS: an array
+# appended to in a child is lost when the child exits, and a collector that
+# quietly dropped its findings is the failure this whole contract is about. The
+# parent turns these files into items.
+pulse_quality_probe() {
+  local out="$1"
+  shift
 
   # A failing gate is the interesting case, so the failure has to survive being
   # read. `output="$(cmd)"` on its own ends the run under `set -e` in a caller,
@@ -408,41 +426,99 @@ pulse_quality_gate() {
   output="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" "$@" 2>&1)" || gate_status=$?
   ended="$(pulse_now_ms)"
 
-  if [[ $gate_status -eq 0 ]]; then
-    pulse_item_add quality quality PASS "$subject" "passing" \
-      duration_ms="$((ended - started))"
+  {
+    printf '%s\n' "$gate_status"
+    printf '%s\n' "$((ended - started))"
+    printf '%s\n' "$(printf '%s' "$output" | tail -1 | cut -c1-120)"
+  } > "$out"
+}
+
+# Turns one probe's file into one item.
+pulse_quality_emit() {
+  local subject="$1" command_path="$2" file="$3"
+
+  if [[ ! -s "$file" ]]; then
+    # The probe never wrote, which is not a verdict about the gate.
+    pulse_item_add quality quality UNAVAILABLE "$subject" \
+      "gate did not report" evidence="$command_path"
+    return 0
+  fi
+
+  local gate_status duration detail
+  {
+    read -r gate_status || true
+    read -r duration || true
+    read -r detail || true
+  } < "$file"
+
+  if [[ "$gate_status" -eq 0 ]]; then
+    pulse_item_add quality quality PASS "$subject" "passing" duration_ms="$duration"
+    return 0
+  fi
+
+  # A gate that was killed at its budget did not fail — it did not finish, and
+  # nobody has a verdict about it. Reporting FAIL here would be Pulse deciding
+  # that a slow machine means broken code, and it would put "run mqlaunch
+  # selftest" in front of an operator whose selftest is exactly what timed out.
+  if [[ "$gate_status" -eq "$PULSE_TIMEOUT_STATUS" ]]; then
+    pulse_item_add quality quality UNAVAILABLE "$subject" \
+      "timed out after ${PULSE_COLLECTOR_TIMEOUT}s" \
+      evidence="$command_path" duration_ms="$duration"
     return 0
   fi
 
   # The gate's own last line is the evidence. It is what a contributor would
   # read first when running the command by hand, and carrying it means the
   # operator does not have to run it again to learn what broke.
-  local detail
-  detail="$(printf '%s' "$output" | tail -1 | cut -c1-120)"
   pulse_item_add quality quality FAIL "$subject" "failing" \
     evidence="${detail:-exit $gate_status}" \
     next_command="mqlaunch selftest" \
-    duration_ms="$((ended - started))"
+    duration_ms="$duration"
 }
 
 pulse_collect_quality() {
-  pulse_quality_gate "Command registry" \
-    "$BASE_DIR/tools/scripts/validate-command-registry.py" \
-    python3 "$BASE_DIR/tools/scripts/validate-command-registry.py"
+  local -a subjects=(
+    "Command registry"
+    "Runtime authority"
+    "Skills"
+    "Docs parity"
+    "Test inventory"
+  )
+  local -a paths=(
+    "$BASE_DIR/tools/scripts/validate-command-registry.py"
+    "$BASE_DIR/scripts/check-runtime-authority.sh"
+    "$BASE_DIR/scripts/check-skills.sh"
+    "$BASE_DIR/tests/registry-consumer-parity-smoke.sh"
+    "$BASE_DIR/tests/test-inventory-smoke.sh"
+  )
+  local -a runners=(python3 bash bash bash bash)
 
-  pulse_quality_gate "Runtime authority" \
-    "$BASE_DIR/scripts/check-runtime-authority.sh" \
-    bash "$BASE_DIR/scripts/check-runtime-authority.sh"
+  local work
+  work="$(mktemp -d)"
 
-  pulse_quality_gate "Skills" \
-    "$BASE_DIR/scripts/check-skills.sh" \
-    bash "$BASE_DIR/scripts/check-skills.sh"
+  local index=0
+  while [[ $index -lt ${#subjects[@]} ]]; do
+    # A gate that is not there is not a gate that passed, and it is also not
+    # something to launch: it is reported below, from the missing file.
+    if [[ -e "${paths[$index]}" ]]; then
+      pulse_quality_probe "$work/$index" "${runners[$index]}" "${paths[$index]}" &
+    fi
+    index=$((index + 1))
+  done
+  # The probes report through their files; a non-zero job status here would only
+  # be the shell's opinion about a gate whose verdict has already been written.
+  wait 2>/dev/null || true
 
-  pulse_quality_gate "Docs parity" \
-    "$BASE_DIR/tests/registry-consumer-parity-smoke.sh" \
-    bash "$BASE_DIR/tests/registry-consumer-parity-smoke.sh"
+  index=0
+  while [[ $index -lt ${#subjects[@]} ]]; do
+    if [[ ! -e "${paths[$index]}" ]]; then
+      pulse_item_add quality quality UNAVAILABLE "${subjects[$index]}" \
+        "gate is missing" evidence="${paths[$index]}"
+    else
+      pulse_quality_emit "${subjects[$index]}" "${paths[$index]}" "$work/$index"
+    fi
+    index=$((index + 1))
+  done
 
-  pulse_quality_gate "Test inventory" \
-    "$BASE_DIR/tests/test-inventory-smoke.sh" \
-    bash "$BASE_DIR/tests/test-inventory-smoke.sh"
+  rm -rf "$work"
 }

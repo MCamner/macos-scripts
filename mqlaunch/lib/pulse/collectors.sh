@@ -10,14 +10,33 @@
 # Every collector is read-only, and every one of them is bounded by a timeout.
 # A status command that hangs is worse than one that reports a gap: the stack
 # collector shells into another repo through `uv`, which on a cold cache takes
-# long enough that an operator would reach for Ctrl-C. Tuning those bounds is a
-# later block; having them is not optional even now.
+# long enough that an operator would reach for Ctrl-C. The bounds are sized from
+# measurement below, and a spent bound reports UNAVAILABLE with the timeout
+# named — never FAIL on the subject that was being looked at.
 
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/item.sh"
 
-PULSE_COLLECTOR_TIMEOUT="${PULSE_COLLECTOR_TIMEOUT:-20}"
-PULSE_STACK_TIMEOUT="${PULSE_STACK_TIMEOUT:-45}"
+# The budgets, in seconds. Each one is a ceiling on a hang, not a performance
+# target: a collector that finishes in 130 ms and one that finishes in 3 s are
+# both fine, and a collector that never finishes is not.
+#
+# Sized from measurement rather than taste — the numbers are in ROADMAP.md under
+# "Pulse performance and degradation", taken on an M-series Mac with a warm uv
+# cache:
+#
+#   doctor 132 ms · repos 519 ms · quality gate ~270 ms each
+#   mq-agent 1.2–1.5 s per call · gh ~800 ms per call
+#
+# The multiplier is deliberately large. `uv` on a cold cache is slower than
+# anything measured here by an order of magnitude, and cutting a first run off
+# would make Pulse look broken exactly once per dependency change — so the stack
+# budget keeps room for it while still bounding a hang.
+PULSE_COLLECTOR_TIMEOUT="${PULSE_COLLECTOR_TIMEOUT:-10}"
+PULSE_STACK_TIMEOUT="${PULSE_STACK_TIMEOUT:-30}"
+
+# The exit status `timeout` reports when it kills the command it was given.
+PULSE_TIMEOUT_STATUS=124
 
 # Runs a command with a wall-clock bound, whichever timeout binary exists.
 #
@@ -37,11 +56,45 @@ pulse_run_bounded() {
   fi
 }
 
+# Why a delegate produced nothing, in the words the item will carry.
+#
+#   pulse_gap_reason STATUS FALLBACK [SECONDS]
+#
+# A spent budget is a fact about the observation, never about the subject:
+#
+#   timeout  is not  FAIL on the subject
+#   timeout  is      UNAVAILABLE on the observation
+#
+# GitHub taking too long to answer does not mean CI is broken, and a gate that
+# was killed at its budget is not a gate that failed. Every collector reports
+# UNAVAILABLE for both cases and uses this to say which one happened, so an
+# operator can tell "could not ask" from "asked, got nothing".
+pulse_gap_reason() {
+  local gap_status="$1" fallback="$2" seconds="${3:-$PULSE_COLLECTOR_TIMEOUT}"
+  if [[ "$gap_status" -eq "$PULSE_TIMEOUT_STATUS" ]]; then
+    printf 'timed out after %ss' "$seconds"
+  else
+    printf '%s' "$fallback"
+  fi
+}
+
 # Milliseconds since the epoch, for the optional duration metadata.
 #
-# `date +%s%3N` is a GNU extension and prints a literal "3N" on macOS, so the
-# reading is taken in python3 — which every other part of Pulse already needs.
+# bash 5 publishes the clock as a variable, which costs no process at all. That
+# matters here because this is called twice per collector: fifteen python3
+# spawns measured 287 ms, which was 16% of a local-only run spent asking what
+# time it was.
+#
+# The fallback covers bash 3.2, a zsh without `zsh/datetime`, and any locale
+# whose decimal separator is not a point — `date +%s%3N` is a GNU extension and
+# prints a literal "3N" on macOS, so python3 is what is left, and it is already
+# a dependency of every other part of Pulse.
 pulse_now_ms() {
+  local now="${EPOCHREALTIME:-}"
+  if [[ -n "$now" && "$now" == *.* ]]; then
+    printf '%s' "$(( ${now%.*} * 1000 + 10#${now#*.} / 1000 ))"
+    return 0
+  fi
   python3 -c 'import time; print(int(time.time() * 1000))'
 }
 
@@ -64,18 +117,20 @@ pulse_collect_system() {
     return 0
   fi
 
-  local document
-  # `|| true`, and it is not defensive. `doctor --json` exits 1 whenever any
-  # check needs attention — the common case — and under `set -e` in a caller
-  # an assignment from a failing command ends the run. The exit code is not
-  # read on purpose: it is doctor's verdict about the machine, which this
-  # collector takes from the document, not a failure of the collection.
-  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" bash "$doctor" --json 2>/dev/null || true)"
+  local document read_status=0
+  # The status is captured rather than discarded, but it is only consulted when
+  # the document is empty. `doctor --json` exits 1 whenever any check needs
+  # attention — the common case — and that is doctor's verdict about the
+  # machine, which this collector takes from the document. What the status is
+  # needed for is the other case: telling a spent budget apart from a delegate
+  # that answered with nothing.
+  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" bash "$doctor" --json 2>/dev/null)" \
+    || read_status=$?
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then
     pulse_item_add doctor system UNAVAILABLE "Environment" \
-      "doctor produced no report" \
+      "$(pulse_gap_reason "$read_status" "doctor produced no report")" \
       next_command="mqlaunch doctor" \
       duration_ms="$((ended - started))"
     return 0
@@ -157,13 +212,14 @@ pulse_collect_repos() {
     return 0
   fi
 
-  local document
-  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" python3 "$repos" status --json 2>/dev/null || true)"
+  local document read_status=0
+  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" python3 "$repos" status --json 2>/dev/null)" \
+    || read_status=$?
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then
     pulse_item_add repos repositories UNAVAILABLE "Repositories" \
-      "repo status produced no report" \
+      "$(pulse_gap_reason "$read_status" "repo status produced no report")" \
       next_command="mqlaunch repos status" \
       duration_ms="$((ended - started))"
     return 0
@@ -256,15 +312,17 @@ pulse_collect_stack() {
     return 0
   fi
 
-  local document
+  local document read_status=0
   document="$(pulse_run_bounded "$PULSE_STACK_TIMEOUT" \
     env -u VIRTUAL_ENV UV_NO_CONFIG=1 \
-    uv --project "$agent_home" run mq-agent stack status --json 2>/dev/null || true)"
+    uv --project "$agent_home" run mq-agent stack status --json 2>/dev/null)" \
+    || read_status=$?
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then
     pulse_item_add stack stack UNAVAILABLE "MQ stack" \
-      "mq-agent did not report stack status" \
+      "$(pulse_gap_reason "$read_status" "mq-agent did not report stack status" \
+         "$PULSE_STACK_TIMEOUT")" \
       next_command="mqlaunch stack" \
       duration_ms="$((ended - started))"
     return 0

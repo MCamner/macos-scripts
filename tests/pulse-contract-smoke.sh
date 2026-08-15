@@ -22,14 +22,14 @@ DISPATCH="$ROOT/terminal/launchers/mqlaunch-command-mode.sh"
 
 echo "SMOKE: pulse contract"
 
-echo "[1/8] the model and the contract document exist"
+echo "[1/9] the model and the contract document exist"
 test -f "$MODEL"
 test -f "$CONTRACT"
 
 # shellcheck source=/dev/null
 source "$MODEL"
 
-echo "[2/8] exactly the five check states are valid"
+echo "[2/9] exactly the five check states are valid"
 for state in PASS WARN FAIL UNAVAILABLE SKIPPED; do
   if ! pulse_state_is_valid "$state"; then
     echo "FAIL: $state is not a valid check state" >&2
@@ -44,7 +44,7 @@ for bogus in "" ok OKAY pass INCOMPLETE UNKNOWN; do
 done
 echo "  ok: PASS WARN FAIL UNAVAILABLE SKIPPED, and nothing else"
 
-echo "[3/8] INCOMPLETE is an overall state, never a check state"
+echo "[3/9] INCOMPLETE is an overall state, never a check state"
 # It has to be reachable as an overall state and rejected as a check state, or
 # a collector could report "the run failed to run" about one of its own checks.
 if pulse_state_is_valid INCOMPLETE; then
@@ -58,7 +58,7 @@ if [[ "$got" != "INCOMPLETE" ]]; then
 fi
 echo "  ok: rejected as a check state, reached as an overall state"
 
-echo "[4/8] aggregation truth table"
+echo "[4/9] aggregation truth table"
 # Each row: expected overall | expected exit | the check states of one run.
 assert_run() {
   local want_state="$1" want_exit="$2"
@@ -94,7 +94,7 @@ assert_run INCOMPLETE 3 SKIPPED
 assert_run INCOMPLETE 3 SKIPPED SKIPPED
 echo "  ok: 15 runs, including UNAVAILABLE vs PASS, vs FAIL, and SKIPPED vs empty"
 
-echo "[5/8] an unknown check state is refused rather than absorbed"
+echo "[5/9] an unknown check state is refused rather than absorbed"
 # Absorbing it would let a typo in a collector read as healthy.
 if pulse_overall_state PASS BROKEN 2>/dev/null; then
   echo "FAIL: an unknown state was accepted by pulse_overall_state" >&2
@@ -107,7 +107,7 @@ if [[ "$got_exit" != "3" ]]; then
 fi
 echo "  ok: refused, and the run reports 3 rather than a verdict"
 
-echo "[6/8] states arrive on stdin as well as in arguments, and never from a keyboard"
+echo "[6/9] states arrive on stdin as well as in arguments, and never from a keyboard"
 # The collectors in later PRs stream their results; the same rule has to apply.
 got="$(printf '%s\n' PASS UNAVAILABLE PASS | pulse_overall_state)"
 if [[ "$got" != "WARN" ]]; then
@@ -140,7 +140,7 @@ if got != "INCOMPLETE":
 print("  ok: same verdict either way, and it returns on a TTY")
 PY
 
-echo "[7/8] the contract document states the same exit codes"
+echo "[7/9] the contract document states the same exit codes"
 # The document is what an operator reads before trusting the exit code in a
 # script, so a drift between it and the model is worth failing on.
 for row in \
@@ -156,7 +156,7 @@ done
 grep -qF 'at least one `WARN` or `UNAVAILABLE`, no `FAIL` | `1` |' "$CONTRACT"
 echo "  ok: the four exit codes are documented as implemented"
 
-echo "[8/8] the word 'pulse' does not resolve to the network diagnostic"
+echo "[8/9] the word 'pulse' does not resolve to the network diagnostic"
 # The rename is the reason v2.1.0 can address `mqlaunch pulse` at all. This step
 # survives the cockpit landing: what it forbids is the word pointing back at
 # netpulse.sh, not the word existing.
@@ -194,5 +194,66 @@ for command in registry["commands"]:
         )
 print("  ok: netpulse owns the diagnostic, 'pulse' is free for the cockpit")
 PY
+
+echo "[9/9] every suggested command is one that already exists"
+# docs/PULSE_CONTRACT.md: `next_command` must be a command that already exists.
+# Nothing checked it until now, which made it the one contract rule held by
+# nobody — and a suggestion that does not resolve is worse than none, because an
+# operator types it before doubting it.
+#
+# Only `mqlaunch ...` literals are checked. A collector may also carry a hint its
+# delegate published — doctor's "brew install jq" — and that is the owner's
+# command, not one this repo invented.
+python3 - "$ROOT" <<'PY_INNER'
+import json
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+registry = json.loads((root / "mqlaunch/lib/command-registry.json").read_text())
+
+words = {}
+for command in registry["commands"]:
+    for name in [command["name"], *command.get("aliases", [])]:
+        words[name] = command
+
+literals = set()
+for source in sorted((root / "mqlaunch/lib/pulse").glob("*.sh")):
+    literals |= set(re.findall(r'next_command="(mqlaunch [^"$]*)"', source.read_text()))
+
+if not literals:
+    sys.exit("FAIL: no suggestions found at all — this check stopped checking")
+
+problems = []
+for literal in sorted(literals):
+    parts = literal.split()[1:]
+    command = words.get(parts[0])
+    if command is None:
+        problems.append(f"{literal!r}: no registry command named {parts[0]!r}")
+        continue
+    if len(parts) < 2:
+        continue
+    subcommands = command.get("subcommands") or []
+    known = {s["name"] for s in subcommands}
+    known |= {a for s in subcommands for a in s.get("aliases", [])}
+    if parts[1] in known:
+        continue
+    # A command that delegates, or that forwards words it does not declare,
+    # owns a surface this registry does not enumerate — `mqlaunch stack cockpit`
+    # is mq-agent's subcommand, reached through a declared delegation.
+    if command.get("delegates_to") or command.get("unknown_subcommand") == "forward":
+        continue
+    problems.append(
+        f"{literal!r}: {parts[0]!r} declares no {parts[1]!r} and forwards nothing"
+    )
+
+if problems:
+    for problem in problems:
+        print(f"  - {problem}", file=sys.stderr)
+    sys.exit("FAIL: Pulse suggests commands that do not exist")
+
+print(f"  ok: {len(literals)} suggested commands, every one of them reachable")
+PY_INNER
 
 echo "PASS: pulse contract"
