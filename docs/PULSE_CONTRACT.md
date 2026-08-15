@@ -139,14 +139,50 @@ the state, never the prose.
 | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
 | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
 | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+| `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent`, `mqobsidian` |
+| `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
+| `QUALITY` | the repo's own gates, run one by one | `macos-scripts` |
 
 Each one reads a machine document rather than a screen, because a screen is not
 a contract. Each one is bounded by a timeout: a status command that hangs is
-worse than one that reports a gap.
+worse than one that reports a gap. Each one runs independently — a delegate that
+is missing takes its own area to `UNAVAILABLE` and nothing else with it.
 
-Memory, Git/GitHub and quality are not implemented yet. They are absent from the
-output rather than stubbed — a collector that reports nothing and a subject that
-is healthy must never look the same.
+### Quality is not a score
+
+`QUALITY` runs five real gates and reports each verdict as its own item:
+
+```text
+QUALITY
+  ✔ Command registry       passing
+  ✖ Runtime authority      failing
+      → mqlaunch selftest
+  ✔ Skills                 passing
+```
+
+It does not add them up. "Some checks passed, so quality is fine" is a verdict
+that exists nowhere in this repo, so producing one here would be Pulse inventing
+a signal rather than reporting one — the exact thing this contract forbids. A
+failing gate names itself, and a gate that is not installed reports
+`UNAVAILABLE`, because a check that is not there is not a check that passed.
+
+### What is deliberately missing
+
+The held/review queue is not in `MEMORY`. `mq-agent memory review-status` exists
+and is read-only, but prints only for a human — reading it would make mq-agent's
+screen layout a contract this repo depends on. Closing that gap needs a
+machine-readable mode in mq-agent, and until then the queue is absent rather
+than approximated.
+
+Absence is the honest signal. A collector that reports nothing and a subject
+that is healthy must never look the same.
+
+### Skipping
+
+`--no-stack` and `--no-network` mark their areas `SKIPPED` rather than dropping
+them. `--no-stack` covers `MEMORY` as well as `MQ STACK`, because both spend
+mq-agent calls and a flag that skipped one while paying for the other would be
+lying about what the run costs.
 
 ## Where the rules live
 

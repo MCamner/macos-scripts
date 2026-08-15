@@ -65,7 +65,12 @@ pulse_collect_system() {
   fi
 
   local document
-  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" bash "$doctor" --json 2>/dev/null)"
+  # `|| true`, and it is not defensive. `doctor --json` exits 1 whenever any
+  # check needs attention — the common case — and under `set -e` in a caller
+  # an assignment from a failing command ends the run. The exit code is not
+  # read on purpose: it is doctor's verdict about the machine, which this
+  # collector takes from the document, not a failure of the collection.
+  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" bash "$doctor" --json 2>/dev/null || true)"
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then
@@ -153,7 +158,7 @@ pulse_collect_repos() {
   fi
 
   local document
-  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" python3 "$repos" status --json 2>/dev/null)"
+  document="$(pulse_run_bounded "$PULSE_COLLECTOR_TIMEOUT" python3 "$repos" status --json 2>/dev/null || true)"
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then
@@ -249,7 +254,7 @@ pulse_collect_stack() {
   local document
   document="$(pulse_run_bounded "$PULSE_STACK_TIMEOUT" \
     env -u VIRTUAL_ENV UV_NO_CONFIG=1 \
-    uv --project "$agent_home" run mq-agent stack status --json 2>/dev/null)"
+    uv --project "$agent_home" run mq-agent stack status --json 2>/dev/null || true)"
   ended="$(pulse_now_ms)"
 
   if [[ -z "$document" ]]; then

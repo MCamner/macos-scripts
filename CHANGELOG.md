@@ -8,6 +8,52 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Three more Pulse collectors — memory, Git/GitHub and quality — so
+  `mqlaunch pulse` covers all six areas the v2.1.0 plan names.
+
+  | Area | Reads | Owner of the signal |
+  | --- | --- | --- |
+  | `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent`, `mqobsidian` |
+  | `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
+  | `QUALITY` | the repo's own five gates, run one by one | `macos-scripts` |
+
+  `QUALITY` reports each gate as its own item and never adds them up. "Some
+  checks passed, so quality is fine" is a verdict that exists nowhere in this
+  repo, so producing one would be Pulse inventing a signal instead of reporting
+  one. A gate that is not installed reports `UNAVAILABLE`, because a check that
+  is not there is not a check that passed.
+
+  The held/review queue is deliberately absent from `MEMORY`. `mq-agent memory
+  review-status` exists and is read-only but prints only for a human; reading it
+  would make mq-agent's screen layout a contract this repo depends on — the
+  mistake `--json` on `mq-repos.py` was added to avoid one level down. Closing
+  that gap needs a machine-readable mode in mq-agent.
+
+* `mqlaunch pulse --no-network`, which skips everything that talks to GitHub.
+  Like `--no-stack` it marks the area `SKIPPED` rather than dropping it.
+  `--no-stack` now covers `MEMORY` as well, since both spend mq-agent calls and
+  a flag that skipped one while paying for the other would misstate what the run
+  costs.
+
+### Fixed
+
+* Four `set -e` hazards of one shape, across every collector:
+  `var="$(cmd)"` ends the caller when the command fails, and each collector
+  reads a delegate that legitimately exits non-zero — `doctor --json` exits 1
+  whenever any check needs attention, and a failing quality gate is the case the
+  collector exists to report. In `pulse_quality_gate` the assignment ended the
+  run before `gate_status=$?` on the next line could execute, so the collector
+  would have taken the whole Pulse down precisely when it had something to say.
+
+* The Git collector reported `Worktree: clean` for a directory that is not a
+  git repository at all. `git status --short` failed, its output was empty, and
+  empty is indistinguishable from a clean tree — a wrong answer arrived at
+  through a silent error, which is the shape `docs/PULSE_CONTRACT.md` exists to
+  forbid. It checks `rev-parse --git-dir` first now and reports `UNAVAILABLE`.
+  The same silence produced an empty branch name, and `gh run list --branch ''`
+  answers about the whole repository: the CI row read "failing" from a workflow
+  on another branch entirely.
+
 * `mqlaunch pulse` — the read-only operator cockpit, with its first three
   collectors. One screen where the usual sequence was three commands:
 
