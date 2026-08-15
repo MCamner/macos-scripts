@@ -38,6 +38,7 @@ git-menu-surface-smoke.sh	active	-
 git-restore-to-base-smoke.sh	active	-
 git-status-contract-smoke.sh	active	-
 gitlaunch-menu-surface-smoke.sh	active	-
+gitlaunch-pr-push-recovery-smoke.sh	active	-
 gitmerge-safe-smoke.sh	active	-
 hal-args-no-eval-smoke.sh	active	-
 hal-command-surface-smoke.sh	active	-
@@ -91,10 +92,17 @@ menu-shell-guard-smoke.sh	active	-
 release-menu-smoke.sh	active	-
 install-contract-smoke.sh	active	-
 performance-screens-golden-smoke.sh	active	-
-pulse-cli-color-contract-smoke.sh	active	-
+netpulse-cli-color-contract-smoke.sh	active	-
 operator-usage-message-smoke.sh	active	-
 menu-exit-contract-smoke.sh	active	-
 theme-manager-path-smoke.sh	active	-
 ui-spinner-smoke.sh	active	-
 mqobsidian-manifest-shell-parity-smoke.sh	active	-
 gitpr-merge-safe-smoke.sh	active	-
+pulse-contract-smoke.sh	active	-
+pulse-collectors-smoke.sh	active	-
+pulse-state-collectors-smoke.sh	active	-
+pulse-attention-smoke.sh	active	-
+pulse-menu-smoke.sh	active	-
+pulse-machine-surface-smoke.sh	active	-
+pulse-degradation-smoke.sh	active	-

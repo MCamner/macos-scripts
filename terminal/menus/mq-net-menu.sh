@@ -10,7 +10,7 @@ print_net_menu() {
   surface_panel_header "Network" "Network" "$width" "$panel_color"
   surface_row "STATUS" "$width" "$panel_color"
   surface_split_row "1. Network overview" "2. Connectivity test" "$width" "$panel_color"
-  surface_split_row "3. DNS + gateway" "4. Wi-Fi / pulse diagnostic" "$width" "$panel_color"
+  surface_split_row "3. DNS + gateway" "4. Wi-Fi / netpulse diagnostic" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "TOOLS" "$width" "$panel_color"
   surface_split_row "5. Copy network report" "6. Port scan" "$width" "$panel_color"

@@ -76,12 +76,22 @@ EXERCISED=(
 # whole smoke suite — including this file. Running it here would not be slow, it
 # would not terminate.
 #
+#
+# `mqlaunch pulse --json` is exempt for two reasons, neither of them "it would
+# fail": a full run shells into mq-agent and asks GitHub about this branch, and
+# its QUALITY collector runs the repo's own gates — including this file. The
+# scoped form that would avoid all that (`pulse system --json`) cannot be listed
+# here either, because Pulse's scopes are forwarded words rather than declared
+# subcommands, and step 1 would reject the invocation. The named test drives the
+# document against stub delegates instead.
+#
 # An exemption is the obvious place to park an unproven claim, so it is checked:
 # the named file must exist and must exercise the command. Verified separately
 # that the real producer emits repo_release_check.v1 on stdout.
 COVERED_ELSEWHERE=(
   "release-check	tests/release-check-contract-smoke.sh"
   "route	tests/mq-route-entrypoint-smoke.sh"
+  "pulse	tests/pulse-machine-surface-smoke.sh"
 )
 
 run_dir="$(mktemp -d)"

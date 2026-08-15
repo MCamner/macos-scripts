@@ -233,6 +233,15 @@ Auto Release flow (option 11 inside the menu):
 ## Doctor / health
 
 ```bash
+mqlaunch pulse                      # operator cockpit, six areas in one view
+mqlaunch pulse menu                 # the same views as a menu
+mqlaunch pulse attention            # only what needs attention
+mqlaunch pulse quality              # one area: system, repos, stack, memory, git, quality
+mqlaunch pulse --json               # the mq.pulse.v1 document
+mqlaunch pulse --plain              # one tab-separated line per item
+mqlaunch pulse --verbose            # show the evidence behind each row
+mqlaunch pulse --no-stack           # skip the mq-agent collectors (the slow ones)
+mqlaunch pulse --no-network         # skip everything that talks to GitHub
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
@@ -240,6 +249,95 @@ mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
 mqlaunch self-check                 # launcher self-check (lighter than selftest)
 ```
+
+### Pulse
+
+One read-only view over signals this repo already collects, so the usual
+sequence — `doctor`, `repos status`, `stack` — is one command. It is a view, not
+a source of truth: every state comes from the repo that owns it, and every
+suggested command already exists. The contract is
+[PULSE_CONTRACT.md](PULSE_CONTRACT.md).
+
+Six collectors:
+
+| Area | Reads | Owner |
+| --- | --- | --- |
+| `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
+| `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
+| `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+| `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent` |
+| `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
+| `QUALITY` | the repo's own gates, run one by one | `macos-scripts` |
+
+`QUALITY` reports each gate separately and never adds them up — "some checks
+passed" is not a verdict this repo publishes, so Pulse does not invent it. The
+held/review queue is absent from `MEMORY` for the same reason: `mq-agent memory
+review-status` has no machine-readable mode, and reading its screen would make
+that layout a contract.
+
+Exit status is the verdict, and it is the one contract a script should read:
+
+```text
+0  healthy
+1  warnings, including anything that could not be measured
+2  failures
+3  pulse itself could not complete
+```
+
+A scope runs that area's collector and nothing else, so `mqlaunch pulse quality`
+costs the five gates rather than the whole run. `attention` is the exception: it
+collects every area and narrows only what is printed, because a view over
+everything cannot be scoped to one collector without becoming the least informed
+screen in the product. A scoped run reports on its scope — `pulse quality` exits
+0 when the gates pass, whatever the rest of the machine looks like.
+
+`mqlaunch pulse menu` opens the same views as a menu. Every row runs
+`mqlaunch pulse <scope>` through the dispatcher, so a menu row and a typed
+command are the same thing; `Refresh` repeats the view last opened rather than
+returning to the full run.
+
+`--no-stack` and `--no-network` mark their areas `SKIPPED` rather than dropping
+them. A skipped check does not count against the verdict, but it stays on the
+screen — a run with a flag must not look like a run where the subject was fine.
+`--no-stack` covers `MEMORY` too: both spend mq-agent calls, and skipping one
+while paying for the other would misrepresent what the flag saves.
+
+Every collector is bounded — 10s for local delegates, 30s for mq-agent through
+`uv`, 8s for each `gh` call — and a spent budget is reported as `UNAVAILABLE`
+with the timeout named, never as a failure of the thing being looked at. A slow
+GitHub does not mean broken CI, and a gate that was killed did not fail.
+A local-only run costs about 1s; a full run about 4s, most of it four calls into
+other repos.
+
+`--json` prints the `mq.pulse.v1` document, and it is the surface to automate
+against:
+
+```bash
+mqlaunch pulse --json | jq -r '.attention[] | "\(.status)\t\(.subject)\t\(.next_command)"'
+mqlaunch pulse repos --json | jq -e '.summary.fail == 0'
+```
+
+```json
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "scope": null,
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
+  "sections": { "system": [], "repositories": [] },
+  "attention": []
+}
+```
+
+Read `collected` before reading `sections`. A section that is not there means
+its collector did not run, not that the area was healthy — a scoped run is one
+area collected, not five areas found fine. `attention` holds the same item
+objects the sections hold, in the engine's order.
+
+`--plain` is the same run as five tab-separated fields per item —
+`area, status, subject, summary, next_command` — with the verdict on a `#`
+comment line, so `grep -v '^#'` leaves exactly the rows. The exit code is the
+same in every output mode.
 
 JSON output shape:
 
@@ -497,7 +595,7 @@ SRM_VECTOR_STORE_ID=vs_xxx mqlaunch srm search "upload flow"   # query a specifi
 
 ```bash
 mqlaunch ghost          # network cloaking (MAC/DNS spoof)
-mqlaunch pulse          # network latency + WiFi diagnostic
+mqlaunch netpulse       # network latency + WiFi diagnostic
 mqlaunch scan           # system + port scan
 mqlaunch reap           # CPU/MEM process reaper
 mqlaunch guard          # USB/Power perimeter watchdog

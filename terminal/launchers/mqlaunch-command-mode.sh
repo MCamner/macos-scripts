@@ -61,7 +61,7 @@ nearest_cli_command() {
   printf '%s\n' \
     about agent architecture ask brain bundle check commands demo dev doctor \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
-    memory network notes obsidian palette perf pulse release release-check \
+    memory netpulse network notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
       function distance(a, b, d, i, j, cost, deletion, insertion, substitution) {
@@ -763,6 +763,36 @@ dispatch_cli_command() {
       return "$command_status"
       ;;
 
+    pulse|/pulse)
+      case "$sub" in
+        menu)
+          # The menu needs the launcher's UI helpers, which live in this zsh
+          # process. Everything else is a scope or a flag and belongs to the
+          # entrypoint, which forwards it verbatim.
+          open_pulse_menu
+          command_status=$?
+          return "$command_status"
+          ;;
+        *)
+          # The exit code is the whole contract here — 0/1/2/3 per
+          # docs/PULSE_CONTRACT.md — so it is returned untouched, and pause_enter
+          # only runs where a human is watching. A pause on a non-zero pulse would
+          # block a script that read the status correctly.
+          #
+          # The machine modes never pause: the prompt would land on stdout after
+          # the document, and `mqlaunch pulse --json | jq .` would fail on a
+          # trailing line that has nothing to do with the run.
+          "$BASE_DIR/tools/scripts/pulse.sh" "${@:2}"
+          command_status=$?
+          if [[ -z "${MQ_NO_TUI:-}" ]] && ! has_json_flag "$@" \
+             && [[ " $* " != *" --plain "* ]]; then
+            pause_enter
+          fi
+          return "$command_status"
+          ;;
+      esac
+      ;;
+
     scan|/scan)
       "$BASE_DIR/tools/scripts/scan.sh"
       command_status=$?
@@ -1031,8 +1061,8 @@ dispatch_cli_command() {
       return $?
       ;;
 
-    pulse)
-      "$BASE_DIR/tools/scripts/pulse.sh"
+    netpulse)
+      "$BASE_DIR/tools/scripts/netpulse.sh"
       return $?
       ;;
 

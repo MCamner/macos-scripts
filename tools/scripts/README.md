@@ -47,7 +47,7 @@ tools/scripts/
 ├── blackout.sh              # experimental focus / screen effect tool
 ├── mqlaunch_desktop.sh      # desktop integration
 ├── test-*.sh                # test scripts
-├── pulse.sh                 # quick system pulse / lightweight status
+├── netpulse.sh              # network latency + WiFi diagnostic
 └── README.md
 ```
 
@@ -71,7 +71,7 @@ tools/scripts/
 | `cleanup.sh` | Maintenance | 🟢 Stable | macOS cleanup |
 | `focus.sh` | Productivity | 🟢 Stable | Pomodoro focus timer |
 | `env-snap.sh` | Observability | 🟡 Beta | Environment snapshots |
-| `pulse.sh` | Observability | 🟡 Beta | Quick system pulse |
+| `netpulse.sh` | Observability | 🟡 Beta | Network latency + WiFi diagnostic |
 | `blackout.sh` | UX / Experimental | 🔴 Experimental | Focus effect tool |
 | `mqlaunch_desktop.sh` | Integration | 🟡 Beta | Desktop helper |
 | `test-*.sh` | Testing | 🟢 Stable | Test and validation scripts |

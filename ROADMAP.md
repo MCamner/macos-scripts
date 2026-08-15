@@ -9,12 +9,14 @@ Current version: 2.0.1
 The next major product step is:
 
 ```text
-v2.0.0 — Runtime Authority and Command Surface Governance
+v2.1.0 — MQ Pulse Operator Cockpit
 ```
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
-v2.0.0 shipped on 2026-07-28. Every P0–P3 block below is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release; no roadmap implementation remains open in this repo.
+v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release.
+
+v2.1.0 is the next planned release. It does not add a new source of truth — it adds one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects.
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -1557,6 +1559,1160 @@ checkboxes because this repo cannot prove them:
   Neither is a `mqlaunch` command: both return `Unknown command`. They are
   stack-level checks that belong to whoever owns them, and this repo has no way
   to run them.
+
+---
+
+## v2.1.0 — MQ Pulse Operator Cockpit
+
+Status: In progress — six collectors, the attention engine, the scoped
+command surface and the menu are done; the machine contract is next
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Add `mqlaunch pulse` as the canonical read-only operator cockpit for `macos-scripts` and the wider MQ stack.
+
+The command should answer:
+
+```text
+Is the environment healthy?
+What needs attention?
+Which existing command should I run next?
+```
+
+`pulse` must remain a thin operator surface.
+
+```text
+mqlaunch collects -> normalizes -> renders -> points to existing commands
+```
+
+It must not move orchestration, review logic, memory logic, repo scoring, or other domain intelligence into shell.
+
+### Why this matters
+
+`macos-scripts` already has strong runtime authority, command governance, delegation, safety gates, repo status, stack status, memory status, Git workflows, release readiness, and health checks.
+
+The remaining operator problem is fragmentation.
+
+Today the user may need several commands to understand the current state:
+
+```bash
+mqlaunch doctor
+mqlaunch repos status
+mqlaunch stack status
+mqlaunch mcp-status
+mqlaunch obsidian status
+mqlaunch release-check
+mqlaunch skills
+```
+
+`mqlaunch pulse` should combine those existing signals into one coherent read-only view without becoming a new source of truth.
+
+---
+
+## P0 — Pulse contract and ownership
+
+Status: Done — `docs/PULSE_CONTRACT.md`, `mqlaunch/lib/pulse/model.sh`,
+`tests/pulse-contract-smoke.sh`
+Priority: P0
+Owner: `macos-scripts`
+
+**The word `pulse` was already taken, and this section did not say so.**
+`mqlaunch pulse` was the Wi-Fi and latency diagnostic — a real command, in the
+registry, on the `ops` help group, with its own colour-contract test. Every line
+of v2.1.0 below is addressed to that word, so the first thing this block had to
+do was decide which meaning keeps it.
+
+The diagnostic moved. It is `mqlaunch netpulse` now, running
+`tools/scripts/netpulse.sh`, unchanged apart from the name. No alias was kept:
+`mqlaunch pulse` answers `Did you mean: mqlaunch netpulse` through the existing
+unknown-command path, which moves an operator across without letting the old
+meaning resolve. A repo that spent v2.0.0 removing overlapping command surfaces
+does not open v2.1.0 by giving one word two meanings.
+
+### Tasks
+
+* [x] Define `mqlaunch pulse` as a read-only operator surface.
+* [x] Document that `macos-scripts` owns collection, normalization, rendering, and navigation only.
+* [x] Preserve current ownership boundaries:
+
+  * `mq-agent` owns orchestration and routing.
+  * `mq-mcp` owns execution and review tools.
+  * `mqobsidian` owns durable truth and memory.
+  * `mq-hal` owns local operator summaries.
+  * `repo-signal` owns repo readiness signals.
+
+* [x] Prohibit mutation from all Pulse collectors.
+* [x] Prohibit new review, scoring, promotion, routing, or architecture logic in shell.
+
+  Stated with the line that decides the hard cases: mapping another repo's
+  verdict onto a Pulse state is normalization; deriving that verdict because the
+  owning repo did not publish one is domain logic and belongs there.
+
+* [x] Define canonical Pulse states:
+
+  * `PASS`
+  * `WARN`
+  * `FAIL`
+  * `UNAVAILABLE`
+  * `SKIPPED`
+
+* [x] Require unavailable checks to report `UNAVAILABLE` rather than silently passing.
+
+  Which only means something once `UNAVAILABLE` reaches the exit code, so the
+  model ranks it with `WARN`. Exiting 0 would be the same silent pass one level
+  down, where a script reads it; exiting 2 would say the check was measured and
+  broken. The operator acts on that difference — `FAIL` means fix the subject,
+  `UNAVAILABLE` means fix the reach.
+
+* [x] Define exit-code contract:
+
+  * `0` — healthy / no attention required.
+  * `1` — one or more warnings.
+  * `2` — one or more failures.
+  * `3` — Pulse itself could not complete reliably.
+
+  The case this list left open is a run with nothing in it — no checks, or every
+  check `SKIPPED`. That is `3`, not `0`. Pulse holds no signals of its own, so a
+  run that collected none knows nothing about the machine, and the alternative
+  makes the healthiest-looking run the one where every collector failed to
+  register. `SKIPPED` therefore contributes nothing to the verdict but cannot
+  stand in for a measurement either.
+
+### Exit gate
+
+* [x] Pulse ownership is documented — `docs/PULSE_CONTRACT.md`.
+* [x] Runtime authority remains unchanged. The model sits on the authority-owned
+  path and is classified in `docs/AUTHORITY_MAP.md` as test-only until the first
+  collector sources it, which is honest about what reaches it today.
+* [x] No new domain logic is introduced into `macos-scripts`. The model reads
+  nothing about the machine: every function is a pure function of the states it
+  is handed.
+
+`tests/pulse-contract-smoke.sh` holds a 15-run truth table, each row separating
+two rules that would otherwise look alike, and was proved able to fail against
+four planted defects — `UNAVAILABLE` ranked as `PASS`, an empty run reporting
+`PASS`, a `pulse` dispatch arm running `netpulse.sh` again, and `pulse` added as
+an alias of `netpulse`.
+
+Writing it found one defect in the model. `pulse_overall_state` read stdin
+whenever it was given no arguments, so on a terminal it blocked on the
+operator's keyboard and never returned — the state every caller is in until a
+collector registers. It reads stdin only when stdin is not a TTY now, the rule
+`tests/menu-eof-smoke.sh` already holds the interactive surfaces to. The step
+covering it runs under a pty, because a redirected stdin cannot reproduce the
+condition; that is why the first run of the suite passed over it.
+
+---
+
+## P1 — Canonical Pulse model
+
+Status: Done — `mqlaunch/lib/pulse/item.sh`, gated by
+`tests/pulse-collectors-smoke.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+All collectors should return the same small internal status model.
+
+### Tasks
+
+* [x] Define the internal Pulse item model.
+
+Example:
+
+```json
+{
+  "source": "github",
+  "area": "git",
+  "status": "WARN",
+  "subject": "PR #184",
+  "summary": "Open and mergeable",
+  "evidence": "GitHub reports the PR as mergeable",
+  "next_command": "mqlaunch git",
+  "priority": 60
+}
+```
+
+* [x] Require `source`.
+* [x] Require `area`.
+* [x] Require `status`.
+* [x] Require `subject`.
+* [x] Require `summary`.
+* [x] Support optional `evidence`.
+* [x] Support optional `next_command`.
+* [x] Add `priority` for deterministic attention ordering.
+* [x] Add optional freshness metadata.
+* [x] Add optional collector duration metadata.
+* [x] Ensure the complete model can be serialized losslessly to JSON.
+
+  `priority` defaults to 0 and is never derived from the status. Mapping
+  `FAIL` to a number is the attention engine's job, and doing it here would
+  put the ordering in the model where nothing could change it.
+
+  Records are joined with RS (0x1e) and their pairs with US (0x1f), and the
+  JSON is written by python3 rather than assembled in shell. The first version
+  inferred a record boundary from seeing the `source` key again — a heuristic,
+  and a heuristic in a serializer fails on the first item that omits a field.
+  Step 3 of the gate round-trips a summary holding a quote, a comma, a
+  backslash, a colon and a non-ASCII glyph.
+
+### Exit gate
+
+* [x] Human and JSON output use the same underlying model — `pulse_render` and
+  `pulse_items_json` both read `PULSE_ITEMS` and neither computes a state.
+* [x] Rendering contains no independent health logic. Held by rendering a run
+  whose prose disagrees with its states: an item that says "everything is fine"
+  with status `FAIL` must still draw the failure glyph.
+* [x] Attention can be derived entirely from Pulse items — every field the
+  attention engine needs is on the item, including `priority` and
+  `next_command`.
+
+---
+
+## P1 — Core Pulse collectors
+
+Status: Done — six collectors, gated by `tests/pulse-collectors-smoke.sh` and
+`tests/pulse-state-collectors-smoke.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+### System
+
+* [x] Reuse the existing doctor/environment checks.
+* [x] Report required dependency health.
+* [x] Report environment/configuration failures.
+* [x] Preserve existing source diagnostics where useful.
+
+Example:
+
+```text
+SYSTEM
+✓ Environment healthy
+✓ Required tools available
+```
+
+### Repositories
+
+* [x] Reuse existing repo-status functionality.
+
+  `tools/scripts/mq-repos.py status --json` — the same code path
+  `mqlaunch repos status` prints from, so the two cannot disagree about what
+  dirty means. The flag is new; the readings are not. Parsing the human output
+  instead would have made the screen format a contract, and a screen is not a
+  contract.
+
+* [x] Show clean/dirty state.
+* [x] Show current branch.
+* [x] Show ahead/behind where already available.
+
+  "Where already available" turned out to be nowhere: nothing in this repo read
+  ahead/behind. `mq-repos.py` now derives it from
+  `git rev-list --count --left-right @{u}...HEAD`, which fails on a branch with
+  no upstream — a normal state, reported as such rather than as an error. A
+  clean tree that is two commits ahead is a warning in Pulse, and that is the
+  reading the flag was added for.
+
+* [x] Report inaccessible repos explicitly.
+* [x] Summarize how many repos require attention.
+
+  One item per repo that needs attention, then one summary item for the rest.
+  A row per clean repo is what `mqlaunch repos status` is for; Pulse exists to
+  be shorter than the commands it summarises.
+
+Example:
+
+```text
+REPOSITORIES
+✓ mq-agent        main · clean
+✓ mq-mcp          main · clean
+! macos-scripts   feature/pulse · dirty
+```
+
+### MQ Stack
+
+* [x] Reuse canonical stack truth from `mq-agent`.
+
+  `mq-agent stack status --json`, run through `uv` in the mq-agent checkout —
+  the same route `mqlaunch stack` takes. Pulse reads `exists` and
+  `next_action` and maps them; it derives no readiness of its own.
+
+* [x] Surface `mq-agent` availability.
+* [x] Surface `mq-mcp` availability.
+* [x] Surface `mq-hal` availability.
+* [x] Surface `mqobsidian` availability.
+* [x] Surface `repo-signal` availability.
+
+  Five boxes, one rule: availability comes from the delegate's own `exists`
+  field, per repo, whatever repos it lists. Hard-coding these five names in the
+  collector would make Pulse wrong the day the stack gains a sixth.
+
+  When mq-agent itself is not installed the whole area is one `UNAVAILABLE`
+  item — not five. Five rows saying "unknown" would be five guesses dressed as
+  readings, and the gate asserts the count.
+
+Example:
+
+```text
+MQ STACK
+✓ mq-agent
+✓ mq-mcp
+✓ mq-hal
+✓ mqobsidian
+✓ repo-signal
+```
+
+### Memory
+
+* [x] Surface semantic repository memory availability.
+* [x] Surface vector-store availability.
+* [x] Surface vector-store source where already exposed.
+* [x] Surface stack-truth freshness.
+* [ ] Surface existing held/review queues when a read-only interface exists.
+
+  **Not done, and the condition is the reason.** `mq-agent memory review-status`
+  exists and is read-only, but it prints for a human — no `--json`. Reading it
+  would make mq-agent's screen layout a contract this repo depends on, which is
+  the mistake `--json` on `mq-repos.py` was added to avoid one level down.
+
+  So the queue is absent from `MEMORY` rather than guessed at. Closing this box
+  needs a machine-readable mode on `mq-agent memory review-status`, in mq-agent.
+  Nothing in `macos-scripts` can close it.
+* [x] Never infer memory state from missing data.
+
+Example:
+
+```text
+MEMORY
+✓ semantic store
+! stack truth aging
+✓ review queue empty
+```
+
+### Git / GitHub
+
+* [x] Surface open PR count for the current repo.
+* [x] Surface mergeability where GitHub reports it.
+* [x] Surface failing CI.
+* [x] Surface pending CI.
+* [x] Surface dirty worktree.
+* [x] Surface unpushed local commits where already available.
+* [x] Perform no push, merge, checkout, or branch mutation.
+
+Example:
+
+```text
+GIT / GITHUB
+! 2 open PRs
+✓ CI passing
+✓ worktree clean
+```
+
+### Quality
+
+* [x] Reuse command-registry validation.
+* [x] Reuse runtime-authority validation.
+* [x] Reuse skill-discoverability validation.
+* [x] Reuse documentation parity checks.
+* [x] Reuse existing test/shell inventory checks.
+* [x] Do not implement parallel quality validators.
+
+Example:
+
+```text
+QUALITY
+✓ command registry
+✓ runtime authority
+✓ skills discoverable
+✓ docs parity
+```
+
+### Exit gate
+
+* [x] Every collector can run independently.
+* [x] One failed collector does not crash the whole Pulse.
+
+  Held end to end: a run with mq-agent absent, `gh` absent and one quality gate
+  failing still renders all six areas and exits 2. Getting there closed four
+  real `set -e` hazards — `var="$(cmd)"` ends the caller when the command fails,
+  and every collector reads a delegate that legitimately exits non-zero.
+* [x] Collector failures become `FAIL` or `UNAVAILABLE`.
+* [x] All collectors are read-only. Asserted rather than asserted-to: the git
+  collector runs against a scratch repository and the test compares `HEAD` and
+  the worktree before and after.
+
+---
+
+## P1 — Attention engine
+
+Status: Done — `mqlaunch/lib/pulse/attention.sh`, gated by
+`tests/pulse-attention-smoke.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Turn status into an actionable operator view without making decisions that belong elsewhere.
+
+### Tasks
+
+* [x] Collect all `WARN` and `FAIL` items — and `UNAVAILABLE`, which this
+  line does not mention and the engine includes anyway. A run holding one
+  unreachable collector and nothing else reports `WARN`, so an attention list
+  without it would print a heading that says something needs attention above an
+  empty list. The model already ranks `UNAVAILABLE` with `WARN`; the engine
+  follows the model rather than the sentence.
+* [x] Sort deterministically by priority.
+* [x] Deduplicate repeated manifestations of the same problem.
+
+  On a key the collector supplies, never on a resemblance the engine noticed.
+  `dedupe_key` is a new optional item field: the repositories collector and the
+  Git collector both see this checkout is dirty — one walking the MQ repos, one
+  reading the repo mqlaunch runs in — and both label it `worktree:<repo>`. The
+  engine merges those two into one finding and merges nothing else. Items
+  without a key are always kept, because two rows that look alike are not
+  evidence that they are one problem, and dropping one on that basis would hide
+  a real one.
+* [x] Show a maximum of 5 items in the default view.
+* [x] Show additional count when more issues exist.
+
+Example:
+
+```text
++ 3 additional warnings
+```
+
+* [x] Prioritize in this order, with one rank that is real and unreachable —
+  see below the list:
+
+```text
+FAIL
+security / destructive risk
+broken runtime
+failing CI
+repo divergence
+stale state
+maintenance
+```
+
+`security / destructive risk` has no items. No collector publishes that signal
+today, and inventing one to fill the row would be the engine deciding something
+about the world. The rank exists in `pulse_attention_rank` because the order is
+the contract; when a collector starts reporting risk it has a place to land, and
+until then nothing sorts into it. The other six are derived from what an item
+already carries — its status, area and subject — because those are the only
+things the engine is allowed to read.
+
+* [x] Allow an Attention item to contain an existing `next_command`.
+* [x] Require every recommendation to be backed by actual evidence.
+* [x] Never convert a technical state into an unsupported decision.
+
+Allowed:
+
+```text
+Stack truth is stale
+Run: mqlaunch stack truth-export
+```
+
+Not allowed:
+
+```text
+Merge PR #184 now
+```
+
+### Exit gate
+
+* [x] Attention ordering is deterministic. Rank, then the item's own
+  `priority`, then area, then subject — with `LC_ALL=C` on the sort, so the
+  order does not change with the operator's locale. Held by building the same
+  run backwards and requiring the same list.
+* [x] Every recommendation has a traceable source: the engine repeats the
+  `next_command` an item carried and has no way to produce one. A finding
+  without a command renders without an arrow, which the gate asserts by counting
+  them.
+* [x] No recommendation performs a write automatically. Held structurally as
+  well as behaviourally — the gate fails if `attention.sh` ever names `git`,
+  `gh`, `uv`, `curl` or a mutation verb. That check is the reason this block
+  reads only items: PR 2 and PR 3 each found a defect where a command failed,
+  its output was empty, and empty read as healthy. An engine that ran its own
+  probes would be a fresh place for that to happen, one level further from the
+  contract that gates the collectors.
+
+---
+
+## P1 — `mqlaunch pulse` command surface
+
+Status: Done — the command, the scopes, `--json`, `--plain`, `--no-network`
+and `--verbose`, gated by `tests/pulse-machine-surface-smoke.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+### Tasks
+
+* [x] Add:
+
+```bash
+mqlaunch pulse
+```
+
+* [x] Add machine-readable output:
+
+```bash
+mqlaunch pulse --json
+```
+
+One `mq.pulse.v1` document on stdout, exit code unchanged.
+
+* [x] Add scoped views — one area's collector runs, and only that area
+  renders. `attention` is the exception: it collects everything and narrows the
+  rendering, because a view over every area cannot be scoped to one collector
+  without becoming the least informed screen in the product.
+
+```bash
+mqlaunch pulse system
+mqlaunch pulse repos
+mqlaunch pulse stack
+mqlaunch pulse memory
+mqlaunch pulse git
+mqlaunch pulse quality
+mqlaunch pulse attention
+```
+
+* [x] Add:
+
+```bash
+mqlaunch pulse --no-network
+```
+
+Network-dependent checks should become `SKIPPED`.
+
+* [x] Add:
+
+```bash
+mqlaunch pulse --verbose
+```
+
+Show evidence and collector details. Both were already on the item — the flag
+prints them rather than collecting anything more.
+
+* [x] Add:
+
+```bash
+mqlaunch pulse --plain
+```
+
+Stable non-panel output — five tab-separated fields per item, the verdict on a
+`#` comment line. `--json` and `--plain` together are refused rather than
+resolved by precedence: picking one for the caller is how a pipeline ends up
+parsing the other.
+
+* [x] Respect `NO_COLOR=1`.
+* [x] Keep JSON stdout free from ANSI and diagnostics — including a delegate that prints a warning line before its own document.
+* [x] Preserve stable exit codes.
+* [x] Register Pulse in the canonical command registry.
+* [x] Keep help, palette, dispatch, README, and `docs/COMMANDS.md` in sync.
+
+### Exit gate
+
+* [x] Direct CLI works.
+* [x] Registry and dispatch agree.
+* [x] Human and JSON output are covered by tests.
+* [x] All exit codes are tested — 0, 1 and 2 driven end to end, 3 in `pulse-contract-smoke.sh`.
+
+---
+
+## P1 — Pulse menu
+
+Status: Done — `terminal/menus/mq-pulse-menu.sh`, gated by
+`tests/pulse-menu-smoke.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+Add one compact menu for status inspection and drill-down.
+
+### Menu
+
+```text
+╔══════════════════════════════════════════════════════════════╗
+║ MQ PULSE // Operator Status                                  ║
+╚══════════════════════════════════════════════════════════════╝
+
+OVERVIEW
+1. Full Pulse
+2. Attention
+
+ENVIRONMENT
+3. System
+4. Repositories
+5. MQ Stack
+
+STATE
+6. Memory
+7. Git / GitHub
+8. Quality
+
+TOOLS
+9. Refresh
+
+b. Back
+q. Quit
+```
+
+### Tasks
+
+* [x] Add `Full Pulse`.
+* [x] Add `Attention`.
+* [x] Add `System`.
+* [x] Add `Repositories`.
+* [x] Add `MQ Stack`.
+* [x] Add `Memory`.
+* [x] Add `Git / GitHub`.
+* [x] Add `Quality`.
+* [x] Add `Refresh` — which repeats the view the operator last opened rather
+  than always returning to the full run. Nothing here caches, so a Refresh that
+  meant "run the full view again" would be row 1 under a second name, and the
+  repo's inventory gate counts that as a duplication for good reason.
+* [x] Keep the menu within the repo's existing menu-size guardrail — nine
+  options against a limit of ten, enforced by
+  `tests/command-discovery-inventory-smoke.sh` rather than counted here.
+* [x] Route drill-down to existing command surfaces rather than implementing duplicate behavior.
+
+### Exit gate
+
+* [x] The menu stays within the existing option-count contract.
+* [x] Every menu item routes through the authoritative dispatcher or an approved delegation path.
+* [x] No menu item bypasses runtime authority. Every row runs
+  `bin/mqlaunch pulse <scope>`, never `tools/scripts/pulse.sh`, so a menu row
+  and a typed command are the same thing.
+
+The menu's exit key is `x`, not the `q` sketched above: `read_menu_choice`
+prints "or x to exit" and `tests/menu-exit-contract-smoke.sh` holds every menu
+to it. A screen offering a key the prompt does not mention would be the
+inconsistency this release exists to remove.
+
+The menu holds no status logic, and that is gated structurally as well as by
+behaviour — the smoke test fails if the file ever calls `git`, `gh`, `uv` or
+`curl`, or names a Pulse state. It is the easiest place in the product to add a
+second definition of "healthy", one level above the collectors the contract
+gates, so it is the place worth pinning.
+
+---
+
+## P1 — Full Pulse view
+
+Status: Planned
+Priority: P1
+Owner: `macos-scripts`
+
+### Header
+
+* [ ] Show host.
+* [ ] Show current repo.
+* [ ] Show current branch.
+* [ ] Show check time.
+* [ ] Show total duration where useful.
+
+Example:
+
+```text
+MQ PULSE
+Host: Zephyr
+Repo: macos-scripts
+Branch: main
+Checked: 01:31
+```
+
+### Overall
+
+* [ ] Add one simple aggregate state.
+
+Example:
+
+```text
+OVERALL
+WARN · 2 items need attention
+```
+
+* [ ] Avoid introducing a complex health score in v2.1.0.
+
+### Sections
+
+* [ ] `SYSTEM`
+* [ ] `REPOSITORIES`
+* [ ] `MQ STACK`
+* [ ] `MEMORY`
+* [ ] `GIT / GITHUB`
+* [ ] `QUALITY`
+* [ ] `ATTENTION`
+* [ ] `NEXT COMMANDS`
+
+### Default rendering
+
+Example:
+
+```text
+SYSTEM
+✓ environment
+✓ dependencies
+
+REPOSITORIES
+✓ 7 clean
+! 1 dirty
+
+MQ STACK
+✓ 5/5 available
+
+MEMORY
+✓ semantic store
+! stack truth aging
+
+GIT / GITHUB
+! 2 open PRs
+✓ CI passing
+
+QUALITY
+✓ registry
+✓ runtime authority
+✓ skills
+
+ATTENTION
+
+1. Stack truth is stale
+   Run: mqlaunch stack truth-export
+
+2. 2 pull requests are open
+   Run: mqlaunch git
+```
+
+### Exit gate
+
+* [ ] The default view fits comfortably in one terminal screen under normal conditions.
+* [ ] Detailed evidence is hidden unless requested.
+* [ ] Attention is visually more prominent than raw diagnostics.
+
+---
+
+## P1 — Pulse test coverage
+
+Status: Done — seven files, all in `tools/scripts/test-all.sh`
+Priority: P1
+Owner: `macos-scripts`
+
+Ticked against a test that actually exercises the case, not against a file whose
+name suggests it. Two boxes were still open when this block was closed and were
+closed by writing the missing test: `--verbose` and failing CI.
+
+### State tests
+
+* [x] `PASS`
+* [x] `WARN`
+* [x] `FAIL`
+* [x] `UNAVAILABLE`
+* [x] `SKIPPED`
+
+### Aggregation tests
+
+* [x] Overall PASS.
+* [x] Overall WARN.
+* [x] Overall FAIL.
+* [x] Attention priority ordering.
+* [x] Attention deduplication.
+
+### CLI tests
+
+* [x] `mqlaunch pulse`
+* [x] `mqlaunch pulse --json`
+* [x] `mqlaunch pulse --plain`
+* [x] `mqlaunch pulse --verbose` — evidence and timing on demand, absent by
+  default, added in PR 7 when this box turned out to be the only untested flag.
+* [x] `mqlaunch pulse --no-network`
+* [x] Every scoped Pulse command.
+
+### Environment tests
+
+* [x] bash.
+* [ ] zsh. The entrypoint is bash and is always invoked as `bash pulse.sh`, so
+  there is no zsh path to test. What is zsh is the launcher that dispatches to
+  it, and `tests/menu-shell-guard-smoke.sh` covers that. Ticking this would
+  claim coverage of a path that does not exist.
+* [x] TTY.
+* [x] non-TTY.
+* [x] `NO_COLOR=1`.
+
+### Failure injection
+
+* [x] GitHub unavailable.
+* [x] `mq-agent` unavailable.
+* [ ] `mqobsidian` unavailable. Pulse never reads mqobsidian: memory comes from
+  mq-agent, which owns that reading. There is nothing here to inject.
+* [x] malformed delegated JSON.
+* [x] collector timeout.
+* [x] dirty repository.
+* [x] failing CI — added in PR 7. GitHub's own verdict arrives as `FAIL` and
+  names the workflow, which is the other half of the timeout rule: the collector
+  may not invent a verdict, and may not drop one it was given.
+
+### Governance tests
+
+* [x] command registry parity.
+* [x] docs parity.
+* [x] runtime authority.
+* [x] test inventory.
+* [x] shell lint.
+
+### Exit gate
+
+* [x] Pulse is included in the full selftest suite.
+* [ ] Failure-path tests prove degraded behavior instead of only happy-path rendering.
+
+---
+
+## P2 — Interactive drill-down
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] System drill-down opens the existing doctor/system surface.
+* [ ] Repository drill-down opens the repo hub.
+* [ ] Stack drill-down opens the existing stack surface.
+* [ ] Memory drill-down opens the existing memory/obsidian surface.
+* [ ] Git/GitHub drill-down opens the Git surface.
+* [ ] Quality drill-down opens the relevant validation/selftest surface.
+* [ ] Attention details may expose:
+
+  * View evidence.
+  * Open owning menu.
+  * Copy suggested command.
+  * Back.
+
+* [ ] Do not duplicate existing command implementations inside Pulse.
+
+### Exit gate
+
+* [ ] Pulse navigation remains thin.
+* [ ] Existing owners execute existing workflows.
+
+---
+
+## P2 — `mq.pulse.v1` JSON contract
+
+Status: Done — `mqlaunch/lib/pulse/document.sh`, gated by
+`tests/pulse-machine-surface-smoke.sh`
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [x] Version the public machine contract as:
+
+```text
+mq.pulse.v1
+```
+
+* [x] Use a stable top-level structure. Two additions to the sketch below, both
+  of them the contract's "absence" rule in a data structure: `scope`, and
+  `collected` — the areas that actually ran. A section missing from `sections`
+  means its collector did not run, never that the area was fine, and without
+  `collected` a scoped document reads as five healthy areas. Section keys are
+  the item's `area` verbatim (`repositories`, not `repos`): a translation table
+  would drop the first area a new collector introduces.
+
+Example:
+
+```json
+{
+  "schema": "mq.pulse.v1",
+  "status": "WARN",
+  "summary": {
+    "pass": 18,
+    "warn": 2,
+    "fail": 0,
+    "unavailable": 0,
+    "skipped": 0
+  },
+  "sections": {
+    "system": [],
+    "repos": [],
+    "stack": [],
+    "memory": [],
+    "git": [],
+    "quality": []
+  },
+  "attention": []
+}
+```
+
+* [x] Guarantee no ANSI in JSON output.
+* [x] Send diagnostics to stderr.
+* [x] Add schema/contract validation.
+* [ ] Add fixtures for stable output. Still open, and deliberately: a golden
+  document would pin `duration_ms` and this machine's repo list along with the
+  schema, so it would fail for reasons that have nothing to do with the
+  contract. What the gate asserts instead is the shape — key set, section keys,
+  `collected`, and attention being section items. A fixture belongs here once
+  the timing fields are pinnable, which is PR 7's block.
+* [x] Test malformed delegate responses — noise before the document leaves the area `UNAVAILABLE`, never empty and never healthy.
+
+### Exit gate
+
+* [x] `mqlaunch pulse --json | jq .` succeeds.
+* [x] Human, `--plain` and JSON views represent the same state, and exit alike.
+* [x] Contract changes require an explicit schema version decision.
+
+---
+
+## P2 — Pulse performance and degradation
+
+Status: Mostly done — degradation and the local-only target are gated by
+`tests/pulse-degradation-smoke.sh`; the full-run target is not met, see below
+Priority: P2
+Owner: `macos-scripts`
+
+### Goal
+
+Pulse should feel like a status command, not a long-running workflow.
+
+### Measured
+
+M-series Mac, warm `uv` cache, `--json` per scope. Taken before any tuning:
+
+```text
+system      132 ms
+repos       519 ms
+stack      1437 ms      mq-agent through uv
+memory     1226 ms      mq-agent through uv, two calls
+git        1626 ms      two gh calls
+quality    1351 ms      five gates, serial
+
+local-only 1787 ms      --no-network --no-stack
+full       5365 ms
+```
+
+Two changes came out of that, and nothing else was tuned on a guess:
+
+* the clock was a process. `pulse_now_ms` shelled out to python3 twice per
+  collector — fifteen spawns, 287 ms, 16% of a local-only run spent asking what
+  time it was. bash 5 publishes `EPOCHREALTIME`; the fallback stays for bash 3.2
+  and for locales whose decimal separator is not a point.
+* the five quality gates were serial. They are independent and read-only, so
+  they now run concurrently and are reported in list order — never the order
+  they finish in, which `tests/pulse-degradation-smoke.sh` holds by planting the
+  slowest gate second.
+
+```text
+quality    1351 ms  →  574 ms
+local-only 1787 ms  →  982 ms
+full       5365 ms  →  3850 ms
+```
+
+### Tasks
+
+* [x] Measure each collector.
+* [x] Record collector duration in verbose mode.
+* [x] Parallelize independent read-only collectors where safe — the five quality
+  gates. Deliberately not the six collectors: two of them shell into mq-agent
+  through the same `uv` project, and the item order is the screen's order.
+  "Where safe" is doing real work in that sentence.
+* [x] Add timeouts to network-dependent collectors.
+* [ ] Do not let one slow GitHub request block all other output. Bounded, not
+  concurrent: a slow `gh` delays the rest by at most `PULSE_GH_TIMEOUT` and
+  costs nothing else — every other area is still collected and rendered. Making
+  it genuinely non-blocking needs the collectors themselves parallel, which is
+  the change ruled out above.
+* [x] Allow local-only execution with `--no-network`.
+* [ ] Cache only where a clear TTL exists. Still open, and it may stay open: no
+  owner in the stack publishes a TTL for its status, so a cache here would be
+  Pulse inventing a freshness claim — the one thing this contract forbids.
+* [ ] Mark cached data explicitly. Nothing is cached, so there is nothing to
+  mark.
+* [ ] Never render stale cached data as live state. Held by there being no
+  cache, not by a check.
+
+### Degradation
+
+```text
+timeout   is not   FAIL on the subject
+timeout   is       UNAVAILABLE on the observation
+```
+
+A gate killed at its budget is not a failing gate, and GitHub not answering is
+not broken CI. Before this block, a slow machine reported the repo's own quality
+as `FAIL` with "run `mqlaunch selftest`" next to it — the advice being to run the
+thing that had just timed out.
+
+| Budget | Seconds | Covers |
+| --- | --- | --- |
+| `PULSE_COLLECTOR_TIMEOUT` | 10 | doctor, repos, each quality gate |
+| `PULSE_STACK_TIMEOUT` | 30 | every mq-agent call, through `uv` |
+| `PULSE_GH_TIMEOUT` | 8 | each `gh` call |
+
+The stack budget keeps room for a cold `uv` cache, which is slower than anything
+measured here by an order of magnitude. Cutting a first run off would make Pulse
+look broken exactly once per dependency change.
+
+### Performance targets
+
+* [x] Local-only Pulse target: `< 1s` — 982 ms measured.
+* [ ] Full Pulse target: `< 3s` under normal conditions. 3850 ms measured, and
+  not reachable by tuning: 3.4 s of it is four calls to delegates in other repos
+  (two `uv`, two `gh`). Reaching it means running the collectors concurrently,
+  which is a change to how the run is ordered rather than a bound on how long it
+  takes, and it belongs in its own block.
+
+### Exit gate
+
+* [x] A slow external dependency degrades gracefully.
+* [x] Local status remains usable during network failure.
+
+---
+
+## P2 — Pulse documentation
+
+Status: Planned
+Priority: P2
+Owner: `macos-scripts`
+
+### Tasks
+
+* [ ] Add Pulse to README.
+* [ ] Add Pulse to `docs/COMMANDS.md`.
+* [ ] Document the Pulse menu.
+* [ ] Document status meanings.
+* [ ] Document exit codes.
+* [ ] Document `mq.pulse.v1`.
+* [ ] Document network-dependent checks.
+* [ ] Document `--no-network`.
+* [ ] Document that Pulse is read-only.
+* [ ] Document ownership boundaries.
+
+### Exit gate
+
+* [ ] README, command reference, registry, help, and dispatcher agree.
+* [ ] Users can understand why a check is `UNAVAILABLE` or `SKIPPED`.
+
+---
+
+## Recommended PR sequence for v2.1.0
+
+### PR 1 — Pulse contract
+
+* [x] Architecture and ownership.
+* [x] Status model.
+* [x] Exit codes.
+* [x] Initial tests.
+* [x] Free the command word — the diagnostic that held `pulse` is `netpulse`.
+  Not on the original list, and it had to come first: every PR below is
+  addressed to `mqlaunch pulse`.
+
+### PR 2 — Core collectors
+
+* [x] System.
+* [x] Repositories.
+* [x] MQ Stack.
+* [x] Initial human renderer.
+* [x] The canonical item model, which PR 1 did not carry and the collectors
+  could not be written without.
+* [x] `--json` on `tools/scripts/mq-repos.py status` — the repositories
+  collector needed a machine contract to read, and the alternative was parsing
+  a screen.
+
+### PR 3 — State collectors
+
+* [x] Memory — semantic store, vector store and stack-truth freshness. The
+  held/review queue is not here; see the box in the collector block for why the
+  gap is left open rather than guessed at.
+* [x] Git/GitHub.
+* [x] Quality.
+* [x] `--no-network`, which the Git collector needed to be testable and an
+  operator needs on a plane. Its place in the `mq.pulse.v1` contract is still
+  PR 6's.
+
+### PR 4 — Attention
+
+* [x] Priority model.
+* [x] Deduplication — needing `dedupe_key` on the item model, so that merging is
+  something a collector states rather than something the engine infers.
+* [x] Suggested commands.
+* [x] Overall state — already landed with the contract in PR 1; the attention
+  list is what the aggregate now points at.
+
+### PR 5 — Pulse menu
+
+* [x] Menu.
+* [x] Drill-down — needing the scoped views from the command-surface block,
+  since a menu that could only run the full view has nothing to drill into.
+* [x] Refresh.
+* [x] `--verbose`, from the same block: the drill-down screens are where "why
+  does it say that" gets asked, and the evidence was already on the item.
+
+### PR 6 — Machine surface
+
+* [x] `mq.pulse.v1`.
+* [x] `--json`.
+* [x] `--plain`.
+* [x] `--no-network` — landed in PR 3.
+* [x] Exit-code tests.
+
+### PR 7 — Performance and polish
+
+* [x] Timeouts — sized from measurement, and a spent budget reports UNAVAILABLE
+  with the timeout named.
+* [x] Collector timing.
+* [x] Degraded-state handling.
+* [x] Documentation.
+* [x] Full regression verification — the test-coverage block above, closed box
+  by box against tests that run.
+
+---
+
+## Definition of Done for v2.1.0
+
+* [x] `mqlaunch pulse` provides one coherent operator status view.
+* [x] System, repositories, MQ stack, memory, Git/GitHub, and quality are represented.
+* [x] Attention surfaces the most important actionable states.
+* [x] Suggested actions only point to existing commands — gated in PR 7. It was
+  the one contract rule nothing checked, and the check found `mqlaunch stack
+  cockpit`, which resolves only because `stack` declares a delegation. A
+  suggestion that does not resolve is worse than none: an operator types it
+  before doubting it.
+* [x] Pulse performs no mutation — the only write in `mqlaunch/lib/pulse` is the
+  `mktemp -d` the quality collector cleans up after itself.
+* [x] Pulse duplicates no MQ domain logic.
+* [x] Failed dependencies degrade to explicit status rather than crashing the command.
+* [x] `mq.pulse.v1` provides a stable machine-readable contract.
+* [x] `NO_COLOR`, TTY, non-TTY, and plain output contracts are preserved.
+* [x] Command registry, help, palette, dispatch, README, and command docs remain
+  synchronized — README was the gap, and closing this box is what found it.
+* [x] Full selftest and release checks pass — 84 active tests, shell lint at
+  warning severity over 214 files, `release-check --json` READY with no blockers.
+* [x] `mqlaunch` remains a thin operator surface.
+
+---
+
+## Post-v2.1.0 candidate — `mqlaunch next`
+
+Do not include this in the v2.1.0 completion gate.
+
+Once Pulse has proven stable, a later release may add:
+
+```bash
+mqlaunch next
+```
+
+It should consume `mq.pulse.v1` rather than perform its own scanning and return one deterministic primary next action.
+
+```text
+Pulse observes -> Attention prioritizes -> Next selects
+```
+
+This preserves Pulse as the canonical status substrate and avoids creating another independent operator model.
 
 ---
 

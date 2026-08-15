@@ -8,6 +8,318 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* A Pulse collector that ran past its budget reported the subject as broken.
+
+  ```text
+  timeout   is not   FAIL on the subject
+  timeout   is       UNAVAILABLE on the observation
+  ```
+
+  A quality gate killed at its budget was reported as `FAIL` — "failing", with
+  "run `mqlaunch selftest`" next to it, which is the advice to run the thing that
+  had just timed out. It now reports `UNAVAILABLE` and names the timeout, and so
+  does every other collector: GitHub not answering is not broken CI, and a slow
+  `uv` is not a broken stack. The item says `timed out after 8s` rather than
+  reusing the wording for a delegate that answered with nothing, because "could
+  not ask" and "asked, got nothing" send an operator to different places.
+
+  `tests/pulse-degradation-smoke.sh` holds it, with a hanging gate, a hanging
+  doctor and a hanging `gh`.
+
+### Changed
+
+* Pulse got faster, in the two places measurement pointed at.
+
+  ```text
+  quality    1351 ms  →  574 ms
+  local-only 1787 ms  →  982 ms
+  full       5365 ms  →  3850 ms
+  ```
+
+  The clock was a process: `pulse_now_ms` shelled out to python3 twice per
+  collector, which was 287 ms of a local-only run spent asking what time it was.
+  bash 5 publishes `EPOCHREALTIME`; the fallback stays for bash 3.2 and for
+  locales whose decimal separator is not a point.
+
+  The five quality gates now run concurrently. They are independent and
+  read-only, and they are still reported in list order — never the order they
+  finish in, which the test holds by planting the slowest gate second. The six
+  collectors are deliberately still serial: two of them shell into mq-agent
+  through the same `uv` project, and the item order is the screen's order.
+
+  The budgets are sized from the same measurements: 10s for local delegates,
+  30s for mq-agent through `uv` (which keeps room for a cold cache), 8s for each
+  `gh` call.
+
+  The full-run target of `< 3s` is not met and is not reachable by tuning: 3.4 s
+  of the 3.85 s is four calls to delegates in other repos. It stays open in
+  ROADMAP.md with that number against it.
+
+### Added
+
+* `mq.pulse.v1` — the machine surface for Pulse.
+
+  ```bash
+  mqlaunch pulse --json     # one mq.pulse.v1 document on stdout
+  mqlaunch pulse --plain    # five tab-separated fields per item
+  ```
+
+  ```json
+  {
+    "schema": "mq.pulse.v1",
+    "status": "WARN",
+    "scope": null,
+    "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+    "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
+    "sections": { "system": [], "repositories": [] },
+    "attention": []
+  }
+  ```
+
+  Full and scoped runs use the same schema, and every output mode exits with the
+  same code. `collected` is why a scoped document is safe to consume: a section
+  that is not in `sections` means its collector did not run, never that the area
+  was fine. It is recorded as each collector runs rather than derived from the
+  items, because a collector that ran and found nothing is a different fact from
+  one that never ran.
+
+  `attention` holds the same item objects the sections hold, in the attention
+  engine's order — a view, not a second data kind.
+  `tests/pulse-machine-surface-smoke.sh` holds every entry to appearing in a
+  section byte for byte. `SKIPPED` and `UNAVAILABLE` are serialized like any
+  other item: dropping them would make a skipped run and a healthy run the same
+  document.
+
+  Section keys are the item's `area` verbatim — `repositories`, not the `repos`
+  of the roadmap's sketch. A translation table between areas and document keys
+  would silently drop the first area a new collector introduces.
+
+  `--json` and `--plain` together are refused with exit 2 rather than resolved
+  by precedence; picking one for the caller is how a pipeline ends up parsing
+  the other. A delegate that prints a warning line before its own document takes
+  its area to `UNAVAILABLE` and reaches neither stdout nor the verdict.
+
+* Scoped Pulse views and a Pulse menu.
+
+  ```bash
+  mqlaunch pulse menu        # the eight views as a menu
+  mqlaunch pulse attention   # only what needs attention
+  mqlaunch pulse quality     # one area, and only that area's collector runs
+  mqlaunch pulse --verbose   # the evidence behind each row
+  ```
+
+  A scope runs that area's collector and nothing else, so `pulse quality` costs
+  the five gates rather than the whole run. `attention` is the exception: it
+  collects every area and narrows only what is printed, because a view over
+  everything cannot be scoped to one collector without becoming the least
+  informed screen in the product. A scoped run reports on its scope — `pulse
+  quality` exits 0 when the gates pass, whatever the rest of the machine looks
+  like.
+
+  The menu holds no status logic. Every row runs `bin/mqlaunch pulse <scope>`
+  through the dispatcher, never `tools/scripts/pulse.sh`, so a menu row and a
+  typed command are the same thing. `tests/pulse-menu-smoke.sh` fails if the
+  menu file ever calls `git`, `gh`, `uv` or `curl`, or names a Pulse state: it
+  is the easiest place in the product to grow a second definition of "healthy",
+  one level above the collectors the contract gates.
+
+  `Refresh` repeats the view last opened rather than returning to the full run.
+  Nothing caches, so a Refresh that meant "run the full view again" would be row
+  1 under a second name — which the repo's inventory gate counts as a
+  duplication for good reason.
+
+  `--verbose` prints the evidence and the collector's duration. Both were
+  already on the item; the flag prints them rather than collecting anything
+  more.
+
+* The Pulse attention engine — `mqlaunch/lib/pulse/attention.sh` and an
+  `ATTENTION` section that puts the run's findings in front of the operator,
+  five at a time, with a count of the rest.
+
+  It reads Pulse items and nothing else: no command, no file, no probe of its
+  own. That is the design, not an implementation detail. The collector work
+  found three defects of one family — a command failed, its output was empty,
+  and empty read as healthy — and an engine that did its own reading would be a
+  fresh place for that, one level further from the contract that gates the
+  collectors. `tests/pulse-attention-smoke.sh` fails if `attention.sh` ever
+  names `git`, `gh`, `uv`, `curl` or a mutation verb.
+
+  Ordering is the roadmap's, derived from an item's status, area and subject:
+  `FAIL`, then broken runtime, failing CI, repo divergence, stale state,
+  maintenance. Ties break on the item's `priority`, then area, then subject,
+  under `LC_ALL=C` — so the same items produce the same list on any machine.
+  One rank in that table, security and destructive risk, is real and
+  unreachable: no collector publishes the signal, and inventing one to fill the
+  row would be the engine deciding something.
+
+  `UNAVAILABLE` findings are listed, although the roadmap task says "all `WARN`
+  and `FAIL`". A run holding one unreachable collector and nothing else reports
+  `WARN`, so leaving it out would print a heading that says something needs
+  attention above an empty list.
+
+* `dedupe_key` on the item model, so that merging two findings is something a
+  collector states rather than something the engine infers. The repositories
+  collector and the Git collector both notice this checkout is dirty — one
+  walking the MQ repos, one reading the repo mqlaunch runs in — and both label
+  it `worktree:<repo>`, so the attention list raises it once. Items without a
+  key are never merged: rows that look alike are not evidence that they are one
+  problem, and dropping one on that basis would hide a real one.
+
+  The engine repeats a `next_command` an item supplied and has no way to produce
+  one. "Stack truth is stale, run `mqlaunch stack truth-export`" is ordering
+  plus a command the collector published; "Merge PR #184 now" would be the
+  engine deciding, and it has no verb for it.
+
+* Three more Pulse collectors — memory, Git/GitHub and quality — so
+  `mqlaunch pulse` covers all six areas the v2.1.0 plan names.
+
+  | Area | Reads | Owner of the signal |
+  | --- | --- | --- |
+  | `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent`, `mqobsidian` |
+  | `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
+  | `QUALITY` | the repo's own five gates, run one by one | `macos-scripts` |
+
+  `QUALITY` reports each gate as its own item and never adds them up. "Some
+  checks passed, so quality is fine" is a verdict that exists nowhere in this
+  repo, so producing one would be Pulse inventing a signal instead of reporting
+  one. A gate that is not installed reports `UNAVAILABLE`, because a check that
+  is not there is not a check that passed.
+
+  The held/review queue is deliberately absent from `MEMORY`. `mq-agent memory
+  review-status` exists and is read-only but prints only for a human; reading it
+  would make mq-agent's screen layout a contract this repo depends on — the
+  mistake `--json` on `mq-repos.py` was added to avoid one level down. Closing
+  that gap needs a machine-readable mode in mq-agent.
+
+* `mqlaunch pulse --no-network`, which skips everything that talks to GitHub.
+  Like `--no-stack` it marks the area `SKIPPED` rather than dropping it.
+  `--no-stack` now covers `MEMORY` as well, since both spend mq-agent calls and
+  a flag that skipped one while paying for the other would misstate what the run
+  costs.
+
+### Fixed
+
+* Four `set -e` hazards of one shape, across every collector:
+  `var="$(cmd)"` ends the caller when the command fails, and each collector
+  reads a delegate that legitimately exits non-zero — `doctor --json` exits 1
+  whenever any check needs attention, and a failing quality gate is the case the
+  collector exists to report. In `pulse_quality_gate` the assignment ended the
+  run before `gate_status=$?` on the next line could execute, so the collector
+  would have taken the whole Pulse down precisely when it had something to say.
+
+* The Git collector reported `Worktree: clean` for a directory that is not a
+  git repository at all. `git status --short` failed, its output was empty, and
+  empty is indistinguishable from a clean tree — a wrong answer arrived at
+  through a silent error, which is the shape `docs/PULSE_CONTRACT.md` exists to
+  forbid. It checks `rev-parse --git-dir` first now and reports `UNAVAILABLE`.
+  The same silence produced an empty branch name, and `gh run list --branch ''`
+  answers about the whole repository: the CI row read "failing" from a workflow
+  on another branch entirely.
+
+* `mqlaunch pulse` — the read-only operator cockpit, with its first three
+  collectors. One screen where the usual sequence was three commands:
+
+  ```text
+  SYSTEM
+    ✔ Environment            12 of 12 checks pass
+
+  REPOSITORIES
+    ⚠ repo-signal            fix/wiki-export · 1 modified, 0 untracked
+        → mqlaunch repos status
+    ✔ Repositories           6 of 9 repos clean
+
+  MQ STACK
+    ✔ MQ stack               8 of 8 repos present, none flagged
+
+  Pulse: WARN
+  ```
+
+  | Area | Reads | Owner of the signal |
+  | --- | --- | --- |
+  | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
+  | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
+  | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
+
+  Every collector reads a machine document rather than a screen, because a
+  screen is not a contract. None of them derives a verdict: where a delegate
+  publishes one it is mapped, and where it does not the collector reports
+  `UNAVAILABLE`. `--no-stack` skips the slow one and marks the area `SKIPPED`
+  rather than dropping it — a run with the flag must not look like a run where
+  the stack was fine.
+
+  Memory, Git/GitHub and quality are later blocks. They are absent rather than
+  stubbed: a collector that reports nothing and a subject that is healthy must
+  never look the same.
+
+* The canonical Pulse item model — `mqlaunch/lib/pulse/item.sh`. Five required
+  fields, five optional, and nothing else accepted; a collector that invents a
+  field name is refused rather than carried into the JSON as though the contract
+  allowed it. Records are joined with RS and their pairs with US, and python3
+  writes the JSON, so a summary holding a quote, a comma, a backslash or a
+  non-ASCII glyph survives the round trip. The first version inferred record
+  boundaries from seeing the `source` key again — a heuristic, and a heuristic
+  in a serializer fails on the first item that omits a field.
+
+* `--json` on `tools/scripts/mq-repos.py status`, and an ahead/behind reading to
+  go in it. The repositories collector needed a machine contract to read;
+  parsing the human output would have made the screen format a contract. Human
+  and JSON modes now share `status_records()`, so they cannot disagree about
+  what dirty means. Ahead/behind was in the roadmap as "where already
+  available", and it was available nowhere — a clean tree that is two commits
+  ahead is a warning in Pulse, and nothing in this repo could see it before.
+
+* The v2.1.0 Pulse contract — `docs/PULSE_CONTRACT.md` for the ownership
+  boundary, `mqlaunch/lib/pulse/model.sh` for the rules that can be executed,
+  `tests/pulse-contract-smoke.sh` for the gate. PR 1 of the sequence, landed
+  before the first collector so that nothing depends on a rule still being
+  decided.
+
+  Five check states — `PASS`, `WARN`, `FAIL`, `UNAVAILABLE`, `SKIPPED` — and
+  four exit codes: `0` healthy, `1` warnings, `2` failures, `3` Pulse could not
+  complete. Two decisions the roadmap left open are made in the model rather
+  than in prose:
+
+  ```text
+  PASS UNAVAILABLE   → WARN / 1    not a silent pass, not a failure
+  FAIL SKIPPED       → FAIL / 2    a skip cannot lower a verdict
+  SKIPPED            → INCOMPLETE / 3   nor stand in for a measurement
+  (no checks)        → INCOMPLETE / 3
+  ```
+
+  `UNAVAILABLE` ranks with `WARN` because exiting 0 for a check that could not
+  run is the silent pass the contract exists to forbid, one level down where a
+  script reads it — and exiting 2 would claim the check was measured and found
+  broken. A run with nothing contributing is `INCOMPLETE` because Pulse holds no
+  signals of its own; the alternative makes the healthiest-looking run the one
+  where every collector failed to register.
+
+  The gate carries a 15-run truth table and was proved able to fail against four
+  planted defects: `UNAVAILABLE` ranked as `PASS`, an empty run reporting
+  `PASS`, a `pulse` dispatch arm running the network diagnostic again, and
+  `pulse` re-added as an alias of `netpulse`.
+
+### Changed
+
+* `mqlaunch pulse` is now `mqlaunch netpulse`. The Wi-Fi and latency diagnostic
+  is unchanged — same script, renamed to `tools/scripts/netpulse.sh`, same
+  output, same colour contract, still on the `ops` help group — but it no longer
+  holds the word every line of the v2.1.0 plan is addressed to.
+
+  No alias was kept. `mqlaunch pulse` reaches the existing unknown-command path,
+  which already answers with the nearest match:
+
+  ```text
+  ERROR: Unknown command: pulse
+  Did you mean: mqlaunch netpulse
+  ```
+
+  A deprecated alias would have been the softer move and the wrong one: one word
+  belongs to one command, and leaving `pulse` resolving to the diagnostic is
+  exactly the overlapping command surface v2.0.0 spent a release removing.
+  `mq pulse` on the secondary CLI moved with it.
+
+### Fixed
+
 * `terminal/themes/mq-theme-manager.sh` could only run from
   `$HOME/macos-scripts`. It read `${HOME}/macos-scripts` outright, where
   `tools/scripts/doctor.sh`, `tools/scripts/scan.sh` and — since #172 —
