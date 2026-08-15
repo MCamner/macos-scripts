@@ -1564,7 +1564,8 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: In progress — all six collectors are done; the attention engine is next
+Status: In progress — six collectors and the attention engine are done; the
+command surface and the menu are next
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1946,7 +1947,8 @@ QUALITY
 
 ## P1 — Attention engine
 
-Status: Planned
+Status: Done — `mqlaunch/lib/pulse/attention.sh`, gated by
+`tests/pulse-attention-smoke.sh`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1956,11 +1958,25 @@ Turn status into an actionable operator view without making decisions that belon
 
 ### Tasks
 
-* [ ] Collect all `WARN` and `FAIL` items.
-* [ ] Sort deterministically by priority.
-* [ ] Deduplicate repeated manifestations of the same problem.
-* [ ] Show a maximum of 5 items in the default view.
-* [ ] Show additional count when more issues exist.
+* [x] Collect all `WARN` and `FAIL` items — and `UNAVAILABLE`, which this
+  line does not mention and the engine includes anyway. A run holding one
+  unreachable collector and nothing else reports `WARN`, so an attention list
+  without it would print a heading that says something needs attention above an
+  empty list. The model already ranks `UNAVAILABLE` with `WARN`; the engine
+  follows the model rather than the sentence.
+* [x] Sort deterministically by priority.
+* [x] Deduplicate repeated manifestations of the same problem.
+
+  On a key the collector supplies, never on a resemblance the engine noticed.
+  `dedupe_key` is a new optional item field: the repositories collector and the
+  Git collector both see this checkout is dirty — one walking the MQ repos, one
+  reading the repo mqlaunch runs in — and both label it `worktree:<repo>`. The
+  engine merges those two into one finding and merges nothing else. Items
+  without a key are always kept, because two rows that look alike are not
+  evidence that they are one problem, and dropping one on that basis would hide
+  a real one.
+* [x] Show a maximum of 5 items in the default view.
+* [x] Show additional count when more issues exist.
 
 Example:
 
@@ -1968,7 +1984,8 @@ Example:
 + 3 additional warnings
 ```
 
-* [ ] Prioritize in this order:
+* [x] Prioritize in this order, with one rank that is real and unreachable —
+  see below the list:
 
 ```text
 FAIL
@@ -1980,9 +1997,17 @@ stale state
 maintenance
 ```
 
-* [ ] Allow an Attention item to contain an existing `next_command`.
-* [ ] Require every recommendation to be backed by actual evidence.
-* [ ] Never convert a technical state into an unsupported decision.
+`security / destructive risk` has no items. No collector publishes that signal
+today, and inventing one to fill the row would be the engine deciding something
+about the world. The rank exists in `pulse_attention_rank` because the order is
+the contract; when a collector starts reporting risk it has a place to land, and
+until then nothing sorts into it. The other six are derived from what an item
+already carries — its status, area and subject — because those are the only
+things the engine is allowed to read.
+
+* [x] Allow an Attention item to contain an existing `next_command`.
+* [x] Require every recommendation to be backed by actual evidence.
+* [x] Never convert a technical state into an unsupported decision.
 
 Allowed:
 
@@ -1999,9 +2024,21 @@ Merge PR #184 now
 
 ### Exit gate
 
-* [ ] Attention ordering is deterministic.
-* [ ] Every recommendation has a traceable source.
-* [ ] No recommendation performs a write automatically.
+* [x] Attention ordering is deterministic. Rank, then the item's own
+  `priority`, then area, then subject — with `LC_ALL=C` on the sort, so the
+  order does not change with the operator's locale. Held by building the same
+  run backwards and requiring the same list.
+* [x] Every recommendation has a traceable source: the engine repeats the
+  `next_command` an item carried and has no way to produce one. A finding
+  without a command renders without an arrow, which the gate asserts by counting
+  them.
+* [x] No recommendation performs a write automatically. Held structurally as
+  well as behaviourally — the gate fails if `attention.sh` ever names `git`,
+  `gh`, `uv`, `curl` or a mutation verb. That check is the reason this block
+  reads only items: PR 2 and PR 3 each found a defect where a command failed,
+  its output was empty, and empty read as healthy. An engine that ran its own
+  probes would be a fresh place for that to happen, one level further from the
+  contract that gates the collectors.
 
 ---
 
@@ -2476,10 +2513,12 @@ Owner: `macos-scripts`
 
 ### PR 4 — Attention
 
-* [ ] Priority model.
-* [ ] Deduplication.
-* [ ] Suggested commands.
-* [ ] Overall state.
+* [x] Priority model.
+* [x] Deduplication — needing `dedupe_key` on the item model, so that merging is
+  something a collector states rather than something the engine infers.
+* [x] Suggested commands.
+* [x] Overall state — already landed with the contract in PR 1; the attention
+  list is what the aggregate now points at.
 
 ### PR 5 — Pulse menu
 

@@ -8,6 +8,44 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* The Pulse attention engine — `mqlaunch/lib/pulse/attention.sh` and an
+  `ATTENTION` section that puts the run's findings in front of the operator,
+  five at a time, with a count of the rest.
+
+  It reads Pulse items and nothing else: no command, no file, no probe of its
+  own. That is the design, not an implementation detail. The collector work
+  found three defects of one family — a command failed, its output was empty,
+  and empty read as healthy — and an engine that did its own reading would be a
+  fresh place for that, one level further from the contract that gates the
+  collectors. `tests/pulse-attention-smoke.sh` fails if `attention.sh` ever
+  names `git`, `gh`, `uv`, `curl` or a mutation verb.
+
+  Ordering is the roadmap's, derived from an item's status, area and subject:
+  `FAIL`, then broken runtime, failing CI, repo divergence, stale state,
+  maintenance. Ties break on the item's `priority`, then area, then subject,
+  under `LC_ALL=C` — so the same items produce the same list on any machine.
+  One rank in that table, security and destructive risk, is real and
+  unreachable: no collector publishes the signal, and inventing one to fill the
+  row would be the engine deciding something.
+
+  `UNAVAILABLE` findings are listed, although the roadmap task says "all `WARN`
+  and `FAIL`". A run holding one unreachable collector and nothing else reports
+  `WARN`, so leaving it out would print a heading that says something needs
+  attention above an empty list.
+
+* `dedupe_key` on the item model, so that merging two findings is something a
+  collector states rather than something the engine infers. The repositories
+  collector and the Git collector both notice this checkout is dirty — one
+  walking the MQ repos, one reading the repo mqlaunch runs in — and both label
+  it `worktree:<repo>`, so the attention list raises it once. Items without a
+  key are never merged: rows that look alike are not evidence that they are one
+  problem, and dropping one on that basis would hide a real one.
+
+  The engine repeats a `next_command` an item supplied and has no way to produce
+  one. "Stack truth is stale, run `mqlaunch stack truth-export`" is ordering
+  plus a command the collector published; "Merge PR #184 now" would be the
+  engine deciding, and it has no verb for it.
+
 * Three more Pulse collectors — memory, Git/GitHub and quality — so
   `mqlaunch pulse` covers all six areas the v2.1.0 plan names.
 
