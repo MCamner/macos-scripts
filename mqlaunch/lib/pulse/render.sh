@@ -175,6 +175,39 @@ pulse_render_attention_only() {
   printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "Pulse: $overall" "$PULSE_C_RESET"
 }
 
+# Prints the run as one line per item — `mqlaunch pulse --plain`.
+#
+# For the operator who is piping, not reading: no panel, no colour, no glyph, no
+# box drawing, and one shape that will not move when the screen layout does.
+# Five tab-separated fields per line:
+#
+#   area  status  subject  summary  next_command
+#
+# The verdict is a `#` comment line, which is the only ambiguity worth spending:
+# a bare `pulse WARN` line would be indistinguishable from an item in an area
+# called `pulse`, and `grep -v '^#'` leaves exactly the item rows.
+#
+# The items are the run's items, in collection order — the same items the JSON
+# document and the panel are built from. Under `attention` the caller passes the
+# attention list instead, so the scope decides which items and this decides the
+# shape.
+pulse_render_plain() {
+  local overall="$1"
+  shift
+
+  local record
+  for record in "$@"; do
+    printf '%s\t%s\t%s\t%s\t%s\n' \
+      "$(pulse_item_field "$record" area)" \
+      "$(pulse_item_field "$record" status)" \
+      "$(pulse_item_field "$record" subject)" \
+      "$(pulse_item_field "$record" summary)" \
+      "$(pulse_item_field "$record" next_command)"
+  done
+
+  printf '# pulse\t%s\n' "$overall"
+}
+
 # Prints the whole run: every known area in order, then any area a collector
 # introduced that this file has never heard of, then the attention list.
 pulse_render() {

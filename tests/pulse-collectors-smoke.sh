@@ -38,6 +38,10 @@ source "$ROOT/mqlaunch/lib/pulse/collectors.sh"
 source "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/render.sh"
+# The serializer, so that step 3 gates the document the product actually emits
+# rather than a second one written for the test.
+# shellcheck source=/dev/null
+source "$ROOT/mqlaunch/lib/pulse/document.sh"
 
 echo "[2/10] an item requires its five fields and a real state"
 pulse_items_reset
@@ -73,15 +77,16 @@ pulse_item_add repos repositories WARN 'macos-scripts' \
   'dirty: 2 modified, "one" and C:\temp — ✓' \
   evidence='git status --short' next_command='mqlaunch git' priority=60 \
   freshness='just now' duration_ms=142
-document="$(pulse_items_json)"
+document="$(pulse_document WARN "" system repositories)"
 printf '%s' "$document" | python3 -c '
 import json, sys
 
 doc = json.load(sys.stdin)
-assert doc["overall"] == "WARN", doc["overall"]
-assert len(doc["items"]) == 2, doc["items"]
+assert doc["status"] == "WARN", doc["status"]
+items = [i for section in doc["sections"].values() for i in section]
+assert len(items) == 2, items
 
-first, second = doc["items"]
+first, second = items
 assert first["priority"] == 0, "priority must default to 0"
 assert second["summary"] == "dirty: 2 modified, \"one\" and C:\\temp — ✓", second["summary"]
 assert second["evidence"] == "git status --short"

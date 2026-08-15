@@ -8,6 +8,48 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mq.pulse.v1` — the machine surface for Pulse.
+
+  ```bash
+  mqlaunch pulse --json     # one mq.pulse.v1 document on stdout
+  mqlaunch pulse --plain    # five tab-separated fields per item
+  ```
+
+  ```json
+  {
+    "schema": "mq.pulse.v1",
+    "status": "WARN",
+    "scope": null,
+    "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+    "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
+    "sections": { "system": [], "repositories": [] },
+    "attention": []
+  }
+  ```
+
+  Full and scoped runs use the same schema, and every output mode exits with the
+  same code. `collected` is why a scoped document is safe to consume: a section
+  that is not in `sections` means its collector did not run, never that the area
+  was fine. It is recorded as each collector runs rather than derived from the
+  items, because a collector that ran and found nothing is a different fact from
+  one that never ran.
+
+  `attention` holds the same item objects the sections hold, in the attention
+  engine's order — a view, not a second data kind.
+  `tests/pulse-machine-surface-smoke.sh` holds every entry to appearing in a
+  section byte for byte. `SKIPPED` and `UNAVAILABLE` are serialized like any
+  other item: dropping them would make a skipped run and a healthy run the same
+  document.
+
+  Section keys are the item's `area` verbatim — `repositories`, not the `repos`
+  of the roadmap's sketch. A translation table between areas and document keys
+  would silently drop the first area a new collector introduces.
+
+  `--json` and `--plain` together are refused with exit 2 rather than resolved
+  by precedence; picking one for the caller is how a pipeline ends up parsing
+  the other. A delegate that prints a warning line before its own document takes
+  its area to `UNAVAILABLE` and reaches neither stdout nor the verdict.
+
 * Scoped Pulse views and a Pulse menu.
 
   ```bash
