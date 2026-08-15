@@ -6,6 +6,58 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* The v2.1.0 Pulse contract — `docs/PULSE_CONTRACT.md` for the ownership
+  boundary, `mqlaunch/lib/pulse/model.sh` for the rules that can be executed,
+  `tests/pulse-contract-smoke.sh` for the gate. PR 1 of the sequence, landed
+  before the first collector so that nothing depends on a rule still being
+  decided.
+
+  Five check states — `PASS`, `WARN`, `FAIL`, `UNAVAILABLE`, `SKIPPED` — and
+  four exit codes: `0` healthy, `1` warnings, `2` failures, `3` Pulse could not
+  complete. Two decisions the roadmap left open are made in the model rather
+  than in prose:
+
+  ```text
+  PASS UNAVAILABLE   → WARN / 1    not a silent pass, not a failure
+  FAIL SKIPPED       → FAIL / 2    a skip cannot lower a verdict
+  SKIPPED            → INCOMPLETE / 3   nor stand in for a measurement
+  (no checks)        → INCOMPLETE / 3
+  ```
+
+  `UNAVAILABLE` ranks with `WARN` because exiting 0 for a check that could not
+  run is the silent pass the contract exists to forbid, one level down where a
+  script reads it — and exiting 2 would claim the check was measured and found
+  broken. A run with nothing contributing is `INCOMPLETE` because Pulse holds no
+  signals of its own; the alternative makes the healthiest-looking run the one
+  where every collector failed to register.
+
+  The gate carries a 15-run truth table and was proved able to fail against four
+  planted defects: `UNAVAILABLE` ranked as `PASS`, an empty run reporting
+  `PASS`, a `pulse` dispatch arm running the network diagnostic again, and
+  `pulse` re-added as an alias of `netpulse`.
+
+### Changed
+
+* `mqlaunch pulse` is now `mqlaunch netpulse`. The Wi-Fi and latency diagnostic
+  is unchanged — same script, renamed to `tools/scripts/netpulse.sh`, same
+  output, same colour contract, still on the `ops` help group — but it no longer
+  holds the word every line of the v2.1.0 plan is addressed to.
+
+  No alias was kept. `mqlaunch pulse` reaches the existing unknown-command path,
+  which already answers with the nearest match:
+
+  ```text
+  ERROR: Unknown command: pulse
+  Did you mean: mqlaunch netpulse
+  ```
+
+  A deprecated alias would have been the softer move and the wrong one: one word
+  belongs to one command, and leaving `pulse` resolving to the diagnostic is
+  exactly the overlapping command surface v2.0.0 spent a release removing.
+  `mq pulse` on the secondary CLI moved with it.
+
 ### Fixed
 
 * `terminal/themes/mq-theme-manager.sh` could only run from

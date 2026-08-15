@@ -1564,7 +1564,7 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: Planned
+Status: In progress — P0 done, the collectors are next
 Priority: P1
 Owner: `macos-scripts`
 
@@ -1612,15 +1612,29 @@ mqlaunch skills
 
 ## P0 — Pulse contract and ownership
 
-Status: Planned
+Status: Done — `docs/PULSE_CONTRACT.md`, `mqlaunch/lib/pulse/model.sh`,
+`tests/pulse-contract-smoke.sh`
 Priority: P0
 Owner: `macos-scripts`
 
+**The word `pulse` was already taken, and this section did not say so.**
+`mqlaunch pulse` was the Wi-Fi and latency diagnostic — a real command, in the
+registry, on the `ops` help group, with its own colour-contract test. Every line
+of v2.1.0 below is addressed to that word, so the first thing this block had to
+do was decide which meaning keeps it.
+
+The diagnostic moved. It is `mqlaunch netpulse` now, running
+`tools/scripts/netpulse.sh`, unchanged apart from the name. No alias was kept:
+`mqlaunch pulse` answers `Did you mean: mqlaunch netpulse` through the existing
+unknown-command path, which moves an operator across without letting the old
+meaning resolve. A repo that spent v2.0.0 removing overlapping command surfaces
+does not open v2.1.0 by giving one word two meanings.
+
 ### Tasks
 
-* [ ] Define `mqlaunch pulse` as a read-only operator surface.
-* [ ] Document that `macos-scripts` owns collection, normalization, rendering, and navigation only.
-* [ ] Preserve current ownership boundaries:
+* [x] Define `mqlaunch pulse` as a read-only operator surface.
+* [x] Document that `macos-scripts` owns collection, normalization, rendering, and navigation only.
+* [x] Preserve current ownership boundaries:
 
   * `mq-agent` owns orchestration and routing.
   * `mq-mcp` owns execution and review tools.
@@ -1628,9 +1642,14 @@ Owner: `macos-scripts`
   * `mq-hal` owns local operator summaries.
   * `repo-signal` owns repo readiness signals.
 
-* [ ] Prohibit mutation from all Pulse collectors.
-* [ ] Prohibit new review, scoring, promotion, routing, or architecture logic in shell.
-* [ ] Define canonical Pulse states:
+* [x] Prohibit mutation from all Pulse collectors.
+* [x] Prohibit new review, scoring, promotion, routing, or architecture logic in shell.
+
+  Stated with the line that decides the hard cases: mapping another repo's
+  verdict onto a Pulse state is normalization; deriving that verdict because the
+  owning repo did not publish one is domain logic and belongs there.
+
+* [x] Define canonical Pulse states:
 
   * `PASS`
   * `WARN`
@@ -1638,19 +1657,51 @@ Owner: `macos-scripts`
   * `UNAVAILABLE`
   * `SKIPPED`
 
-* [ ] Require unavailable checks to report `UNAVAILABLE` rather than silently passing.
-* [ ] Define exit-code contract:
+* [x] Require unavailable checks to report `UNAVAILABLE` rather than silently passing.
+
+  Which only means something once `UNAVAILABLE` reaches the exit code, so the
+  model ranks it with `WARN`. Exiting 0 would be the same silent pass one level
+  down, where a script reads it; exiting 2 would say the check was measured and
+  broken. The operator acts on that difference — `FAIL` means fix the subject,
+  `UNAVAILABLE` means fix the reach.
+
+* [x] Define exit-code contract:
 
   * `0` — healthy / no attention required.
   * `1` — one or more warnings.
   * `2` — one or more failures.
   * `3` — Pulse itself could not complete reliably.
 
+  The case this list left open is a run with nothing in it — no checks, or every
+  check `SKIPPED`. That is `3`, not `0`. Pulse holds no signals of its own, so a
+  run that collected none knows nothing about the machine, and the alternative
+  makes the healthiest-looking run the one where every collector failed to
+  register. `SKIPPED` therefore contributes nothing to the verdict but cannot
+  stand in for a measurement either.
+
 ### Exit gate
 
-* [ ] Pulse ownership is documented.
-* [ ] Runtime authority remains unchanged.
-* [ ] No new domain logic is introduced into `macos-scripts`.
+* [x] Pulse ownership is documented — `docs/PULSE_CONTRACT.md`.
+* [x] Runtime authority remains unchanged. The model sits on the authority-owned
+  path and is classified in `docs/AUTHORITY_MAP.md` as test-only until the first
+  collector sources it, which is honest about what reaches it today.
+* [x] No new domain logic is introduced into `macos-scripts`. The model reads
+  nothing about the machine: every function is a pure function of the states it
+  is handed.
+
+`tests/pulse-contract-smoke.sh` holds a 15-run truth table, each row separating
+two rules that would otherwise look alike, and was proved able to fail against
+four planted defects — `UNAVAILABLE` ranked as `PASS`, an empty run reporting
+`PASS`, a `pulse` dispatch arm running `netpulse.sh` again, and `pulse` added as
+an alias of `netpulse`.
+
+Writing it found one defect in the model. `pulse_overall_state` read stdin
+whenever it was given no arguments, so on a terminal it blocked on the
+operator's keyboard and never returned — the state every caller is in until a
+collector registers. It reads stdin only when stdin is not a TTY now, the rule
+`tests/menu-eof-smoke.sh` already holds the interactive surfaces to. The step
+covering it runs under a pty, because a redirected stdin cannot reproduce the
+condition; that is why the first run of the suite passed over it.
 
 ---
 
@@ -2326,10 +2377,13 @@ Owner: `macos-scripts`
 
 ### PR 1 — Pulse contract
 
-* [ ] Architecture and ownership.
-* [ ] Status model.
-* [ ] Exit codes.
-* [ ] Initial tests.
+* [x] Architecture and ownership.
+* [x] Status model.
+* [x] Exit codes.
+* [x] Initial tests.
+* [x] Free the command word — the diagnostic that held `pulse` is `netpulse`.
+  Not on the original list, and it had to come first: every PR below is
+  addressed to `mqlaunch pulse`.
 
 ### PR 2 — Core collectors
 
