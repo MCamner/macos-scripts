@@ -731,6 +731,10 @@ Nothing is translated into a near neighbour. `macos` would have to become
 established. A theme with no counterpart changes only the surface you set it
 on.
 
+`reset` follows the same rule from the other end: it clears both tracks when
+they hold the same shared theme — undoing what `apply` did — and clears only
+its own when the two were set separately.
+
 ```bash
 mqlaunch bundle                     # create debug/support bundle
 mqlaunch workspace                  # save, list, show and restore workspace snapshots

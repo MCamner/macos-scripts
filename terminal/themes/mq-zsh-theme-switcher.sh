@@ -153,14 +153,29 @@ apply_theme() {
 
 # Handles reset theme.
 reset_theme() {
-  local backup_file
+  local backup_file sync_note="" mine theirs
   backup_file="$(backup_zshrc)"
+
+  if declare -f mq_theme_reset_counterpart >/dev/null 2>&1; then
+    mine="$(current_variant)"
+    theirs=""
+    if [[ -x "$UI_THEME_SCRIPT" ]]; then
+      theirs="$("$UI_THEME_SCRIPT" current 2>/dev/null \
+        | sed -n 's/^Current theme: //p' | head -1)"
+    fi
+    sync_note="$(mq_theme_reset_counterpart "$mine" "$theirs" \
+      "$UI_THEME_SCRIPT" "UI")"
+  fi
+
   clean_existing_theme_lines
 
   print_header
   row_bold "THEME RESET"
   empty_row
   row "Removed MQ_ZSH_VARIANT and theme source line from .zshrc."
+  if [[ -n "$sync_note" ]]; then
+    row "$sync_note"
+  fi
   row "Backup:"
   row " $backup_file"
   empty_row

@@ -33,7 +33,7 @@ ui_theme() {
   sed -n 's/^export MQ_THEME_NAME="\{0,1\}\([a-z]*\)"\{0,1\}$/\1/p' "$TMP/home/.mq-theme" | tail -1
 }
 
-echo "[1/7] the shared set is exactly the overlap, not a hand-kept list"
+echo "[1/10] the shared set is exactly the overlap, not a hand-kept list"
 [[ -f "$SYNC" ]] || fail "no shared helper at $SYNC"
 prompt_names="$(MACOS_SCRIPTS_HOME="$ROOT" bash "$SWITCHER" list | awk 'NF {print $1}' | sort)"
 ui_names="$(MACOS_SCRIPTS_HOME="$ROOT" bash "$MANAGER" list | awk 'NF {print $1}' | sort)"
@@ -42,13 +42,13 @@ declared="$(bash -c "source '$SYNC'; printf '%s' \"\$MQ_THEME_SHARED\"" | tr ' '
 [[ "$(echo "$overlap")" == "$(echo "$declared")" ]] \
   || fail "declared shared set [$declared] is not the real overlap [$overlap]"
 
-echo "[2/7] a shared name applied on the prompt side moves the UI too"
+echo "[2/10] a shared name applied on the prompt side moves the UI too"
 fresh_home
 run_switcher apply amber >/dev/null 2>&1 || fail "switcher apply amber failed"
 [[ "$(prompt_variant)" == amber ]] || fail "prompt not amber: $(prompt_variant)"
 [[ "$(ui_theme)" == amber ]] || fail "UI did not follow: $(ui_theme)"
 
-echo "[3/7] a prompt-only name leaves the UI untouched"
+echo "[3/10] a prompt-only name leaves the UI untouched"
 fresh_home
 run_manager apply ice >/dev/null 2>&1 || fail "manager apply ice failed"
 run_switcher apply minimal >/dev/null 2>&1 || fail "switcher apply minimal failed"
@@ -56,13 +56,13 @@ run_switcher apply minimal >/dev/null 2>&1 || fail "switcher apply minimal faile
 [[ "$(ui_theme)" == ice ]] \
   || fail "a prompt-only theme changed the UI to $(ui_theme) — it must stay ice"
 
-echo "[4/7] a shared name applied on the UI side moves the prompt too"
+echo "[4/10] a shared name applied on the UI side moves the prompt too"
 fresh_home
 run_manager apply green >/dev/null 2>&1 || fail "manager apply green failed"
 [[ "$(ui_theme)" == green ]] || fail "UI not green: $(ui_theme)"
 [[ "$(prompt_variant)" == green ]] || fail "prompt did not follow: $(prompt_variant)"
 
-echo "[5/7] a UI-only name leaves the prompt untouched"
+echo "[5/10] a UI-only name leaves the prompt untouched"
 fresh_home
 run_switcher apply amber >/dev/null 2>&1 || fail "switcher apply amber failed"
 run_manager apply synth >/dev/null 2>&1 || fail "manager apply synth failed"
@@ -70,7 +70,7 @@ run_manager apply synth >/dev/null 2>&1 || fail "manager apply synth failed"
 [[ "$(prompt_variant)" == amber ]] \
   || fail "a UI-only theme changed the prompt to $(prompt_variant) — it must stay amber"
 
-echo "[6/7] the sync does not bounce back and forth"
+echo "[6/10] the sync does not bounce back and forth"
 fresh_home
 # Each side calls the other for a shared name. Without a guard that is an
 # infinite loop, so this step is also the reason the guard exists.
@@ -80,7 +80,7 @@ HOME="$TMP/home" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 MQ_THEME_SYNC_ACTIVE=1 \
 [[ "$(ui_theme)" == NONE ]] \
   || fail "a guarded run still synced onward, so a real run would recurse: $(ui_theme)"
 
-echo "[7/7] a missing counterpart does not fail the change the user asked for"
+echo "[7/10] a missing counterpart does not fail the change the user asked for"
 fresh_home
 # A checkout that has the UI library and the prompt theme file but no theme
 # manager. Pointing BASE_DIR at nothing would fail for the wrong reason.
@@ -96,5 +96,32 @@ status=$?
 [[ "$(prompt_variant)" == amber ]] || fail "prompt change lost: $(prompt_variant)"
 grep -qi 'could not\|not synced\|skipped' <<< "$out" \
   || fail "the skipped sync is not reported: $out"
+
+echo "[8/10] reset clears both tracks when they hold the same shared theme"
+fresh_home
+run_switcher apply green >/dev/null 2>&1 || fail "switcher apply green failed"
+[[ "$(ui_theme)" == green ]] || fail "setup: UI not green"
+run_switcher reset >/dev/null 2>&1 || fail "switcher reset failed"
+[[ -z "$(prompt_variant)" ]] || fail "prompt not reset: $(prompt_variant)"
+[[ "$(ui_theme)" == NONE ]] \
+  || fail "reset left the UI on $(ui_theme) after apply had set both"
+
+echo "[9/10] reset does not clear a UI theme the user chose separately"
+fresh_home
+run_switcher apply macos >/dev/null 2>&1 || fail "switcher apply macos failed"
+run_manager apply synth >/dev/null 2>&1 || fail "manager apply synth failed"
+run_switcher reset >/dev/null 2>&1 || fail "switcher reset failed"
+[[ -z "$(prompt_variant)" ]] || fail "prompt not reset: $(prompt_variant)"
+[[ "$(ui_theme)" == synth ]] \
+  || fail "reset wiped an independently chosen UI theme: $(ui_theme)"
+
+echo "[10/10] resetting from the UI side clears the prompt the same way"
+fresh_home
+run_manager apply green >/dev/null 2>&1 || fail "manager apply green failed"
+[[ "$(prompt_variant)" == green ]] || fail "setup: prompt did not follow"
+run_manager reset >/dev/null 2>&1 || fail "manager reset failed"
+[[ "$(ui_theme)" == NONE ]] || fail "UI not reset: $(ui_theme)"
+[[ -z "$(prompt_variant)" ]] \
+  || fail "reset from the UI side left the prompt on $(prompt_variant)"
 
 echo "OK  theme exact sync"
