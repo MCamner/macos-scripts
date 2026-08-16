@@ -166,6 +166,30 @@ menu route invoking the same mq-agent command, and update `docs/COMMANDS.md`.
 * Preserve existing menu style, color conventions, and return behavior.
 * Do not hide important commands only inside interactive menus.
 
+## zsh menu safety: never assign to `status`
+
+`terminal/launchers/gitlaunch.sh` runs under `#!/bin/zsh`, where `status` is a
+read-only special parameter — zsh's own name for `$?`. Assigning to it aborts
+the enclosing function on the spot:
+
+```zsh
+local status          # fine, declaration alone is allowed
+local status=0        # f: read-only variable: status — function ends here
+status=$?             # same, and this is the form a menu actually writes
+```
+
+The failure is nastier than it looks, because it is silent and conditional. The
+submenu loop is correct; it simply never gets to run again, so the caller
+redraws mqlaunch's main menu and the operator sees a menu that "jumps back"
+after a successful command. Use a specific name: `push_status`, `commit_status`,
+`command_status`.
+
+When testing a fix like this, drive the **successful** path. A cancelled
+confirmation returns before reaching the assignment, so the bug cannot fire and
+the test passes while the product stays broken.
+`tests/mq-git-protected-push-smoke.sh` holds the regression test for the
+successful push path.
+
 ## Consistency checks
 
 After a command change, check whether these need updates:
