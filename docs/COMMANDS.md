@@ -714,6 +714,24 @@ mqlaunch theme apply amber          # amber, green, minimal, ice, macos
 mqlaunch theme reset                # reset to default theme
 mqlaunch theme-macos                # compatibility spelling of `theme apply macos`
 mqlaunch theme-reset                # compatibility spelling of `theme reset`
+```
+
+The prompt and the terminal UI palette are two systems, and applying a theme
+syncs them **only on an exact name match**:
+
+```text
+amber  green  ice        known to both — applying one applies both
+minimal  macos           prompt only — the UI palette is left alone
+classic  synth           UI only — the prompt is left alone
+```
+
+Nothing is translated into a near neighbour. `macos` would have to become
+`ice`, which makes two prompt themes indistinguishable in the UI, and
+`minimal` would have to become `classic`, which asserts a resemblance nobody
+established. A theme with no counterpart changes only the surface you set it
+on.
+
+```bash
 mqlaunch bundle                     # create debug/support bundle
 mqlaunch workspace                  # save, list, show and restore workspace snapshots
 mqlaunch excalidraw                 # open the Excalidraw drawing workflow
