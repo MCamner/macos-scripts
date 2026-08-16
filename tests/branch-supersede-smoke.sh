@@ -26,7 +26,7 @@ new_repo() { # PATH
   commit "$1" "initial"
 }
 
-echo "[1/6] unrelated histories are a lookup error, never a verdict"
+echo "[1/7] unrelated histories are a lookup error, never a verdict"
 new_repo "$TMP/unrelated"
 git -C "$TMP/unrelated" checkout -q --orphan lonely
 git -C "$TMP/unrelated" rm -rqf .
@@ -43,7 +43,7 @@ grep -qi 'superseded' <<< "$out" \
 grep -qi 'merge base' <<< "$out" \
   || fail "the error does not name the missing merge base: $out"
 
-echo "[2/6] content that landed by another route is superseded"
+echo "[2/7] content that landed by another route is superseded"
 new_repo "$TMP/landed"
 git -C "$TMP/landed" checkout -q -b feature
 printf 'feature\n' > "$TMP/landed/feature.txt"
@@ -61,7 +61,7 @@ status=$?
 grep -q 'VERDICT: superseded' <<< "$out" || fail "no superseded verdict: $out"
 grep -q 'IDENTICAL       feature.txt' <<< "$out" || fail "file not identical: $out"
 
-echo "[3/6] a branch holding unique content is never superseded"
+echo "[3/7] a branch holding unique content is never superseded"
 new_repo "$TMP/unique"
 git -C "$TMP/unique" checkout -q -b keeper
 printf 'unique\n' > "$TMP/unique/keeper.txt"
@@ -74,12 +74,31 @@ status=$?
 [[ "$status" -eq 1 ]] || fail "unique branch exited $status, expected 1: $out"
 grep -q 'ONLY-ON-BRANCH  keeper.txt' <<< "$out" || fail "file not flagged: $out"
 
-echo "[4/6] an unknown ref is a usage error"
+echo "[4/7] a file the branch deleted is not content the branch holds"
+new_repo "$TMP/deleted"
+printf 'doomed\n' > "$TMP/deleted/doomed.txt"
+git -C "$TMP/deleted" add doomed.txt
+commit "$TMP/deleted" "add the file both sides later drop"
+git -C "$TMP/deleted" checkout -q -b dropper
+git -C "$TMP/deleted" rm -q doomed.txt
+commit "$TMP/deleted" "drop it on the branch"
+git -C "$TMP/deleted" checkout -q main
+git -C "$TMP/deleted" rm -q doomed.txt
+commit "$TMP/deleted" "drop it on trunk too"
+
+out="$("$REPORT" dropper --repo "$TMP/deleted" --no-pr 2>&1)"
+status=$?
+grep -q 'ONLY-ON-BRANCH  doomed.txt' <<< "$out" \
+  && fail "a deletion is reported as content only the branch has: $out"
+[[ "$status" -eq 0 ]] \
+  || fail "a branch holding only a deletion trunk already made exited $status, expected 0: $out"
+
+echo "[5/7] an unknown ref is a usage error"
 out="$("$REPORT" no-such-branch --repo "$TMP/unique" --no-pr 2>&1)"
 status=$?
 [[ "$status" -eq 2 ]] || fail "unknown ref exited $status, expected 2"
 
-echo "[5/6] the PR lookup asks GitHub for the branch, not for a page of PRs"
+echo "[6/7] the PR lookup asks GitHub for the branch, not for a page of PRs"
 mkdir -p "$TMP/bin"
 cat > "$TMP/bin/gh" <<'STUB'
 #!/usr/bin/env bash
@@ -100,7 +119,7 @@ grep -q -- '--limit 200' <<< "$args" \
 grep -q 'merged PR for this head' <<< "$out" \
   || fail "a merged PR was found but not reported: $out"
 
-echo "[6/6] a lookup failure is not silently read as 'no merged PR'"
+echo "[7/7] a lookup failure is not silently read as 'no merged PR'"
 cat > "$TMP/bin/gh" <<'STUB'
 #!/usr/bin/env bash
 printf 'gh: could not authenticate\n' >&2

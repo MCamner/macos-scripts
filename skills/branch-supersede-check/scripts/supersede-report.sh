@@ -104,12 +104,22 @@ echo "  — that is measured against the fork point, so it looks the same"
 echo "    whether or not trunk already has the content. Per-file, vs $BASE now:"
 echo
 
-identical=0; base_ahead=0; branch_ahead=0; diverged=0; only_branch=0
+identical=0; base_ahead=0; branch_ahead=0; diverged=0; only_branch=0; gone_both=0
 
 while IFS= read -r f; do
   [[ -n "$f" ]] || continue
 
   if ! git cat-file -e "$BASE:$f" 2>/dev/null; then
+    # The file is in the three-dot diff and absent from trunk. That is two
+    # different branches: one where the branch added it, and one where the
+    # branch DELETED it and trunk has since dropped it too. Only the first is
+    # content the branch holds — calling the second unique would count a
+    # deletion trunk already made as a reason to keep the branch.
+    if ! git cat-file -e "$BRANCH:$f" 2>/dev/null; then
+      printf '  GONE-FROM-BOTH  %s\n' "$f"
+      gone_both=$((gone_both + 1))
+      continue
+    fi
     printf '  ONLY-ON-BRANCH  %s\n' "$f"
     only_branch=$((only_branch + 1))
     continue
@@ -144,10 +154,10 @@ while IFS= read -r f; do
   fi
 done <<< "$changed"
 
-total=$((identical + base_ahead + branch_ahead + diverged + only_branch))
+total=$((identical + base_ahead + branch_ahead + diverged + only_branch + gone_both))
 echo
-printf '  identical %s · base-ahead %s · branch-ahead %s · diverged %s · only-on-branch %s  (of %s)\n' \
-  "$identical" "$base_ahead" "$branch_ahead" "$diverged" "$only_branch" "$total"
+printf '  identical %s · base-ahead %s · branch-ahead %s · diverged %s · only-on-branch %s · gone-from-both %s  (of %s)\n' \
+  "$identical" "$base_ahead" "$branch_ahead" "$diverged" "$only_branch" "$gone_both" "$total"
 echo
 
 # A merged PR whose head was this branch is the evidence squash-merging
@@ -185,7 +195,7 @@ elif [[ "$pr_lookup_failed" -eq 1 ]]; then
 fi
 
 unique=$((branch_ahead + diverged + only_branch))
-settled=$((identical + base_ahead))
+settled=$((identical + base_ahead + gone_both))
 
 if [[ "$total" -eq 0 || "$unique" -eq 0 ]]; then
   echo "VERDICT: superseded — nothing here is missing from $BASE."
