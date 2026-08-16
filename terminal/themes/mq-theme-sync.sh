@@ -62,3 +62,30 @@ mq_theme_sync_counterpart() { # NAME SCRIPT LABEL
   fi
   return 0
 }
+
+# Resets the counterpart surface, under the same rule that governs apply: touch
+# the other surface only where the two are actually coupled.
+#
+# Coupled means both currently hold the same shared name — the state `apply`
+# leaves behind. Reset then undoes what apply did. When the two hold different
+# themes the user set them separately, and clearing a UI theme they chose on its
+# own would be this command reaching outside what it was asked to undo.
+mq_theme_reset_counterpart() { # MINE THEIRS SCRIPT LABEL
+  local mine="$1" theirs="$2" script="$3" label="$4"
+
+  [[ -z "${MQ_THEME_SYNC_ACTIVE:-}" ]] || return 0
+  [[ -n "$mine" && "$mine" == "$theirs" ]] || return 0
+  mq_theme_shared "$mine" || return 0
+
+  if [[ ! -x "$script" ]]; then
+    printf '%s theme not reset: %s is missing\n' "$label" "$script"
+    return 0
+  fi
+
+  if MQ_THEME_SYNC_ACTIVE=1 "$script" reset >/dev/null 2>&1; then
+    printf 'Also reset %s theme\n' "$label"
+  else
+    printf '%s theme not reset: %s reset failed\n' "$label" "$script"
+  fi
+  return 0
+}

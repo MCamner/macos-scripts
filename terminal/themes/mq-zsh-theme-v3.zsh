@@ -9,8 +9,17 @@
 #   ice
 #   macos
 
-[[ -n "${MQ_ZSH_THEME_V3_LOADED:-}" ]] && return 0
-export MQ_ZSH_THEME_V3_LOADED=1
+# The guard stops a double load inside one shell. It used to be exported, which
+# made it survive `exec zsh` — the very command the switcher prints as "run this
+# to activate it now". The new shell inherited the guard, returned early, and
+# the palette the user had just selected never loaded. An inherited value is
+# stale process state from the shell that applied the theme, not evidence that
+# THIS shell has loaded anything.
+if [[ -n "${MQ_ZSH_THEME_V3_LOADED:-}" ]]; then
+  [[ "${parameters[MQ_ZSH_THEME_V3_LOADED]:-}" != *-export* ]] && return 0
+  unset MQ_ZSH_THEME_V3_LOADED
+fi
+typeset -g MQ_ZSH_THEME_V3_LOADED=1
 
 autoload -Uz colors vcs_info add-zsh-hook
 colors

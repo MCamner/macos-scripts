@@ -197,9 +197,25 @@ apply_theme() {
 
 # Handles reset theme.
 reset_theme() {
+  local mine theirs
+  mine=""
+  if [[ -f "$THEME_FILE" ]]; then
+    mine="$(sed -n 's/^export MQ_THEME_NAME="\{0,1\}\([a-z]*\)"\{0,1\}$/\1/p' \
+      "$THEME_FILE" | tail -1)"
+  fi
+
   rm -f "$THEME_FILE"
   echo "Removed theme file."
   echo "UI will now use default colors."
+
+  if declare -f mq_theme_reset_counterpart >/dev/null 2>&1; then
+    theirs=""
+    if [[ -x "$PROMPT_THEME_SCRIPT" ]]; then
+      theirs="$(MQ_NO_TUI=1 "$PROMPT_THEME_SCRIPT" current 2>/dev/null \
+        | sed -n 's/.*Current variant: *//p' | awk 'NF {print $1; exit}')"
+    fi
+    mq_theme_reset_counterpart "$mine" "$theirs" "$PROMPT_THEME_SCRIPT" "prompt"
+  fi
 }
 
 # Prints usage information.
