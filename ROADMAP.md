@@ -2204,7 +2204,7 @@ gates, so it is the place worth pinning.
 
 ## P1 — Full Pulse view
 
-Status: Done except the header, which is an open decision
+Status: Done except a minimal header, deferred past v2.1.0
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2218,19 +2218,28 @@ Not built. None of these render, on a TTY or through a pipe, and no total
 duration exists anywhere — `--verbose` prints per-item timing only, and
 `mq.pulse.v1` has no total key.
 
-Leaving it open rather than ticking or deleting it, because it is a product
-decision with an argument on each side. Against: Pulse runs interactively in
-the repo you are already standing in, so repo, branch and "just now" are
-already on screen. For: all of that context disappears the moment output is
-pasted into an issue, which is exactly when someone else has to read it.
+**Decided 2026-08-16: build a minimal header when it is built, not this one.**
+The case for a header is pasted output — Pulse runs interactively in the repo
+you are already standing in, so repo, branch and "just now" are on screen
+anyway, and all of it disappears the moment the output is pasted into an issue
+for someone else to read. That case needs three fields:
 
-* [ ] Show host.
+```text
+macos-scripts · main · 01:31
+```
+
+Host and total duration are not part of it. Neither answers a question a reader
+of pasted output is asking, and the sketch's five-line block costs more screen
+than the run it describes. They stay listed below, unticked and without an
+owner, until something actually asks for them.
+
 * [ ] Show current repo.
 * [ ] Show current branch.
 * [ ] Show check time.
-* [ ] Show total duration where useful.
+* [ ] ~~Show host.~~ Deferred — no use case.
+* [ ] ~~Show total duration where useful.~~ Deferred — no use case.
 
-Example:
+Superseded sketch, kept for the record:
 
 ```text
 MQ PULSE
@@ -2421,9 +2430,25 @@ closed by writing the missing test: `--verbose` and failing CI.
 
 ## P2 — Interactive drill-down
 
-Status: Open — the constraints landed, the navigation did not
+Status: Declined 2026-08-16 — the constraints landed, the navigation will not
 Priority: P2
 Owner: `macos-scripts`
+
+**Decision: do not build the handoff.** The model that shipped is the cleaner
+one, and it is complete as it stands:
+
+```text
+Pulse observes → names the owner → prints a command that resolves
+              → the operator chooses to leave Pulse
+```
+
+Opening other menus from inside Pulse introduces navigation and back-stack
+state to serve a step the operator can already take in one keystroke. The
+unticked tasks below stay as the record of what was considered and why it was
+not built — not as work waiting to be scheduled.
+
+Reopen only if something concrete asks for it: an operator who cannot act on a
+named command, or an area whose owner has no reachable surface at all.
 
 Checked against the menu and a run, 2026-08-16. What shipped in #191 is
 adjacent but not this: the Pulse menu drills into **narrower Pulse views**,
@@ -2433,13 +2458,8 @@ not into the surfaces that own each area. Selecting `3. System` runs
 What Pulse does instead is **name** the owner: every item that needs action
 carries the command that addresses it, and
 `tests/pulse-contract-smoke.sh` step 9 gates that the command resolves against
-the registry. So the operator is told exactly where to go and types it. That is
-a real design, and it may be the whole answer — deciding that is the open
-question here, not "when do we build the handoff".
-
-Worth weighing before building it: a menu that launches other menus has to
-decide what happens on the way back, and the version that already works has no
-back-stack to get wrong.
+the registry. The operator is told exactly where to go, and the command is
+guaranteed to exist. That turned out to be the whole answer.
 
 ### Tasks
 
@@ -2456,11 +2476,11 @@ back-stack to get wrong.
   * Copy suggested command.
   * Back.
 
-Partly answered already: evidence is `--verbose`, and the suggested command is
-printed under the item rather than copied. `Open owning menu` is the part that
-does not exist — the Pulse menu answers anything that is not one of its own
-rows with `Invalid pulse selection`, so there is no route out of it into
-another surface.
+Two of these four exist in another form: evidence is `--verbose`, and the
+suggested command is printed under the item rather than copied — which is
+better, since a printed command can be gated for existence and a copied one
+cannot. `Open owning menu` and its `Back` are the pair being declined; they are
+also the only two that would need state to get right.
 
 * [x] Do not duplicate existing command implementations inside Pulse.
 
