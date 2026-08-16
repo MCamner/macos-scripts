@@ -9,6 +9,8 @@ set -euo pipefail
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 THEME_FILE="$BASE_DIR/terminal/themes/mq-zsh-theme-v3.zsh"
+SYNC_LIB="$BASE_DIR/terminal/themes/mq-theme-sync.sh"
+UI_THEME_SCRIPT="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
 ZSHRC="${HOME}/.zshrc"
 BACKUP_DIR="$HOME/.mq-zsh-theme-backups"
 
@@ -29,6 +31,11 @@ if [[ -f "$UI_LIB" ]]; then
 else
   echo "Missing UI library: $UI_LIB" >&2
   exit 1
+fi
+
+if [[ -f "$SYNC_LIB" ]]; then
+  # shellcheck disable=SC1090
+  source "$SYNC_LIB"
 fi
 
 # Handles theme list.
@@ -122,11 +129,19 @@ apply_theme() {
     echo 'source "$HOME/macos-scripts/terminal/themes/mq-zsh-theme-v3.zsh"'
   } >> "$ZSHRC"
 
+  local sync_note=""
+  if declare -f mq_theme_sync_counterpart >/dev/null 2>&1; then
+    sync_note="$(mq_theme_sync_counterpart "$variant" "$UI_THEME_SCRIPT" "UI")"
+  fi
+
   print_header
   row_bold "THEME APPLIED"
   empty_row
   row "Theme: $variant"
   row "Description: $(theme_description "$variant")"
+  if [[ -n "$sync_note" ]]; then
+    row "$sync_note"
+  fi
   row "Backup:"
   row " $backup_file"
   empty_row

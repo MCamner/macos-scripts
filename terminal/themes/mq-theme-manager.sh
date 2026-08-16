@@ -11,6 +11,13 @@ UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 # Not BASE_DIR. The selected theme is user state, the same class as ~/.zshrc,
 # and belongs in $HOME wherever the checkout lives.
 THEME_FILE="${HOME}/.mq-theme"
+SYNC_LIB="$BASE_DIR/terminal/themes/mq-theme-sync.sh"
+PROMPT_THEME_SCRIPT="$BASE_DIR/terminal/themes/mq-zsh-theme-switcher.sh"
+
+if [[ -f "$SYNC_LIB" ]]; then
+  # shellcheck disable=SC1090
+  source "$SYNC_LIB"
+fi
 
 # Handles theme list.
 theme_list() {
@@ -178,6 +185,9 @@ apply_theme() {
   write_theme_file "$theme"
   echo "Applied theme: $theme"
   echo "Saved to: $THEME_FILE"
+  if declare -f mq_theme_sync_counterpart >/dev/null 2>&1; then
+    mq_theme_sync_counterpart "$theme" "$PROMPT_THEME_SCRIPT" "prompt"
+  fi
   echo
   echo "Run one of these to see it:"
   echo "  mqlaunch"
