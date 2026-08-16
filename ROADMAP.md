@@ -2204,11 +2204,25 @@ gates, so it is the place worth pinning.
 
 ## P1 — Full Pulse view
 
-Status: Planned
+Status: Done except the header, which is an open decision
 Priority: P1
 Owner: `macos-scripts`
 
+Closed against a run, not against the sketch: `mqlaunch pulse` on `main`,
+2026-08-16. Two boxes shipped in a different shape than drawn and say so below;
+the header shipped not at all.
+
 ### Header
+
+Not built. None of these render, on a TTY or through a pipe, and no total
+duration exists anywhere — `--verbose` prints per-item timing only, and
+`mq.pulse.v1` has no total key.
+
+Leaving it open rather than ticking or deleting it, because it is a product
+decision with an argument on each side. Against: Pulse runs interactively in
+the repo you are already standing in, so repo, branch and "just now" are
+already on screen. For: all of that context disappears the moment output is
+pasted into an issue, which is exactly when someone else has to read it.
 
 * [ ] Show host.
 * [ ] Show current repo.
@@ -2228,27 +2242,40 @@ Checked: 01:31
 
 ### Overall
 
-* [ ] Add one simple aggregate state.
+* [x] Add one simple aggregate state.
 
-Example:
+One line, plus the exit code that carries the same answer to a caller:
+`Pulse: WARN` → 1. Rendered as a footer rather than the `OVERALL` block drawn
+below, because the verdict reads better after the evidence than before it.
 
 ```text
 OVERALL
 WARN · 2 items need attention
 ```
 
-* [ ] Avoid introducing a complex health score in v2.1.0.
+* [x] Avoid introducing a complex health score in v2.1.0.
+
+Held. Four states and nothing else: `PASS`, `WARN`, `FAIL`, `INCOMPLETE`. No
+score, no percentage, no weighting — every one of which would have to be
+explained before it could be trusted.
 
 ### Sections
 
-* [ ] `SYSTEM`
-* [ ] `REPOSITORIES`
-* [ ] `MQ STACK`
-* [ ] `MEMORY`
-* [ ] `GIT / GITHUB`
-* [ ] `QUALITY`
-* [ ] `ATTENTION`
-* [ ] `NEXT COMMANDS`
+* [x] `SYSTEM`
+* [x] `REPOSITORIES`
+* [x] `MQ STACK`
+* [x] `MEMORY`
+* [x] `GIT / GITHUB`
+* [x] `QUALITY`
+* [x] `ATTENTION`
+* [x] Every item that needs action carries the command that addresses it.
+
+The last one replaces a `NEXT COMMANDS` section. The command sits inline under
+the item it fixes (`→ mqlaunch repos status`) instead of in a list at the
+bottom, so the reader never has to pair a command back to the problem it
+belongs to. `tests/pulse-contract-smoke.sh` step 9 gates the stronger property
+this makes possible: every suggested command must resolve against the registry,
+so Pulse cannot advise running something that does not exist.
 
 ### Default rendering
 
@@ -2291,8 +2318,29 @@ ATTENTION
 ### Exit gate
 
 * [ ] The default view fits comfortably in one terminal screen under normal conditions.
-* [ ] Detailed evidence is hidden unless requested.
-* [ ] Attention is visually more prominent than raw diagnostics.
+
+Measured at 44 lines on a clean-ish tree, and it grows with every warning. That
+fits a full-height window and does not fit an 80×24 default, so the box stays
+open rather than being ticked against a generous terminal.
+
+The answer built instead is scoped views (#191): `mqlaunch pulse git` and the
+other five each fit anywhere, and the Pulse menu remembers the last one. A full
+run is the deliberate wide view, not the one to squeeze.
+
+* [x] Detailed evidence is hidden unless requested.
+
+`--verbose` adds the evidence line and per-item timing; without it neither
+appears. Gated in `tests/pulse-collectors-smoke.sh`, which checks both that the
+flag shows them and that their absence is real without it.
+
+* [x] Attention is visually more prominent than raw diagnostics.
+
+By construction rather than by styling: the diagnostics are hidden by default,
+so what stays on screen is the item, its state and its next command — and
+`ATTENTION` then repeats only what needs action. `tests/pulse-attention-smoke.sh`
+holds the ordering, and `tests/pulse-machine-surface-smoke.sh` gates that
+attention is an exact subset of the section items rather than a second source
+of truth.
 
 ---
 
@@ -2373,9 +2421,25 @@ closed by writing the missing test: `--verbose` and failing CI.
 
 ## P2 — Interactive drill-down
 
-Status: Planned
+Status: Open — the constraints landed, the navigation did not
 Priority: P2
 Owner: `macos-scripts`
+
+Checked against the menu and a run, 2026-08-16. What shipped in #191 is
+adjacent but not this: the Pulse menu drills into **narrower Pulse views**,
+not into the surfaces that own each area. Selecting `3. System` runs
+`mqlaunch pulse system`; it does not open the doctor.
+
+What Pulse does instead is **name** the owner: every item that needs action
+carries the command that addresses it, and
+`tests/pulse-contract-smoke.sh` step 9 gates that the command resolves against
+the registry. So the operator is told exactly where to go and types it. That is
+a real design, and it may be the whole answer — deciding that is the open
+question here, not "when do we build the handoff".
+
+Worth weighing before building it: a menu that launches other menus has to
+decide what happens on the way back, and the version that already works has no
+back-stack to get wrong.
 
 ### Tasks
 
@@ -2392,12 +2456,34 @@ Owner: `macos-scripts`
   * Copy suggested command.
   * Back.
 
-* [ ] Do not duplicate existing command implementations inside Pulse.
+Partly answered already: evidence is `--verbose`, and the suggested command is
+printed under the item rather than copied. `Open owning menu` is the part that
+does not exist — the Pulse menu answers anything that is not one of its own
+rows with `Invalid pulse selection`, so there is no route out of it into
+another surface.
+
+* [x] Do not duplicate existing command implementations inside Pulse.
+
+Held throughout. Every collector shells out to the command that already owns
+the answer — `doctor`, `repos status`, mq-agent, `gh`, the repo's own gates —
+and Pulse reports what it got. `mqlaunch/lib/pulse/` contains no second
+implementation of anything, which is also why a full run costs 3.8s.
 
 ### Exit gate
 
-* [ ] Pulse navigation remains thin.
-* [ ] Existing owners execute existing workflows.
+* [x] Pulse navigation remains thin.
+
+The menu holds no logic: every row runs `mqlaunch pulse <scope>` through the
+dispatcher rather than calling the collectors, so a menu row and a typed
+command cannot diverge. `tests/pulse-menu-smoke.sh` gates it.
+
+* [x] Existing owners execute existing workflows.
+
+Pulse observes and never acts on repo or stack state: no push, merge, commit or
+delete, per `docs/PULSE_CONTRACT.md`. The only writes anywhere in
+`mqlaunch/lib/pulse/` are its own scratch files, one per parallel quality probe.
+The work stays with the owner in both directions — Pulse asks the owner for the
+answer, and hands the operator the owner's command to change anything.
 
 ---
 
