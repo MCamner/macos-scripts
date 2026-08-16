@@ -72,14 +72,17 @@ about a branch that shares not one commit with trunk. It refuses instead.
 
 ## Reading the output
 
-Every file the branch touched gets one of five labels:
+Every file the branch touched gets one of six labels:
 
 * `IDENTICAL` — byte-for-byte the same as trunk. The work landed.
 * `BASE-AHEAD` — trunk has lines this branch does not, and the branch adds
   nothing. The branch is simply behind.
 * `BRANCH-AHEAD` — the branch has lines trunk does not, and removes nothing.
 * `DIVERGED` — both sides have lines the other lacks.
-* `ONLY-ON-BRANCH` — the file does not exist in trunk at all.
+* `ONLY-ON-BRANCH` — the branch has the file and trunk does not.
+* `GONE-FROM-BOTH` — the branch deleted it and trunk no longer has it either.
+  The branch's change is already reflected in trunk, so this counts as settled,
+  not as something the branch holds.
 
 The summary line is the signal. A high `identical` count is the strongest
 evidence a branch is superseded, because identical files do not happen by
