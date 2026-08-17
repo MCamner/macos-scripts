@@ -242,6 +242,9 @@ mqlaunch pulse --plain              # one tab-separated line per item
 mqlaunch pulse --verbose            # show the evidence behind each row
 mqlaunch pulse --no-stack           # skip the mq-agent collectors (the slow ones)
 mqlaunch pulse --no-network         # skip everything that talks to GitHub
+mqlaunch next                       # the single next action, from Pulse's attention list
+mqlaunch next --json                # the mq.next.v1 document
+mqlaunch next --input FILE          # select from a pulse document you already have
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
@@ -338,6 +341,56 @@ objects the sections hold, in the engine's order.
 `area, status, subject, summary, next_command` — with the verdict on a `#`
 comment line, so `grep -v '^#'` leaves exactly the rows. The exit code is the
 same in every output mode.
+
+### Next
+
+`mqlaunch next` answers the narrower question: not "what is the state of
+everything" but "what is the single next thing to do".
+
+```bash
+mqlaunch next                  # collect fresh Pulse state and select from it
+mqlaunch next --json           # the mq.next.v1 document
+mqlaunch next --input FILE     # select from a pulse document you already have
+```
+
+It ranks nothing. The answer is the head of Pulse's attention list, whatever it
+is:
+
+```text
+Pulse observes  ->  Attention prioritizes  ->  Next selects
+```
+
+That includes an `UNAVAILABLE` at the head. Skipping past an observation gap to
+reach a "more concrete" failure below it would make two commands in this repo
+disagree about what matters most — and you cannot act on a subject that stopped
+being measured anyway. Ordering lives in the attention engine, where one change
+moves both commands.
+
+With no arguments the command collects fresh Pulse state itself, so it is
+typable. `--input` is for a caller that already has an `mq.pulse.v1` document
+and should not pay for the collection twice. Pulse's own exit code is not
+control flow here: a run that exits `1` or `2` still produced a complete
+document, and that document is the input.
+
+```text
+0  nothing needs attention in what was collected
+1  the selected item is WARN or UNAVAILABLE
+2  the selected item is FAIL
+3  the pulse document could not be read, or the run measured nothing
+```
+
+`3` is the command failing at its own job. An empty attention list from a run
+that measured something is `NONE` at `0`; an empty attention list from a run
+where every check was skipped is `UNAVAILABLE` at `3`. "Nothing needs attention"
+and "nothing was measured" are different answers and never collapse into one.
+
+```bash
+mqlaunch next --json | jq -r '.item.next_command // empty'
+mqlaunch pulse --json > pulse.json && mqlaunch next --input pulse.json
+```
+
+The full rules are in [NEXT_CONTRACT.md](NEXT_CONTRACT.md). There is no menu
+entry yet — the typed command settles first.
 
 JSON output shape:
 

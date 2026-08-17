@@ -61,7 +61,7 @@ nearest_cli_command() {
   printf '%s\n' \
     about agent architecture ask brain bundle check commands demo dev doctor \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
-    memory netpulse network notes obsidian palette perf release release-check \
+    memory netpulse network next notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
       function distance(a, b, d, i, j, cost, deletion, insertion, substitution) {
@@ -791,6 +791,18 @@ dispatch_cli_command() {
           return "$command_status"
           ;;
       esac
+      ;;
+
+    next|/next)
+      # The exit code is the contract — 0/1/2/3 per docs/NEXT_CONTRACT.md — so it
+      # is returned untouched. --json never pauses: a prompt on stdout after the
+      # document would break `mqlaunch next --json | jq .`.
+      "$BASE_DIR/tools/scripts/next.sh" "${@:2}"
+      command_status=$?
+      if [[ -z "${MQ_NO_TUI:-}" ]] && ! has_json_flag "$@"; then
+        pause_enter
+      fi
+      return "$command_status"
       ;;
 
     scan|/scan)

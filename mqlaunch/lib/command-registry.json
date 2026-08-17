@@ -632,6 +632,26 @@
       "local_role": "terminal-ux"
     },
     {
+      "name": "next",
+      "aliases": [
+        "/next"
+      ],
+      "namespace": "checks",
+      "summary": "The single next action, selected from Pulse's attention list",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": true,
+      "local_role": "terminal-ux"
+    },
+    {
       "name": "scan",
       "aliases": [
         "/scan"
