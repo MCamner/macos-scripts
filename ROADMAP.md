@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 2.0.1
+Current version: 2.1.0
 
 ## Current direction
 
@@ -9,14 +9,16 @@ Current version: 2.0.1
 The next major product step is:
 
 ```text
-v2.1.0 — MQ Pulse Operator Cockpit
+mqlaunch next — one deterministic next action, read from mq.pulse.v1
 ```
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
-v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach. v2.0.1 is the current maintenance release.
+v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and its Definition of Done is closed against the tree, with the stack-level checks noted as out of this repo's reach.
 
-v2.1.0 is the next planned release. It does not add a new source of truth — it adds one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects.
+v2.1.0 shipped on 2026-08-17. It added no new source of truth — it added one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects, plus the `mq.pulse.v1` machine contract underneath it. Every box in its Definition of Done is closed against the tree.
+
+The next step reads that contract rather than adding to it. `mqlaunch next` consumes `mq.pulse.v1` and selects one already-prioritized attention item; it performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 candidate](#post-v210-candidate--mqlaunch-next).
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -1564,8 +1566,7 @@ checkboxes because this repo cannot prove them:
 
 ## v2.1.0 — MQ Pulse Operator Cockpit
 
-Status: In progress — six collectors, the attention engine, the scoped
-command surface and the menu are done; the machine contract is next
+Status: Shipped 2026-08-17 — tagged `v2.1.0`
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2804,15 +2805,19 @@ Owner: `macos-scripts`
 
 ## Post-v2.1.0 candidate — `mqlaunch next`
 
-Do not include this in the v2.1.0 completion gate.
-
-Once Pulse has proven stable, a later release may add:
+Status: Next direction as of 2026-08-17, now that v2.1.0 has shipped. It was
+held out of the v2.1.0 completion gate on purpose — a selector is only worth
+building on a substrate that has proven stable, and `mq.pulse.v1` had to ship
+first.
 
 ```bash
 mqlaunch next
+mqlaunch next --json
 ```
 
-It should consume `mq.pulse.v1` rather than perform its own scanning and return one deterministic primary next action.
+It consumes `mq.pulse.v1` rather than performing its own scanning, and returns one deterministic primary next action.
+
+Keep the first version thin: it selects exactly one item from the attention list Pulse already produces, using the priority Pulse already assigns. No second scan, no second risk model, no re-ranking. Anything that ranks differently from Pulse is a second operator model wearing a shorter name.
 
 ```text
 Pulse observes -> Attention prioritizes -> Next selects
