@@ -176,7 +176,7 @@ echo "[6/9] --no-network marks GitHub SKIPPED rather than dropping it"
 # passed over: PATH is trimmed to a directory holding only git.
 gh_free="$run_dir/nogh"
 mkdir -p "$gh_free"
-for tool in bash git grep python3 timeout gtimeout; do
+for tool in bash git grep python3 timeout gtimeout mktemp rm; do
   target="$(command -v "$tool" 2>/dev/null)" || continue
   ln -sf "$target" "$gh_free/$tool"
 done
@@ -200,13 +200,15 @@ echo "[7/9] a failing CI run is FAIL on the subject, not on the reading"
 # forbidden from inventing a verdict, not from reporting one it was given.
 ci_stub="$run_dir/ci"
 mkdir -p "$ci_stub"
-for tool in bash git grep python3 timeout gtimeout; do
+for tool in bash git grep python3 timeout gtimeout mktemp rm; do
   target="$(command -v "$tool" 2>/dev/null)" || continue
   ln -sf "$target" "$ci_stub/$tool"
 done
 cat > "$ci_stub/gh" <<'EOF'
 #!/usr/bin/env bash
-# `gh pr list` first, then `gh run list` — the collector asks in that order.
+# `gh pr list` and `gh run list` run concurrently, so this answers by subcommand
+# rather than by call order. It said "first, then" until the two reads stopped
+# queueing behind each other.
 if [[ "$1" == "pr" ]]; then
   echo '[]'
 else
