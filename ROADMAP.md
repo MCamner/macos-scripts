@@ -804,6 +804,28 @@ The front door should make the right workflow easy to find, then hand off to the
   the flag — and steps 8 and 9 of `tests/mq-agent-routing-smoke.sh` hold the
   translation itself rather than the text of the file that performs it.
 
+### Observed 2026-08-17 — mq-agent wraps `stack contract-check` mid-value
+
+Not this repo's to fix, recorded so the next person does not go looking here.
+
+`mqlaunch stack contract-check` prints a branch name broken across two lines,
+with the continuation starting in column 0:
+
+```text
+  mq-mcp               REVIEW  on branch
+'mq/update-project-files-20260811-014259'
+```
+
+It is a hard newline, not the terminal's soft wrap — it survives a pipe with no
+TTY. The break lands near 80 columns; the rows that stay whole are 74 and under.
+This repo renders its own surfaces at 92, so an 82-column row would have fit.
+
+The wrapping happens in `mq-agent`. `_run_agent` in
+`terminal/menus/mq-agent-menu.sh` runs `uv run mq-agent` and passes the output
+through untouched, and reformatting a delegate's answer here is exactly the
+boundary violation this section closed. The fix belongs in the repo that owns
+the renderer.
+
 ---
 
 ## P2 — Operator experience polish
