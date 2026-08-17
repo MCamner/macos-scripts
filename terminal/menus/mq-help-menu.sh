@@ -99,6 +99,7 @@ MENUS
 CHECKS
   mqlaunch check          Run the system check
   mqlaunch doctor         Check the environment and dependencies
+  mqlaunch next           The single next action, selected from Pulse's attention list
   mqlaunch pulse          Operator cockpit: six areas in one read-only view
   mqlaunch selftest       Run the smoke suite and shell lint
 

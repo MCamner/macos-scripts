@@ -115,6 +115,7 @@ mqlaunch palette                 # fuzzy command search
 mqlaunch pulse                   # operator cockpit: six areas in one view
 mqlaunch pulse attention         # only what needs attention
 mqlaunch pulse --json            # the same run as an mq.pulse.v1 document
+mqlaunch next                    # the single next action, from Pulse's attention list
 mqlaunch system check            # system health report
 mqlaunch workflows boot          # project boot workflow
 mqlaunch workflows validate      # workflow command-surface health check

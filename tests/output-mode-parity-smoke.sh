@@ -88,10 +88,18 @@ EXERCISED=(
 # An exemption is the obvious place to park an unproven claim, so it is checked:
 # the named file must exist and must exercise the command. Verified separately
 # that the real producer emits repo_release_check.v1 on stdout.
+#
+# `mqlaunch next --json` inherits Pulse's exemption for the same reason rather
+# than a new one: with no arguments it collects fresh Pulse state itself, so
+# running it here would run the full cockpit and, through the QUALITY collector,
+# this file. `--input FILE` would avoid that, but a fixture path listed here
+# would make this gate the owner of a document shape it does not define. The
+# named test drives `--json` against a stub pulse.sh instead.
 COVERED_ELSEWHERE=(
   "release-check	tests/release-check-contract-smoke.sh"
   "route	tests/mq-route-entrypoint-smoke.sh"
   "pulse	tests/pulse-machine-surface-smoke.sh"
+  "next	tests/next-command-smoke.sh"
 )
 
 run_dir="$(mktemp -d)"
