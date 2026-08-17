@@ -83,9 +83,25 @@ else
 fi
 
 section "SECRETS SCAN"
+# The commit history, which is what a release publishes.
+#
+# This read `gitleaks git --pre-commit --staged`, which inspects only what is
+# staged. A release check runs on a clean tree, so nothing was ever staged and
+# the scan measured nothing: `0 commits scanned, scanned ~0 bytes`, followed by
+# a tick. The message said "no staged secrets", so it was not lying — it was a
+# pre-commit shaped check standing in a release gate, structurally unable to
+# find anything in the situation it runs in. The same failure the Pulse contract
+# is built around, one floor down: the command succeeded and the output was
+# empty, and empty is not clean.
+#
+# Deliberately not `gitleaks dir`. That scans the working directory including
+# files git is told to ignore, and on a normal developer machine it fails on the
+# untracked `.env` every time — a gate that cries wolf about a file that is
+# correctly excluded teaches people to skip the gate. History is what leaves the
+# machine, and on this repo it is 994 commits in under a second.
 if command -v gitleaks >/dev/null 2>&1; then
-  if gitleaks git --pre-commit --staged -v; then
-    status_ok "No staged secrets found"
+  if gitleaks git "$BASE_DIR"; then
+    status_ok "No secrets found in the published history"
   else
     status_warn "Secrets scan found issues"
   fi
