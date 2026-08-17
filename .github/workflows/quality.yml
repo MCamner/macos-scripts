@@ -53,20 +53,38 @@ jobs:
 
       - name: Syntax check all .sh files by shebang (exclude backups/)
         run: |
-          find . \
-            -name "*.sh" \
-            -not -path "./.git/*" \
-            -not -path "./backups/*" \
-            -print0 \
-          | while IFS= read -r -d '' f; do
-              shebang="$(head -1 "$f")"
-              if [[ "$shebang" == *zsh* ]]; then
-                zsh -n "$f" || { echo "FAIL (zsh -n): $f"; exit 1; }
-              else
-                bash -n "$f" || { echo "FAIL (bash -n): $f"; exit 1; }
-              fi
-            done
-          echo "All .sh files (excl. backups/) pass syntax check"
+          # The count is checked before the loop, and the success line reports
+          # it. Without that, an enumeration that produced nothing ran the loop
+          # body zero times and printed "All .sh files pass syntax check" —
+          # green, having checked nothing. A broken checkout, a wrong working
+          # directory or an exclusion that swallowed the tree all look like a
+          # clean repo to a loop that never runs.
+          #
+          #     could-not-measure != measured-clean
+          #
+          # Syntax errors themselves were always caught: the pipeline's status
+          # is the while loop's, so `exit 1` in the subshell does fail the step.
+          # Verified before changing anything; that half was not broken.
+          mapfile -d '' -t files < <(
+            find . \
+              -name "*.sh" \
+              -not -path "./.git/*" \
+              -not -path "./backups/*" \
+              -print0
+          )
+          if (( ${#files[@]} == 0 )); then
+            echo "FAIL: found no .sh files to check — the enumeration is broken"
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            shebang="$(head -1 "$f")"
+            if [[ "$shebang" == *zsh* ]]; then
+              zsh -n "$f" || { echo "FAIL (zsh -n): $f"; exit 1; }
+            else
+              bash -n "$f" || { echo "FAIL (bash -n): $f"; exit 1; }
+            fi
+          done
+          echo "All ${#files[@]} .sh files (excl. backups/) pass syntax check"
 
       # Enforced, and delegated to tools/scripts/lint.sh rather than re-deriving
       # the file list here. The old step had its own `find` with different
