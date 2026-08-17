@@ -63,6 +63,7 @@ registry-consumer-parity-smoke.sh	active	-
 release-check-contract-smoke.sh	active	-
 release-secret-scan-smoke.sh	active	-
 gate-evidence-smoke.sh	active	-
+zsh-status-assignment-smoke.sh	active	-
 release-pull-request-mode-smoke.sh	active	-
 runtime-authority-classification-smoke.sh	active	-
 runtime-authority-freeze-smoke.sh	active	-
