@@ -32,6 +32,8 @@ Options:
   --input FILE   select from an existing mq.pulse.v1 document instead of
                  collecting, for a caller that already ran Pulse
   --json         print the mq.next.v1 document instead of the screen
+  --plain        one tab-separated row, no panel and no colour:
+                 status, item_status, area, subject, summary, next_command
   -h, --help     show this help
 
 This command ranks nothing. The answer is the head of Pulse's attention
@@ -52,12 +54,17 @@ HELP
 }
 
 json_mode=0
+plain_mode=0
 input=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --json)
       json_mode=1
+      shift
+      ;;
+    --plain)
+      plain_mode=1
       shift
       ;;
     --input)
@@ -132,8 +139,18 @@ if [[ -s "$work/select.err" ]]; then
   cat "$work/select.err" >&2
 fi
 
+if [[ "$json_mode" -eq 1 && "$plain_mode" -eq 1 ]]; then
+  # Two machine formats named at once is a caller that has not decided which one
+  # it parses. Picking one silently would make the other's absence look like a
+  # bug in this command.
+  printf 'next: --json and --plain are two different formats; pick one\n' >&2
+  exit 2
+fi
+
 if [[ "$json_mode" -eq 1 ]]; then
   cat "$selected"
+elif [[ "$plain_mode" -eq 1 ]]; then
+  next_render_plain "$selected"
 else
   next_render "$selected"
 fi

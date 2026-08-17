@@ -98,3 +98,72 @@ PY
     printf '\n%bCollected: %s%b\n' "$PULSE_C_MUTED" "$collected" "$PULSE_C_RESET"
   fi
 }
+
+# Prints a `mq.next.v1` document as one tab-separated row — `mqlaunch next
+# --plain`.
+#
+# For the operator who is piping, not reading. Six fields, always six, in one
+# shape that will not move when the screen layout does:
+#
+#   status  item_status  area  subject  summary  next_command
+#
+# Field 1 is the selection status and the reason it is on the row rather than on
+# a `#` comment line the way `pulse --plain` carries its verdict. Pulse's shape
+# is the better precedent in every respect but one: with the status on a comment
+# line, `NONE` and `UNAVAILABLE` both produce zero rows, so `grep -v '^#'` makes
+# "nothing needs attention" and "nothing was measured" the same empty output.
+# That is the one distinction this command exists to keep, and it outranks
+# matching the sibling format exactly.
+#
+# The field count is constant for the same class of reason. `cut -f6` on a bare
+# `NONE` line prints `NONE`, because cut passes through lines that hold no
+# delimiter — a consumer reading the last column would see a status word where a
+# command should be. Empty trailing fields cost five bytes and remove that.
+#
+# For `UNAVAILABLE` the reason takes the `summary` column, which is where a
+# human-readable explanation already belongs.
+next_render_plain() {
+  local path="$1"
+
+  python3 - "$path" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    doc = json.load(handle)
+
+item = doc.get("item") or {}
+status = doc.get("status") or ""
+collected = doc.get("collected") or []
+
+
+def clean(value):
+    # A tab inside a field would add a column; a newline would add a row. No
+    # item field carries either today, and collapsing rather than trusting that
+    # is what keeps the shape a contract.
+    return str(value).replace("\t", " ").replace("\n", " ")
+
+
+summary = item.get("summary") or ""
+if status == "UNAVAILABLE":
+    summary = doc.get("reason") or "could not read the pulse document"
+
+row = [
+    status,
+    item.get("status") or "",
+    item.get("area") or "",
+    item.get("subject") or "",
+    summary,
+    item.get("next_command") or "",
+]
+print("\t".join(clean(field) for field in row))
+
+# The scope comment mirrors pulse --plain: `grep -v '^#'` leaves exactly the
+# row. It is a comment and not a column because it describes the run, not the
+# finding, and a consumer reading columns should not have to skip two of them.
+print("# next\tscope=%s\tcollected=%s" % (
+    doc.get("scope") or "",
+    ",".join(str(area) for area in collected),
+))
+PY
+}
