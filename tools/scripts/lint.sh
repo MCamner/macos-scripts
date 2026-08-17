@@ -3,9 +3,20 @@ set -euo pipefail
 
 PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 
+# Exit 3 rather than 0. A gate that cannot run has not passed, and this one used
+# to answer 0 — so `tools/scripts/test-all.sh` printed "All selftest checks
+# passed" on a machine that had linted nothing. That is the same defect the
+# release gate's secrets scan had (#214) and the same invariant
+# docs/PULSE_CONTRACT.md carries for collectors:
+#
+#     could-not-measure  !=  measured-clean
+#
+# 3 is the code this stack already uses for "the command failed at its own job
+# rather than finding something", per docs/PULSE_CONTRACT.md.
 if ! command -v shellcheck >/dev/null 2>&1; then
-  echo "[WARN] shellcheck not installed; skipping shell lint"
-  exit 0
+  echo "[UNAVAILABLE] shellcheck is not installed; no shell file was linted" >&2
+  echo "  install it with: brew install shellcheck" >&2
+  exit 3
 fi
 
 scripts=()
@@ -18,9 +29,14 @@ done < <(
     | sort
 )
 
+# Never a legitimate outcome in this repo, which carries over two hundred shell
+# files. An empty enumeration means the find failed, the root is wrong, or an
+# exclusion swallowed everything — none of which is a clean tree, and all of
+# which used to print a WARN and answer 0.
 if (( ${#scripts[@]} == 0 )); then
-  echo "[WARN] No shell scripts found"
-  exit 0
+  echo "[UNAVAILABLE] no shell scripts found under $PROJECT_ROOT" >&2
+  echo "  the file enumeration produced nothing, so nothing was linted" >&2
+  exit 3
 fi
 
 bash_scripts=()
@@ -36,8 +52,9 @@ for script in "${scripts[@]}"; do
 done
 
 if (( ${#bash_scripts[@]} == 0 )); then
-  echo "[WARN] No bash/sh scripts found for shellcheck"
-  exit 0
+  echo "[UNAVAILABLE] no bash/sh scripts among ${#scripts[@]} shell file(s)" >&2
+  echo "  the shebang filter matched nothing, so shellcheck was never run" >&2
+  exit 3
 fi
 
 # Warning severity, enforced. `error` was already a hard gate here — this file
