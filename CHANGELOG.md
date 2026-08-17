@@ -6,6 +6,70 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-17
+
+### Fixed
+
+* The zsh palette did not load after `exec zsh` — the command the theme
+  switcher itself prints as "run this to activate it now".
+
+  `MQ_ZSH_THEME_V3_LOADED` was exported, so the new shell inherited it, treated
+  the theme as already loaded, and returned before applying the variant the user
+  had just selected. The switcher's own activation instruction defeated the
+  switcher. An inherited value is stale process state from the shell that
+  applied the theme, not evidence that this shell has loaded anything. The guard
+  stays, as a shell-local scalar, so it still prevents a double load in one
+  shell.
+
+* `theme reset` cleared the prompt and left the UI palette behind. Reset now
+  mirrors what apply does: it clears both tracks when they hold the same shared
+  theme, and only its own when the two were set separately. A UI theme chosen
+  independently is not something this command was asked to undo.
+
+* `branch-supersede-check` counted a deletion as content the branch holds. A
+  file absent from trunk was labelled `ONLY-ON-BRANCH` without checking whether
+  the branch had it either — so a file the branch **deleted**, and trunk has
+  since dropped too, argued for keeping the branch. It is now `GONE-FROM-BOTH`
+  and counts as settled.
+
+### Changed
+
+* Applying a theme now syncs the zsh prompt and the terminal UI palette, on an
+  exact name match only.
+
+  ```text
+  amber  green  ice     known to both — applying one applies both
+  minimal  macos        prompt only — the UI palette is left alone
+  classic  synth        UI only — the prompt is left alone
+  ```
+
+  Nothing is translated into a near neighbour. `macos → ice` would make two
+  prompt themes indistinguishable in the UI, and `minimal → classic` asserts a
+  resemblance nobody established — both are product decisions wearing the
+  clothes of an implementation detail. The shared set is declared rather than
+  computed, and a test fails if it stops being exactly the overlap of the two
+  surfaces, so adding a theme to one side alone cannot silently change what
+  syncs.
+
+### Documentation
+
+* The zsh trap that killed the Git submenu is written down. `status` is a
+  read-only special parameter in zsh; declaring it is allowed, assigning to it
+  aborts the enclosing function. The fix had been in the code for a while, but
+  the reason lived only in a test comment, where nobody renaming a variable
+  would find it.
+
+* The Pulse roadmap now describes what shipped. Two blocks read `Planned` with
+  nothing ticked while the feature was in production, and the corrections went
+  in both directions: `Full Pulse view` had eleven of sixteen boxes already
+  delivered, two of them in a different shape than drawn, while
+  `Interactive drill-down` had held all its constraints and built none of its
+  navigation. The remaining open items now carry the decision or the
+  measurement that keeps them open — a declined design with its reopening
+  conditions, a header narrowed to three fields and deferred, a performance
+  target with the 3.85 s it was measured at, and a cache nobody can build until
+  an owner publishes a TTL.
+
 ### Fixed
 
 * A Pulse collector that ran past its budget reported the subject as broken.
