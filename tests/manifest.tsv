@@ -106,6 +106,7 @@ pulse-attention-smoke.sh	active	-
 pulse-menu-smoke.sh	active	-
 pulse-machine-surface-smoke.sh	active	-
 pulse-degradation-smoke.sh	active	-
+pulse-git-concurrency-smoke.sh	active	-
 next-contract-smoke.sh	active	-
 next-command-smoke.sh	active	-
 branch-supersede-smoke.sh	active	-

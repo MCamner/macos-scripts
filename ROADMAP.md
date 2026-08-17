@@ -2649,11 +2649,37 @@ full       5365 ms  →  3850 ms
   through the same `uv` project, and the item order is the screen's order.
   "Where safe" is doing real work in that sentence.
 * [x] Add timeouts to network-dependent collectors.
-* [ ] Do not let one slow GitHub request block all other output. Bounded, not
-  concurrent: a slow `gh` delays the rest by at most `PULSE_GH_TIMEOUT` and
-  costs nothing else — every other area is still collected and rendered. Making
-  it genuinely non-blocking needs the collectors themselves parallel, which is
-  the change ruled out above.
+* [x] Do not let one slow GitHub request block all other output — the Git
+  collector's two `gh` reads now run concurrently, gated by
+  `tests/pulse-git-concurrency-smoke.sh`.
+
+  This box read "making it genuinely non-blocking needs the collectors
+  themselves parallel, which is the change ruled out above", and that was true
+  about the six collectors and wrong about the case in front of it. The blocking
+  was inside the Git collector: `gh pr list` and `gh run list` ran in sequence
+  although neither feeds the other — the branch the CI query needs comes from
+  `git rev-parse` — so a hanging pull request read took the CI verdict with it,
+  and the two budgets added up.
+
+  They are launched together and emitted in list order, the same shape the five
+  quality gates already use. The ruling above stands untouched: the six
+  collectors stay serial, because two of them shell into mq-agent through the
+  same `uv` project.
+
+  Measured by swapping the two versions of the file in the same tree, minutes
+  apart, so the numbers are the change rather than the network's mood. The
+  absolute values are higher than the 3850 ms recorded above for that reason —
+  the same day's baseline is what they are compared against, not that one.
+
+  ```text
+  git scope, wall time  1537-1678 ms  ->   974-1073 ms
+  full run              4351-4647 ms  ->  3998-4083 ms
+  worst case            2 x PULSE_GH_TIMEOUT  ->  1 x PULSE_GH_TIMEOUT
+  ```
+
+  The `< 3s` box below stays open. Roughly 500 ms came off a run that is still
+  dominated by four calls into other repos, and this does not move it.
+
 * [x] Allow local-only execution with `--no-network`.
 * [ ] Cache only where a clear TTL exists. Still open, and it may stay open: no
   owner in the stack publishes a TTL for its status, so a cache here would be

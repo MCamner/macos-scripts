@@ -180,6 +180,69 @@ print(f"stack truth {state}{suffix}")
 # Read-only throughout: `git status`, `git rev-list`, `gh pr list`, `gh run
 # list`. No push, no merge, no checkout, no branch mutation, and nothing that
 # writes to the repo at all.
+# Runs one bounded `gh` read in the background and writes what happened to a
+# file: exit status on line 1, duration in ms on line 2, and the answer from
+# line 3 on.
+#
+# It runs in a subshell, so like pulse_quality_probe it must not touch
+# PULSE_ITEMS — an array appended to in a child is lost when the child exits,
+# and a collector that quietly dropped its findings is the failure this contract
+# is about. The parent turns the file into items.
+#
+# The body starts on line 3 rather than being a separate file because `gh --json`
+# answers with one line of JSON, and a two-file format would have to keep the
+# pair consistent for no gain. The reader below rejoins everything past line 2,
+# so a multi-line answer survives anyway.
+pulse_gh_probe() {
+  local out="$1"
+  shift
+
+  local started ended output read_status=0
+  started="$(pulse_now_ms)"
+  output="$(pulse_run_bounded "$PULSE_GH_TIMEOUT" "$@" 2>/dev/null)" || read_status=$?
+  ended="$(pulse_now_ms)"
+
+  {
+    printf '%s\n' "$read_status"
+    printf '%s\n' "$((ended - started))"
+    printf '%s' "$output"
+  } > "$out"
+}
+
+# Reads one probe file into PULSE_GH_STATUS, PULSE_GH_MS and PULSE_GH_BODY.
+#
+# Through globals rather than stdout because the body is JSON and the status is
+# a number: returning both from one function would mean encoding them together
+# and splitting them again at every call site.
+#
+# A file that is not there is status 0 with an empty body, which is what the
+# caller already treats as "GitHub did not answer" — the probe not having run is
+# not a different fact from it having answered nothing.
+pulse_gh_probe_read() {
+  local file="$1"
+
+  PULSE_GH_STATUS=0
+  PULSE_GH_MS=0
+  PULSE_GH_BODY=""
+
+  [[ -s "$file" ]] || return 0
+
+  local line_no=0 line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line_no=$((line_no + 1))
+    case "$line_no" in
+      1) PULSE_GH_STATUS="$line" ;;
+      2) PULSE_GH_MS="$line" ;;
+      # The newline is put back. `gh --json` answers on one line today, so
+      # joining without a separator happened to work — and would have merged two
+      # tokens into one the day it wrapped, turning valid JSON into a number
+      # nobody wrote. Rejoining correctly costs one branch.
+      3) PULSE_GH_BODY="$line" ;;
+      *) PULSE_GH_BODY+=$'\n'"$line" ;;
+    esac
+  done < "$file"
+}
+
 pulse_collect_git() {
   local skip_network="${1:-0}"
   local started ended
@@ -256,11 +319,43 @@ pulse_collect_git() {
     return 0
   fi
 
-  local prs pr_read=0
-  prs="$(pulse_run_bounded "$PULSE_GH_TIMEOUT" \
-    gh pr list --state open --limit 30 \
-    --json number,isDraft,mergeable 2>/dev/null)" || pr_read=$?
-  ended="$(pulse_now_ms)"
+  # The two GitHub reads run concurrently. They ask different questions and
+  # neither feeds the other — the branch the CI query needs comes from
+  # `git rev-parse`, not from the pull request list — so serially the second one
+  # waited on the first for no reason, and a `gh pr list` that hung took the CI
+  # verdict with it. That was the roadmap's "do not let one slow GitHub request
+  # block all other output".
+  #
+  # This is not the six collectors going parallel, which stays ruled out: two of
+  # those shell into mq-agent through the same uv project. These are two `gh`
+  # calls inside one collector, and the ordering problem is already solved the
+  # way the quality gates solved it — launch, wait, then emit in list order.
+  #
+  # The branch is read before the launch because the CI probe needs it, and it
+  # is local git rather than network.
+  local branch
+  branch="$(git -C "$BASE_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || printf '')"
+
+  local gh_work
+  gh_work="$(mktemp -d)"
+
+  pulse_gh_probe "$gh_work/pr" \
+    gh pr list --state open --limit 30 --json number,isDraft,mergeable &
+  if [[ -n "$branch" ]]; then
+    pulse_gh_probe "$gh_work/ci" \
+      gh run list --branch "$branch" --limit 10 \
+      --json status,conclusion,workflowName &
+  fi
+  # The probes report through their files; a non-zero job status here would be
+  # the shell's opinion about a read whose outcome has already been written.
+  wait 2>/dev/null || true
+
+  local prs pr_read=0 pr_ms=0
+  pulse_gh_probe_read "$gh_work/pr"
+  prs="$PULSE_GH_BODY"
+  pr_read="$PULSE_GH_STATUS"
+  pr_ms="$PULSE_GH_MS"
+  ended=$((started + pr_ms))
 
   if [[ -z "$prs" ]]; then
     pulse_item_add git git UNAVAILABLE "Pull requests" \
@@ -319,18 +414,22 @@ print(summary)
 
   # CI for the branch that is checked out, which is the run an operator is
   # waiting on. A branch with no runs is not a pass — nothing ran.
-  local branch
-  branch="$(git -C "$BASE_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || printf '')"
+  #
+  # Emitted after the pull request item and never before it: the probes finish in
+  # whatever order the network decides, and the Git area is read top to bottom.
   if [[ -z "$branch" ]]; then
     pulse_item_add git git UNAVAILABLE "CI" "no branch to ask about"
+    rm -rf "$gh_work"
     return 0
   fi
-  started="$(pulse_now_ms)"
-  local runs ci_read=0
-  runs="$(pulse_run_bounded "$PULSE_GH_TIMEOUT" \
-    gh run list --branch "$branch" --limit 10 \
-    --json status,conclusion,workflowName 2>/dev/null)" || ci_read=$?
-  ended="$(pulse_now_ms)"
+  local runs ci_read=0 ci_ms=0
+  pulse_gh_probe_read "$gh_work/ci"
+  runs="$PULSE_GH_BODY"
+  ci_read="$PULSE_GH_STATUS"
+  ci_ms="$PULSE_GH_MS"
+  rm -rf "$gh_work"
+  started=0
+  ended="$ci_ms"
 
   if [[ -z "$runs" ]]; then
     pulse_item_add git git UNAVAILABLE "CI" \
