@@ -2942,6 +2942,21 @@ settled semantics rather than establishing them by accident.
 * [ ] Reuse a collected document between `pulse` and `next` — see the decision
   below. Blocked on the same freshness contract as the Pulse cache, and
   deliberately not solved from this side.
+* [ ] Find a consumer for `mq.next.v1`, or decline it.
+
+  The contract is locked, documented and gated, and nothing in the stack reads
+  it. `mqlaunch next` produces the document; no script, repo or workflow
+  consumes it. A published schema with no consumer is a hypothesis about what
+  someone will need, held at the cost of a compatibility promise — the reason
+  `mq.pulse.v1` is worth its promise is that `next` reads it.
+
+  Not a defect and not work to schedule. It is recorded because the honest
+  moment to notice it is now, while the schema is one release old and cheap to
+  change, rather than after a consumer appears and fixes it in place. Two things
+  would close this box: an actual reader — `mq-agent` or `mq-hal` wanting a
+  single next action — or a decision that `mqlaunch next --json` is a surface
+  for humans piping to `jq` and needs no downstream at all, in which case the
+  box is struck rather than ticked.
 
 ### Decision 2026-08-17 — repeated collection is accepted
 
