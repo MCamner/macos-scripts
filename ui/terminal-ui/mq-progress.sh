@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 # Shared step-progress and result-panel primitives for MQLaunch terminal UI.
-# Intended to be sourced after mq-ui.sh so it can reuse the canonical surface,
-# color and plain-output helpers.
+# Sourceable from bash or zsh. If mq-ui.sh is not loaded yet, this module loads
+# the canonical UI authority from the same directory before defining helpers.
+
+_mq_progress_self="${BASH_SOURCE[0]-}"
+[ -n "$_mq_progress_self" ] || _mq_progress_self="$0"
+_MQ_PROGRESS_DIR="$(cd "$(dirname "$_mq_progress_self")" 2>/dev/null && pwd)"
+unset _mq_progress_self
+
+if ! command -v surface_row >/dev/null 2>&1; then
+  # shellcheck source=ui/terminal-ui/mq-ui.sh
+  source "$_MQ_PROGRESS_DIR/mq-ui.sh"
+fi
 
 _ui_progress_style() {
   case "${1:-pending}" in
@@ -40,7 +50,7 @@ ui_progress_steps() {
     glyph="${styled%%|*}"
     color="${styled#*|}"
 
-    if command -v mq_wants_plain_output >/dev/null 2>&1 && mq_wants_plain_output; then
+    if mq_wants_plain_output; then
       printf '%s %s\n' "$glyph" "$label"
     else
       printf '%b%s%b %s\n' "$color" "$glyph" "${C_RESET:-}" "$label"
@@ -76,7 +86,7 @@ ui_result_panel() {
   glyph="${styled%%|*}"
   status_color="${styled#*|}"
 
-  if command -v mq_wants_plain_output >/dev/null 2>&1 && mq_wants_plain_output; then
+  if mq_wants_plain_output; then
     printf '%s %s\n' "$glyph" "$title"
     for line in "$@"; do
       printf '%s\n' "$line"
