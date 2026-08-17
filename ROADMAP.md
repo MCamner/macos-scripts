@@ -2832,8 +2832,9 @@ Owner: `macos-scripts`
 
 ## Post-v2.1.0 — `mqlaunch next`
 
-Status: In progress — the selector and the typed command have shipped; menu
-integration is the remaining surface
+Status: Done 2026-08-17 — contract, command surface and menu row all shipped.
+One item stays open and is not this epic's to close: reusing a collected
+document between `pulse` and `next`, blocked on the Pulse freshness contract
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2892,10 +2893,14 @@ settled semantics rather than establishing them by accident.
 
 ### Open
 
-* [ ] Menu integration. Held until the typed command has settled. The open
-  design question is where the row belongs: in the Pulse menu, where it reads
-  the same document, or in the main menu, where it is its own answer rather than
-  a view of Pulse.
+* [x] Menu integration — the Pulse menu, row 3, next to `Attention` (#207).
+  The design question was where the row belongs, and the answer follows from
+  what the command is: `next` is a projection over `mq.pulse.v1`, so a main-menu
+  row would present it as a standalone top-level function while every fact in
+  its output came from Pulse. The row dispatches `mqlaunch next` through
+  `bin/mqlaunch` like every other row, and the gate holds it to that from both
+  sides — it must route through the dispatcher, and it must not reach the
+  entrypoint script or the selector library directly.
 * [ ] Reuse a collected document between `pulse` and `next` — see the decision
   below. Blocked on the same freshness contract as the Pulse cache, and
   deliberately not solved from this side.
