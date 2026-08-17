@@ -25,19 +25,20 @@ print_pulse_menu() {
   surface_panel_header "MQ Pulse" "Operator Status" "$width" "$panel_color"
   surface_row "OVERVIEW" "$width" "$panel_color"
   surface_split_row "1. Full Pulse" "2. Attention" "$width" "$panel_color"
+  surface_split_row "3. Next action" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "ENVIRONMENT" "$width" "$panel_color"
-  surface_split_row "3. System" "4. Repositories" "$width" "$panel_color"
-  surface_split_row "5. MQ Stack" "" "$width" "$panel_color"
+  surface_split_row "4. System" "5. Repositories" "$width" "$panel_color"
+  surface_split_row "6. MQ Stack" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "STATE" "$width" "$panel_color"
-  surface_split_row "6. Memory" "7. Git / GitHub" "$width" "$panel_color"
-  surface_split_row "8. Quality" "" "$width" "$panel_color"
+  surface_split_row "7. Memory" "8. Git / GitHub" "$width" "$panel_color"
+  surface_split_row "9. Quality" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "TOOLS" "$width" "$panel_color"
-  surface_split_row "9. Refresh" "b. Back" "$width" "$panel_color"
+  surface_split_row "10. Refresh" "b. Back" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
-  surface_row "Read-only. Every row runs mqlaunch pulse." "$width" "$panel_color"
+  surface_row "Read-only. Every row runs mqlaunch pulse or next." "$width" "$panel_color"
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -57,7 +58,20 @@ run_pulse_view() {
   else
     "$BASE_DIR/bin/mqlaunch" pulse || true
   fi
-  pause_enter
+}
+
+# Runs `mqlaunch next` and returns to the menu.
+#
+# Not `run_pulse_view`: that records its argument so Refresh can repeat it, and
+# `next` is not a Pulse scope. Remembering it would make Refresh run
+# `mqlaunch pulse next`, which Pulse forwards as an unknown scope word. Refresh
+# repeats the last Pulse view, which is what the row says it does.
+#
+# The exit status is dropped for the same reason the Pulse rows drop theirs:
+# `next` exits 1 whenever anything needs attention, which is the normal case and
+# not a reason for the menu to look like something went wrong.
+run_next_view() {
+  "$BASE_DIR/bin/mqlaunch" next || true
 }
 
 # Routes the pulse menu selection to the matching view.
@@ -67,13 +81,14 @@ handle_pulse_menu_choice() {
   case "$choice" in
     1) run_pulse_view "" ;;
     2) run_pulse_view attention ;;
-    3) run_pulse_view system ;;
-    4) run_pulse_view repos ;;
-    5) run_pulse_view stack ;;
-    6) run_pulse_view memory ;;
-    7) run_pulse_view git ;;
-    8) run_pulse_view quality ;;
-    9) run_pulse_view "$MQ_PULSE_LAST_SCOPE" ;;
+    3) run_next_view ;;
+    4) run_pulse_view system ;;
+    5) run_pulse_view repos ;;
+    6) run_pulse_view stack ;;
+    7) run_pulse_view memory ;;
+    8) run_pulse_view git ;;
+    9) run_pulse_view quality ;;
+    10) run_pulse_view "$MQ_PULSE_LAST_SCOPE" ;;
     b|B|x|X|exit) return 1 ;;
     *) echo "${C_ERR}Invalid pulse selection:${C_RESET} $choice"; pause_enter ;;
   esac

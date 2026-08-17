@@ -22,15 +22,16 @@ trap 'rm -rf "$run_dir"' EXIT
 
 echo "[1/6] the menu exists and offers every area"
 test -f "$MENU"
-for row in "1. Full Pulse" "2. Attention" "3. System" "4. Repositories" \
-           "5. MQ Stack" "6. Memory" "7. Git / GitHub" "8. Quality" \
-           "9. Refresh" "b. Back"; do
+for row in "1. Full Pulse" "2. Attention" "3. Next action" \
+           "4. System" "5. Repositories" "6. MQ Stack" \
+           "7. Memory" "8. Git / GitHub" "9. Quality" \
+           "10. Refresh" "b. Back"; do
   grep -qF -- "$row" "$MENU" || {
     echo "FAIL: the menu is missing the row: $row" >&2
     exit 1
   }
 done
-echo "  ok: eight views, refresh and back"
+echo "  ok: eight views, the next action, refresh and back"
 
 echo "[2/6] every row goes through the dispatcher"
 # Not `tools/scripts/pulse.sh`. A menu row and a typed command have to be the
@@ -48,7 +49,20 @@ grep -qF '"$BASE_DIR/bin/mqlaunch" pulse' "$MENU" || {
   echo "FAIL: the menu does not route through bin/mqlaunch" >&2
   exit 1
 }
-echo "  ok: bin/mqlaunch pulse, never the script"
+# The Next row is held to the same rule, and to its own: it must not reach the
+# selector library either. `next` is one command word to this menu, exactly as
+# `pulse` is — a row that sourced mqlaunch/lib/next would put selection logic
+# above the registry that governs it.
+grep -qF '"$BASE_DIR/bin/mqlaunch" next' "$MENU" || {
+  echo "FAIL: the Next row does not route through bin/mqlaunch" >&2
+  exit 1
+}
+if grep -nE 'tools/scripts/next\.sh|lib/next/' "$MENU" | grep -qv '^[0-9]*:#'; then
+  echo "FAIL: the menu reaches the next entrypoint or the selector directly" >&2
+  grep -nE 'tools/scripts/next\.sh|lib/next/' "$MENU" | grep -v '^[0-9]*:#' >&2
+  exit 1
+fi
+echo "  ok: bin/mqlaunch pulse and next, never a script or a library"
 
 echo "[3/6] the scoped views collect their own area and no other"
 # Stub delegates that record being run, so "did this scope run the whole thing"

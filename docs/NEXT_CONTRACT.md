@@ -164,8 +164,13 @@ exception from it.
 
 ## Status
 
-The selection semantics above are implemented and gated. The command surface is
-not: there is no `mqlaunch next` entry in `mqlaunch/lib/command-registry.json`,
-no human rendering, and no menu item yet. Locking the contract before the
-presentation layer is deliberate — the rendering can be argued about, the
-meaning of an empty answer cannot.
+The selection semantics above are implemented and gated, and so is the command
+surface: a registry entry, a dispatcher route, human, `--json` and `--plain`
+output, and row 3 of the Pulse menu.
+
+The contract was locked one PR ahead of any of it, deliberately — the rendering
+can be argued about, the meaning of an empty answer cannot. Every surface added
+since has been a consumer of the rules above rather than a chance to restate
+them, which is why `--plain` puts the selection status on the row: the format
+had to keep `NONE` and `UNAVAILABLE` apart, and the contract is where that
+requirement already lived.

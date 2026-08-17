@@ -428,8 +428,12 @@ now: reusing a previous document needs a freshness contract — how old it may b
 which scope produced it, whether `--no-stack` was set — and that belongs to
 Pulse rather than to its consumer. `--input` is the reuse path for automation.
 
-The full rules are in [NEXT_CONTRACT.md](NEXT_CONTRACT.md). There is no menu
-entry yet — the typed command settles first.
+The full rules are in [NEXT_CONTRACT.md](NEXT_CONTRACT.md).
+
+`mqlaunch pulse menu` carries it as row 3, `Next action`, next to `Attention` —
+where it belongs, because `next` is a projection over `mq.pulse.v1` rather than
+a surface of its own. The row runs `mqlaunch next` through the dispatcher like
+every other row, so a menu row and a typed command stay the same thing.
 
 JSON output shape:
 
