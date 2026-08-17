@@ -77,12 +77,12 @@ _ui_result_style() {
 # Interactive terminals get the canonical surface box. Piped/headless output is
 # plain text: no panel furniture and no ANSI control sequences.
 ui_result_panel() {
-  local status="${1:-INFO}"
+  local result_status="${1:-INFO}"
   local title="${2:-Result}"
   shift 2 || true
 
   local styled glyph status_color width panel_color line
-  styled="$(_ui_result_style "$status")"
+  styled="$(_ui_result_style "$result_status")"
   glyph="${styled%%|*}"
   status_color="${styled#*|}"
 
