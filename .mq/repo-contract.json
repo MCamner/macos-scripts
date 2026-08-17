@@ -2,7 +2,7 @@
   "schema": "mq-stack-repo-contract.pointer.v1",
   "repo": "macos-scripts",
   "role": "human-terminal-entrypoint",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "status": "active",
   "canonical_contract": ".mq/context/repo-contract.json",
   "contracts": [
