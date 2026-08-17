@@ -601,7 +601,7 @@ agent_review_brain_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent review repo . --brain; pause_enter ;;
+      1) ui_spinner "Reviewing repo → brain" _run_agent review repo . --brain; pause_enter ;;
       2) _run_agent signal --brain .; pause_enter ;;
       # The note the stack sweep reports on. Nothing schedules it, so the only
       # thing keeping it fresh is an operator finding this row.
