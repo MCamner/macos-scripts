@@ -97,6 +97,7 @@ operator-usage-message-smoke.sh	active	-
 menu-exit-contract-smoke.sh	active	-
 theme-manager-path-smoke.sh	active	-
 ui-spinner-smoke.sh	active	-
+ui-progress-result-smoke.sh	active	-
 mqobsidian-manifest-shell-parity-smoke.sh	active	-
 gitpr-merge-safe-smoke.sh	active	-
 pulse-contract-smoke.sh	active	-
