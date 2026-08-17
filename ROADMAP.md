@@ -18,7 +18,7 @@ v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and it
 
 v2.1.0 shipped on 2026-08-17. It added no new source of truth — it added one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects, plus the `mq.pulse.v1` machine contract underneath it. Every box in its Definition of Done is closed against the tree.
 
-The next step reads that contract rather than adding to it. `mqlaunch next` consumes `mq.pulse.v1` and selects one already-prioritized attention item; it performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 candidate](#post-v210-candidate--mqlaunch-next).
+The next step reads that contract rather than adding to it. `mqlaunch next` consumes `mq.pulse.v1` and selects one already-prioritized attention item; it performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 — `mqlaunch next`](#post-v210--mqlaunch-next).
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -2393,10 +2393,12 @@ closed by writing the missing test: `--verbose` and failing CI.
 ### Environment tests
 
 * [x] bash.
-* [ ] zsh. The entrypoint is bash and is always invoked as `bash pulse.sh`, so
-  there is no zsh path to test. What is zsh is the launcher that dispatches to
-  it, and `tests/menu-shell-guard-smoke.sh` covers that. Ticking this would
-  claim coverage of a path that does not exist.
+* [ ] ~~zsh.~~ N/A — the entrypoint is bash and is always invoked as
+  `bash pulse.sh`, so there is no zsh path to test. What is zsh is the launcher
+  that dispatches to it, and `tests/menu-shell-guard-smoke.sh` covers that. The
+  box stays unticked on purpose: ticking it would claim coverage of a path that
+  does not exist. The strikethrough is what says it is settled rather than
+  waiting.
 * [x] TTY.
 * [x] non-TTY.
 * [x] `NO_COLOR=1`.
@@ -2405,8 +2407,9 @@ closed by writing the missing test: `--verbose` and failing CI.
 
 * [x] GitHub unavailable.
 * [x] `mq-agent` unavailable.
-* [ ] `mqobsidian` unavailable. Pulse never reads mqobsidian: memory comes from
-  mq-agent, which owns that reading. There is nothing here to inject.
+* [ ] ~~`mqobsidian` unavailable.~~ N/A — Pulse never reads mqobsidian: memory
+  comes from mq-agent, which owns that reading. There is nothing here to inject,
+  and the mq-agent case above is the failure that actually reaches Pulse.
 * [x] malformed delegated JSON.
 * [x] collector timeout.
 * [x] dirty repository.
@@ -2425,7 +2428,12 @@ closed by writing the missing test: `--verbose` and failing CI.
 ### Exit gate
 
 * [x] Pulse is included in the full selftest suite.
-* [ ] Failure-path tests prove degraded behavior instead of only happy-path rendering.
+* [x] Failure-path tests prove degraded behavior instead of only happy-path
+  rendering — `tests/pulse-degradation-smoke.sh`, whose first three steps are
+  exactly that: a gate past its budget is `UNAVAILABLE` rather than `FAIL`, the
+  timeout is named so it is not read as an empty answer, and a slow GitHub does
+  not become a broken CI. The failure-injection list above is closed apart from
+  the one case that cannot occur.
 
 ---
 
@@ -2559,12 +2567,13 @@ Example:
 * [x] Guarantee no ANSI in JSON output.
 * [x] Send diagnostics to stderr.
 * [x] Add schema/contract validation.
-* [ ] Add fixtures for stable output. Still open, and deliberately: a golden
+* [x] Add fixtures for stable output — `tests/fixtures/pulse/mq.pulse.v1.json`,
+  landed with PR 7 (#193). This box was held open on the objection that a golden
   document would pin `duration_ms` and this machine's repo list along with the
-  schema, so it would fail for reasons that have nothing to do with the
-  contract. What the gate asserts instead is the shape — key set, section keys,
-  `collected`, and attention being section items. A fixture belongs here once
-  the timing fields are pinnable, which is PR 7's block.
+  schema, and both halves were answered rather than waived:
+  `tests/pulse-degradation-smoke.sh` strips `duration_ms` from every item before
+  comparing, and runs against a stub tree, so the repo list is the stub's rather
+  than this machine's.
 * [x] Test malformed delegate responses — noise before the document leaves the area `UNAVAILABLE`, never empty and never healthy.
 
 ### Exit gate
@@ -2637,10 +2646,13 @@ full       5365 ms  →  3850 ms
 * [ ] Cache only where a clear TTL exists. Still open, and it may stay open: no
   owner in the stack publishes a TTL for its status, so a cache here would be
   Pulse inventing a freshness claim — the one thing this contract forbids.
-* [ ] Mark cached data explicitly. Nothing is cached, so there is nothing to
-  mark.
-* [ ] Never render stale cached data as live state. Held by there being no
-  cache, not by a check.
+* [ ] ~~Mark cached data explicitly.~~ N/A until a cache exists. It is a
+  condition on the box above, not work of its own, and it read as a third
+  implementation task sitting beside one blocked requirement.
+* [ ] ~~Never render stale cached data as live state.~~ N/A until a cache
+  exists — currently guaranteed by there being nothing to go stale. If the box
+  above is ever unblocked, both of these become its acceptance criteria rather
+  than separate items.
 
 ### Degradation
 
@@ -2682,27 +2694,42 @@ look broken exactly once per dependency change.
 
 ## P2 — Pulse documentation
 
-Status: Planned
+Status: Done 2026-08-17 — closed against the tree, having been written
+incrementally by the PRs that shipped each surface rather than as one docs pass
 Priority: P2
 Owner: `macos-scripts`
 
 ### Tasks
 
-* [ ] Add Pulse to README.
-* [ ] Add Pulse to `docs/COMMANDS.md`.
-* [ ] Document the Pulse menu.
-* [ ] Document status meanings.
-* [ ] Document exit codes.
-* [ ] Document `mq.pulse.v1`.
-* [ ] Document network-dependent checks.
-* [ ] Document `--no-network`.
-* [ ] Document that Pulse is read-only.
-* [ ] Document ownership boundaries.
+* [x] Add Pulse to README — `mqlaunch pulse`, `pulse attention` and
+  `pulse --json` in the command block.
+* [x] Add Pulse to `docs/COMMANDS.md` — the `### Pulse` section.
+* [x] Document the Pulse menu — how a menu row and a typed command are the same
+  dispatch, and what `Refresh` repeats.
+* [x] Document status meanings — the five check states in
+  `docs/PULSE_CONTRACT.md`, each with what it claims about the subject.
+* [x] Document exit codes — in both files, and the fact that they are the same
+  in every output mode.
+* [x] Document `mq.pulse.v1` — the schema, and the rule that `collected` is read
+  before `sections`.
+* [x] Document network-dependent checks — which collectors reach GitHub, and the
+  per-call budget.
+* [x] Document `--no-network` — including that it marks rather than drops, and
+  that `--no-stack` covers `MEMORY` too.
+* [x] Document that Pulse is read-only — stated in the contract as an ownership
+  rule, not as a promise about the current code.
+* [x] Document ownership boundaries — the collector table names the repo that
+  owns each signal.
 
 ### Exit gate
 
-* [ ] README, command reference, registry, help, and dispatcher agree.
-* [ ] Users can understand why a check is `UNAVAILABLE` or `SKIPPED`.
+* [x] README, command reference, registry, help, and dispatcher agree — gated,
+  not asserted: `tests/registry-consumer-parity-smoke.sh` checks all four
+  consumers against the registry and `tests/command-docs-smoke.sh` checks that
+  every command README shows actually dispatches.
+* [x] Users can understand why a check is `UNAVAILABLE` or `SKIPPED` — the
+  distinction is the contract's opening subject, and the timeout rule spells out
+  the case an operator hits most.
 
 ---
 
@@ -2803,21 +2830,75 @@ Owner: `macos-scripts`
 
 ---
 
-## Post-v2.1.0 candidate — `mqlaunch next`
+## Post-v2.1.0 — `mqlaunch next`
 
-Status: Next direction as of 2026-08-17, now that v2.1.0 has shipped. It was
-held out of the v2.1.0 completion gate on purpose — a selector is only worth
+Status: In progress — the selector and the typed command have shipped; menu
+integration is the remaining surface
+Priority: P1
+Owner: `macos-scripts`
+
+Held out of the v2.1.0 completion gate on purpose — a selector is only worth
 building on a substrate that has proven stable, and `mq.pulse.v1` had to ship
 first.
 
 ```bash
 mqlaunch next
 mqlaunch next --json
+mqlaunch next --plain
+mqlaunch next --input FILE
 ```
 
 It consumes `mq.pulse.v1` rather than performing its own scanning, and returns one deterministic primary next action.
 
 Keep the first version thin: it selects exactly one item from the attention list Pulse already produces, using the priority Pulse already assigns. No second scan, no second risk model, no re-ranking. Anything that ranks differently from Pulse is a second operator model wearing a shorter name.
+
+### Contract — `mq.next.v1` (#203)
+
+Locked before any rendering, so the presentation layer is argued about on top of
+settled semantics rather than establishing them by accident.
+
+* [x] Define `mq.next.v1`.
+* [x] Select `attention[0]` verbatim — no re-ranking, and in particular no
+  skipping an `UNAVAILABLE` head to reach a `FAIL` below it.
+* [x] Distinguish `NONE` from could-not-measure. Three absences, three answers:
+  an empty attention list from a run that measured something, an empty list from
+  an `INCOMPLETE` run, and a document that could not be read.
+* [x] Preserve Pulse's exit semantics — the same table, so `$?` from `next` and
+  from `pulse` agree about the same finding.
+* [x] Echo `scope` and `collected`, so a scoped `NONE` cannot read as a full one.
+* [x] Selector performs no scanning — the caller supplies the document.
+* [x] Gate it: `tests/next-contract-smoke.sh`, verified failable against three
+  planted defects.
+
+### Command surface (#204, #205)
+
+* [x] Add registry entry.
+* [x] Add dispatcher route, and the suggestion list.
+* [x] Default CLI collects fresh `mq.pulse.v1` — the command is typable without
+  the operator producing a document first.
+* [x] Pulse's exit code is not control flow. A run that exits `1` or `2` still
+  produced a complete document, and that document is the input.
+* [x] Add explicit existing-document input — `--input FILE`.
+* [x] Add human renderer, reusing Pulse's glyph and colour tables rather than
+  defining a second vocabulary.
+* [x] Add `--json`.
+* [x] Add `--plain` — six fields, always six, with the selection status on the
+  row rather than on a `#` comment line, because otherwise `NONE` and
+  `UNAVAILABLE` both filter down to zero rows.
+* [x] Sync README.
+* [x] Sync `docs/COMMANDS.md`, and write `docs/NEXT_CONTRACT.md`.
+* [x] Add end-to-end CLI tests — `tests/next-command-smoke.sh`, 10 steps,
+  verified failable against six planted defects across two PRs.
+
+### Open
+
+* [ ] Menu integration. Held until the typed command has settled. The open
+  design question is where the row belongs: in the Pulse menu, where it reads
+  the same document, or in the main menu, where it is its own answer rather than
+  a view of Pulse.
+* [ ] Reuse a collected document between `pulse` and `next` — see the decision
+  below. Blocked on the same freshness contract as the Pulse cache, and
+  deliberately not solved from this side.
 
 ### Decision 2026-08-17 — repeated collection is accepted
 
