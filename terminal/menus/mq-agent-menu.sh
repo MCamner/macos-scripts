@@ -58,6 +58,85 @@ _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
+# Runs the interactive repo-review -> mqobsidian path with truthful UI state.
+#
+# mq-agent owns both review orchestration and the brain write. mqlaunch only
+# observes the already-emitted `→ brain:` / `brain:` status line after the
+# delegate returns, then maps that evidence onto the shared progress/result UI.
+# A successful review is therefore not silently promoted to a successful brain
+# write: the second step can end WARN while the first remains DONE.
+_run_agent_review_brain_ui() {
+  local root progress_lib out_file err_file rc brain_path brain_error
+  root="${BASE_DIR:-${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
+  progress_lib="$root/ui/terminal-ui/mq-progress.sh"
+
+  if ! command -v ui_progress_steps >/dev/null 2>&1 || ! command -v ui_result_panel >/dev/null 2>&1; then
+    if [[ ! -f "$progress_lib" ]]; then
+      ui_err "Progress UI not found: $progress_lib"
+      return 127
+    fi
+    # shellcheck disable=SC1090
+    source "$progress_lib"
+  fi
+
+  out_file="$(mktemp "${TMPDIR:-/tmp}/mq-review-brain-out.XXXXXX")" || return 1
+  err_file="$(mktemp "${TMPDIR:-/tmp}/mq-review-brain-err.XXXXXX")" || {
+    rm -f "$out_file"
+    return 1
+  }
+
+  ui_progress_steps \
+    "active|Review repository" \
+    "pending|Save review to brain"
+
+  rc=0
+  ui_spinner "Reviewing repo → brain" _run_agent review repo . --brain \
+    >"$out_file" 2>"$err_file" || rc=$?
+
+  [[ -s "$out_file" ]] && cat "$out_file"
+  [[ -s "$err_file" ]] && cat "$err_file" >&2
+
+  if (( rc != 0 )); then
+    ui_progress_steps \
+      "fail|Review repository" \
+      "skipped|Save review to brain"
+    ui_result_panel FAIL "Review failed" \
+      "Brain: not updated" \
+      "Next: inspect mq-agent output above"
+    rm -f "$out_file" "$err_file"
+    return "$rc"
+  fi
+
+  brain_path="$(sed -n 's/^.*→ brain: //p' "$out_file" | tail -1)"
+  if [[ -n "$brain_path" ]]; then
+    ui_progress_steps \
+      "done|Review repository" \
+      "done|Save review to brain"
+    ui_result_panel PASS "Review complete" \
+      "Brain: $brain_path" \
+      "Next: review stored in mqobsidian"
+    rm -f "$out_file" "$err_file"
+    return 0
+  fi
+
+  brain_error="$(sed -n 's/^.*brain: //p' "$out_file" | tail -1)"
+  ui_progress_steps \
+    "done|Review repository" \
+    "warn|Save review to brain"
+  if [[ -n "$brain_error" ]]; then
+    ui_result_panel WARN "Review complete; brain write needs attention" \
+      "Brain: $brain_error" \
+      "Next: check mq-mcp → mqobsidian write path"
+  else
+    ui_result_panel WARN "Review complete; brain status unavailable" \
+      "Brain: no save confirmation emitted" \
+      "Next: verify mq-agent --brain output contract"
+  fi
+
+  rm -f "$out_file" "$err_file"
+  return 0
+}
+
 # Runs an mq-mcp review through mq-agent's review command surface.
 _run_agent_review() {
   local scope="diff"
@@ -195,7 +274,7 @@ _mcp_start() {
   fi
 }
 
-# Stops mq-mcp server if running on MQ_MCP_PORT.
+# Stops mq-mcp server if running.
 _mcp_stop() {
   local pids
   pids="$(lsof -ti:"$MQ_MCP_PORT" 2>/dev/null)"
@@ -601,7 +680,7 @@ agent_review_brain_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) ui_spinner "Reviewing repo → brain" _run_agent review repo . --brain; pause_enter ;;
+      1) _run_agent_review_brain_ui; pause_enter ;;
       2) _run_agent signal --brain .; pause_enter ;;
       # The note the stack sweep reports on. Nothing schedules it, so the only
       # thing keeping it fresh is an operator finding this row.
