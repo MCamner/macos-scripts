@@ -799,7 +799,8 @@ dispatch_cli_command() {
       # document would break `mqlaunch next --json | jq .`.
       "$BASE_DIR/tools/scripts/next.sh" "${@:2}"
       command_status=$?
-      if [[ -z "${MQ_NO_TUI:-}" ]] && ! has_json_flag "$@"; then
+      if [[ -z "${MQ_NO_TUI:-}" ]] && ! has_json_flag "$@" \
+         && [[ " $* " != *" --plain "* ]]; then
         pause_enter
       fi
       return "$command_status"

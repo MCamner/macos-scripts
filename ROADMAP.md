@@ -2819,6 +2819,28 @@ It consumes `mq.pulse.v1` rather than performing its own scanning, and returns o
 
 Keep the first version thin: it selects exactly one item from the attention list Pulse already produces, using the priority Pulse already assigns. No second scan, no second risk model, no re-ranking. Anything that ranks differently from Pulse is a second operator model wearing a shorter name.
 
+### Decision 2026-08-17 — repeated collection is accepted
+
+`mqlaunch next` collects fresh Pulse state by default, so running `mqlaunch
+pulse` and then `mqlaunch next` by hand pays for the collection twice — about
+4s each, most of it calls into other repos. That cost is accepted for now.
+
+Caching the last document would be the obvious fix and is the wrong thing to
+build from this side. Reuse needs a freshness contract, and the questions it
+opens are Pulse's rather than its consumer's:
+
+```text
+how old may the document be
+which scope produced it
+was --no-network or --no-stack in effect
+is it from this repo
+```
+
+That is the same TTL/freshness question already held open above, and answering
+it inside `next` would settle it by accident for whoever asks next. `--input
+FILE` is the reuse path for automation, which is where repeated collection
+actually costs something.
+
 ```text
 Pulse observes -> Attention prioritizes -> Next selects
 ```

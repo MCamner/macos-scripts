@@ -350,6 +350,7 @@ everything" but "what is the single next thing to do".
 ```bash
 mqlaunch next                  # collect fresh Pulse state and select from it
 mqlaunch next --json           # the mq.next.v1 document
+mqlaunch next --plain          # one tab-separated row
 mqlaunch next --input FILE     # select from a pulse document you already have
 ```
 
@@ -388,6 +389,44 @@ and "nothing was measured" are different answers and never collapse into one.
 mqlaunch next --json | jq -r '.item.next_command // empty'
 mqlaunch pulse --json > pulse.json && mqlaunch next --input pulse.json
 ```
+
+`--plain` is one tab-separated row, always six fields:
+
+```text
+status  item_status  area  subject  summary  next_command
+```
+
+Shown with the tabs made visible, because a literal tab in this file would be
+converted to spaces by the repo's own markdown formatter:
+
+```bash
+mqlaunch next --plain | tr '\t' '|'
+```
+
+```text
+SELECTED|WARN|git|Worktree|3 modified|mqlaunch git
+# next|scope=|collected=system,repositories,stack,memory,git,quality
+```
+
+Field 1 is the selection status, and it is on the row rather than on the `#`
+comment line where `pulse --plain` carries its verdict. That is the one place
+these two formats deliberately differ: with the status on a comment line, `NONE`
+and `UNAVAILABLE` both produce zero rows, so `grep -v '^#'` would make "nothing
+needs attention" and "nothing was measured" byte-identical. The field count is
+constant for a related reason — `cut -f6` passes through a line that holds no
+tab, so an unpadded `NONE` would hand a consumer a status word where a command
+belongs.
+
+```bash
+mqlaunch next --plain | grep -v '^#' | cut -f6      # the command, or empty
+mqlaunch next --plain | grep -v '^#' | cut -f1      # SELECTED, NONE, UNAVAILABLE
+```
+
+`mqlaunch next` collects fresh Pulse state by default, so running `pulse` and
+then `next` by hand pays for the collection twice. That cost is accepted for
+now: reusing a previous document needs a freshness contract — how old it may be,
+which scope produced it, whether `--no-stack` was set — and that belongs to
+Pulse rather than to its consumer. `--input` is the reuse path for automation.
 
 The full rules are in [NEXT_CONTRACT.md](NEXT_CONTRACT.md). There is no menu
 entry yet — the typed command settles first.
