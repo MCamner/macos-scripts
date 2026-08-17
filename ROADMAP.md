@@ -2205,7 +2205,8 @@ gates, so it is the place worth pinning.
 
 ## P1 — Full Pulse view
 
-Status: Done except a minimal header, deferred past v2.1.0
+Status: Done except the deferred minimal header and the deliberately unmet
+80×24 full-view target — see both below, neither is a release blocker
 Priority: P1
 Owner: `macos-scripts`
 
@@ -2472,13 +2473,24 @@ guaranteed to exist. That turned out to be the whole answer.
 
 ### Tasks
 
-* [ ] System drill-down opens the existing doctor/system surface.
-* [ ] Repository drill-down opens the repo hub.
-* [ ] Stack drill-down opens the existing stack surface.
-* [ ] Memory drill-down opens the existing memory/obsidian surface.
-* [ ] Git/GitHub drill-down opens the Git surface.
-* [ ] Quality drill-down opens the relevant validation/selftest surface.
-* [ ] Attention details may expose:
+Struck rather than ticked, and left unticked rather than checked: none of this
+was built, and none of it will be. A `[x]` would claim delivery; a bare `[ ]`
+read as backlog under a heading that already says `Declined`, which is how these
+seven came to be the largest entry in the roadmap's open list while being the
+one group nobody would ever work on.
+
+```text
+not done  ≠  still planned
+```
+
+* [ ] ~~System drill-down opens the existing doctor/system surface.~~ Declined.
+* [ ] ~~Repository drill-down opens the repo hub.~~ Declined.
+* [ ] ~~Stack drill-down opens the existing stack surface.~~ Declined.
+* [ ] ~~Memory drill-down opens the existing memory/obsidian surface.~~ Declined.
+* [ ] ~~Git/GitHub drill-down opens the Git surface.~~ Declined.
+* [ ] ~~Quality drill-down opens the relevant validation/selftest surface.~~
+  Declined.
+* [ ] ~~Attention details may expose:~~ Declined.
 
   * View evidence.
   * Open owning menu.
