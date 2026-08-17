@@ -54,9 +54,12 @@ run_markdownlint() {
   fi
 
   (cd "$WORK_DIR" && bash "$MARKDOWNLINT" "$@")
-  local status=$?
+  # Not `status`. This file is sourced by mqlaunch.sh, which is zsh, where
+  # `status` is a read-only special parameter — assigning to it aborted this
+  # function before pause_if_interactive or the return ever ran.
+  local lint_status=$?
   pause_if_interactive
-  return "$status"
+  return "$lint_status"
 }
 
 # Runs markdownlint autofix after an explicit confirmation.
