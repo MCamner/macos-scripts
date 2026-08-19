@@ -88,6 +88,11 @@ The summary line is the signal. A high `identical` count is the strongest
 evidence a branch is superseded, because identical files do not happen by
 accident — they mean this exact content is already in trunk.
 
+A `note:` line above the file list carries anything git said on stderr while the
+run still succeeded. The one you will actually see is `multiple merge bases`: the
+fork point was picked arbitrarily from several, so the three-dot count is even
+less meaningful than usual. The per-file comparison below it is unaffected.
+
 ---
 
 ## What it cannot tell you

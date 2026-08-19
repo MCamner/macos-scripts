@@ -92,14 +92,26 @@ echo
 # The misleading view, printed on purpose so the two can be compared. Taken
 # once and kept: running it twice invites the count and the loop to disagree,
 # and a failure here has to stop the run rather than empty it.
-if ! changed="$(git diff --name-only "$BASE...$BRANCH" 2>&1)"; then
-  echo "cannot compare $BASE...$BRANCH: $changed" >&2
+#
+# stderr goes to its own file instead of being folded into the list. git writes
+# "multiple merge bases" here as a WARNING on a run that SUCCEEDS, and a warning
+# captured as if it were output becomes a filename: counted in the total, walked
+# by the loop, and printed as a phantom row. It was labelled GONE-FROM-BOTH once,
+# because no such path exists on either side.
+git_stderr="$(mktemp)"
+trap 'rm -f "$git_stderr"' EXIT
+if ! changed="$(git diff --name-only "$BASE...$BRANCH" 2>"$git_stderr")"; then
+  echo "cannot compare $BASE...$BRANCH: $(cat "$git_stderr")" >&2
   exit 2
 fi
 
 three_dot=0
 [[ -n "$changed" ]] && three_dot="$(printf '%s\n' "$changed" | wc -l | tr -d ' ')"
 echo "  three-dot diff ($BASE...$BRANCH) touches $three_dot file(s)"
+# Kept, not swallowed. "multiple merge bases" says the fork point was picked
+# arbitrarily from several, which makes the three-dot view below even less
+# trustworthy than the general case this whole script exists to warn about.
+[[ -s "$git_stderr" ]] && sed 's/^/  note: /' "$git_stderr"
 echo "  — that is measured against the fork point, so it looks the same"
 echo "    whether or not trunk already has the content. Per-file, vs $BASE now:"
 echo
