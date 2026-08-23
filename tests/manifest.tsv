@@ -94,6 +94,7 @@ dev-menu-smoke.sh	active	-
 menu-shell-guard-smoke.sh	active	-
 release-menu-smoke.sh	active	-
 install-contract-smoke.sh	active	-
+install-godmode-smoke.sh	active	-
 performance-screens-golden-smoke.sh	active	-
 netpulse-cli-color-contract-smoke.sh	active	-
 operator-usage-message-smoke.sh	active	-
