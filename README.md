@@ -18,6 +18,7 @@ Stop memorizing commands. Start running workflows.
 ## Proof
 
 * `install.sh` supports `--dry-run`, `--uninstall`, and `--yes` (non-interactive)
+* `tools/scripts/install-godmode.sh` installs one bounded MQ/CodeGraph prompt for Codex and Claude
 * `release.sh` validates VERSION, README badge, and CHANGELOG before every release
 * `mqlaunch doctor` supports `--json` output — machine-readable health report
 * `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
@@ -37,6 +38,19 @@ Stop memorizing commands. Start running workflows.
 This project is built for macOS with `zsh`/`bash`. The doctor command checks
 the local tools used by the workflows, including `git`, `brew`, `node`,
 `python`, and `jq`.
+
+### Optional Godmode prompt
+
+Install the same repo-aware `/godmode` prompt for Codex and Claude:
+
+```bash
+./tools/scripts/install-godmode.sh --dry-run
+./tools/scripts/install-godmode.sh
+```
+
+The prompt reads bounded mqobsidian context and uses CodeGraph-first only when
+the current repository already has an index. It does not initialize, rebuild,
+install, or sync CodeGraph automatically.
 
 ### Option 1 — Inspect, then install (recommended)
 
