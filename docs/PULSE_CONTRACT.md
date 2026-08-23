@@ -275,6 +275,8 @@ a new schema version rather than a quiet edit.
   "status": "WARN",
   "scope": null,
   "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "collected_at": "2026-08-24T00:23:11+02:00",
+  "conditions": { "no_stack": false, "no_network": false },
   "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
   "sections": { "system": [], "repositories": [] },
   "attention": []
@@ -300,6 +302,61 @@ section byte for byte, so the two can never describe the run differently.
 would make a skipped run and a healthy run the same document, which is the whole
 of "What absence means" undone in one line of serializer.
 
+### Freshness
+
+`collected_at` is when collection began, as RFC 3339 with an explicit offset.
+The start rather than the finish: a run takes seconds, and a stamp taken at
+serialization would understate the age of the document by exactly the time it
+spent collecting. A consumer deciding whether a document is still worth reusing
+reads this number, and understating an age is the direction that hands back a
+stale answer.
+
+`conditions` records the flags the invocation declared, not what the run turned
+out to touch. `mqlaunch pulse system` reaches neither the stack nor the network,
+so a field recording the effect would give it the same conditions as a run made
+under both skip flags — and a document reused later would then read as more
+complete than it is.
+
+Pulse publishes the age. It does not publish a tolerance:
+
+```text
+an age  is a fact about the observation             Pulse is the only one who can state it
+a TTL   is a claim about how fast the subject moves  Pulse cannot know it
+```
+
+A default TTL here would be exactly the invented freshness claim this contract
+forbids everywhere else, one floor up — and it would be one this repo owns,
+which makes it worse rather than better. The reader declares how old is too old,
+because the reader is the one who knows what the answer is for. A dashboard
+refreshing every minute and a release gate are not asking the same question of
+the same document.
+
+Three consequences, and they are gated in `tests/pulse-freshness-smoke.sh`:
+
+* A run that cannot stamp itself publishes no document at all. An unstamped
+  document is not a document with one field missing; it is a freshness claim
+  nobody can evaluate, which is the guess the field exists to remove.
+* The screen prints the stamp the run carries, never a fresh reading of the
+  clock. A renderer that called `date` would show a time the document does not
+  contain, and the two would disagree the moment a document is rendered after
+  the fact.
+* Absence stays absence. With no stamp, the panel prints no time rather than
+  filling one in.
+
+`--plain` is deliberately unchanged. Its shape is pinned at five tab-separated
+fields with the verdict on a `#` line, and a consumer that needs freshness has
+`--json` — widening a pinned format for a case the sibling already serves would
+cost every parser of the flat format for nobody.
+
+### Versioning
+
+`collected_at` and `conditions` were added without moving to `mq.pulse.v2`.
+Additive keys do not break a reader that ignores them, and the only consumer in
+the stack — `mqlaunch/lib/next/select.sh` — reaches every field through `.get`,
+which was verified rather than assumed. A new schema version is for a key whose
+meaning changed; charging every consumer a migration for fields none of them are
+obliged to read buys tidiness with someone else's work.
+
 Full and scoped runs use the same schema, and every output mode exits with the
 same code. `--plain` prints one tab-separated line per item —
 `area, status, subject, summary, next_command` — with the verdict on a `#`
@@ -314,12 +371,13 @@ comment line, for the operator who is piping rather than reading.
 | overall state to exit code | `pulse_exit_code`, `pulse_run_exit_code` |
 | the item shape, and lossless serialization | `pulse_item_add`, `pulse_document` |
 | the public machine document | `pulse_document`, `mq.pulse.v1` |
+| when the run was collected, and under which flags | `pulse_timestamp`, `pulse_document` |
 | what needs attention, in what order | `pulse_attention_rank`, `pulse_attention_list` |
 
 The states and exit codes are in `mqlaunch/lib/pulse/model.sh` and the item model
 in `mqlaunch/lib/pulse/item.sh`, both on the authority-owned runtime path. They
-are gated by `tests/pulse-contract-smoke.sh` and
-`tests/pulse-collectors-smoke.sh`.
+are gated by `tests/pulse-contract-smoke.sh`,
+`tests/pulse-collectors-smoke.sh` and `tests/pulse-freshness-smoke.sh`.
 
 Pulse inherits the output contract every other `mqlaunch` command is held to —
 `NO_COLOR`, non-TTY plain output, JSON-only stdout, diagnostics on stderr — from

@@ -214,6 +214,10 @@ import json, sys
 
 
 def normalize(doc):
+    # A wall-clock stamp cannot be pinned, for the same reason duration_ms
+    # cannot. `conditions` is deliberately not stripped: it describes the
+    # invocation rather than the machine, and this run declares both flags.
+    doc.pop("collected_at", None)
     for section in doc.get("sections", {}).values():
         for item in section:
             item.pop("duration_ms", None)

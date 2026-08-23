@@ -8,6 +8,82 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mq.pulse.v1` says when it was collected, and under which flags.
+
+  ```json
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "collected_at": "2026-08-24T00:23:11+02:00",
+  "conditions": { "no_stack": true, "no_network": true }
+  ```
+
+  The document already refused to let a scoped run read as a full one. It said
+  nothing about *when*, so a document read from a file was indistinguishable
+  from one collected a second ago, and three separate roadmap items — the cache
+  TTL, marking cached data, and reusing a document between `pulse` and `next` —
+  were all blocked behind that one gap.
+
+  They were blocked on a reason that is right about TTL and wrong about what it
+  prevents:
+
+  ```text
+  a TTL   is a claim about how fast the subject moves   Pulse cannot know it
+  an age  is a fact about the observation               only Pulse can state it
+  ```
+
+  So Pulse publishes the age and nothing else. There is no default TTL and there
+  will not be one: the reader declares how old is too old, because the reader is
+  the one who knows what the answer is for. A dashboard refreshing every minute
+  and a release gate are not asking the same question of the same document.
+
+  `collected_at` is stamped when collection begins, not when the document is
+  written. The two differ by however long the run took, and understating an age
+  is the one direction this field must never err in — the consumer deciding
+  whether to reuse a document is reading exactly this number.
+
+  `conditions` records the flags the operator declared, not what the run turned
+  out to touch. `pulse system` reaches neither the stack nor the network, so a
+  field recording the effect would give it the same conditions as a run made
+  under both skip flags, and a document reused later would read as more complete
+  than it is.
+
+  Three consequences, each gated rather than asserted:
+
+  * A run that cannot stamp itself publishes no document. An unstamped document
+    is not a document with one field missing; it is a freshness claim nobody can
+    evaluate — the same rule the gates were held to in #216, one floor down.
+  * The panel prints the stamp the run carries and never reads a clock, so the
+    screen and the JSON cannot disagree about when a run happened.
+  * With no stamp, the panel prints no time rather than filling one in.
+
+  The schema stays `v1`. Additive keys do not break a reader that ignores them,
+  and the claim was verified rather than argued: `mqlaunch/lib/next/select.sh`
+  is the only consumer in the stack, it reaches every field through `.get`, and
+  it was run against the new document in all three output modes with its output
+  unchanged. A `v2` would charge every consumer a migration for fields none of
+  them are obliged to read.
+
+  `--plain` is deliberately untouched. Its shape is pinned at five tab-separated
+  fields, and a consumer that needs freshness has `--json` — widening a pinned
+  format for a case the sibling already serves costs every parser of the flat
+  format for nobody.
+
+  `tests/pulse-freshness-smoke.sh`, 5 steps, verified failable against three
+  planted defects with the tree restored after each: stamping at serialization
+  (caught by a deliberately slow gate — the stamp came back 0.0s old against a
+  3s run), the renderer calling `date`, and the serializer publishing an
+  unstamped document.
+
+* The Pulse verdict line carries the collection time.
+
+  ```text
+  Pulse: WARN · checked 00:23:04
+  ```
+
+  Closes the header field that had been deferred since v2.1.0, on the verdict
+  line rather than in the header block that section sketched: one field does not
+  earn four lines of screen. The other two deferred fields — repo and branch —
+  stay deferred, still without a use case.
+
 * `mqlaunch next` — one deterministic next action, selected from `mq.pulse.v1`.
 
   ```bash
@@ -118,6 +194,12 @@ All notable changes to this project will be documented in this file.
   produced a second one, and now does not.
 
 ### Fixed
+
+* `pulse_footer` declared two variables in one `local` and read the first from
+  the second. bash evaluates that left to right, so it worked here; other shells
+  read the outer value, and this file is read by whoever writes the next
+  renderer. Found by shellcheck at warning severity (SC2318), which is the
+  threshold v2.0.0 raised it to.
 
 * The release gate's secret scan read the staged set, which on a clean tree is
   nothing.

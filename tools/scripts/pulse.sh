@@ -105,6 +105,29 @@ wanted() {
 
 pulse_items_reset
 
+# Stamped before the first collector, not after the last one.
+#
+# The run takes seconds, so the two differ by exactly how long collection took,
+# and a consumer deciding whether a document is still worth reusing reads this
+# number. Understating the age is the direction that quietly hands back a stale
+# answer, so the stamp names the oldest observation in the document rather than
+# the youngest. tests/pulse-freshness-smoke.sh holds it with a deliberately slow
+# gate.
+# Read by document.sh and render.sh, which shellcheck cannot see from here.
+# shellcheck disable=SC2034
+PULSE_COLLECTED_AT="$(pulse_timestamp)" || {
+  printf 'ERROR: pulse could not read the clock\n' >&2
+  exit 3
+}
+
+# The flags as declared, so the document records the invocation rather than what
+# it happened to touch — see pulse_document. Globals rather than parameters, for
+# the reason given there: they describe the run, not any one item.
+# shellcheck disable=SC2034
+PULSE_NO_STACK="$skip_stack"
+# shellcheck disable=SC2034
+PULSE_NO_NETWORK="$skip_network"
+
 # The areas this run accounted for, in collection order.
 #
 # It is recorded here rather than derived from the items, because a collector

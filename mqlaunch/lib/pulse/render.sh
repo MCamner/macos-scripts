@@ -28,6 +28,33 @@ else
   PULSE_C_RESET=''
 fi
 
+# The clock time the run was collected at, as HH:MM:SS, or nothing when the run
+# carries no stamp.
+#
+# A slice of PULSE_COLLECTED_AT, never a reading of its own. A renderer that
+# called `date` would print a time the document does not carry, and the screen
+# and the JSON would disagree the moment a document is rendered after the fact —
+# which is the whole point of publishing the stamp. Printing nothing when there
+# is no stamp is the same rule one line down: an absent fact is absent, not
+# filled in from whatever the clock says now.
+pulse_checked_at() {
+  local stamp="${PULSE_COLLECTED_AT:-}"
+  [[ ${#stamp} -ge 19 ]] || return 1
+  printf '%s' "${stamp:11:8}"
+}
+
+# The run verdict line, with the collection time where there is one.
+pulse_footer() {
+  # Two declarations rather than one: `local a=$1 b=$a` reads the old `a` in
+  # shells other than bash, and this file is read by people writing the next one.
+  local overall="$1" checked
+  local line="Pulse: $overall"
+  if checked="$(pulse_checked_at)"; then
+    line+=" · checked $checked"
+  fi
+  printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "$line" "$PULSE_C_RESET"
+}
+
 # The glyph for a state. ASCII where the meaning is a warning or a gap, because
 # those are the rows an operator scans for.
 pulse_glyph() {
@@ -172,7 +199,7 @@ pulse_render_attention_only() {
     printf '%s\n' "$rendered"
   fi
 
-  printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "Pulse: $overall" "$PULSE_C_RESET"
+  pulse_footer "$overall"
 }
 
 # Prints the run as one line per item — `mqlaunch pulse --plain`.
@@ -234,5 +261,5 @@ pulse_render() {
 
   pulse_render_attention
 
-  printf '\n%b%s%b\n' "$(pulse_colour "$overall")" "Pulse: $overall" "$PULSE_C_RESET"
+  pulse_footer "$overall"
 }
