@@ -154,8 +154,8 @@ import json, sys
 
 doc = json.load(open(sys.argv[1]))
 assert doc["schema"] == "mq.pulse.v1", doc["schema"]
-assert set(doc) == {"schema", "status", "scope", "collected",
-                    "summary", "sections", "attention"}, sorted(doc)
+assert set(doc) == {"schema", "status", "scope", "collected", "collected_at",
+                    "conditions", "summary", "sections", "attention"}, sorted(doc)
 assert doc["scope"] == "repos", doc["scope"]
 assert doc["collected"] == ["repositories"], doc["collected"]
 assert set(doc["sections"]) == {"repositories"}, sorted(doc["sections"])

@@ -326,11 +326,19 @@ mqlaunch pulse repos --json | jq -e '.summary.fail == 0'
   "status": "WARN",
   "scope": null,
   "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "collected_at": "2026-08-24T00:23:11+02:00",
+  "conditions": { "no_stack": false, "no_network": false },
   "summary": { "pass": 11, "warn": 4, "fail": 0, "unavailable": 0, "skipped": 1 },
   "sections": { "system": [], "repositories": [] },
   "attention": []
 }
 ```
+
+`collected_at` is when collection began, and `conditions` holds the skip flags
+the invocation declared — so a document read from a file says how old it is and
+how complete a run produced it. Pulse states the age and never a tolerance: how
+old is too old depends on what you are asking, so the reader decides. See
+[PULSE_CONTRACT.md](PULSE_CONTRACT.md#freshness).
 
 Read `collected` before reading `sections`. A section that is not there means
 its collector did not run, not that the area was healthy — a scoped run is one

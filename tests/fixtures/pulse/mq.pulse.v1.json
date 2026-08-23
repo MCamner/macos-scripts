@@ -10,6 +10,10 @@
     "git",
     "quality"
   ],
+  "conditions": {
+    "no_stack": true,
+    "no_network": true
+  },
   "summary": {
     "pass": 8,
     "warn": 0,

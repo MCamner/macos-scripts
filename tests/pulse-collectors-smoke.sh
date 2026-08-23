@@ -77,6 +77,10 @@ pulse_item_add repos repositories WARN 'macos-scripts' \
   'dirty: 2 modified, "one" and C:\temp — ✓' \
   evidence='git status --short' next_command='mqlaunch git' priority=60 \
   freshness='just now' duration_ms=142
+# The serializer refuses an unstamped run, so a caller building a document by
+# hand supplies the stamp the entrypoint would have taken.
+# shellcheck disable=SC2034  # read by pulse_document, one line down
+PULSE_COLLECTED_AT="$(pulse_timestamp)"
 document="$(pulse_document WARN "" system repositories)"
 printf '%s' "$document" | python3 -c '
 import json, sys

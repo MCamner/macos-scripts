@@ -2261,7 +2261,10 @@ owner, until something actually asks for them.
 
 * [ ] Show current repo.
 * [ ] Show current branch.
-* [ ] Show check time.
+* [x] Show check time. Closed by v2.2.0 P0: `collected_at` is in the document,
+  and the verdict line reads `Pulse: WARN · checked 00:23:04`. It landed on that
+  line rather than in the header block this section sketched — one field does not
+  earn four lines of screen, and the other two stay deferred with no use case.
 * [ ] ~~Show host.~~ Deferred — no use case.
 * [ ] ~~Show total duration where useful.~~ Deferred — no use case.
 
@@ -3054,7 +3057,8 @@ and where it is answerable. Nothing about this asks another repo for anything.
 
 ## P0 — A freshness contract for `mq.pulse.v1`
 
-Status: Proposed
+Status: Done 2026-08-24 — `collected_at` and `conditions` ship in the document,
+the reader owns the tolerance, and the gate holds all three consequences
 Priority: P0
 Owner: `macos-scripts`
 
@@ -3068,37 +3072,72 @@ did not run it.
 
 ### Tasks
 
-* [ ] Add `collected_at` to the document. One field, RFC 3339 with an explicit
+* [x] Add `collected_at` to the document. One field, RFC 3339 with an explicit
   offset — not epoch millis, because the field is read by humans pasting output
   as often as by parsers.
-* [ ] Record the conditions the run was made under, not only what it reached:
+
+  Stamped when collection begins rather than when the document is written. The
+  two differ by however long the run took, and understating an age is the one
+  direction this field must never err in: the consumer deciding whether to reuse
+  a document reads this number.
+
+* [x] Record the conditions the run was made under, not only what it reached:
   `--no-network` and `--no-stack` as declared flags, beside the existing
   `scope` and `collected`. A reused document must not be able to read as a
   fuller run than it was.
-* [ ] State the reader's obligation in `docs/PULSE_CONTRACT.md`: Pulse publishes
+
+  `conditions` holds the two flags as booleans. Declared, not observed:
+  `pulse system` touches neither the stack nor the network, so recording the
+  effect would give it the same conditions as a run made under both skips.
+
+* [x] State the reader's obligation in `docs/PULSE_CONTRACT.md`: Pulse publishes
   the age, the consumer declares its tolerance. Pulse must not ship a default
   TTL, because a default is the invented freshness claim the contract forbids —
   it would just be one this repo owns.
-* [ ] Decide and write down whether this stays `mq.pulse.v1`. Additive optional
+* [x] Decide and write down whether this stays `mq.pulse.v1`. Additive optional
   fields do not break a reader that ignores them; a `v2` on this change would
   cost every consumer a migration for fields none of them are obliged to read.
   The decision is cheap to make now and expensive to revisit.
-* [ ] Closes the deferred header field `Show check time` — the fact exists in the
+
+  It stays `v1`, and the claim was verified rather than argued:
+  `mqlaunch/lib/next/select.sh` is the only consumer in the stack and reaches
+  every field through `.get`. It was run against the new document end to end,
+  in all three modes, and its output is unchanged.
+
+* [x] Closes the deferred header field `Show check time` — the fact exists in the
   document once this lands, so the header renders it rather than computing it.
-* [ ] Gate it: a document without `collected_at` fails, a `--no-network` run that
+
+  On the verdict line rather than in a header block: `Pulse: WARN · checked
+  00:23:04`. The other two deferred fields stay deferred, and a header block for
+  one field would have cost four lines of screen to say what fits after the
+  verdict. The renderer slices the run stamp and never reads a clock.
+
+* [x] Gate it: a document without `collected_at` fails, a `--no-network` run that
   does not declare it fails, and the age is not recomputed at render time from
   the clock.
 
+  `tests/pulse-freshness-smoke.sh`, 5 steps, verified failable against three
+  planted defects with the tree restored after each: stamping at serialization
+  instead of at the start (caught by a deliberately slow gate — the stamp came
+  back 0.0s old against a 3s run), the renderer calling `date`, and the
+  serializer publishing an unstamped document.
+
 ### Exit gate
 
-* [ ] A document read from a file answers, without its reader guessing: when it
+* [x] A document read from a file answers, without its reader guessing: when it
   was collected, at what scope, and with which collectors suppressed.
+
+  ```json
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "collected_at": "2026-08-24T00:23:11+02:00",
+  "conditions": { "no_stack": true, "no_network": true }
+  ```
 
 ---
 
 ## P1 — Reuse a collected document between `pulse` and `next`
 
-Status: Proposed — blocked on P0, and on nothing else
+Status: Ready — P0 landed 2026-08-24, so nothing blocks this
 Priority: P1
 Owner: `macos-scripts`
 
