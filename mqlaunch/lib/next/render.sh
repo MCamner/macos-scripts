@@ -99,6 +99,28 @@ PY
   fi
 }
 
+# Says that the answer came from a run this command did not make.
+#
+#   next_render_reuse_notice AGE_SECONDS
+#
+# The screen must never present a reused observation as a live one — v2.1.0 held
+# that open as a condition on any cache, and it is met here rather than by a
+# separate feature. Three things on one line, because all three are what an
+# operator needs to judge the answer: that it was reused, how old it is, and the
+# way to ask again.
+next_render_reuse_notice() {
+  local age="$1" spelled
+
+  if [[ "$age" -lt 90 ]]; then
+    spelled="${age}s"
+  else
+    spelled="$((age / 60))m"
+  fi
+
+  printf '%bReused pulse from %s ago · mqlaunch next --fresh to re-measure%b\n' \
+    "$PULSE_C_MUTED" "$spelled" "$PULSE_C_RESET"
+}
+
 # Prints a `mq.next.v1` document as one tab-separated row — `mqlaunch next
 # --plain`.
 #
@@ -161,9 +183,10 @@ print("\t".join(clean(field) for field in row))
 # The scope comment mirrors pulse --plain: `grep -v '^#'` leaves exactly the
 # row. It is a comment and not a column because it describes the run, not the
 # finding, and a consumer reading columns should not have to skip two of them.
-print("# next\tscope=%s\tcollected=%s" % (
+print("# next\tscope=%s\tcollected=%s\tcollected_at=%s" % (
     doc.get("scope") or "",
     ",".join(str(area) for area in collected),
+    doc.get("collected_at") or "",
 ))
 PY
 }

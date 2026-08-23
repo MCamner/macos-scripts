@@ -245,6 +245,7 @@ mqlaunch pulse --no-network         # skip everything that talks to GitHub
 mqlaunch next                       # the single next action, from Pulse's attention list
 mqlaunch next --json                # the mq.next.v1 document
 mqlaunch next --input FILE          # select from a pulse document you already have
+mqlaunch next --fresh               # collect now, whatever the last run left behind
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch workflows validate         # workflow command-surface health check
@@ -380,6 +381,20 @@ typable. `--input` is for a caller that already has an `mq.pulse.v1` document
 and should not pay for the collection twice. Pulse's own exit code is not
 control flow here: a run that exits `1` or `2` still produced a complete
 document, and that document is the input.
+
+With no arguments it reuses the last complete Pulse run when there is one worth
+reusing, so `mqlaunch pulse` followed by `mqlaunch next` costs one collection
+rather than two. A document is reused only when it was a full run under neither
+skip flag and is younger than `NEXT_MAX_AGE` seconds (120 by default), and the
+screen always says when it was:
+
+```text
+Reused pulse from 41s ago · mqlaunch next --fresh to re-measure
+```
+
+`--fresh` collects unconditionally. `--input` takes precedence over both and
+neither reads nor writes the cache. See
+[NEXT_CONTRACT.md](NEXT_CONTRACT.md#reuse).
 
 ```text
 0  nothing needs attention in what was collected

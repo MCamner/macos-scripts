@@ -8,6 +8,68 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch pulse` then `mqlaunch next` costs one collection instead of two.
+
+  ```text
+  mqlaunch pulse   4.588 s
+  mqlaunch next    0.077 s   Reused pulse from 5s ago
+  ```
+
+  v2.1.0 recorded the double cost as accepted because the fix needed a freshness
+  contract nobody had written. The contract landed, so the reuse rule is stated
+  in terms of facts the document already carries rather than a TTL Pulse would
+  have had to invent. Four conditions, and only one is about time:
+
+  ```text
+  full scope        a scoped run measured one area, not six
+  no --no-stack     a run that skipped the stack cannot report on it
+  no --no-network   the same, one delegate over
+  young enough      NEXT_MAX_AGE seconds, 120 by default
+  ```
+
+  The asymmetry is deliberate. A complete document can answer a narrower
+  question and a narrow one cannot answer a complete question, so completeness is
+  measured against what `next` always asks for: everything.
+
+  The window is declared by the reader, not by Pulse — which is the whole shape
+  of the freshness contract rather than an implementation detail. Pulse can state
+  how old an observation is; it cannot know what the answer is for. `next` knows
+  exactly what it is about to answer, so it says how old is too old, and
+  `NEXT_MAX_AGE` overrides it.
+
+  Reuse is never silent. The screen says so, with the age and the way to re-ask,
+  and the machine modes carry the same fact as `collected_at` in `mq.next.v1`,
+  where a consumer reads it without parsing a sentence. That closes the two boxes
+  v2.1.0 held open as conditions on any cache — mark cached data explicitly,
+  never render stale cached data as live state — as acceptance criteria rather
+  than as features of their own.
+
+  `--fresh` collects unconditionally. `--input FILE` takes precedence over both
+  and neither reads the cache nor writes it: writing from `--input` would let any
+  caller install an arbitrary document as this machine's last observation.
+
+  Only a complete run is stored, and a scoped one does not evict it. One slot
+  means the last writer wins, and `pulse quality` overwriting the full document
+  would make the cache emptier the more Pulse is used.
+
+  The slot is per checkout. A Pulse document is not purely a statement about the
+  machine — `QUALITY` is this repo running its own gates and `GIT` is this
+  worktree — so two checkouts sharing one slot would let `next` in one answer
+  with an observation of the other. Found by the gate from the other side:
+  `tests/next-command-smoke.sh` started reading the real user cache from inside
+  its stub tree.
+
+  The panel now serializes and stores its document, which it did not do before.
+  Measured by A/B in one tree: 338-346 ms became 390-401 ms on a stub run, about
+  50 ms, roughly 1.2% of what a real full run costs — and it buys the next
+  command all of it. A scoped or flagged run serializes nothing, because nothing
+  would keep it.
+
+  `tests/next-reuse-smoke.sh`, 9 steps, verified failable against four planted
+  defects with the tree restored after each: reuse that checks the age but not
+  completeness, reuse that does not say it reused, a scoped run allowed to evict
+  the complete one, and one slot shared by every checkout.
+
 * `mq.pulse.v1` says when it was collected, and under which flags.
 
   ```json

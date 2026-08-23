@@ -20,6 +20,8 @@ source "$BASE_DIR/mqlaunch/lib/pulse/collectors-state.sh"
 source "$BASE_DIR/mqlaunch/lib/pulse/render.sh"
 # shellcheck source=/dev/null
 source "$BASE_DIR/mqlaunch/lib/pulse/document.sh"
+# shellcheck source=/dev/null
+source "$BASE_DIR/mqlaunch/lib/pulse/cache.sh"
 
 usage() {
   cat <<'HELP'
@@ -165,16 +167,34 @@ overall="$(pulse_overall_state < <(pulse_items_states))" || {
   exit 3
 }
 
+# The document is built once and used up to twice — printed by --json, kept by
+# the cache — so a run that needs both does not serialize the same items twice.
+#
+# It is built at all only when something wants it. A scoped or flagged panel run
+# is not worth keeping and is not being printed, and making every `mqlaunch
+# pulse quality` pay for a python3 serialization nobody reads would be this
+# command charging for a feature it is not delivering.
+document=""
+if [[ "$mode" == "json" ]] || pulse_cache_keeps "$scope" "$PULSE_NO_STACK" "$PULSE_NO_NETWORK"; then
+  document="$(pulse_document "$overall" "$scope" ${collected+"${collected[@]}"})" || document=""
+  if [[ -z "$document" && "$mode" == "json" ]]; then
+    printf 'ERROR: pulse could not serialize the run\n' >&2
+    exit 3
+  fi
+  # A panel run that could not serialize still has a screen to draw. The cache is
+  # an optimization, and losing it costs the next reader 4s rather than an answer.
+  if [[ -n "$document" ]] && pulse_cache_keeps "$scope" "$PULSE_NO_STACK" "$PULSE_NO_NETWORK"; then
+    printf '%s\n' "$document" | pulse_cache_store
+  fi
+fi
+
 case "$mode" in
   json)
     # Stdout carries the document and nothing else. Everything a collector had
     # to say about a delegate went to stderr on the way here, per
     # docs/RUNTIME_AUTHORITY.md: a consumer piping into jq must not have to
     # filter a banner out first.
-    pulse_document "$overall" "$scope" ${collected+"${collected[@]}"} || {
-      printf 'ERROR: pulse could not serialize the run\n' >&2
-      exit 3
-    }
+    printf '%s\n' "$document"
     ;;
   plain)
     if [[ "$scope" == "attention" ]]; then
