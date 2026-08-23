@@ -9,7 +9,7 @@ Current version: 2.1.0
 The next major product step is:
 
 ```text
-mqlaunch next — one deterministic next action, read from mq.pulse.v1
+mq.pulse.v1 says when it was collected — so the cockpit can be reused, not re-run
 ```
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
@@ -18,7 +18,9 @@ v2.0.0 shipped on 2026-07-28. Every P0–P3 block in that section is Done and it
 
 v2.1.0 shipped on 2026-08-17. It added no new source of truth — it added one read-only operator cockpit, `mqlaunch pulse`, over the signals this repo already collects, plus the `mq.pulse.v1` machine contract underneath it. Every box in its Definition of Done is closed against the tree.
 
-The next step reads that contract rather than adding to it. `mqlaunch next` consumes `mq.pulse.v1` and selects one already-prioritized attention item; it performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 — `mqlaunch next`](#post-v210--mqlaunch-next).
+`mqlaunch next` shipped on 2026-08-17. It reads that contract rather than adding to it: it consumes `mq.pulse.v1`, selects one already-prioritized attention item, performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 — `mqlaunch next`](#post-v210--mqlaunch-next).
+
+What both releases left open is one question neither of them owned at the time and this repo does: how old a `mq.pulse.v1` document is, and what a reader may conclude from one it did not collect itself. Three separate open boxes — the cache TTL, marking cached data, and reusing a document between `pulse` and `next` — are that question wearing three names. v2.2.0 answers it, adds no command, and makes the cockpit cheap enough to run often. See [v2.2.0 — Pulse freshness and the cost of asking](#v220--pulse-freshness-and-the-cost-of-asking).
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
@@ -3007,6 +3009,293 @@ Pulse observes -> Attention prioritizes -> Next selects
 ```
 
 This preserves Pulse as the canonical status substrate and avoids creating another independent operator model.
+
+---
+
+## v2.2.0 — Pulse freshness and the cost of asking
+
+Status: Proposed
+Priority: P1
+Owner: `macos-scripts`
+
+### Goal
+
+```text
+no new command surface
+the two commands that exist become cheap enough to run often
+and honest about how old their answer is
+```
+
+v2.1.0 shipped the cockpit and `mqlaunch next` shipped the selector over it.
+Neither release answered the question both of them ended up blocked on: how old
+a `mq.pulse.v1` document is, and what a reader is allowed to do with one it did
+not collect itself.
+
+### Why this matters
+
+Three of the nine genuinely open boxes across v2.1.0 and the `next` epic are the
+same missing thing wearing three names — the cache TTL, marking cached data, and
+reusing a document between `pulse` and `next`. Each was correctly refused with
+the same reason: no owner in the stack publishes a TTL for its status, so a
+cache here would be Pulse inventing a freshness claim.
+
+That reason is right about TTL and wrong about the blockage. `mq.pulse.v1` is
+this repo's contract, and the question is Pulse's own:
+
+```text
+a TTL   is a claim about how fast the world changes   Pulse cannot know it
+an age  is a fact about the observation               Pulse is the only one who can state it
+```
+
+Publishing the age moves the decision to the reader, which is where it belongs
+and where it is answerable. Nothing about this asks another repo for anything.
+
+---
+
+## P0 — A freshness contract for `mq.pulse.v1`
+
+Status: Proposed
+Priority: P0
+Owner: `macos-scripts`
+
+### Problem
+
+The document echoes `scope` and `collected`, so a scoped run cannot be read as a
+full one. It says nothing about when it was collected or under which flags, so a
+document read from a file is indistinguishable from one collected a second ago,
+and a `--no-network` run is indistinguishable from a complete one to anybody who
+did not run it.
+
+### Tasks
+
+* [ ] Add `collected_at` to the document. One field, RFC 3339 with an explicit
+  offset — not epoch millis, because the field is read by humans pasting output
+  as often as by parsers.
+* [ ] Record the conditions the run was made under, not only what it reached:
+  `--no-network` and `--no-stack` as declared flags, beside the existing
+  `scope` and `collected`. A reused document must not be able to read as a
+  fuller run than it was.
+* [ ] State the reader's obligation in `docs/PULSE_CONTRACT.md`: Pulse publishes
+  the age, the consumer declares its tolerance. Pulse must not ship a default
+  TTL, because a default is the invented freshness claim the contract forbids —
+  it would just be one this repo owns.
+* [ ] Decide and write down whether this stays `mq.pulse.v1`. Additive optional
+  fields do not break a reader that ignores them; a `v2` on this change would
+  cost every consumer a migration for fields none of them are obliged to read.
+  The decision is cheap to make now and expensive to revisit.
+* [ ] Closes the deferred header field `Show check time` — the fact exists in the
+  document once this lands, so the header renders it rather than computing it.
+* [ ] Gate it: a document without `collected_at` fails, a `--no-network` run that
+  does not declare it fails, and the age is not recomputed at render time from
+  the clock.
+
+### Exit gate
+
+* [ ] A document read from a file answers, without its reader guessing: when it
+  was collected, at what scope, and with which collectors suppressed.
+
+---
+
+## P1 — Reuse a collected document between `pulse` and `next`
+
+Status: Proposed — blocked on P0, and on nothing else
+Priority: P1
+Owner: `macos-scripts`
+
+### Problem
+
+Running `mqlaunch pulse` and then `mqlaunch next` by hand pays about 4 s twice,
+most of it calls into other repos. v2.1.0 recorded this as an accepted cost
+because the fix needed a freshness contract. P0 is that contract.
+
+### Tasks
+
+* [ ] `mqlaunch next` reuses the most recent document when it is fresh enough
+  **and** was collected under conditions at least as complete as the run it
+  would otherwise make. A cached `--no-network` document does not satisfy a full
+  run; the reverse is fine.
+* [ ] Reused state is labelled in human output, with its age. The two v2.1.0
+  boxes held open as conditions on the cache — mark cached data explicitly,
+  never render stale cached data as live state — become this block's acceptance
+  criteria rather than separate items, and are struck where they stand.
+* [ ] An explicit `--fresh` collects unconditionally. Reuse that cannot be
+  refused is a cache the operator has to reason about instead of a convenience.
+* [ ] `--input FILE` keeps its current meaning and takes precedence: a caller who
+  named a document gets that document, whatever its age.
+
+### Exit gate
+
+* [ ] `pulse` followed by `next` costs one collection, and the second command
+  says on screen that it did not measure again.
+
+---
+
+## P1 — Concurrent collectors, and the `< 3s` target
+
+Status: Proposed
+Priority: P1
+Owner: `macos-scripts`
+
+### Problem
+
+3850 ms measured against a `< 3s` target, of which 3.4 s is four calls into
+delegates in other repos. The quality gates already run concurrently, and #211
+made the Git collector's two `gh` reads concurrent for about 500 ms. The six
+collectors are still serial.
+
+The reason recorded for keeping them serial is that two of them shell into
+mq-agent through the same `uv` project. That is a real constraint on those two.
+It is not a constraint on the other four, and the roadmap has been reading it as
+if it were.
+
+### Tasks
+
+* [ ] Run the collectors that are independent concurrently. The two `uv` ones
+  stay serial with respect to each other and concurrent with the rest.
+* [ ] Emit in list order, never completion order — the shape #211 and the
+  quality gates already established. The screen is read top to bottom and must
+  not reorder because a network call was fast.
+* [ ] Subshell discipline, as `pulse_gh_probe` and `pulse_quality_probe` already
+  have it: a child must not append to `PULSE_ITEMS`. A collector that quietly
+  dropped its findings is the failure this contract is about.
+* [ ] Per-collector budgets keep their current meaning under concurrency — a
+  timeout is `UNAVAILABLE` on the observation, never `FAIL` on the subject.
+* [ ] Measure by swapping the two versions in the same tree minutes apart, and
+  record the numbers against the box rather than the target.
+
+### Exit gate
+
+* [ ] Full Pulse under `3s`, or the box is closed with the measurement that
+  shows why it is not reachable and what would be required — not left open for
+  a third release.
+
+---
+
+## P2 — Settle `mq.next.v1`
+
+Status: Proposed
+Priority: P2
+Owner: `macos-scripts`, with one question outside it
+
+### Problem
+
+The contract is locked, documented and gated, and nothing in the stack reads it.
+A published schema with no consumer is a hypothesis held at the cost of a
+compatibility promise, and it is one release old — cheap to change now, fixed in
+place once a consumer appears.
+
+### Tasks
+
+* [ ] Ask mq-agent and mq-hal, once and explicitly, whether either wants a single
+  next action. That is the only question this repo cannot answer alone.
+* [ ] If neither does by this release's gate, strike the box: document
+  `mqlaunch next --json` as a surface for humans piping to `jq`, drop the
+  compatibility promise from `docs/NEXT_CONTRACT.md`, and say so.
+
+Deliberately time-boxed. An open question about a downstream that may never
+exist is not a reason to carry a promise into a third release.
+
+### Exit gate
+
+* [ ] The box is ticked with a named consumer, or struck with the decision that
+  there is none. Not still open.
+
+---
+
+## P2 — Progress and result primitives across the slow rows
+
+Status: Proposed
+Priority: P2
+Owner: `macos-scripts`
+
+### Problem
+
+`ui/terminal-ui/mq-progress.sh` and `docs/UI_PROGRESS_CONTRACT.md` landed with
+one consumer — `Review repo → brain`. Every other menu row that shells into a
+delegate for several seconds is still silent, which is the defect the primitives
+were built for, unfixed everywhere but one row.
+
+### Tasks
+
+* [ ] Inventory the menu rows that call a delegate and can take more than about
+  a second. The list is the work; guessing at it is not.
+* [ ] Each row gets exactly one of the three, per the contract's own rule: a
+  spinner for an opaque wait, step progress where the caller knows real phases,
+  a result panel where the outcome is hard to find in the preceding output.
+* [ ] No invented phases and no percentages inferred from elapsed time. A row
+  whose owner does not know its phases gets a spinner, and that is the correct
+  answer rather than the lesser one.
+* [ ] Piped output stays semantic text only — no furniture, no cursor movement,
+  no escapes — and the gate checks it for every row that gains a widget.
+
+### Exit gate
+
+* [ ] No menu row shells into a delegate for seconds with a blank terminal, and
+  no row shows a widget it cannot back with real state.
+
+---
+
+## v2.2.0 Non-goals
+
+```text
+no new top-level commands
+no second operator model
+no cache that hides its age
+no reformatting of delegate output
+```
+
+The `mqlaunch stack contract-check` line wrapping recorded under P2 — Thin
+delegation polish stays mq-agent's. `_run_agent` passes delegate output through
+untouched, and fixing the wrapping here is the boundary violation that section
+closed.
+
+Nothing in this release adds a surface. If a task in it can only be delivered by
+adding a command, the task is wrong.
+
+---
+
+## Recommended PR order for v2.2.0
+
+### PR 1 — Freshness contract
+
+`collected_at`, declared run conditions, the reader's obligation in
+`docs/PULSE_CONTRACT.md`, the `v1`-vs-`v2` decision, and the gate. Header check
+time follows the field rather than leading it.
+
+### PR 2 — Concurrent collectors
+
+Independent of PR 1 and safe to run in parallel with it — it touches the run's
+ordering, not the document's shape. Carries its own measurements.
+
+### PR 3 — Document reuse
+
+Needs PR 1. Reuse rule, `--fresh`, the age label in human output, and the two
+struck v2.1.0 cache boxes folded in as acceptance criteria.
+
+### PR 4 — `mq.next.v1` decision
+
+A tick or a strike, with whichever documentation change follows. Small, and
+should not wait for PRs 1–3.
+
+### PR 5 — Progress rollout
+
+The row inventory, then the widgets. Last, because it is the only block that
+does not gate a release.
+
+---
+
+## Definition of Done for v2.2.0
+
+* [ ] A `mq.pulse.v1` document states when it was collected and under which
+  conditions, and `docs/PULSE_CONTRACT.md` states what a reader may conclude
+  from that.
+* [ ] `mqlaunch pulse` followed by `mqlaunch next` collects once, and says so.
+* [ ] The `< 3s` target is met, or closed with a measurement and a reason.
+* [ ] `mq.next.v1` has a named consumer or no compatibility promise.
+* [ ] Every slow menu row is either quiet by design or visibly working, and none
+  of them shows state it does not have.
+* [ ] The command count is unchanged. `--fresh` is a flag on an existing
+  command; if this release added a command, it went wrong.
 
 ---
 

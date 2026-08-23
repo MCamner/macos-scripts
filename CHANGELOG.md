@@ -6,6 +6,222 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch next` — one deterministic next action, selected from `mq.pulse.v1`.
+
+  ```bash
+  mqlaunch next                 # human output, Pulse's glyphs and colours
+  mqlaunch next --json          # one mq.next.v1 document
+  mqlaunch next --plain         # six tab-separated fields, always six
+  mqlaunch next --input FILE    # read an existing document, collect nothing
+  ```
+
+  ```text
+  Pulse observes -> Attention prioritizes -> Next selects
+  ```
+
+  The selector takes `attention[0]` verbatim. It does not re-rank, and in
+  particular does not skip an `UNAVAILABLE` head to reach a "more concrete"
+  `FAIL` below it — that would be a second operator model, and the command with
+  the shorter name would win the argument by being typed more often. Ordering
+  stays in `pulse_attention_rank`, where one edit moves both commands.
+
+  Three absences stay three answers, because only one of them is good news:
+
+  ```text
+  attention [], run measured something   NONE          exit 0
+  attention [], run measured nothing     UNAVAILABLE   exit 3
+  document missing/malformed/foreign     UNAVAILABLE   exit 3
+  ```
+
+  The middle row is the one that hides. `mqlaunch pulse --no-stack --no-network`
+  publishes a valid document with an empty attention list, so a selector reading
+  only `attention` reports "no next action" about a machine nobody looked at.
+
+  Exit codes reuse Pulse's table, so `$?` from `next` and from `pulse` agree
+  about the same finding. Pulse's own exit code is not treated as control flow:
+  a run that exits `1` or `2` still produced a complete document, and that
+  document is the input.
+
+  `--plain` carries the selection status on the row rather than on a `#` comment
+  line, which is a deliberate deviation from `pulse --plain`. With the status on
+  a comment line, `NONE` and `UNAVAILABLE` both filter down to zero rows under
+  `grep -v '^#'`, and that is the one distinction this command exists to keep.
+  `--json --plain` together is a usage error rather than a silent precedence
+  rule.
+
+  Gated by `tests/next-contract-smoke.sh` and `tests/next-command-smoke.sh`,
+  both verified failable against planted defects. Documented in
+  `docs/NEXT_CONTRACT.md`.
+
+* A `Next action` row in the Pulse menu, row 3 next to `Attention`.
+
+  Not the main menu: `next` is a projection over `mq.pulse.v1`, and a top-level
+  row would present it as a standalone function while every fact in its output
+  came from Pulse. The row dispatches `mqlaunch next` through `bin/mqlaunch`
+  like every other row, and the gate holds it to that from both sides — it must
+  route through the dispatcher, and it must not reach the entrypoint script or
+  the selector library directly.
+
+* Shared progress and result primitives — `ui/terminal-ui/mq-progress.sh`.
+
+  ```bash
+  ui_progress_steps \
+    'done|Scan repository' \
+    'active|Build review context' \
+    'pending|Send to model'
+
+  ui_result_panel PASS "Review complete" "Brain: mqobsidian"
+  ```
+
+  Three different silences, three different widgets, and the contract says so:
+  a quiet terminal during an opaque wait is a spinner problem, a workflow with
+  known phases is a step-progress problem, and a finished operation whose result
+  is buried in preceding output is a result-panel problem. `ui_progress_steps`
+  renders real phase state only — no percentages inferred from elapsed time, and
+  no invented phases to make the UI look busy.
+
+  Piped output carries semantic text only: no panel furniture, no cursor
+  movement, no escapes. Both shells are supported, because command mode is bash
+  and the interactive menus are zsh. Written down in
+  `docs/UI_PROGRESS_CONTRACT.md`, held by `tests/ui-progress-result-smoke.sh`.
+
+  `Review repo → brain` in the agent menu is the first consumer: it now shows
+  step progress while it runs and a result panel when it finishes.
+
+### Changed
+
+* The Git collector's two GitHub reads run concurrently.
+
+  ```text
+  git scope    1537-1678 ms  ->   974-1073 ms
+  full run     4351-4647 ms  ->  3998-4083 ms
+  worst case   2 x PULSE_GH_TIMEOUT  ->  1 x PULSE_GH_TIMEOUT
+  ```
+
+  The roadmap box said this needed the six collectors parallel, which stays
+  ruled out — two of them shell into mq-agent through the same `uv` project. But
+  the blocking was not between collectors, it was inside one: `gh pr list` ran
+  before `gh run list` although neither feeds the other, so a hanging pull
+  request read took the CI verdict with it. They are emitted in list order, not
+  completion order, because the screen is read top to bottom and must not
+  reorder because a network call was fast.
+
+  Measured by swapping the two versions of the file in the same tree minutes
+  apart, so the numbers are the change rather than the network's mood. The
+  `< 3s` target stays open: 3.4 s of the run is four calls into other repos.
+
+* Every Pulse menu row asked for Enter twice. `run_pulse_view` called
+  `pause_enter` after `bin/mqlaunch`, and the dispatcher's `pulse` arm already
+  pauses. Measured on a pty before and after: answering the first prompt
+  produced a second one, and now does not.
+
+### Fixed
+
+* The release gate's secret scan read the staged set, which on a clean tree is
+  nothing.
+
+  ```text
+  0 commits scanned, scanned ~0 bytes   ->   994 commits scanned
+  ```
+
+  `gitleaks git --pre-commit --staged` inspects what is staged; a release check
+  runs on a clean tree, so the scan found nothing and the gate printed a tick.
+  It was not a wrong answer, it was no answer reported as a pass — a pre-commit
+  shaped check standing in a release gate, structurally unable to find anything
+  in the situation it runs in. It scans the commit history now, which is what a
+  release publishes.
+
+  Deliberately not `gitleaks dir`: that reads files git is told to ignore and
+  fails on the untracked `.env` most developer machines carry. A gate that cries
+  wolf about a file the release does not contain is a gate people learn to skip.
+
+* Two gates could report `PASS` without evidence that they had examined
+  anything.
+
+  ```text
+  could-not-measure  !=  measured-clean
+  ```
+
+  `tools/scripts/lint.sh` had two false-green paths reachable in one command: a
+  missing `shellcheck` printed a WARN and exited 0, and an empty file
+  enumeration did the same. Either way `test-all.sh` went on to print "All
+  selftest checks passed" having linted nothing. Both exit 3 now. That makes a
+  machine without shellcheck report red rather than green, which is the point
+  rather than a side effect — CI installs it, so CI is unaffected, and a local
+  run that lints nothing should not claim it passed.
+
+  The CI syntax step printed its success line unconditionally after a loop that
+  ran zero times when `find` produced nothing. It counts before the loop now and
+  puts the count in the success line.
+
+  Cleared by the same audit and unchanged: `check-skills.sh`,
+  `check-runtime-authority.sh`, and `test-all.sh`, which names every test by
+  path so a missing file is a hard failure rather than a shorter run.
+
+* `local status=$?` aborted a menu function under zsh, silently.
+
+  `status` is zsh's own name for `$?` and it is read-only. Declaring it is
+  allowed; assigning to it aborts the enclosing function on the spot, so the
+  statements after it never run.
+
+  ```text
+  local status        allowed    a declaration, not an assignment
+  local status=0      aborts
+  status=$?           aborts
+  typeset status=1    aborts
+  export status=1     aborts
+  ```
+
+  One live case: `run_markdownlint()` in `terminal/menus/mq-tools-menu.sh`, which
+  `mqlaunch.sh` sources under zsh — so its `pause_if_interactive` and its
+  `return` were unreachable every time the verb ran from the launcher. The class
+  had bitten once before and the trap was written down, but documentation is
+  guidance rather than a gate: `zsh -n` accepts `local status=0`, and the defect
+  surfaces only if a test happens to execute that line.
+
+  The gate now takes its file set from zsh through `SOURCE_TRACE` rather than
+  from a regex over `source` lines. Two regex attempts failed in opposite
+  directions and both were the same mistake — guessing at what a shell loads
+  instead of asking it. 37 files became 56. It also refuses to pass on an empty
+  file set: a scan that examined nothing has not proven anything.
+
+### Documentation
+
+* The roadmap describes the tree again, in both directions. `P2 — Pulse
+  documentation` stood `Planned` with ten unticked boxes that were all already
+  written, because each PR had documented its own surface on the way through and
+  nobody went back to close the block. The seven declined `Interactive
+  drill-down` tasks were the largest group in the open list while being the one
+  group nobody would ever work on; they are struck rather than ticked, because
+  a `[x]` would claim delivery of something never built.
+
+  ```text
+  not done  is not  still planned
+  ```
+
+  The genuinely open list went from 16 to 9 with nothing removed, and every one
+  of the nine is either external or measured.
+
+* `mq.next.v1` has no consumer, and this is recorded rather than fixed.
+
+  The contract is locked, documented and gated, and nothing in the stack reads
+  it. Verified rather than assumed: every reference in the tree is the producer
+  itself, its own tests, or documentation. A published schema with no consumer
+  is a hypothesis about what someone will need, held at the cost of a
+  compatibility promise — the reason `mq.pulse.v1` is worth its promise is that
+  `next` reads it.
+
+  Considered and rejected: building a consumer inside this repo to justify the
+  contract. The schema exists to serve a consumer, not the other way round.
+
+* Repeated collection between `pulse` and `next` is recorded as an accepted
+  cost. Caching the last document is the obvious fix and the wrong thing to
+  build from this side — how old it may be, which scope produced it, whether
+  `--no-network` was in effect are Pulse's questions, and answering them inside
+  `next` would settle the blocked freshness track by accident.
+
 ## [2.1.0] - 2026-08-17
 
 ### Fixed
