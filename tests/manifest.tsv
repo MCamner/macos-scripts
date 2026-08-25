@@ -50,6 +50,7 @@ hal-pages-smoke.sh	active	-
 hal-screenshot-smoke.sh	active	-
 headless-smoke.sh	active	-
 menu-eof-smoke.sh	active	-
+suite-stdin-detached-smoke.sh	active	-
 monolith-delayer-smoke.sh	active	-
 mq-debug-smoke.sh	active	-
 mq-git-protected-push-smoke.sh	active	-
