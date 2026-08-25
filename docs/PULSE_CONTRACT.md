@@ -209,6 +209,35 @@ from measurement — the numbers are in ROADMAP.md:
 | `PULSE_STACK_TIMEOUT` | 30 | every mq-agent call, through `uv` |
 | `PULSE_GH_TIMEOUT` | 8 | each `gh` call |
 
+### Concurrency
+
+The collectors run at once and are reported in list order:
+
+```text
+the lanes decide when      the list decides the order
+```
+
+Five lanes — system, repositories, the mq-agent pair, git, quality — so a full
+run costs the slowest lane rather than the sum of six delegates. The pair is one
+lane on purpose: `stack` and `memory` both shell into mq-agent through the same
+`uv` project, so they stay sequential with respect to each other while running
+alongside everything else. That is the whole of the serial rule, and it is a
+constraint on those two rather than on all six.
+
+Order is never completion order. A panel that reshuffled because a network call
+was fast would make two runs of the same command unreadable against each other,
+and the item order is also what `attention` breaks ties on.
+
+A lane is a child process, so it cannot append to `PULSE_ITEMS` — an array
+appended to in a subshell is lost when the subshell exits. The child serializes
+its items and the parent absorbs them, which is the discipline
+`pulse_quality_probe` and `pulse_gh_probe` already followed one level down. The
+handover flushes on exit, so a collector that stops early still hands over what
+it had already found.
+
+Budgets are unchanged by any of this. Each collector still bounds itself, and a
+spent budget is still `UNAVAILABLE` on the observation.
+
 ## What absence means
 
 Four distinctions the collectors are built to keep, and the attention engine
@@ -377,6 +406,7 @@ comment line, for the operator who is piping rather than reading.
 | aggregation to an overall state | `pulse_overall_state` |
 | overall state to exit code | `pulse_exit_code`, `pulse_run_exit_code` |
 | the item shape, and lossless serialization | `pulse_item_add`, `pulse_document` |
+| lanes decide when, the list decides the order | `pulse_area_probe`, `pulse_area_absorb`, `tests/pulse-concurrency-smoke.sh` |
 | the public machine document | `pulse_document`, `mq.pulse.v1` |
 | when the run was collected, and under which flags | `pulse_timestamp`, `pulse_document` |
 | what needs attention, in what order | `pulse_attention_rank`, `pulse_attention_list` |

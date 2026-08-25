@@ -6,6 +6,52 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The six Pulse collectors run at once, so a full run costs the slowest of them
+  rather than the sum.
+
+  ```text
+  serial  4552  4056  4076 ms
+  laned   2459  2458  2463 ms
+  ```
+
+  Alternating, same tree, nothing else running — the numbers are the change
+  rather than the network's mood. That meets the `< 3s` target v2.1.0 recorded
+  as unreachable by tuning, and it was right about both halves: tuning could not
+  get there, and running the collectors concurrently could.
+
+  The rule that had kept them serial is real but narrower than it was being
+  applied. Two collectors shell into mq-agent through the same `uv` project;
+  that is a constraint on those two, and the roadmap had been reading it as a
+  constraint on all six. They are one lane now — sequential with respect to each
+  other, concurrent with everything else — which makes them the critical path at
+  about 1.9 s of the 2.46 s.
+
+  ```text
+  the lanes decide when      the list decides the order
+  ```
+
+  Order is never completion order. A panel that reshuffled because a network
+  call was fast would make two runs of the same command unreadable against each
+  other, and the item order is also what `attention` breaks ties on. The gate
+  holds it by making the first area on the screen the slowest to finish, so the
+  two orders cannot agree by accident.
+
+  A lane is a child process and cannot append to `PULSE_ITEMS` — an array
+  appended to in a subshell is lost when the subshell exits. The child
+  serializes, the parent absorbs, which is the discipline `pulse_quality_probe`
+  and `pulse_gh_probe` already followed one level down.
+
+  Equivalence was checked before speed: serial and laned produce byte-identical
+  documents once timings are normalized, across all ten flag and scope
+  combinations. Budgets are untouched, and a spent budget is still `UNAVAILABLE`
+  on the observation rather than `FAIL` on the subject.
+
+  `tests/pulse-concurrency-smoke.sh`, 6 steps, verified failable against three
+  planted defects: absorbing in completion order, launching the lanes serially,
+  and losing the handover.
+
 ### Added
 
 * `mqlaunch pulse` then `mqlaunch next` costs one collection instead of two.
@@ -256,6 +302,17 @@ All notable changes to this project will be documented in this file.
   produced a second one, and now does not.
 
 ### Fixed
+
+* A collector that exited early had its findings written to stderr instead of
+  its lane, and the whole area vanished from the run without a word.
+
+  Introduced by the lanes above and caught by their own gate before it shipped.
+  The handover flushes on `EXIT` so a collector that stops early still hands
+  over what it had found — but an `EXIT` trap fires wherever the exit happened,
+  including inside the `>&2` redirection the lane wraps the collector in. So the
+  flush inherited that redirection, the parent absorbed an empty file, and the
+  area disappeared silently. It writes to its named file now rather than through
+  the subshell stdout.
 
 * `pulse_footer` declared two variables in one `local` and read the first from
   the second. bash evaluates that left to right, so it worked here; other shells
