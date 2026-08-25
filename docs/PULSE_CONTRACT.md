@@ -331,6 +331,13 @@ because the reader is the one who knows what the answer is for. A dashboard
 refreshing every minute and a release gate are not asking the same question of
 the same document.
 
+The first reader is `mqlaunch next`, and what it does with the age is the shape
+this contract intends: it declares its own window, refuses a document that is
+scoped or flagged whatever its age, and says on screen that it reused one. See
+[NEXT_CONTRACT.md](NEXT_CONTRACT.md#reuse). A complete run is stored for it, one
+slot per checkout, by `mqlaunch/lib/pulse/cache.sh` — Pulse keeps the last
+complete observation and takes no view on how long it stays worth having.
+
 Three consequences, and they are gated in `tests/pulse-freshness-smoke.sh`:
 
 * A run that cannot stamp itself publishes no document at all. An unstamped

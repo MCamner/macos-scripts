@@ -2708,16 +2708,17 @@ full       5365 ms  →  3850 ms
   dominated by four calls into other repos, and this does not move it.
 
 * [x] Allow local-only execution with `--no-network`.
-* [ ] Cache only where a clear TTL exists. Still open, and it may stay open: no
-  owner in the stack publishes a TTL for its status, so a cache here would be
-  Pulse inventing a freshness claim — the one thing this contract forbids.
-* [ ] ~~Mark cached data explicitly.~~ N/A until a cache exists. It is a
-  condition on the box above, not work of its own, and it read as a third
-  implementation task sitting beside one blocked requirement.
-* [ ] ~~Never render stale cached data as live state.~~ N/A until a cache
-  exists — currently guaranteed by there being nothing to go stale. If the box
-  above is ever unblocked, both of these become its acceptance criteria rather
-  than separate items.
+* [x] Cache only where a clear TTL exists. Answered by v2.2.0 rather than
+  delivered as written: no TTL exists and none was invented. Pulse stores the
+  last complete run and publishes its age, and the reader declares the tolerance.
+  The requirement was right that a cache here must not carry an invented
+  freshness claim, and wrong that a TTL was the only way to avoid one.
+* [x] ~~Mark cached data explicitly.~~ Met by v2.2.0 P1 as an acceptance
+  criterion rather than as work of its own: `mqlaunch next` prints
+  `Reused pulse from 41s ago` and `mq.next.v1` carries `collected_at`.
+* [x] ~~Never render stale cached data as live state.~~ Met by the same block.
+  Nothing past the reader window is reused at all, and what is reused says so on
+  the screen it is drawn on.
 
 ### Degradation
 
@@ -3137,7 +3138,8 @@ did not run it.
 
 ## P1 — Reuse a collected document between `pulse` and `next`
 
-Status: Ready — P0 landed 2026-08-24, so nothing blocks this
+Status: Done 2026-08-24 — `pulse` then `next` costs one collection, measured at
+4.59 s then 0.08 s, and the reuse is visible on screen
 Priority: P1
 Owner: `macos-scripts`
 
@@ -3149,23 +3151,58 @@ because the fix needed a freshness contract. P0 is that contract.
 
 ### Tasks
 
-* [ ] `mqlaunch next` reuses the most recent document when it is fresh enough
+* [x] `mqlaunch next` reuses the most recent document when it is fresh enough
   **and** was collected under conditions at least as complete as the run it
   would otherwise make. A cached `--no-network` document does not satisfy a full
   run; the reverse is fine.
-* [ ] Reused state is labelled in human output, with its age. The two v2.1.0
+
+  Four conditions, and only one is about time: full scope, no `--no-stack`, no
+  `--no-network`, and younger than `NEXT_MAX_AGE` (120s). The window is declared
+  by the reader in `next_reusable_age`, which is the shape P0 intended — Pulse
+  states the age and never a tolerance.
+
+* [x] Reused state is labelled in human output, with its age. The two v2.1.0
   boxes held open as conditions on the cache — mark cached data explicitly,
   never render stale cached data as live state — become this block's acceptance
   criteria rather than separate items, and are struck where they stand.
-* [ ] An explicit `--fresh` collects unconditionally. Reuse that cannot be
+
+  ```text
+  Reused pulse from 41s ago · mqlaunch next --fresh to re-measure
+  ```
+
+  The machine modes carry the same fact as `collected_at` in `mq.next.v1`, where
+  a consumer reads it without parsing a sentence.
+
+* [x] An explicit `--fresh` collects unconditionally. Reuse that cannot be
   refused is a cache the operator has to reason about instead of a convenience.
-* [ ] `--input FILE` keeps its current meaning and takes precedence: a caller who
+* [x] `--input FILE` keeps its current meaning and takes precedence: a caller who
   named a document gets that document, whatever its age.
+
+  It neither reads the cache nor writes it. Writing would let any caller install
+  an arbitrary document as this machine's last observation.
+
+* [x] One slot per checkout. Not on the original list — the gate found it, from
+  the other side: `tests/next-command-smoke.sh` began reading the real user cache
+  from inside its stub tree. A Pulse document is not purely a statement about the
+  machine, since `QUALITY` is this repo running its own gates and `GIT` is this
+  worktree, so two checkouts sharing one slot would let `next` in one answer with
+  an observation of the other.
 
 ### Exit gate
 
-* [ ] `pulse` followed by `next` costs one collection, and the second command
+* [x] `pulse` followed by `next` costs one collection, and the second command
   says on screen that it did not measure again.
+
+  ```text
+  mqlaunch pulse   4.588 s
+  mqlaunch next    0.077 s   Reused pulse from 5s ago
+  ```
+
+  The panel now serializes and stores its document, which it did not do before.
+  Measured by A/B in one tree: 338-346 ms became 390-401 ms on a stub run, so
+  about 50 ms — roughly 1.2% of the 3.85-4.6 s a real full run costs, and it buys
+  the next command all of it. A scoped or flagged run serializes nothing, because
+  nothing would keep it.
 
 ---
 

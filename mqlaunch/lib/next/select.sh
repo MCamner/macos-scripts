@@ -30,6 +30,89 @@
 
 NEXT_SCHEMA="mq.next.v1"
 
+# Whether the document at PATH may stand in for a run this command would
+# otherwise make, and how old it is if so.
+#
+#   next_reusable_age PATH MAX_AGE_SECONDS
+#
+# Prints the age in whole seconds and returns 0 when the document may be reused;
+# prints nothing and returns 1 otherwise. Silent on both paths: a cache miss is
+# not a diagnostic, it is the ordinary case on a machine where nobody has run
+# Pulse lately.
+#
+# This is the reader half of the freshness contract, and it is here rather than
+# in Pulse for the reason docs/PULSE_CONTRACT.md gives: Pulse can state the age
+# of an observation but cannot know what the answer is for, so the tolerance is
+# declared by whoever is about to answer something with it.
+#
+# Four conditions, and three of them are about completeness rather than time:
+#
+#   a full scope      a scoped run measured one area, not six
+#   no --no-stack     a run that skipped the stack cannot report on it
+#   no --no-network   the same, one delegate over
+#   young enough      the caller declares how young
+#
+# The asymmetry is deliberate. A complete document can answer a narrower question
+# and a narrow one cannot answer a complete question, so completeness is checked
+# against what this command always asks for: everything.
+#
+# The document is re-checked here even though only a complete run is stored. What
+# reached the slot is the writer's claim; what is safe to answer with is this
+# side, and a document that arrived by some other route still has to answer for
+# itself.
+next_reusable_age() {
+  local path="${1:-}" max_age="${2:-0}"
+
+  [[ -f "$path" ]] || return 1
+
+  MAX_AGE="$max_age" python3 - "$path" <<'PY_REUSE'
+import datetime
+import json
+import os
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as handle:
+        doc = json.load(handle)
+except (OSError, json.JSONDecodeError):
+    # A half-written or foreign file is a miss, not an error. The caller
+    # collects, which is what it would have done with no file at all.
+    sys.exit(1)
+
+if not isinstance(doc, dict) or doc.get("schema") != "mq.pulse.v1":
+    sys.exit(1)
+
+if doc.get("scope") is not None:
+    sys.exit(1)
+
+conditions = doc.get("conditions")
+if not isinstance(conditions, dict):
+    # A document from before the freshness contract carries no conditions and no
+    # stamp. It cannot be aged or vouched for, so it is not reused.
+    sys.exit(1)
+if conditions.get("no_stack") or conditions.get("no_network"):
+    sys.exit(1)
+
+stamp = doc.get("collected_at")
+if not isinstance(stamp, str):
+    sys.exit(1)
+try:
+    collected = datetime.datetime.fromisoformat(stamp)
+except ValueError:
+    sys.exit(1)
+if collected.utcoffset() is None:
+    sys.exit(1)
+
+age = (datetime.datetime.now().astimezone() - collected).total_seconds()
+# A document stamped in the future is a clock that moved, not a fresh run.
+# Treating it as young would make the reuse window unbounded in one direction.
+if age < 0 or age > float(os.environ["MAX_AGE"]):
+    sys.exit(1)
+
+print(int(age))
+PY_REUSE
+}
+
 # Prints one `mq.next.v1` document on stdout for the `mq.pulse.v1` document at
 # PATH, and returns the exit code that describes the selection.
 #
@@ -80,13 +163,18 @@ PULSE_SCHEMA = "mq.pulse.v1"
 SEVERITY = {"FAIL": 2, "WARN": 1, "UNAVAILABLE": 1}
 
 
-def emit(status, item, scope, collected, reason, code):
+def emit(status, item, scope, collected, reason, code, collected_at=None):
     doc = {
         "schema": SCHEMA,
         "status": status,
         "item": item,
         "scope": scope,
         "collected": collected,
+        # Echoed for the same reason scope and collected are: a consumer must be
+        # able to tell what the answer is a statement about. Reuse makes it load
+        # bearing — without it, an answer from a document collected two minutes
+        # ago is indistinguishable from one measured just now.
+        "collected_at": collected_at,
     }
     if reason is not None:
         doc["reason"] = reason
@@ -126,6 +214,9 @@ scope = doc.get("scope")
 collected = doc.get("collected")
 if not isinstance(collected, list):
     collected = []
+collected_at = doc.get("collected_at")
+if not isinstance(collected_at, str):
+    collected_at = None
 
 attention = doc.get("attention")
 if not isinstance(attention, list):
@@ -141,9 +232,9 @@ if not attention:
         print("next: pulse run measured nothing (INCOMPLETE)", file=sys.stderr)
         sys.exit(
             emit("UNAVAILABLE", None, scope, collected,
-                 "pulse run measured nothing", 3)
+                 "pulse run measured nothing", 3, collected_at)
         )
-    sys.exit(emit("NONE", None, scope, collected, None, 0))
+    sys.exit(emit("NONE", None, scope, collected, None, 0, collected_at))
 
 # attention[0], verbatim. Not the first item this selector likes.
 item = attention[0]
@@ -156,7 +247,8 @@ if item_status not in SEVERITY:
     )
     sys.exit(unavailable("selected item has unusable status"))
 
-sys.exit(emit("SELECTED", item, scope, collected, None, SEVERITY[item_status]))
+sys.exit(emit("SELECTED", item, scope, collected, None, SEVERITY[item_status],
+              collected_at))
 PY
   )" || rc=$?
 
@@ -178,6 +270,7 @@ next_unavailable() {
   "item": null,
   "scope": null,
   "collected": [],
+  "collected_at": null,
   "reason": "$reason"
 }
 EOF

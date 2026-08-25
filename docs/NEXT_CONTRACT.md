@@ -108,7 +108,8 @@ back empty-handed.
     "priority": 0
   },
   "scope": null,
-  "collected": ["system", "repositories", "stack", "memory", "git", "quality"]
+  "collected": ["system", "repositories", "stack", "memory", "git", "quality"],
+  "collected_at": "2026-08-24T01:52:07+02:00"
 }
 ```
 
@@ -132,7 +133,63 @@ model is defined, and the two could drift.
 Without the echo, a consumer reads the second as the first. `collected` is the
 only thing that says which happened.
 
+`collected_at` is echoed for the same reason, and reuse is what makes it load
+bearing. Without it, an answer selected from a document collected two minutes
+ago is indistinguishable from one measured just now, and a consumer has no way
+to tell what moment the answer describes.
+
 `reason` appears only on `UNAVAILABLE`, and says which of the failures it was.
+
+## Reuse
+
+`mqlaunch next` with no arguments reuses the last complete Pulse run when there
+is one worth reusing, and collects otherwise. Running `mqlaunch pulse` and then
+`mqlaunch next` costs one collection rather than two — about 4s, most of it
+calls into other repos.
+
+Four conditions, and only one of them is about time:
+
+```text
+full scope        a scoped run measured one area, not six
+no --no-stack     a run that skipped the stack cannot report on it
+no --no-network   the same, one delegate over
+young enough      NEXT_MAX_AGE seconds, 120 by default
+```
+
+The asymmetry is deliberate. A complete document can answer a narrower question
+and a narrow one cannot answer a complete question, so completeness is measured
+against what this command always asks for: everything.
+
+The window is declared here, by the reader, and that is the shape the freshness
+contract takes rather than an implementation detail:
+
+```text
+Pulse publishes the age    it cannot know what the answer is for
+next declares its window   it knows exactly what it is about to answer
+```
+
+Two minutes is sized to the flow the reuse exists for — look at the cockpit,
+then ask what to do about it. `NEXT_MAX_AGE` overrides it, because a script
+driving both commands back to back and a person leaving a terminal open are not
+the same reader.
+
+Reuse is never silent. The screen says so, with the age and the way to re-ask:
+
+```text
+Reused pulse from 41s ago · mqlaunch next --fresh to re-measure
+```
+
+The machine modes carry the same fact as `collected_at`, where a consumer reads
+it without parsing a sentence. `--fresh` collects unconditionally. `--input FILE`
+keeps its meaning and takes precedence over everything here: a caller that named
+a document gets that document at any age, and the cache is neither read nor
+written — writing it would let any caller install an arbitrary document as this
+machine's last observation.
+
+The slot lives under `XDG_CACHE_HOME`, one per checkout. A Pulse document is not
+purely a statement about the machine — `QUALITY` is this repo running its own
+gates and `GIT` is this worktree — so two checkouts sharing one slot would let
+`next` in one answer with an observation of the other.
 
 ## What this command does not do
 
@@ -145,7 +202,11 @@ only thing that says which happened.
 * **It does not run Pulse.** The document is an input. Who produces it, and
   whether it is fresh, is the caller's decision — a selector that shelled out to
   its own source would make every consumer pay for a collection they may already
-  have done.
+  have done. The CLI layer above it may collect, and may reuse; the selector
+  does neither.
+* **It does not publish a TTL.** The reuse window above is this command deciding
+  what it will accept, not a claim about how long a Pulse document stays true.
+  That distinction is `PULSE_CONTRACT.md`'s and this command is a reader of it.
 
 ## Where the rules live
 
@@ -155,6 +216,8 @@ only thing that says which happened.
 | the three absences stay distinct | `next_select`, `tests/next-contract-smoke.sh` |
 | exit codes | `next_select` |
 | the public document | `NEXT_SCHEMA`, `mq.next.v1` |
+| when a document may be reused | `next_reusable_age`, `tests/next-reuse-smoke.sh` |
+| which runs are worth keeping | `pulse_cache_keeps`, `tests/next-reuse-smoke.sh` |
 
 The selector is `mqlaunch/lib/next/select.sh`, on the authority-owned runtime
 path. It inherits the output contract every other `mqlaunch` command is held
