@@ -4,6 +4,27 @@ set -euo pipefail
 PROJECT_ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 ROOT="$PROJECT_ROOT/tools/scripts"
 
+# Every test runs with stdin closed.
+#
+# The suite inherits the caller's stdin and hands it to each test unchanged, so
+# a test that reads stdin waits on whoever invoked the suite. That is fine when
+# stdin is a terminal — the surfaces that read it check for one — and fine when
+# it is already at EOF. It hangs forever when stdin is an open pipe nobody is
+# writing to, which is exactly how an agent, a CI step, or a terminal running
+# something else alongside invokes this.
+#
+# Observed rather than theorised: a full run stopped inside
+# pulse-contract-smoke.sh at `pulse_overall_state` with no arguments, which
+# reads its states from stdin when given none. It did not reproduce, because the
+# thing holding the pipe open had gone away — the worst shape a defect can have
+# in a test suite, since the same command passes the second time and the run
+# that hung is written off.
+#
+# One `exec` rather than `</dev/null` on a hundred lines: a per-line redirection
+# is a thing the next test added would be missing, and nothing would notice
+# until a run hung. tests/suite-stdin-detached-smoke.sh holds this line.
+exec </dev/null
+
 : "${PYTHONPYCACHEPREFIX:=${TMPDIR:-/tmp}/macos-scripts-pycache}"
 export PYTHONPYCACHEPREFIX
 mkdir -p "$PYTHONPYCACHEPREFIX"
@@ -67,6 +88,7 @@ bash "$PROJECT_ROOT/tests/ui-progress-result-smoke.sh"
 "$PROJECT_ROOT/tests/output-mode-parity-smoke.sh"
 "$PROJECT_ROOT/tests/registry-consumer-parity-smoke.sh"
 "$PROJECT_ROOT/tests/menu-eof-smoke.sh"
+"$PROJECT_ROOT/tests/suite-stdin-detached-smoke.sh"
 "$PROJECT_ROOT/tests/command-word-normalization-smoke.sh"
 "$PROJECT_ROOT/tests/release-check-contract-smoke.sh"
 "$PROJECT_ROOT/tests/release-secret-scan-smoke.sh"

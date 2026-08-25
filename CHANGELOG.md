@@ -313,6 +313,44 @@ All notable changes to this project will be documented in this file.
   flush inherited that redirection, the parent absorbed an empty file, and the
   area disappeared silently. It writes to its named file now rather than through
   the subshell stdout.
+||||||| parent of cb98513 (fix(tests): detach the suite from the caller's stdin)
+
+* The test suite could hang forever on the stdin of whoever invoked it.
+
+  `test-all.sh` inherits the caller's stdin and hands it to every test
+  unchanged, and the three states it can be in do not behave alike:
+
+  ```text
+  a terminal        the surfaces that read stdin check for one and return
+  already at EOF    the read returns immediately
+  an open pipe      the read blocks until the writer closes, or forever
+  ```
+
+  The third is how an agent, a CI step, or a terminal running something else
+  alongside invokes the suite. Observed rather than theorised: a full run
+  stopped inside `pulse-contract-smoke.sh` at `pulse_overall_state` with no
+  arguments, which reads its states from stdin when given none.
+
+  It did not reproduce, because whatever held the pipe open had gone away —
+  which is the worst shape a defect can have in a test suite. The command
+  passes the second time and the run that hung gets written off as a fluke.
+
+  So the fix is a guarantee rather than a repair to the one call site that
+  happened to show it: `exec </dev/null` before the first test, covering every
+  test including the ones added later. A per-line `</dev/null` would be a thing
+  the next test added is missing, and nothing would notice until a run hung.
+
+  The call site is corrected too, because it should say what it means. It
+  asserts "a run with no checks", and without the redirection it was really
+  asserting "no checks, and whatever the caller left on stdin".
+
+  `tests/suite-stdin-detached-smoke.sh`, 3 steps. Step 1 asserts against the
+  script, for the reason `release-secret-scan-smoke.sh` gives about its own
+  step 1: the wrong version passes every behavioural test there is, as long as
+  the machine running it happens to have stdin at EOF. Step 2 runs a miniature
+  of the real thing against a pipe held open by a writer that never writes, and
+  step 3 removes the one line and shows the same miniature does block — because
+  a passing step 2 is worth nothing unless the shape it exercises can fail.
 
 * `pulse_footer` declared two variables in one `local` and read the first from
   the second. bash evaluates that left to right, so it worked here; other shells

@@ -51,7 +51,11 @@ if pulse_state_is_valid INCOMPLETE; then
   echo "FAIL: INCOMPLETE was accepted as a check state" >&2
   exit 1
 fi
-got="$(pulse_overall_state)"
+# `</dev/null` rather than inherited stdin. This asserts "a run with no checks",
+# and pulse_overall_state reads its states from stdin when given none — so
+# without it the assertion is really "no checks, and whatever the caller left on
+# stdin", which blocks when that is an open pipe.
+got="$(pulse_overall_state </dev/null)"
 if [[ "$got" != "INCOMPLETE" ]]; then
   echo "FAIL: a run with no checks reported $got, expected INCOMPLETE" >&2
   exit 1
