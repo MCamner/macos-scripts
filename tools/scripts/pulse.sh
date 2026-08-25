@@ -140,27 +140,89 @@ PULSE_NO_NETWORK="$skip_network"
 collected=()
 note() { collected+=("$1"); }
 
-wanted system && { note system; pulse_collect_system; }
-wanted repos && { note repositories; pulse_collect_repos; }
+# The stack and memory collectors, in one lane and in that order.
+#
+# They are the pair the serial rule is actually about: both shell into mq-agent
+# through the same `uv` project, so they stay sequential with respect to each
+# other while running alongside everything else. Running them concurrently would
+# put two processes into one project environment to save a second, which is a
+# trade this command does not need to make.
+agent_lane() {
+  wanted stack && pulse_collect_stack
+  wanted memory && pulse_collect_memory
+  return 0
+}
 
+# Five lanes, launched together and read back in list order.
+#
+# Before this, a full run cost the sum of six delegates — 3853 ms measured, of
+# which the four calls into other repos were most of it. The lanes make it the
+# slowest lane instead, and the slowest lane is the mq-agent pair.
+#
+# `collected` is still recorded here, in the parent, and still in list order. It
+# says which areas this run accounted for, and that is a fact about the
+# invocation rather than about who finished first.
+lanes="$(mktemp -d)"
+
+if wanted system; then
+  note system
+  pulse_area_probe "$lanes/system" pulse_collect_system &
+fi
+
+if wanted repos; then
+  note repositories
+  pulse_area_probe "$lanes/repositories" pulse_collect_repos &
+fi
+
+agent_skipped=0
 if wanted stack || wanted memory; then
   if [[ $skip_stack -eq 1 ]]; then
     # SKIPPED, not omitted. The operator asked for this, so it must not count
     # against the verdict — and it must still be visible, or a run with the flag
     # would look like a run where the stack was fine.
-    wanted stack && { note stack; pulse_item_add stack stack SKIPPED "MQ stack" "skipped by --no-stack"; }
+    #
+    # No lane: there is nothing to run, and the items are added below so they
+    # land in the same place in the order as the collected ones would have.
+    agent_skipped=1
+    wanted stack && note stack
     # Memory reads mq-agent too, through `memory status` and the cockpit.
     # Skipping the stack collector and then spending two more mq-agent calls
     # next to it would make the flag a lie about what the run costs.
-    wanted memory && { note memory; pulse_item_add memory memory SKIPPED "Memory" "skipped by --no-stack"; }
+    wanted memory && note memory
   else
-    wanted stack && { note stack; pulse_collect_stack; }
-    wanted memory && { note memory; pulse_collect_memory; }
+    wanted stack && note stack
+    wanted memory && note memory
+    pulse_area_probe "$lanes/agent" agent_lane &
   fi
 fi
 
-wanted git && { note git; pulse_collect_git "$skip_network"; }
-wanted quality && { note quality; pulse_collect_quality; }
+if wanted git; then
+  note git
+  pulse_area_probe "$lanes/git" pulse_collect_git "$skip_network" &
+fi
+
+if wanted quality; then
+  note quality
+  pulse_area_probe "$lanes/quality" pulse_collect_quality &
+fi
+
+# The lanes report through their files. A non-zero job status here would only be
+# the shell's opinion about a collector whose findings have already been written,
+# which is the same reason pulse_collect_quality ignores it one level down.
+wait 2>/dev/null || true
+
+pulse_area_absorb "$lanes/system"
+pulse_area_absorb "$lanes/repositories"
+if [[ $agent_skipped -eq 1 ]]; then
+  wanted stack && pulse_item_add stack stack SKIPPED "MQ stack" "skipped by --no-stack"
+  wanted memory && pulse_item_add memory memory SKIPPED "Memory" "skipped by --no-stack"
+else
+  pulse_area_absorb "$lanes/agent"
+fi
+pulse_area_absorb "$lanes/git"
+pulse_area_absorb "$lanes/quality"
+
+rm -rf "$lanes"
 
 overall="$(pulse_overall_state < <(pulse_items_states))" || {
   printf 'ERROR: pulse could not determine a state\n' >&2

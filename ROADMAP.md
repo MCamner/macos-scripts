@@ -2745,11 +2745,10 @@ look broken exactly once per dependency change.
 ### Performance targets
 
 * [x] Local-only Pulse target: `< 1s` — 982 ms measured.
-* [ ] Full Pulse target: `< 3s` under normal conditions. 3850 ms measured, and
-  not reachable by tuning: 3.4 s of it is four calls to delegates in other repos
-  (two `uv`, two `gh`). Reaching it means running the collectors concurrently,
-  which is a change to how the run is ordered rather than a bound on how long it
-  takes, and it belongs in its own block.
+* [x] Full Pulse target: `< 3s` under normal conditions. Met by v2.2.0, at
+  2458-2463 ms. The block was right that tuning could not reach it and right
+  about what would: the collectors run concurrently now, which changed how the
+  run is ordered rather than how long any delegate takes.
 
 ### Exit gate
 
@@ -3208,7 +3207,7 @@ because the fix needed a freshness contract. P0 is that contract.
 
 ## P1 — Concurrent collectors, and the `< 3s` target
 
-Status: Proposed
+Status: Done 2026-08-25 — 4056-4552 ms became 2458-2463 ms, so the target is met
 Priority: P1
 Owner: `macos-scripts`
 
@@ -3226,24 +3225,64 @@ if it were.
 
 ### Tasks
 
-* [ ] Run the collectors that are independent concurrently. The two `uv` ones
+* [x] Run the collectors that are independent concurrently. The two `uv` ones
   stay serial with respect to each other and concurrent with the rest.
-* [ ] Emit in list order, never completion order — the shape #211 and the
+
+  Five lanes: system, repositories, the mq-agent pair, git, quality. The pair is
+  one lane, so a full run costs the slowest lane — which is that pair, at about
+  1.9 s of the 2.46 s.
+
+* [x] Emit in list order, never completion order — the shape #211 and the
   quality gates already established. The screen is read top to bottom and must
   not reorder because a network call was fast.
-* [ ] Subshell discipline, as `pulse_gh_probe` and `pulse_quality_probe` already
+
+  Held by a step that makes the first area on the screen the slowest to finish,
+  so completion order and list order cannot agree by accident.
+
+* [x] Subshell discipline, as `pulse_gh_probe` and `pulse_quality_probe` already
   have it: a child must not append to `PULSE_ITEMS`. A collector that quietly
   dropped its findings is the failure this contract is about.
-* [ ] Per-collector budgets keep their current meaning under concurrency — a
+
+  The child serializes and the parent absorbs, and the handover flushes on exit
+  so a collector that stops early still hands over what it had found. That flush
+  is where the one real bug in this block lived: an `EXIT` trap fires wherever
+  the exit happened, including inside the `>&2` redirection the lane wraps the
+  collector in, so the first version flushed items into stderr and the parent
+  absorbed an empty file. The area vanished silently. It writes to its named file
+  now, and `tests/pulse-concurrency-smoke.sh` step 6 is the step that found it.
+
+* [x] Per-collector budgets keep their current meaning under concurrency — a
   timeout is `UNAVAILABLE` on the observation, never `FAIL` on the subject.
-* [ ] Measure by swapping the two versions in the same tree minutes apart, and
+
+  Unchanged: every collector still bounds itself, and `pulse-degradation-smoke`
+  passes untouched.
+
+* [x] Measure by swapping the two versions in the same tree minutes apart, and
   record the numbers against the box rather than the target.
+
+  ```text
+  serial  4552  4056  4076 ms
+  laned   2459  2458  2463 ms
+  ```
+
+  Alternating, same tree, nothing else running. The laned figures barely move
+  because the critical path is the mq-agent pair, which does not touch the
+  network; the serial ones vary with it.
+
+  Equivalence was checked before speed: serial and laned produce byte-identical
+  documents once timings are normalized, across all ten flag and scope
+  combinations — full, both skip flags separately and together, and each of the
+  seven scopes.
 
 ### Exit gate
 
-* [ ] Full Pulse under `3s`, or the box is closed with the measurement that
+* [x] Full Pulse under `3s`, or the box is closed with the measurement that
   shows why it is not reachable and what would be required — not left open for
   a third release.
+
+  Met, at 2458-2463 ms. The floor is now the mq-agent pair at about 1.9 s, and
+  going below it would mean running two processes into one `uv` project — a
+  trade this command does not need to make for half a second.
 
 ---
 

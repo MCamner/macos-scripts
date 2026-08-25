@@ -98,6 +98,77 @@ pulse_now_ms() {
   python3 -c 'import time; print(int(time.time() * 1000))'
 }
 
+# Runs one collector in a child and writes the items it produced to OUT.
+#
+#   pulse_area_probe OUT COLLECTOR [ARGS...]
+#
+# The six collectors used to run one after another, which made a full Pulse cost
+# the sum of six delegates rather than the slowest of them. The rule that kept
+# them serial is real but narrower than it was being applied: two of them shell
+# into mq-agent through the same `uv` project, which is a constraint on those
+# two and not on the other four.
+#
+# This follows the shape pulse_quality_probe and pulse_gh_probe already
+# established — launch, wait, then emit in list order — one level up. It is the
+# same discipline for the same reason: a child cannot append to PULSE_ITEMS,
+# because an array appended to in a subshell is lost when the subshell exits, and
+# a collector that quietly dropped its findings is the failure this whole
+# contract exists to prevent. So the child serializes, and the parent absorbs.
+#
+# Records are separated by RS, the byte document.sh already uses between items
+# and that no field can contain. Line-separated would be one summary away from
+# corruption the first time a collector reported something with a newline in it.
+pulse_area_probe() {
+  local out="$1"
+  shift
+
+  (
+    PULSE_AREA_PROBE_OUT="$out"
+    pulse_items_reset
+    # On EXIT rather than after the call, so a collector that exits early still
+    # hands over what it had already found. In-process those items were already
+    # in the array, and losing them here would be a regression this refactor
+    # introduced rather than a fault of the collector.
+    trap 'pulse_area_probe_flush' EXIT
+    # A collector reports through items. Anything it prints is a diagnostic, and
+    # diagnostics go to stderr — without this a stray line would land in the item
+    # stream and be read back as a record.
+    "$@" >&2
+  )
+}
+
+# Writes the child collector's items to the file its probe was given.
+#
+# Named explicitly rather than through the subshell stdout, which is the shape
+# this started as and was wrong. An EXIT trap fires wherever the exit happened —
+# including inside `"$@" >&2` — so with the redirection on the subshell, a
+# collector that exited early flushed its items into stderr and the parent
+# absorbed an empty file. The area vanished, silently, which is the exact class
+# of failure the handover exists to prevent.
+pulse_area_probe_flush() {
+  local record
+  {
+    for record in ${PULSE_ITEMS+"${PULSE_ITEMS[@]}"}; do
+      printf '%s%s' "$record" "$PULSE_ITEM_RS"
+    done
+  } > "$PULSE_AREA_PROBE_OUT"
+}
+
+# Appends what one probe collected, in the order it collected it.
+#
+# Order is the screen order and never the order the lanes finished in. A panel
+# that reshuffled because a network call was fast would make two runs of the same
+# command unreadable against each other.
+pulse_area_absorb() {
+  local file="$1" record
+
+  [[ -s "$file" ]] || return 0
+
+  while IFS= read -r -d "$PULSE_ITEM_RS" record; do
+    [[ -n "$record" ]] && PULSE_ITEMS+=("$record")
+  done < "$file"
+}
+
 # SYSTEM — the environment and the tools mqlaunch shells out to.
 #
 # Reads `tools/scripts/doctor.sh --json`, which already owns these checks, their
