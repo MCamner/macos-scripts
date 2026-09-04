@@ -5,6 +5,7 @@ set -euo pipefail
 BASE_DIR="${BASE_DIR:-$HOME/macos-scripts}"
 MAIN_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 REPL_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch-repl.sh"
+BRIDGET_LAUNCHER="$BASE_DIR/bin/bridget-mq"
 
 if [[ ! -x "$MAIN_LAUNCHER" ]]; then
   echo "[MQ] Main launcher not found or not executable: $MAIN_LAUNCHER" >&2
@@ -22,6 +23,20 @@ if [[ $# -gt 0 ]]; then
       fi
 
       exec "$REPL_LAUNCHER" "$@"
+      ;;
+    bridget|bridget-mq)
+      shift || true
+
+      if [[ ! -x "$BRIDGET_LAUNCHER" ]]; then
+        echo "[MQ] Bridget launcher not found or not executable: $BRIDGET_LAUNCHER" >&2
+        exit 1
+      fi
+
+      if [[ $# -eq 0 ]]; then
+        set -- --chat
+      fi
+
+      exec "$BRIDGET_LAUNCHER" "$@"
       ;;
   esac
 fi
