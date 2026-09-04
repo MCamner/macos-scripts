@@ -146,6 +146,101 @@ mq_git_ahead_behind() {
   fi
 }
 
+# ------------------------------------------------------------
+# Sparklines
+# ------------------------------------------------------------
+# One braille glyph per reading, eight levels tall, so a trend fits on the
+# status line without adding a row: `MEM 58% ⣀⣄⣤⣶⣷⣿` says where memory is
+# heading, not only where it is. Plain UTF-8 text, so the NO_COLOR and piped
+# renders carry the same glyphs — colour is the only thing gated.
+#
+# Readings persist in one small file per metric under the cache directory —
+# regenerable, and `rm -rf ~/.cache` clears it. A reading is appended at most
+# every MQ_SPARK_INTERVAL seconds (default 30): the dashboard redraws on every
+# menu return, and a line of twelve identical values ten seconds apart would be
+# a flat line drawn from one moment, not a trend.
+# The mtime of a file as epoch seconds, or 0. GNU `stat -c` before BSD
+# `stat -f`: on GNU stat `-f` is filesystem status and succeeds with a report.
+mq_file_mtime() {
+  stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0
+}
+
+mq_spark_path() {
+  printf '%s/macos-scripts/spark-%s' "${XDG_CACHE_HOME:-$HOME/.cache}" "$1"
+}
+
+# Handles mq spark push.
+#
+#   mq_spark_push NAME VALUE   (VALUE is 0..100)
+mq_spark_push() {
+  local name="$1" value="$2"
+  local spark_file dir mtime now keep
+  [[ "$value" =~ ^[0-9]+$ ]] || return 0
+  spark_file="$(mq_spark_path "$name")"
+  dir="${spark_file%/*}"
+  mkdir -p "$dir" 2>/dev/null || return 0
+
+  if [[ -f "$spark_file" ]]; then
+    mtime="$(mq_file_mtime "$spark_file")"
+    now="$(date +%s)"
+    (( now - mtime < ${MQ_SPARK_INTERVAL:-30} )) && return 0
+  fi
+
+  keep="${MQ_SPARK_WIDTH:-12}"
+  {
+    [[ -f "$spark_file" ]] && tail -n $(( keep - 1 )) "$spark_file"
+    printf '%s\n' "$value"
+  } > "$spark_file.tmp" 2>/dev/null && mv -f "$spark_file.tmp" "$spark_file" 2>/dev/null || true
+}
+
+# Handles mq spark glyph.
+#
+# 0..100 to one of eight braille glyphs. A case rather than an array: the
+# library sits next to code that runs under zsh, where arrays start at one.
+mq_spark_glyph() {
+  local v="$1"
+  (( v < 0 )) && v=0
+  (( v > 100 )) && v=100
+  case $(( v * 7 / 100 )) in
+    0) printf '⡀' ;;
+    1) printf '⣀' ;;
+    2) printf '⣄' ;;
+    3) printf '⣤' ;;
+    4) printf '⣦' ;;
+    5) printf '⣶' ;;
+    6) printf '⣷' ;;
+    *) printf '⣿' ;;
+  esac
+}
+
+# Handles mq spark render.
+#
+# The stored readings of NAME as glyphs, oldest first; nothing when the file
+# does not exist. The first draw shows one glyph — the reading just recorded —
+# and the line grows to MQ_SPARK_WIDTH from there.
+mq_spark_render() {
+  local spark_file line out=""
+  spark_file="$(mq_spark_path "$1")"
+  [[ -f "$spark_file" ]] || return 0
+  while IFS= read -r line; do
+    [[ "$line" =~ ^[0-9]+$ ]] || continue
+    out+="$(mq_spark_glyph "$line")"
+  done < "$spark_file"
+  printf '%s' "$out"
+}
+
+# Handles mq spark suffix.
+#
+# The sparkline for NAME after recording VALUE, with a leading space, or
+# nothing when sparklines are off (MQ_SPARKLINES=0) or nothing is stored yet.
+mq_spark_suffix() {
+  local name="$1" value="$2" line
+  [[ "${MQ_SPARKLINES:-1}" == "0" ]] && return 0
+  mq_spark_push "$name" "$value"
+  line="$(mq_spark_render "$name")"
+  [[ -n "$line" ]] && printf ' %s' "$line"
+}
+
 # Handles mq memory widget.
 mq_memory_widget() {
   if command -v vm_stat >/dev/null 2>&1; then
@@ -167,7 +262,7 @@ mq_memory_widget() {
 
     if (( total > 0 )); then
       pct=$(( used * 100 / total ))
-      printf 'MEM %s%%' "$pct"
+      printf 'MEM %s%%%s' "$pct" "$(mq_spark_suffix mem "$pct")"
       return
     fi
   fi
@@ -181,12 +276,36 @@ mq_battery_widget() {
     local batt
     batt="$(pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -n 1 || true)"
     if [[ -n "$batt" ]]; then
-      printf 'BAT %s' "$batt"
+      printf 'BAT %s%s' "$batt" "$(mq_spark_suffix bat "${batt%\%}")"
       return
     fi
   fi
 
   printf '%s' "BAT N/A"
+}
+
+# Handles mq health chip.
+#
+# The last Pulse verdict as `PULSE: WARN 12m` in the state's colour, from the
+# cached document mq-ui.sh already reads for the frame; nothing when there is
+# no fresh run, so the line never claims a health it did not observe.
+mq_health_chip() {
+  local state color cache_path mtime now age
+  command -v surface_health_state >/dev/null 2>&1 || return 0
+  state="$(surface_health_state)"
+  [[ -n "$state" ]] || return 0
+
+  case "$state" in
+    PASS) color="$ACCENT_GREEN" ;;
+    FAIL) color="$ACCENT_RED" ;;
+    *) color="$ACCENT_YELLOW" ;;
+  esac
+
+  cache_path="$(surface_pulse_cache_path)"
+  mtime="$(mq_file_mtime "$cache_path")"
+  now="$(date +%s)"
+  age=$(( (now - mtime) / 60 ))
+  printf '%s%sPULSE: %s%s %s%sm ago%s' "$color" "$C_BOLD" "$state" "$C_RESET" "$C_DIM" "$age" "$C_RESET"
 }
 
 # Handles mq mode color.
@@ -408,6 +527,17 @@ mqlaunch_dashboard_v71() {
   mode_color="$(mq_mode_color "$mode")"
   state_color="$(mq_state_color "$dirty")"
 
+  # The rule under the logo and the chip on the status line follow the last
+  # Pulse verdict; the rule keeps its cyan when there is nothing to report.
+  local health_chip rule_color
+  health_chip="$(mq_health_chip)"
+  rule_color="$ACCENT_CYAN"
+  if command -v surface_health_color >/dev/null 2>&1; then
+    rule_color="$(surface_health_color "$(surface_health_state)")"
+    [[ -n "$rule_color" ]] || rule_color="$ACCENT_CYAN"
+  fi
+  [[ -n "$health_chip" ]] || health_chip="${C_DIM}adaptive layout active${C_RESET}"
+
   clear 2>/dev/null || true
 
   echo -e "${ACCENT_CYAN}${ACCENT_DIM}::: PHOSPHOR GRID ACTIVE :::::::::::::::::::::::::::::::::::::::::::::::::::::::::${C_RESET}"
@@ -417,10 +547,10 @@ mqlaunch_dashboard_v71() {
   echo -e "${MQ_PINK}${C_BOLD}██║╚██╔╝██║██║▄▄ ██║${LAUNCH_PINK}██║     ██╔══██║██║   ██║██║╚██╗██║██║     ██╔══██║${C_RESET}"
   echo -e "${MQ_PINK}${C_BOLD}██║ ╚═╝ ██║╚██████╔╝${LAUNCH_PINK}███████╗██║  ██║╚██████╔╝██║ ╚████║╚██████╗██║  ██║${C_RESET}"
   echo -e "${MQ_PINK}${C_BOLD}╚═╝     ╚═╝ ╚══▀▀═╝ ${LAUNCH_PINK}╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝${C_RESET}"
-  echo -e "${ACCENT_CYAN}${C_BOLD}$(mq_repeat "═" "$width")${C_RESET}"
+  echo -e "${rule_color}${C_BOLD}$(mq_repeat "═" "$width")${C_RESET}"
   echo -e "${MQ_PINK}${C_BOLD}MQ${C_RESET}${LAUNCH_PINK}${C_BOLD}LAUNCH${C_RESET} ${C_DIM}// ${subtitle}${C_RESET}"
   echo -e "${mode_color}${C_BOLD}MODE: ${mode}${C_RESET}   ${state_color}${C_BOLD}STATE: ${dirty:-N/A}${C_RESET}   ${severity_color}${C_BOLD}SEVERITY: ${severity}${C_RESET}"
-  echo -e "${ACCENT_YELLOW}${C_BOLD}${mem_widget}${C_RESET}   ${ACCENT_CYAN}${C_BOLD}${batt_widget}${C_RESET}   ${C_DIM}adaptive layout active${C_RESET}"
+  echo -e "${ACCENT_YELLOW}${C_BOLD}${mem_widget}${C_RESET}   ${ACCENT_CYAN}${C_BOLD}${batt_widget}${C_RESET}   ${health_chip}"
   echo
 
   mq_box_top "SYSTEM" "$width"

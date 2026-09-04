@@ -43,6 +43,9 @@ import os, pty, subprocess, sys
 root, ui, env_line = sys.argv[1], sys.argv[2], sys.argv[3]
 code = (
     f"export MACOS_SCRIPTS_HOME='{root}'\n"
+    # No Pulse document: the frame tints itself from the last run's state, and
+    # this pins the theme plumbing, not whatever this machine's Pulse last said.
+    "export MQ_PULSE_CACHE=/nonexistent/pulse.json\n"
     f"{env_line}\n"
     f". '{ui}'\n"
     "surface_panel_color | od -An -c | tr -d ' \\n'\n"
