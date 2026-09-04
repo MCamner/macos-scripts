@@ -117,6 +117,7 @@ render_main_menu_panel() {
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
+  surface_row "v. VS Code MQ (Keychain)" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "DISCOVER" "$width" "$panel_color"
@@ -310,6 +311,7 @@ handle_main_menu_choice() {
     p) open_performance_menu ;;
     n) show_network_info ;;
     h) system_check ;;
+    v) bash "$BASE_DIR/tools/scripts/start-vscode-mq.sh" "$PWD"; pause_enter ;;
     z) restart_mqlaunch ;;
     /|/.|/\ palette|/.\ palette) open_command_palette_or_help ;;
     \?|\?.|\?\ help|\?.\ help\ index) open_help_or_index ;;
@@ -377,6 +379,7 @@ handle_main_prompt_command() {
     perf|performance) open_performance_menu; return 0 ;;
     net|network|ip) show_network_info; return 0 ;;
     check|health|system\ check) system_check; return 0 ;;
+    vscode|vs-code|code-mq) bash "$BASE_DIR/tools/scripts/start-vscode-mq.sh" "$PWD"; pause_enter; return 0 ;;
     "hal "*)
       local _hal_args="${original#hal }"
       # shellcheck source=/dev/null
