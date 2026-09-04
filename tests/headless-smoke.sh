@@ -4,12 +4,14 @@ set -euo pipefail
 ROOT="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 LAUNCHER="$ROOT/terminal/launchers/mqlaunch.sh"
 VSCODE_LAUNCHER="$ROOT/tools/scripts/start-vscode-mq.sh"
+BRIDGET_LAUNCHER="$ROOT/bin/bridget-mq"
 MAIN_MENU="$ROOT/terminal/menus/mq-main-menu.sh"
 
 echo "SMOKE: mqlaunch headless mode"
 
-echo "[1/7] launcher exists"
+echo "[1/10] launcher exists"
 test -x "$LAUNCHER"
+test -x "$BRIDGET_LAUNCHER"
 
 # doctor exits 1 when a check warns, and a runner without `eza` or `gitleaks`
 # always warns. These steps are about pausing and output shape, not about the
@@ -30,25 +32,25 @@ run_doctor() {
   esac
 }
 
-echo "[2/7] doctor does not pause without TTY"
+echo "[2/10] doctor does not pause without TTY"
 run_doctor /tmp/mqlaunch-doctor-headless.out
 ! grep -q "Press Enter" /tmp/mqlaunch-doctor-headless.out
 grep -q "MQ DOCTOR" /tmp/mqlaunch-doctor-headless.out
 
-echo "[3/7] explicit headless flag does not pause"
+echo "[3/10] explicit headless flag does not pause"
 MQLAUNCH_HEADLESS=1 run_doctor /tmp/mqlaunch-doctor-env-headless.out
 ! grep -q "Press Enter" /tmp/mqlaunch-doctor-env-headless.out
 
-echo "[4/7] doctor json stays machine-readable"
+echo "[4/10] doctor json stays machine-readable"
 run_doctor /tmp/mqlaunch-doctor-headless.json --json
 grep -q '^{"project":"macos-scripts"' /tmp/mqlaunch-doctor-headless.json
 ! grep -q "Press Enter" /tmp/mqlaunch-doctor-headless.json
 
-echo "[5/7] main menu exposes Keychain-backed VS Code launch"
+echo "[5/10] main menu exposes Keychain-backed VS Code launch"
 grep -Fq 'v. VS Code MQ (Keychain)' "$MAIN_MENU"
 grep -Fq 'v) bash "$BASE_DIR/tools/scripts/start-vscode-mq.sh" "$PWD"; pause_enter ;;' "$MAIN_MENU"
 
-echo "[6/7] VS Code launch injects Keychain key without printing it"
+echo "[6/10] VS Code launch injects Keychain key without printing it"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 mkdir -p "$tmp_dir/project"
@@ -83,7 +85,7 @@ grep -Fq "arg=$tmp_dir/project" "$tmp_dir/code.log"
 # The secret belongs in the child environment, not as a command argument.
 ! grep '^arg=' "$tmp_dir/code.log" | grep -Fq "$secret"
 
-echo "[7/7] VS Code launch refuses an already-running VS Code process"
+echo "[7/10] VS Code launch refuses an already-running VS Code process"
 cat >"$tmp_dir/pgrep-running" <<'EOF'
 #!/usr/bin/env bash
 exit 0
@@ -98,5 +100,49 @@ MQ_VSCODE_TEST_LOG="$tmp_dir/should-not-exist.log" \
 [[ "$status" -eq 2 ]]
 grep -Fq 'VS Code is already running' "$tmp_dir/running.out"
 [[ ! -e "$tmp_dir/should-not-exist.log" ]]
+
+echo "[8/10] Bridget launch injects Keychain key without printing or argv leakage"
+bridget_secret='sk-test-bridget-key-for-tests'
+cat >"$tmp_dir/security-bridget" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' '$bridget_secret'
+EOF
+cat >"$tmp_dir/bridget" <<'EOF'
+#!/usr/bin/env bash
+printf 'key=%s\n' "${OPENAI_API_KEY:-}" >"${MQ_BRIDGET_TEST_LOG:?}"
+printf 'arg=%s\n' "$@" >>"${MQ_BRIDGET_TEST_LOG:?}"
+EOF
+chmod +x "$tmp_dir/security-bridget" "$tmp_dir/bridget"
+
+bridget_output="$(
+  MQ_SECURITY_BIN="$tmp_dir/security-bridget" \
+  MQ_BRIDGET_BIN="$tmp_dir/bridget" \
+  MQ_BRIDGET_TEST_LOG="$tmp_dir/bridget.log" \
+    "$BRIDGET_LAUNCHER" --chat
+)"
+grep -Fq "key=$bridget_secret" "$tmp_dir/bridget.log"
+grep -Fq 'arg=--chat' "$tmp_dir/bridget.log"
+! grep -Fq "$bridget_secret" <<<"$bridget_output"
+! grep '^arg=' "$tmp_dir/bridget.log" | grep -Fq "$bridget_secret"
+
+echo "[9/10] Bridget launch fails closed when Keychain has no key"
+cat >"$tmp_dir/security-missing" <<'EOF'
+#!/usr/bin/env bash
+exit 44
+EOF
+chmod +x "$tmp_dir/security-missing"
+status=0
+MQ_SECURITY_BIN="$tmp_dir/security-missing" \
+MQ_BRIDGET_BIN="$tmp_dir/bridget" \
+MQ_BRIDGET_TEST_LOG="$tmp_dir/bridget-should-not-run.log" \
+  "$BRIDGET_LAUNCHER" --chat >"$tmp_dir/bridget-missing.out" 2>&1 || status=$?
+[[ "$status" -eq 1 ]]
+grep -Fq 'OpenAI API key is missing from macOS Keychain' "$tmp_dir/bridget-missing.out"
+[[ ! -e "$tmp_dir/bridget-should-not-run.log" ]]
+
+echo "[10/10] mqlaunch routes Bridget through the Keychain launcher"
+route_text="$(cat "$ROOT/bin/mqlaunch")"
+grep -Fq 'bridget|bridget-mq)' <<<"$route_text"
+grep -Fq 'exec "$BRIDGET_LAUNCHER" "$@"' <<<"$route_text"
 
 echo "OK: mqlaunch headless smoke test passed"
