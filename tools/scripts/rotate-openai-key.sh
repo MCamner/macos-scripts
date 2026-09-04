@@ -5,37 +5,38 @@ set +x
 umask 077
 
 MQ_AGENT_HOME="${MQ_AGENT_HOME:-$HOME/mq-agent}"
-TARGET="${MQ_OPENAI_KEY_TARGET:-$MQ_AGENT_HOME/.env}"
 OPENAI_KEYS_URL="${MQ_OPENAI_KEYS_URL:-https://platform.openai.com/api-keys}"
 OPENAI_VERIFY_URL="${MQ_OPENAI_VERIFY_URL:-https://api.openai.com/v1/models}"
+KEYCHAIN_SERVICE="${MQ_OPENAI_KEYCHAIN_SERVICE:-mq-openai-api-key}"
+KEYCHAIN_ACCOUNT="${MQ_OPENAI_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
+KEYCHAIN_LABEL="${MQ_OPENAI_KEYCHAIN_LABEL:-MQ OpenAI API Key}"
+SECURITY_BIN="${MQ_SECURITY_BIN:-/usr/bin/security}"
 DRY_RUN=0
-TMP_FILE=""
-
-cleanup() {
-  if [[ -n "${TMP_FILE:-}" ]]; then
-    rm -f -- "$TMP_FILE"
-  fi
-}
-trap cleanup EXIT HUP INT TERM
 
 usage() {
   cat <<'USAGE'
-rotate-openai-key.sh - safely rotate the OpenAI key used by mq-agent
+rotate-openai-key.sh - safely rotate the OpenAI key used by MQ tools
 
 Usage:
   rotate-openai-key.sh [--dry-run]
 
+Credential model:
+  macOS Keychain is the canonical local store. codex-mq / claude-mq read the
+  Keychain item and expose OPENAI_API_KEY only to the launched process and its
+  descendants. No repository .env file is written.
+
 Flow:
-  1. Refuse shell/startup-file overrides that would shadow mq-agent/.env.
-  2. Open OpenAI Platform so the operator can create a new key.
-  3. Read the new key without echoing it.
-  4. Verify the key before writing anything.
-  5. Ask before replacing OPENAI_API_KEY in mq-agent/.env.
-  6. Replace the key atomically, chmod 600, then smoke-test the persisted key.
-  7. Re-open the key page and show only the old suffix for manual revoke.
+  1. Refuse permanent shell overrides that would bypass the Keychain model.
+  2. Read only the old key suffix from the current Keychain credential.
+  3. Open OpenAI Platform so the operator can create a new key.
+  4. Read the new key without echoing it and verify it before local mutation.
+  5. Ask explicitly before updating the Keychain item.
+  6. Read the Keychain item back and smoke-test it through mq-agent's uv env.
+  7. Roll back the Keychain item automatically if readback or smoke fails.
+  8. Re-open the key page and show only the old suffix for manual revoke.
 
 The secret is never accepted as a command-line argument and is never printed.
-The old key is never revoked automatically in v1.
+The old OpenAI key is never revoked automatically in v1.
 USAGE
 }
 
@@ -53,72 +54,62 @@ key_suffix() {
   fi
 }
 
-read_env_key() {
-  local file="$1" line value=""
-  [[ -f "$file" ]] || return 0
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    case "$line" in
-      OPENAI_API_KEY=*)
-        value="${line#OPENAI_API_KEY=}"
-        if [[ "$value" == \"*\" && "$value" == *\" ]]; then
-          value="${value:1:${#value}-2}"
-        elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
-          value="${value:1:${#value}-2}"
-        fi
-        printf '%s' "$value"
-        return 0
-        ;;
-    esac
-  done < "$file"
-}
-
 check_no_shell_override() {
   local startup file hits=()
 
   if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    fail "OPENAI_API_KEY is set in this shell and would override $TARGET. Run 'unset OPENAI_API_KEY' first." 2
+    fail "OPENAI_API_KEY is already exported in this shell. Run 'unset OPENAI_API_KEY' before rotating so Keychain remains the single credential source." 2
   fi
 
   for startup in "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.zshenv" \
                  "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.bashrc"; do
     if [[ -f "$startup" ]] \
-       && grep -Eq '^[[:space:]]*(export[[:space:]]+)?OPENAI_API_KEY=' "$startup"; then
+       && grep -Eq '^[[:space:]]*(export[[:space:]]+)?OPENAI_API_KEY=[^[:space:]]+[[:space:]]*$' "$startup"; then
       hits+=("$startup")
     fi
   done
 
   if (( ${#hits[@]} > 0 )); then
-    printf 'ERROR: a shell startup file still assigns OPENAI_API_KEY:\n' >&2
+    printf 'ERROR: a shell startup file still contains a persistent OPENAI_API_KEY assignment:\n' >&2
     for file in "${hits[@]}"; do
       printf '  %s\n' "$file" >&2
     done
-    printf 'Remove those assignments before rotating; a new shell would otherwise shadow %s.\n' "$TARGET" >&2
+    printf 'Remove the persistent assignment before rotating. Process-scoped wrapper lines such as env OPENAI_API_KEY="$key" codex are allowed.\n' >&2
     exit 2
   fi
 }
 
-check_target() {
-  local count=0 rel=""
-
+check_prerequisites() {
+  [[ -x "$SECURITY_BIN" ]] || fail "macOS Keychain command not found or not executable: $SECURITY_BIN"
   [[ -d "$MQ_AGENT_HOME" ]] || fail "mq-agent directory not found: $MQ_AGENT_HOME"
+  command -v curl >/dev/null 2>&1 || fail "curl is required to verify the new key."
+  command -v uv >/dev/null 2>&1 || fail "uv is required for the mq-agent credential smoke test."
+}
 
-  if [[ -f "$TARGET" ]]; then
-    count="$(grep -c '^OPENAI_API_KEY=' "$TARGET" 2>/dev/null || true)"
-    if (( count > 1 )); then
-      fail "$TARGET contains more than one OPENAI_API_KEY assignment; refusing an ambiguous rotation." 2
-    fi
-  fi
+read_keychain_key() {
+  "$SECURITY_BIN" find-generic-password \
+    -a "$KEYCHAIN_ACCOUNT" \
+    -s "$KEYCHAIN_SERVICE" \
+    -w 2>/dev/null
+}
 
-  if git -C "$MQ_AGENT_HOME" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    case "$TARGET" in
-      "$MQ_AGENT_HOME"/*)
-        rel="${TARGET#"$MQ_AGENT_HOME"/}"
-        if git -C "$MQ_AGENT_HOME" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
-          fail "$TARGET is tracked by git; refusing to write a secret there." 2
-        fi
-        ;;
-    esac
-  fi
+write_keychain_key() {
+  local key="$1"
+
+  # `security -w` without a value reads the item password from stdin. Passing
+  # the key on argv would expose it to process inspection while the command runs.
+  printf '%s\n' "$key" | "$SECURITY_BIN" add-generic-password \
+    -a "$KEYCHAIN_ACCOUNT" \
+    -s "$KEYCHAIN_SERVICE" \
+    -l "$KEYCHAIN_LABEL" \
+    -U \
+    -w >/dev/null
+}
+
+delete_keychain_key() {
+  "$SECURITY_BIN" delete-generic-password \
+    -a "$KEYCHAIN_ACCOUNT" \
+    -s "$KEYCHAIN_SERVICE" >/dev/null 2>&1
 }
 
 validate_key_shape() {
@@ -129,8 +120,6 @@ validate_key_shape() {
 
 verify_key_before_write() {
   local key="$1" http_code
-
-  command -v curl >/dev/null 2>&1 || fail "curl is required to verify the new key before writing it."
 
   http_code="$({
     printf 'header = "Authorization: Bearer %s"\n' "$key"
@@ -148,7 +137,7 @@ verify_key_before_write() {
 
 confirm_install() {
   local answer=""
-  printf 'Install the verified key into %s? [y/N] ' "$TARGET" >&2
+  printf 'Install the verified key into macOS Keychain service %s? [y/N] ' "$KEYCHAIN_SERVICE" >&2
   IFS= read -r answer || answer=""
   case "$answer" in
     y|Y|yes|YES|Yes) return 0 ;;
@@ -156,59 +145,35 @@ confirm_install() {
   esac
 }
 
-write_key_atomically() {
-  local key="$1" dir line wrote=0
-  dir="$(dirname "$TARGET")"
-  mkdir -p "$dir"
-  TMP_FILE="$(mktemp "$dir/.openai-key.XXXXXX")"
-  chmod 600 "$TMP_FILE"
+credential_smoke() {
+  local key="$1"
 
-  if [[ -f "$TARGET" ]]; then
-    while IFS= read -r line || [[ -n "$line" ]]; do
-      case "$line" in
-        OPENAI_API_KEY=*)
-          if (( wrote == 0 )); then
-            printf 'OPENAI_API_KEY=%s\n' "$key" >> "$TMP_FILE"
-            wrote=1
-          fi
-          ;;
-        *) printf '%s\n' "$line" >> "$TMP_FILE" ;;
-      esac
-    done < "$TARGET"
-  fi
-
-  if (( wrote == 0 )); then
-    printf 'OPENAI_API_KEY=%s\n' "$key" >> "$TMP_FILE"
-  fi
-
-  mv -f "$TMP_FILE" "$TARGET"
-  TMP_FILE=""
-  chmod 600 "$TARGET"
-}
-
-verify_persisted_key() {
-  local expected="$1" saved
-  saved="$(read_env_key "$TARGET")"
-  [[ -n "$saved" ]] || fail "The new key was not readable from $TARGET after the atomic write."
-  [[ "$saved" == "$expected" ]] || fail "The persisted OPENAI_API_KEY does not match the verified key."
-
-  command -v uv >/dev/null 2>&1 || fail "uv is required for the mq-agent credential smoke test."
-
-  # Use mq-agent's own Python environment and load exactly the file just written.
-  # This touches no route/execution store and prints no secret.
-  MQ_OPENAI_SMOKE_TARGET="$TARGET" \
+  # The read-back Keychain value is passed only in this child process environment.
+  # No .env file is loaded, and the smoke touches no route/execution stores.
+  OPENAI_API_KEY="$key" \
     uv run --project "$MQ_AGENT_HOME" python - <<'PY' >/dev/null
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
 from openai import OpenAI
 
-target = Path(os.environ["MQ_OPENAI_SMOKE_TARGET"])
-os.environ.pop("OPENAI_API_KEY", None)
-load_dotenv(target, override=True)
 OpenAI().models.list()
 PY
+}
+
+rollback_keychain() {
+  local had_old="$1" old_key="$2"
+
+  if [[ "$had_old" == "1" ]]; then
+    if ! write_keychain_key "$old_key"; then
+      return 1
+    fi
+    local restored
+    restored="$(read_keychain_key)" || return 1
+    [[ "$restored" == "$old_key" ]]
+  else
+    delete_keychain_key || true
+    if read_keychain_key >/dev/null 2>&1; then
+      return 1
+    fi
+  fi
 }
 
 open_keys_page() {
@@ -220,7 +185,7 @@ open_keys_page() {
 }
 
 main() {
-  local old_key old_suffix new_key="" recommended_name
+  local old_key="" old_suffix new_key="" saved_key="" recommended_name had_old=0
 
   case "${1:-}" in
     "") ;;
@@ -230,19 +195,25 @@ main() {
   esac
 
   check_no_shell_override
-  check_target
+  check_prerequisites
 
-  old_key="$(read_env_key "$TARGET")"
+  if old_key="$(read_keychain_key)"; then
+    had_old=1
+  else
+    old_key=""
+  fi
   old_suffix="$(key_suffix "$old_key")"
   recommended_name="mq-agent-$(date '+%Y-%m-%d')"
 
   printf 'OpenAI key rotation\n'
-  printf 'Target: %s\n' "$TARGET"
+  printf 'Credential store: macOS Keychain\n'
+  printf 'Service: %s\n' "$KEYCHAIN_SERVICE"
+  printf 'Account: %s\n' "$KEYCHAIN_ACCOUNT"
   printf 'Current key suffix: ...%s\n' "$old_suffix"
   printf 'Recommended new key name: %s\n' "$recommended_name"
 
   if (( DRY_RUN == 1 )); then
-    printf 'DRY RUN: no browser opened, no key requested, no file changed.\n'
+    printf 'DRY RUN: no browser opened, no key requested, no Keychain item changed.\n'
     return 0
   fi
 
@@ -259,29 +230,49 @@ main() {
 
   validate_key_shape "$new_key"
 
-  printf 'Verifying new key before changing %s ...\n' "$TARGET"
+  printf 'Verifying new key before changing Keychain ...\n'
   verify_key_before_write "$new_key"
   printf 'New key accepted by OpenAI.\n'
 
   confirm_install
-  write_key_atomically "$new_key"
-  verify_persisted_key "$new_key"
 
-  new_key=""
-  unset new_key
-
-  printf 'mq-agent credential smoke: PASS\n'
-  printf 'Permissions set to 600: %s\n' "$TARGET"
-
-  if [[ "$old_suffix" != "none" ]]; then
-    printf '\nOld key to revoke: ...%s\n' "$old_suffix"
-    printf 'Opening OpenAI Platform again. Revoke the old key with that suffix.\n'
-    open_keys_page
-  else
-    printf '\nNo previous key was present in %s; there is nothing to revoke there.\n' "$TARGET"
+  if ! write_keychain_key "$new_key"; then
+    fail "Could not update the Keychain item. The old OpenAI key was not revoked."
   fi
 
-  printf 'Rotation staged successfully. The old key is not deleted automatically in v1.\n'
+  if ! saved_key="$(read_keychain_key)" || [[ "$saved_key" != "$new_key" ]]; then
+    if rollback_keychain "$had_old" "$old_key"; then
+      fail "Keychain readback did not match the verified key; the previous Keychain state was restored." 2
+    fi
+    fail "Keychain readback failed and automatic rollback also failed. Do not revoke the old OpenAI key." 1
+  fi
+
+  if ! credential_smoke "$saved_key"; then
+    if rollback_keychain "$had_old" "$old_key"; then
+      fail "mq-agent credential smoke failed; the previous Keychain state was restored. Do not revoke the old OpenAI key." 2
+    fi
+    fail "mq-agent credential smoke failed and automatic rollback also failed. Do not revoke the old OpenAI key." 1
+  fi
+
+  new_key=""
+  saved_key=""
+  old_key=""
+  unset new_key saved_key old_key
+
+  printf 'Keychain readback: PASS\n'
+  printf 'mq-agent credential smoke: PASS\n'
+
+  if [[ "$old_suffix" != "none" ]]; then
+    printf '\nOld key to revoke later: ...%s\n' "$old_suffix"
+    printf 'IMPORTANT: already-running Codex/Claude processes still hold their previous process-scoped environment.\n'
+    printf 'Restart those sessions with codex-mq / claude-mq before revoking the old key.\n'
+    printf 'Opening OpenAI Platform again for manual revoke when you are ready.\n'
+    open_keys_page
+  else
+    printf '\nNo previous Keychain credential was present; there is no old key from this store to revoke.\n'
+  fi
+
+  printf 'Rotation staged successfully. The old OpenAI key is not revoked automatically in v1.\n'
 }
 
 main "$@"
