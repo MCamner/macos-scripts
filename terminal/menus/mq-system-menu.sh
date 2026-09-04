@@ -88,13 +88,15 @@ system_checks_menu_loop() {
 system_maintenance_menu_loop() {
   local choice
   while true; do
-    _system_submenu_panel "Maintenance" "1. Brew check" "2. Cleanup"
+    _system_submenu_panel "Maintenance" "1. Brew check" "2. Cleanup" \
+      "3. Rotate OpenAI API key"
     read_menu_choice "" "maintenance" || return
     choice="$REPLY"
     echo
     case "$choice" in
       1) "$BASE_DIR/tools/scripts/brew-check.sh"; pause_enter ;;
       2) "$BASE_DIR/tools/scripts/cleanup.sh"; pause_enter ;;
+      3) "$BASE_DIR/tools/scripts/rotate-openai-key.sh"; pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;

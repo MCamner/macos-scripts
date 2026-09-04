@@ -120,3 +120,4 @@ next-contract-smoke.sh	active	-
 next-command-smoke.sh	active	-
 branch-supersede-smoke.sh	active	-
 theme-exact-sync-smoke.sh	active	-
+openai-key-rotation-smoke.sh	active	-
