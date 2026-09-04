@@ -9,7 +9,6 @@ OPENAI_KEYS_URL="${MQ_OPENAI_KEYS_URL:-https://platform.openai.com/api-keys}"
 OPENAI_VERIFY_URL="${MQ_OPENAI_VERIFY_URL:-https://api.openai.com/v1/models}"
 KEYCHAIN_SERVICE="${MQ_OPENAI_KEYCHAIN_SERVICE:-mq-openai-api-key}"
 KEYCHAIN_ACCOUNT="${MQ_OPENAI_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
-KEYCHAIN_LABEL="${MQ_OPENAI_KEYCHAIN_LABEL:-MQ OpenAI API Key}"
 SECURITY_BIN="${MQ_SECURITY_BIN:-/usr/bin/security}"
 DRY_RUN=0
 
@@ -79,11 +78,19 @@ check_no_shell_override() {
   fi
 }
 
+validate_keychain_selector() {
+  local value="$1" name="$2"
+  [[ "$value" =~ ^[A-Za-z0-9._@+-]+$ ]] \
+    || fail "$name contains unsupported characters for the secret-safe Keychain command path." 2
+}
+
 check_prerequisites() {
   [[ -x "$SECURITY_BIN" ]] || fail "macOS Keychain command not found or not executable: $SECURITY_BIN"
   [[ -d "$MQ_AGENT_HOME" ]] || fail "mq-agent directory not found: $MQ_AGENT_HOME"
   command -v curl >/dev/null 2>&1 || fail "curl is required to verify the new key."
   command -v uv >/dev/null 2>&1 || fail "uv is required for the mq-agent credential smoke test."
+  validate_keychain_selector "$KEYCHAIN_ACCOUNT" "Keychain account"
+  validate_keychain_selector "$KEYCHAIN_SERVICE" "Keychain service"
 }
 
 read_keychain_key() {
@@ -96,14 +103,15 @@ read_keychain_key() {
 write_keychain_key() {
   local key="$1"
 
-  # `security -w` without a value reads the item password from stdin. Passing
-  # the key on argv would expose it to process inspection while the command runs.
-  printf '%s\n' "$key" | "$SECURITY_BIN" add-generic-password \
-    -a "$KEYCHAIN_ACCOUNT" \
-    -s "$KEYCHAIN_SERVICE" \
-    -l "$KEYCHAIN_LABEL" \
-    -U \
-    -w >/dev/null
+  # `security add-generic-password -w <value>` exposes <value> in argv. Leaving
+  # -w without a value is TTY-interactive and cannot consume our already-read
+  # secret from a pipe. Instead run security's documented interactive command
+  # mode: the command arrives on stdin, while the security process argv contains
+  # no credential. Account/service are restricted above to parser-safe chars;
+  # OpenAI keys are restricted by validate_key_shape before this is called.
+  printf 'add-generic-password -a %s -s %s -U -w %s\n' \
+    "$KEYCHAIN_ACCOUNT" "$KEYCHAIN_SERVICE" "$key" \
+    | "$SECURITY_BIN" -q -i >/dev/null 2>&1
 }
 
 delete_keychain_key() {
