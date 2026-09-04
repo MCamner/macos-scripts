@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+KEYCHAIN_SERVICE="${MQ_OPENAI_KEYCHAIN_SERVICE:-mq-openai-api-key}"
+KEYCHAIN_ACCOUNT="${MQ_OPENAI_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
+SECURITY_BIN="${MQ_SECURITY_BIN:-/usr/bin/security}"
+BRIDGET_BIN="${MQ_BRIDGET_BIN:-}"
+
+fail() {
+  printf 'ERROR: %s\n' "$1" >&2
+  exit "${2:-1}"
+}
+
+if [[ -z "$BRIDGET_BIN" ]]; then
+  BRIDGET_BIN="$(command -v bridget || true)"
+fi
+
+[[ -n "$BRIDGET_BIN" ]] || \
+  fail "Bridget command 'bridget' was not found in PATH. Install or expose Bridget, or set MQ_BRIDGET_BIN." 2
+[[ -x "$BRIDGET_BIN" ]] || \
+  fail "Bridget launcher is not executable: $BRIDGET_BIN" 2
+
+key="$($SECURITY_BIN find-generic-password \
+  -a "$KEYCHAIN_ACCOUNT" \
+  -s "$KEYCHAIN_SERVICE" \
+  -w 2>/dev/null)" || \
+  fail "OpenAI API key is missing from macOS Keychain service '$KEYCHAIN_SERVICE'." 1
+
+[[ -n "$key" ]] || fail "OpenAI API key in macOS Keychain is empty." 1
+
+# The key exists only in this launcher process and Bridget after exec. It is
+# never written to a repo file, shell startup file, stdout, or command argv.
+export OPENAI_API_KEY="$key"
+key=''
+unset key
+
+exec "$BRIDGET_BIN" "$@"
