@@ -37,14 +37,26 @@ cat > "$BIN/security" <<'STUB'
 #!/usr/bin/env bash
 set -euo pipefail
 printf '%s\n' "$*" >> "$MQ_TEST_SECURITY_LOG"
+
+if [[ " $* " == *" -i "* ]]; then
+  IFS= read -r command || exit 1
+  case "$command" in
+    add-generic-password*)
+      key="${command##* -w }"
+      [[ -n "$key" ]] || exit 2
+      printf '%s' "$key" > "$MQ_TEST_KEYCHAIN_FILE"
+      exit 0
+      ;;
+    *)
+      exit 2
+      ;;
+  esac
+fi
+
 case "${1:-}" in
   find-generic-password)
     [[ -f "$MQ_TEST_KEYCHAIN_FILE" ]] || exit 44
     cat "$MQ_TEST_KEYCHAIN_FILE"
-    ;;
-  add-generic-password)
-    IFS= read -r key || exit 1
-    printf '%s' "$key" > "$MQ_TEST_KEYCHAIN_FILE"
     ;;
   delete-generic-password)
     rm -f "$MQ_TEST_KEYCHAIN_FILE"
@@ -100,6 +112,7 @@ grep -q 'Restart those sessions with codex-mq / claude-mq before revoking' <<<"$
 ! grep -q "$NEW" <<<"$out"
 ! grep -q "$OLD" "$MQ_TEST_SECURITY_LOG"
 ! grep -q "$NEW" "$MQ_TEST_SECURITY_LOG"
+grep -q -- '-q -i' "$MQ_TEST_SECURITY_LOG"
 printf '  ok\n'
 
 printf '[3/8] cancelling after verification leaves the old Keychain value untouched\n'
