@@ -255,11 +255,96 @@ surface_git_state() {
   fi
 }
 
+# The mtime of a file as epoch seconds, or 0.
+#
+# GNU `stat -c` first, BSD `stat -f` second — not the other way round: on GNU
+# stat, `-f` is "filesystem status" and succeeds, printing a mount report where
+# a number was expected. The order is the whole point of the helper.
+surface_file_mtime() {
+  stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0
+}
+
+# Where the last complete Pulse document lives.
+#
+# The same slot mqlaunch/lib/pulse/cache.sh writes — MQ_PULSE_CACHE wins,
+# otherwise one file per checkout keyed on BASE_DIR. Duplicated here rather than
+# sourced because this library is loaded under both bash and zsh and by every
+# menu; pulling in the Pulse libraries for one path would be the wrong weight.
+surface_pulse_cache_path() {
+  if [[ -n "${MQ_PULSE_CACHE:-}" ]]; then
+    printf '%s' "$MQ_PULSE_CACHE"
+    return 0
+  fi
+  local key
+  key="$(printf '%s' "${BASE_DIR:-${MACOS_SCRIPTS_HOME:-unknown}}" | cksum | cut -d" " -f1)"
+  printf '%s/macos-scripts/pulse-%s.json' "${XDG_CACHE_HOME:-$HOME/.cache}" "$key"
+}
+
+# The overall state of the last Pulse run, when there is one worth showing.
+#
+# Prints PASS, WARN, FAIL or INCOMPLETE — the top-level `status` of the cached
+# `mq.pulse.v1` document — or nothing when no document exists, it is older than
+# MQ_HEALTH_MAX_AGE seconds (default one hour), or it carries no status. It
+# reads a file; it runs no collector. A menu redraws on every keypress and
+# cannot afford Pulse's four seconds, and a state it computed itself would be a
+# second health engine next to the one docs/PULSE_CONTRACT.md already owns.
+#
+# Nothing rather than PASS when the document is missing or stale: absent is not
+# healthy, and the frame falling back to its theme colour is the honest render.
+#
+# `cache_path` and `verdict`, not `path` and `status`: this file is sourced by
+# the zsh launcher, and in zsh `path` is the array tied to PATH and `status` is
+# the read-only alias of `$?`. `local path` emptied PATH for the rest of the
+# call — `cksum` and `cut` in surface_pulse_cache_path went missing — and
+# `local status` would have aborted the function outright.
+surface_health_state() {
+  local cache_path mtime now max_age verdict
+  cache_path="$(surface_pulse_cache_path)"
+  [[ -f "$cache_path" ]] || return 0
+
+  max_age="${MQ_HEALTH_MAX_AGE:-3600}"
+  mtime="$(surface_file_mtime "$cache_path")"
+  now="$(date +%s)"
+  (( now - mtime > max_age )) && return 0
+
+  # The first `status` in the document is the overall one: document.sh emits it
+  # right after `schema`, before any section holds an item of its own. `head`
+  # as well as `-m1`: -m1 stops at the first matching line, but -o prints every
+  # match on it, and a document on one line holds an item's status too.
+  verdict="$(grep -o '"status": *"[A-Z]*"' "$cache_path" 2>/dev/null | head -n 1 | sed -E 's/.*"([A-Z]+)"$/\1/')"
+  case "$verdict" in
+    PASS|WARN|FAIL|INCOMPLETE) printf '%s' "$verdict" ;;
+  esac
+}
+
+# The colour a health state tints the frame with, or nothing for a state that
+# leaves the theme colour alone. FAIL is the error colour, WARN and INCOMPLETE
+# the warning colour; PASS and unknown print nothing.
+surface_health_color() {
+  case "${1:-}" in
+    FAIL) printf '%s' "${C_ERR:-}" ;;
+    WARN|INCOMPLETE) printf '%s' "${C_WARN:-}" ;;
+  esac
+}
+
 # Handles surface panel color.
+#
+# The frame is the health indicator: when the last Pulse run reported WARN or
+# FAIL the panel border takes that colour, so the state reads in the corner of
+# the eye before any row is read. Otherwise — PASS, no run, a stale run, or
+# MQ_PANEL_HEALTH_TINT=0 — it is the theme's panel colour.
 surface_panel_color() {
   # Was a hardcoded `\033[0;37m`, which made the panel the one surface element
   # a theme could not reach. C_PANEL is already empty when stdout is not a
   # terminal or NO_COLOR is set, so the tty guard lives in one place now.
+  local tint
+  if [[ -n "${C_PANEL:-}" && "${MQ_PANEL_HEALTH_TINT:-1}" != "0" ]]; then
+    tint="$(surface_health_color "$(surface_health_state)")"
+    if [[ -n "$tint" ]]; then
+      printf '%s' "$tint"
+      return 0
+    fi
+  fi
   printf '%s' "${C_PANEL:-}"
 }
 
