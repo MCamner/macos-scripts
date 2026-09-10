@@ -27,6 +27,9 @@ Usage:
   mqlaunch hal                         # open HAL menu
   mqlaunch hal brief                   # compact repo status brief
   mqlaunch hal release-brief           # release readiness brief
+  mqlaunch hal route                   # model-routing control room
+  mqlaunch hal provenance              # runtime provenance
+  mqlaunch hal code-plan --provider openai --repo <repo> "<goal>"
   mqlaunch hal context                 # mqobsidian context-pack status
   mqlaunch hal audit                   # publish quality + README score via repo-signal
   mqlaunch hal doctor                  # doctor summary
@@ -100,6 +103,21 @@ mq_hal_main() {
     ci|ci-status)
       shift || true
       "$MQ_HAL_BIN" ci "$@"
+      ;;
+
+    route)
+      shift || true
+      "$MQ_HAL_BIN" route "$@"
+      ;;
+
+    provenance)
+      shift || true
+      "$MQ_HAL_BIN" provenance "$@"
+      ;;
+
+    code-plan)
+      shift || true
+      "$MQ_HAL_BIN" code-plan "$@"
       ;;
 
     context|context-status)

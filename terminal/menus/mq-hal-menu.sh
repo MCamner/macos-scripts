@@ -65,17 +65,20 @@ render_hal_panel() {
   surface_split_row "3. Release readiness" "4. CI status" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
+  surface_row "INTELLIGENCE" "$width" "$panel_color"
+  surface_split_row "5. Intelligence" "" "$width" "$panel_color"
+  surface_row "" "$width" "$panel_color"
+
   surface_row "HEALTH" "$width" "$panel_color"
-  surface_split_row "5. Doctor" "6. Fix plan" "$width" "$panel_color"
+  surface_split_row "6. Doctor" "7. Fix plan" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "MEMORY" "$width" "$panel_color"
-  surface_split_row "7. Memory" "" "$width" "$panel_color"
+  surface_split_row "8. Memory" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "DEBUG / ADVANCED" "$width" "$panel_color"
-  surface_split_row "8. Diagnostics" "9. Repos" "$width" "$panel_color"
-  surface_split_row "10. Prompt" "" "$width" "$panel_color"
+  surface_split_row "9. Diagnostics" "10. Prompt" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
@@ -196,6 +199,120 @@ _hal_submenu_read() {
   return 0
 }
 
+# Runs the routing submenu.
+hal_menu_routing_loop() {
+  local choice decision_id
+  while true; do
+    _hal_submenu_panel "Routing" "1. Status" "2. History" \
+      "3. Accuracy" "4. Explain decision"
+    _hal_submenu_read "routing" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) "$MQ_HAL_BIN" route status;   _hal_pause_enter ;;
+      2) "$MQ_HAL_BIN" route history;  _hal_pause_enter ;;
+      3) "$MQ_HAL_BIN" route accuracy; _hal_pause_enter ;;
+      4)
+        printf 'decision-id> '
+        read -r decision_id
+        [[ -z "${decision_id// }" ]] && continue
+        "$MQ_HAL_BIN" route explain "$decision_id"
+        _hal_pause_enter
+        ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown routing choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
+# Runs the intelligence submenu.
+hal_menu_intelligence_loop() {
+  local choice
+  while true; do
+    _hal_submenu_panel "Intelligence" "1. Routing" "2. Provenance" \
+      "3. Cloud code plan"
+    _hal_submenu_read "intelligence" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) hal_menu_routing_loop ;;
+      2) "$MQ_HAL_BIN" provenance; _hal_pause_enter ;;
+      3) hal_menu_code_plan ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown intelligence choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
+# Runs the explicit external cloud planning dialog.
+hal_menu_code_plan() {
+  local provider repo goal choice confirm
+
+  while true; do
+    _hal_submenu_panel "Cloud Code Plan" "1. OpenAI" "b. Cancel"
+    _hal_submenu_read "provider" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      1)
+        provider="openai"
+        break
+        ;;
+      b|B|back|x|X|exit|"")
+        return
+        ;;
+      *)
+        printf 'Unknown provider choice: %s\n' "$choice"
+        _hal_pause_enter
+        ;;
+    esac
+  done
+
+  printf 'repo> '
+  read -r repo
+  [[ -z "${repo// }" ]] && return
+
+  printf 'goal> '
+  read -r goal
+  [[ -z "${goal// }" ]] && return
+
+  printf '\n'
+  printf 'Cloud Code Plan\n'
+  printf '---------------\n'
+  printf 'Provider:   %s\n' "$provider"
+  printf 'Repository: %s\n' "$repo"
+  printf '\n'
+  printf 'Data sent externally:\n'
+  printf '  - repository name\n'
+  printf '  - goal\n'
+  printf '  - code-plan system instructions\n'
+  printf '\n'
+  printf 'Not sent:\n'
+  printf '  - repository contents\n'
+  printf '  - configured repository list\n'
+  printf '  - filesystem paths\n'
+  printf '  - credentials\n'
+  printf '\n'
+  printf 'Run cloud request? [y/N] '
+  read -r confirm
+
+  case "$confirm" in
+    y|Y|yes|YES) ;;
+    *)
+      printf 'Cancelled.\n'
+      _hal_pause_enter
+      return
+      ;;
+  esac
+
+  printf '\n'
+  "$MQ_HAL_BIN" code-plan --provider "$provider" --repo "$repo" "$goal"
+  _hal_pause_enter
+}
+
 # Runs the memory submenu.
 hal_menu_memory_loop() {
   local choice
@@ -222,7 +339,7 @@ hal_menu_diagnostics_loop() {
   local choice
   while true; do
     _hal_submenu_panel "Diagnostics" "1. Timeline" "2. Timeline + details" \
-      "3. Context status" "4. Audit"
+      "3. Context status" "4. Audit" "5. Repos"
     _hal_submenu_read "diagnostics" || return
     choice="$REPLY"
     echo
@@ -231,6 +348,7 @@ hal_menu_diagnostics_loop() {
       2) "$MQ_HAL_BIN" timeline --details; _hal_pause_enter ;;
       3) "$MQ_HAL_BIN" context;            _hal_pause_enter ;;
       4) "$MQ_HAL_BIN" audit;              _hal_pause_enter ;;
+      5) "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown diagnostics choice: %s\n' "$choice"; _hal_pause_enter ;;
@@ -281,11 +399,11 @@ mq_hal_menu_main() {
       2)  "$MQ_HAL_BIN" repo-status;        _hal_pause_enter ;;
       3)  "$MQ_HAL_BIN" release-brief;      _hal_pause_enter ;;
       4)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;
-      5)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
-      6)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
-      7)  hal_menu_memory_loop ;;
-      8)  hal_menu_diagnostics_loop ;;
-      9)  "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
+      5)  hal_menu_intelligence_loop ;;
+      6)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
+      7)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
+      8)  hal_menu_memory_loop ;;
+      9)  hal_menu_diagnostics_loop ;;
       10) hal_menu_prompt_loop ;;
       a|audit) "$MQ_HAL_BIN" audit;         _hal_pause_enter ;;
       h|help) "$MQ_HAL_BIN" --help;         _hal_pause_enter ;;
