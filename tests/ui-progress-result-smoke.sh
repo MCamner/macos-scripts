@@ -75,6 +75,8 @@ grep -q 'i zsh-result' <<<"$out"
 echo "[8/11] Review repo → brain routes through the shared integration helper"
 grep -q '^_run_agent_review_brain_ui()' "$MENU"
 grep -q '1) _run_agent_review_brain_ui; pause_enter ;;' "$MENU"
+grep -q '^_run_agent_menu_wait()' "$MENU"
+grep -q '_run_agent_menu_wait "Running signal → brain" _run_agent signal --brain .' "$MENU"
 
 echo "[9/11] successful review + brain write finishes both steps and the PASS footer"
 out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "

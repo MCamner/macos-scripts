@@ -4,9 +4,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.2.0] - 2026-09-10
 
 ### Changed
+
+* v2.2.0 P2 is closed without adding command surface.
+
+  `mq.next.v1` is now documented as a local mqlaunch document rather than a
+  cross-repo compatibility promise: no named `mq-agent` or `mq-hal` consumer
+  exists, so `mqlaunch next --json` remains a human/local scripting surface
+  unless a downstream repo adds a real reader and gate.
+
+  The slow interactive `mq-agent` menu rows now use the shared spinner wrapper
+  for opaque delegate waits. `Review repo → brain` keeps the step/result UI
+  because mqlaunch can observe real post-run brain-write evidence; the other
+  rows do not invent phases or percentages.
 
 * The six Pulse collectors run at once, so a full run costs the slowest of them
   rather than the sum.

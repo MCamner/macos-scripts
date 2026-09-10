@@ -76,3 +76,14 @@ Keep the final report short:
 - vector-store status and file counts
 - retrieval/MCP verification result
 - any remaining uncertainty, especially sandbox-only failures
+
+## Evals
+
+- A freshness check identifies the active vector store from
+  `mq-agent memory status --json`, not from older helper-script defaults.
+- A refresh request runs a dry-run/preview first, states the repo path and target
+  vector store ID, and only uploads after explicit approval in the current turn.
+- A post-refresh report includes OpenAI file/vector-store status and one
+  retrieval or MCP verification result without printing secrets.
+- A sandbox-only Python/httpx `Operation not permitted` failure is diagnosed
+  separately from MCP server health by checking the HTTP endpoints directly.
