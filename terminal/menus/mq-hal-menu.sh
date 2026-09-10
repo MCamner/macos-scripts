@@ -66,21 +66,19 @@ render_hal_panel() {
   surface_row "" "$width" "$panel_color"
 
   surface_row "INTELLIGENCE" "$width" "$panel_color"
-  surface_split_row "5. Routing" "6. Provenance" "$width" "$panel_color"
-  surface_split_row "7. Cloud code plan" "" "$width" "$panel_color"
+  surface_split_row "5. Intelligence" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "HEALTH" "$width" "$panel_color"
-  surface_split_row "8. Doctor" "9. Fix plan" "$width" "$panel_color"
+  surface_split_row "6. Doctor" "7. Fix plan" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "MEMORY" "$width" "$panel_color"
-  surface_split_row "10. Memory" "" "$width" "$panel_color"
+  surface_split_row "8. Memory" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_row "DEBUG / ADVANCED" "$width" "$panel_color"
-  surface_split_row "11. Diagnostics" "12. Repos" "$width" "$panel_color"
-  surface_split_row "13. Prompt" "" "$width" "$panel_color"
+  surface_split_row "9. Diagnostics" "10. Prompt" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
 
   surface_split_row "b. Back" "x. Exit launcher" "$width" "$panel_color"
@@ -228,6 +226,26 @@ hal_menu_routing_loop() {
   done
 }
 
+# Runs the intelligence submenu.
+hal_menu_intelligence_loop() {
+  local choice
+  while true; do
+    _hal_submenu_panel "Intelligence" "1. Routing" "2. Provenance" \
+      "3. Cloud code plan"
+    _hal_submenu_read "intelligence" || return
+    choice="$REPLY"
+    echo
+    case "$choice" in
+      1) hal_menu_routing_loop ;;
+      2) "$MQ_HAL_BIN" provenance; _hal_pause_enter ;;
+      3) hal_menu_code_plan ;;
+      b|B|back|x|X|exit) return ;;
+      "") ;;
+      *) printf 'Unknown intelligence choice: %s\n' "$choice"; _hal_pause_enter ;;
+    esac
+  done
+}
+
 # Runs the explicit external cloud planning dialog.
 hal_menu_code_plan() {
   local provider repo goal choice confirm
@@ -321,7 +339,7 @@ hal_menu_diagnostics_loop() {
   local choice
   while true; do
     _hal_submenu_panel "Diagnostics" "1. Timeline" "2. Timeline + details" \
-      "3. Context status" "4. Audit"
+      "3. Context status" "4. Audit" "5. Repos"
     _hal_submenu_read "diagnostics" || return
     choice="$REPLY"
     echo
@@ -330,6 +348,7 @@ hal_menu_diagnostics_loop() {
       2) "$MQ_HAL_BIN" timeline --details; _hal_pause_enter ;;
       3) "$MQ_HAL_BIN" context;            _hal_pause_enter ;;
       4) "$MQ_HAL_BIN" audit;              _hal_pause_enter ;;
+      5) "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown diagnostics choice: %s\n' "$choice"; _hal_pause_enter ;;
@@ -380,15 +399,12 @@ mq_hal_menu_main() {
       2)  "$MQ_HAL_BIN" repo-status;        _hal_pause_enter ;;
       3)  "$MQ_HAL_BIN" release-brief;      _hal_pause_enter ;;
       4)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;
-      5)  hal_menu_routing_loop ;;
-      6)  "$MQ_HAL_BIN" provenance;         _hal_pause_enter ;;
-      7)  hal_menu_code_plan ;;
-      8)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
-      9)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
-      10) hal_menu_memory_loop ;;
-      11) hal_menu_diagnostics_loop ;;
-      12) "$MQ_HAL_BIN" --list-repos;       _hal_pause_enter ;;
-      13) hal_menu_prompt_loop ;;
+      5)  hal_menu_intelligence_loop ;;
+      6)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
+      7)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
+      8)  hal_menu_memory_loop ;;
+      9)  hal_menu_diagnostics_loop ;;
+      10) hal_menu_prompt_loop ;;
       a|audit) "$MQ_HAL_BIN" audit;         _hal_pause_enter ;;
       h|help) "$MQ_HAL_BIN" --help;         _hal_pause_enter ;;
       b|B|back) break ;;
