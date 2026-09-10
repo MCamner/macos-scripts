@@ -4,7 +4,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+* Expose mq-hal Routing, Runtime Provenance, and explicit Cloud Code Plan
+  through the mqlaunch HAL Intelligence menu.
+
+  The three actions sit behind a single `Intelligence` entry rather than three
+  top-level rows, which keeps `mq_hal_menu_main` at the ten choices the command
+  discovery inventory allows. `Repos` moved into `Diagnostics` for the same
+  reason.
+
+  This work landed after the `v2.2.0` tag was cut, so it is not part of the
+  published v2.2.0 release.
+
 ## [2.2.0] - 2026-09-10
+
+Release provenance:
+
+```text
+tag commit:     82a246a
+tag on main:    no
+reason:         tag created inside PR #229, before the protected
+                linear-history squash merge rewrote the SHAs
+tag immutable:  yes
+```
+
+The published release is identified by the signed tag, not by a commit in
+`main` ancestry. `git describe` on `main` therefore reports `v2.1.0-N-g<sha>`.
 
 ### Changed
 
