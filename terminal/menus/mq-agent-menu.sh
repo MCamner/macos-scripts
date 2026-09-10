@@ -58,6 +58,22 @@ _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
 
+# Runs one opaque menu delegate with visible progress when a terminal is present.
+#
+# Direct command-mode routes intentionally call _run_agent without this wrapper:
+# JSON/plain consumers must keep receiving only delegate output. Interactive menu
+# rows, on the other hand, otherwise sit blank while mq-agent/uv starts and the
+# owning repo does its work.
+_run_agent_menu_wait() {
+  local label="$1"
+  shift
+  if declare -f ui_spinner >/dev/null 2>&1; then
+    ui_spinner "$label" "$@"
+  else
+    "$@"
+  fi
+}
+
 # Runs the interactive repo-review -> mqobsidian path with truthful UI state.
 #
 # mq-agent owns both review orchestration and the brain write. mqlaunch only
@@ -325,7 +341,7 @@ _brain_pick_and_promote() {
   fi
 
   [[ -z "$slug" ]] && return 0
-  _run_agent learn promote "$slug" --approve
+  _run_agent_menu_wait "Promoting learn pattern" _run_agent learn promote "$slug" --approve
   pause_enter
 }
 
@@ -448,7 +464,7 @@ _agent_menu_cochange() {
     printf "%b No file given — cancelled.%b\n" "${C_WARN:-}" "${C_RESET:-}"
     return 0
   fi
-  _run_agent_memory_cochange "$repo" "$file"
+  _run_agent_menu_wait "Running co-change intake" _run_agent_memory_cochange "$repo" "$file"
 }
 
 # Interactive submenu for the "Co-change review" menu row. Surfaces the autonomous-loop
@@ -465,12 +481,12 @@ _agent_menu_cochange_review() {
     printf "  review > "
     read -r choice
     case "$choice" in
-      1) _run_agent memory review-status; pause_enter ;;
+      1) _run_agent_menu_wait "Reading co-change review queues" _run_agent memory review-status; pause_enter ;;
       2)
         printf "  memory_id to promote: "
         read -r mid
         if [[ -z "$mid" ]]; then printf "  cancelled\n"; continue; fi
-        _run_agent memory promote-from-review "$mid" --apply
+        _run_agent_menu_wait "Promoting held memory" _run_agent memory promote-from-review "$mid" --apply
         pause_enter
         ;;
       3)
@@ -480,8 +496,8 @@ _agent_menu_cochange_review() {
         printf "  (a)ccept new evidence or (r)eject and keep promoted? "
         read -r ar
         case "$ar" in
-          a|A|accept) _run_agent memory resolve-supersede "$mid" --accept --apply ;;
-          r|R|reject) _run_agent memory resolve-supersede "$mid" --reject --apply ;;
+          a|A|accept) _run_agent_menu_wait "Resolving supersede" _run_agent memory resolve-supersede "$mid" --accept --apply ;;
+          r|R|reject) _run_agent_menu_wait "Resolving supersede" _run_agent memory resolve-supersede "$mid" --reject --apply ;;
           *) printf "  cancelled\n"; continue ;;
         esac
         pause_enter
@@ -642,10 +658,10 @@ agent_repo_analysis_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent score .; pause_enter ;;
-      2) _run_agent signal .; pause_enter ;;
-      3) _run_agent repo-summary .; pause_enter ;;
-      4) _run_agent tools; pause_enter ;;
+      1) _run_agent_menu_wait "Scoring repository" _run_agent score .; pause_enter ;;
+      2) _run_agent_menu_wait "Running signal assessment" _run_agent signal .; pause_enter ;;
+      3) _run_agent_menu_wait "Building repo summary" _run_agent repo-summary .; pause_enter ;;
+      4) _run_agent_menu_wait "Listing mq-agent tools" _run_agent tools; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
@@ -681,10 +697,10 @@ agent_review_brain_menu_loop() {
     echo
     case "$choice" in
       1) _run_agent_review_brain_ui; pause_enter ;;
-      2) _run_agent signal --brain .; pause_enter ;;
+      2) _run_agent_menu_wait "Running signal → brain" _run_agent signal --brain .; pause_enter ;;
       # The note the stack sweep reports on. Nothing schedules it, so the only
       # thing keeping it fresh is an operator finding this row.
-      3) _run_agent stack truth-export; pause_enter ;;
+      3) _run_agent_menu_wait "Exporting stack truth → brain" _run_agent stack truth-export; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
@@ -756,10 +772,10 @@ agent_mcp_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent mcp status; pause_enter ;;
-      2) _run_agent mcp tools; pause_enter ;;
-      3) _mcp_start; pause_enter ;;
-      4) _mcp_stop; pause_enter ;;
+      1) _run_agent_menu_wait "Checking MCP status" _run_agent mcp status; pause_enter ;;
+      2) _run_agent_menu_wait "Listing MCP tools" _run_agent mcp tools; pause_enter ;;
+      3) _run_agent_menu_wait "Starting MCP server" _mcp_start; pause_enter ;;
+      4) _run_agent_menu_wait "Stopping MCP server" _mcp_stop; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
@@ -793,7 +809,7 @@ agent_environment_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent doctor; pause_enter ;;
+      1) _run_agent_menu_wait "Running mq-agent doctor" _run_agent doctor; pause_enter ;;
       2) _run_agent tui ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
@@ -813,12 +829,12 @@ handle_agent_menu_choice() {
   # the memory writes already were.
   case "$choice" in
     1) agent_repo_analysis_menu_loop ;;
-    2) _run_agent audit .;    pause_enter ;;
-    3) _run_agent release-check; pause_enter ;;
-    4) _run_agent fix-ci;     pause_enter ;;
+    2) _run_agent_menu_wait "Auditing repository" _run_agent audit .;    pause_enter ;;
+    3) _run_agent_menu_wait "Running release check" _run_agent release-check; pause_enter ;;
+    4) _run_agent_menu_wait "Diagnosing CI" _run_agent fix-ci;     pause_enter ;;
     5) agent_review_brain_menu_loop ;;
-    6) _run_agent stack sweep --brain; pause_enter ;;
-    7) _run_agent stack loop; pause_enter ;;
+    6) _run_agent_menu_wait "Running stack health sweep → brain" _run_agent stack sweep --brain; pause_enter ;;
+    7) _run_agent_menu_wait "Building stack loop plan" _run_agent stack loop; pause_enter ;;
     8) agent_cochange_menu_loop ;;
     9) agent_mcp_menu_loop ;;
     10) agent_environment_menu_loop ;;

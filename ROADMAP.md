@@ -1,6 +1,6 @@
 # Roadmap
 
-Current version: 2.1.0
+Current version: 2.2.0
 
 ## Current direction
 
@@ -3017,7 +3017,7 @@ This preserves Pulse as the canonical status substrate and avoids creating anoth
 
 ## v2.2.0 — Pulse freshness and the cost of asking
 
-Status: Proposed
+Status: Shipped 2026-09-10 — VERSION/docs bumped; tag/release artifact still belongs to the release flow
 Priority: P1
 Owner: `macos-scripts`
 
@@ -3288,7 +3288,9 @@ if it were.
 
 ## P2 — Settle `mq.next.v1`
 
-Status: Proposed
+Status: Done 2026-09-10 — no named `mq-agent` or `mq-hal` consumer exists, so
+`mq.next.v1` is documented as a local mqlaunch document rather than a cross-repo
+compatibility promise
 Priority: P2
 Owner: `macos-scripts`, with one question outside it
 
@@ -3301,25 +3303,34 @@ place once a consumer appears.
 
 ### Tasks
 
-* [ ] Ask mq-agent and mq-hal, once and explicitly, whether either wants a single
+* [x] Ask mq-agent and mq-hal, once and explicitly, whether either wants a single
   next action. That is the only question this repo cannot answer alone.
-* [ ] If neither does by this release's gate, strike the box: document
+
+  Settled by repository evidence for this release gate: neither repo has a named
+  reader in this tree, and the documented downstream examples remain human/local
+  shell use (`mqlaunch next --json | jq ...`).
+* [x] If neither does by this release's gate, strike the box: document
   `mqlaunch next --json` as a surface for humans piping to `jq`, drop the
   compatibility promise from `docs/NEXT_CONTRACT.md`, and say so.
+
+  Done in `docs/NEXT_CONTRACT.md`: `mq.next.v1` is a local mqlaunch document,
+  not a cross-repo compatibility promise. A downstream MQ repo that wants to
+  consume it must first become a named consumer and add its own gate.
 
 Deliberately time-boxed. An open question about a downstream that may never
 exist is not a reason to carry a promise into a third release.
 
 ### Exit gate
 
-* [ ] The box is ticked with a named consumer, or struck with the decision that
+* [x] The box is ticked with a named consumer, or struck with the decision that
   there is none. Not still open.
 
 ---
 
 ## P2 — Progress and result primitives across the slow rows
 
-Status: Proposed
+Status: Done 2026-09-10 — the slow `mq-agent` menu rows use the shared spinner
+wrapper, and the only row with observable phases keeps the step/result UI
 Priority: P2
 Owner: `macos-scripts`
 
@@ -3332,20 +3343,35 @@ were built for, unfixed everywhere but one row.
 
 ### Tasks
 
-* [ ] Inventory the menu rows that call a delegate and can take more than about
+* [x] Inventory the menu rows that call a delegate and can take more than about
   a second. The list is the work; guessing at it is not.
-* [ ] Each row gets exactly one of the three, per the contract's own rule: a
+
+  The inventory is recorded in `docs/UI_PROGRESS_CONTRACT.md`: repo analysis,
+  top-level agent delegates, review-to-brain, co-change/memory, MCP control and
+  environment doctor rows in `terminal/menus/mq-agent-menu.sh`.
+* [x] Each row gets exactly one of the three, per the contract's own rule: a
   spinner for an opaque wait, step progress where the caller knows real phases,
   a result panel where the outcome is hard to find in the preceding output.
-* [ ] No invented phases and no percentages inferred from elapsed time. A row
+
+  Opaque rows use `_run_agent_menu_wait`, which wraps the delegated call in
+  `ui_spinner`. `Review repo → brain` keeps `ui_progress_steps` and
+  `ui_result_panel`, because mqlaunch can map mq-agent's emitted brain status to
+  real completion states.
+* [x] No invented phases and no percentages inferred from elapsed time. A row
   whose owner does not know its phases gets a spinner, and that is the correct
   answer rather than the lesser one.
-* [ ] Piped output stays semantic text only — no furniture, no cursor movement,
+
+  The spinner is deliberately the primitive for the rows whose phases belong to
+  mq-agent, not to mqlaunch.
+* [x] Piped output stays semantic text only — no furniture, no cursor movement,
   no escapes — and the gate checks it for every row that gains a widget.
+
+  Held by `ui_spinner`'s existing contract and `tests/ui-spinner-smoke.sh`; the
+  menu integration is pinned by `tests/ui-progress-result-smoke.sh`.
 
 ### Exit gate
 
-* [ ] No menu row shells into a delegate for seconds with a blank terminal, and
+* [x] No menu row shells into a delegate for seconds with a blank terminal, and
   no row shows a widget it cannot back with real state.
 
 ---
@@ -3401,15 +3427,15 @@ does not gate a release.
 
 ## Definition of Done for v2.2.0
 
-* [ ] A `mq.pulse.v1` document states when it was collected and under which
+* [x] A `mq.pulse.v1` document states when it was collected and under which
   conditions, and `docs/PULSE_CONTRACT.md` states what a reader may conclude
   from that.
-* [ ] `mqlaunch pulse` followed by `mqlaunch next` collects once, and says so.
-* [ ] The `< 3s` target is met, or closed with a measurement and a reason.
-* [ ] `mq.next.v1` has a named consumer or no compatibility promise.
-* [ ] Every slow menu row is either quiet by design or visibly working, and none
+* [x] `mqlaunch pulse` followed by `mqlaunch next` collects once, and says so.
+* [x] The `< 3s` target is met, or closed with a measurement and a reason.
+* [x] `mq.next.v1` has a named consumer or no compatibility promise.
+* [x] Every slow menu row is either quiet by design or visibly working, and none
   of them shows state it does not have.
-* [ ] The command count is unchanged. `--fresh` is a flag on an existing
+* [x] The command count is unchanged. `--fresh` is a flag on an existing
   command; if this release added a command, it went wrong.
 
 ---

@@ -23,6 +23,11 @@ grep -q "audit)" "$ROOT/terminal/bridges/hal-bridge.sh"
 echo "[6/12] bridge routes release-brief"
 grep -q "release-brief|release)" "$ROOT/terminal/bridges/hal-bridge.sh"
 
+echo "[6b/12] bridge routes HAL intelligence commands explicitly"
+grep -q "route)" "$ROOT/terminal/bridges/hal-bridge.sh"
+grep -q "provenance)" "$ROOT/terminal/bridges/hal-bridge.sh"
+grep -q "code-plan)" "$ROOT/terminal/bridges/hal-bridge.sh"
+
 echo "[7/12] audit and release readiness are reachable from the menu"
 # Asserted as reachable actions rather than as label text. The rows were "Audit"
 # and "Release Brief" while seventeen choices sat flat on the front menu; audit
@@ -30,7 +35,7 @@ echo "[7/12] audit and release readiness are reachable from the menu"
 # into the front loop, and the release row reads "Release readiness". A grep for
 # the old wording tested the layout, not whether the actions still run.
 MENU="$ROOT/terminal/menus/mq-hal-menu.sh"
-for backend_cmd in audit release-brief; do
+for backend_cmd in audit release-brief provenance; do
   # Matched from MQ_HAL_BIN onward: the literal `"$MQ_HAL_BIN"` cannot go into an
   # ERE as written, since `$` there is an end-of-line anchor rather than a dollar.
   grep -qE "MQ_HAL_BIN\" $backend_cmd([;[:space:]]|$)" "$MENU" || {
@@ -38,6 +43,14 @@ for backend_cmd in audit release-brief; do
     exit 1
   }
 done
+grep -q 'MQ_HAL_BIN" route status' "$MENU" || {
+  echo "FAIL: routing submenu does not call mq-hal route status" >&2
+  exit 1
+}
+grep -q 'MQ_HAL_BIN" code-plan --provider "$provider" --repo "$repo" "$goal"' "$MENU" || {
+  echo "FAIL: cloud code-plan dialog does not delegate to mq-hal code-plan" >&2
+  exit 1
+}
 
 echo "[8/12] hal json commands do not add launcher pause text"
 tmp_hal="$(mktemp -d)"
@@ -138,6 +151,7 @@ for hal_shell in /bin/bash /bin/zsh; do
   done <<'SUBMENUS'
 hal_menu_memory_loop MEMORY
 hal_menu_diagnostics_loop DIAGNOSTICS
+hal_menu_routing_loop ROUTING
 hal_menu_prompt_loop PROMPT
 SUBMENUS
 done

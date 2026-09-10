@@ -31,7 +31,13 @@ echo "[8/10] keeps Back and Exit launcher"
 grep -q "b. Back" "$MENU"
 grep -q "x. Exit launcher" "$MENU"
 
-echo "[9/10] includes Audit menu item"
+echo "[9/10] includes HAL intelligence menu items"
+grep -q "INTELLIGENCE" "$MENU"
+grep -q "5. Routing" "$MENU"
+grep -q "6. Provenance" "$MENU"
+grep -q "7. Cloud code plan" "$MENU"
+
+echo "[9b/10] includes Audit menu item"
 grep -q "Audit" "$MENU"
 
 echo "[10/10] includes audit case"

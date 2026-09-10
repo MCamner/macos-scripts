@@ -1,4 +1,4 @@
-# `mq.next.v1` — the selection contract
+# `mq.next.v1` — the local selection document
 
 `mqlaunch next` answers one question:
 
@@ -18,6 +18,22 @@ This document is the selection half. The observation half is
 [PULSE_CONTRACT.md](PULSE_CONTRACT.md), and everything below assumes its
 vocabulary — the five check states, the four overall states, and what absence
 means.
+
+## Compatibility boundary
+
+`mq.next.v1` is a local mqlaunch document, not a cross-repo compatibility
+promise. As of v2.2.0 there is no named reader in `mq-agent` or `mq-hal`.
+The supported consumers are:
+
+* the `mqlaunch next` human renderer
+* `mqlaunch next --plain`
+* operators and scripts piping `mqlaunch next --json` to tools such as `jq`
+
+The schema name remains useful because it lets a local parser reject a foreign
+document, but this repo may still change the JSON shape in a future release if
+the same repo updates its renderer, tests, and docs together. A downstream MQ
+repo that wants to consume the document should first become a named consumer in
+this file and add its own contract gate.
 
 ## The rule that matters most
 
@@ -215,7 +231,7 @@ gates and `GIT` is this worktree — so two checkouts sharing one slot would let
 | selection is `attention[0]`, verbatim | `next_select`, `tests/next-contract-smoke.sh` |
 | the three absences stay distinct | `next_select`, `tests/next-contract-smoke.sh` |
 | exit codes | `next_select` |
-| the public document | `NEXT_SCHEMA`, `mq.next.v1` |
+| the local document schema | `NEXT_SCHEMA`, `mq.next.v1` |
 | when a document may be reused | `next_reusable_age`, `tests/next-reuse-smoke.sh` |
 | which runs are worth keeping | `pulse_cache_keeps`, `tests/next-reuse-smoke.sh` |
 

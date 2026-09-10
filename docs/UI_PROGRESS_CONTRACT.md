@@ -70,3 +70,22 @@ Canonical statuses are `PASS`, `WARN`, `FAIL`, `SKIPPED`, `UNAVAILABLE`, and `IN
 ## Product rule
 
 A quiet terminal during an opaque wait is a spinner problem. A workflow with known phases is a step-progress problem. A finished operation whose result is hard to find in preceding output is a result-panel problem. Do not solve all three with one widget.
+
+## v2.2.0 slow-row inventory
+
+The slow menu rows audited for v2.2.0 are the interactive `mq-agent` rows in
+`terminal/menus/mq-agent-menu.sh` that shell into `uv run mq-agent` or local
+MCP server control:
+
+- repo analysis rows: score, signal, repo summary, tools
+- top-level agent rows: audit, release check, CI diagnosis, stack sweep, stack loop
+- review-to-brain rows: repo review, signal save, stack truth export
+- co-change rows: intake, review-status, promote-from-review, resolve-supersede, learn promotion
+- MCP rows: status, tools, start, stop
+- environment doctor
+
+They use `ui_spinner` through `_run_agent_menu_wait`, because each row is one
+opaque wait from mqlaunch's point of view. The repo-review-to-brain row keeps
+`ui_progress_steps` and `ui_result_panel` because mqlaunch can observe real
+phase evidence after mq-agent returns. The TUI dashboard row stays unwrapped
+because it is itself interactive.

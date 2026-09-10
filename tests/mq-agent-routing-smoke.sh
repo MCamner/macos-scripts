@@ -244,7 +244,7 @@ echo "[14/14] the interactive menu exposes the truth export, not just command mo
 # only by typing it. The stack sweep reports the note as stale without offering
 # any way to refresh it, which is how it went fourteen days without running.
 grep -q "Stack truth export" "$AGENT_MENU"
-grep -Eq "^\s*[0-9]+\) _run_agent stack truth-export;" "$AGENT_MENU" || {
+grep -Eq "^\s*[0-9]+\) _run_agent_menu_wait \"Exporting stack truth → brain\" _run_agent stack truth-export;" "$AGENT_MENU" || {
   echo "FAIL: no agent menu option routes to stack truth-export" >&2
   exit 1
 }
