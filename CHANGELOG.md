@@ -30,6 +30,7 @@ Release provenance:
 ```text
 tag commit:     82a246a
 tag on main:    no
+merge commit:   ee80ac3  (PR #229, same VERSION 2.2.0)
 reason:         tag created inside PR #229, before the protected
                 linear-history squash merge rewrote the SHAs
 tag immutable:  yes
@@ -37,6 +38,14 @@ tag immutable:  yes
 
 The published release is identified by the signed tag, not by a commit in
 `main` ancestry. `git describe` on `main` therefore reports `v2.1.0-N-g<sha>`.
+The released content is on `main` as `ee80ac3`, the squash merge of the same
+PR; `82a246a` is its pre-squash counterpart and is on no branch.
+
+The tag stays where it is. Moving a published tag changes a release other
+people may already have fetched, which buys less than the confusion it costs.
+From `v2.3.0` onward this repo follows the order used in repo-signal and
+mqobsidian: release closure lands first, the tag is created on exactly that
+merge commit, and publication follows the tag.
 
 ### Changed
 
