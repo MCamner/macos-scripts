@@ -235,6 +235,7 @@ mqlaunch hal repo-status         # read-only git repo status
 mqlaunch hal ci                  # GitHub Actions status
 mqlaunch doctor                  # environment check
 mqlaunch doctor --json           # machine-readable JSON health report
+mqlaunch doctor --fix-plan       # read-only manual remediation plan
 mqlaunch workflows validate      # workflow files, docs and routing check
 mqlaunch selftest                # smoke tests + shell lint
 mqlaunch markdownlint            # lint Markdown in the current repo

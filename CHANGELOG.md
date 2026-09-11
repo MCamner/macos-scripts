@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch doctor --fix-plan` prints a read-only manual remediation
+  plan over the same checks and fix order as `doctor`/`doctor --json`,
+  so operators can see exact next commands without executing them.
+
 * Expose mq-hal Routing, Runtime Provenance, and explicit Cloud Code Plan
   through the mqlaunch HAL Intelligence menu.
 

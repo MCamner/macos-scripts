@@ -248,6 +248,7 @@ mqlaunch next --input FILE          # select from a pulse document you already h
 mqlaunch next --fresh               # collect now, whatever the last run left behind
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
+mqlaunch doctor --fix-plan          # read-only manual remediation plan
 mqlaunch workflows validate         # workflow command-surface health check
 mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
