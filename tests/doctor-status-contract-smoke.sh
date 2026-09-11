@@ -29,7 +29,7 @@ echo "SMOKE: doctor status contract"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/9] doctor exists and compiles"
+echo "[1/10] doctor exists and compiles"
 test -x "$DOCTOR"
 bash -n "$DOCTOR"
 
@@ -37,7 +37,7 @@ bash -n "$DOCTOR"
 CHECKED=(git gh uv python3 node eza fzf jq gitleaks pbcopy)
 HELPERS=(bash sh cat sed awk tr wc head tail date hostname uname stty tput id)
 
-echo "[2/9] build the worlds this contract is measured in"
+echo "[2/10] build the worlds this contract is measured in"
 
 # A world is a PATH: the helpers, plus a stub for each tool named. Nothing
 # inherits the machine's real PATH, so "eza is missing" means the same thing on
@@ -102,7 +102,7 @@ summary_line() {
   awk '/^SUMMARY$/ {found=1; next} found && NF && $0 !~ /^[─-]+$/ {print; exit}'
 }
 
-echo "[3/9] a provisioned machine reports success in both modes"
+echo "[3/10] a provisioned machine reports success in both modes"
 ok_human_exit="$(doctor_run "$provisioned" key ok-human)"
 ok_json_exit="$(doctor_run "$provisioned" key ok-json --json)"
 
@@ -121,7 +121,7 @@ if [[ "$ok_human_exit" != "0" || "$ok_json_exit" != "0" ]]; then
   exit 1
 fi
 
-echo "[4/9] a stripped machine reports the warnings in both modes"
+echo "[4/10] a stripped machine reports the warnings in both modes"
 warn_human_exit="$(doctor_run "$degraded" nokey warn-human)"
 warn_json_exit="$(doctor_run "$degraded" nokey warn-json --json)"
 
@@ -170,7 +170,7 @@ if [[ "$warn_human_exit" == "0" || "$warn_json_exit" == "0" ]]; then
   exit 1
 fi
 
-echo "[5/9] the two modes agree with each other"
+echo "[5/10] the two modes agree with each other"
 # A person and a script reading the same machine must reach the same verdict.
 if [[ "$ok_human_exit" != "$ok_json_exit" ]]; then
   echo "FAIL: clean run exits differently per mode (human=$ok_human_exit json=$ok_json_exit)" >&2
@@ -183,7 +183,7 @@ fi
 printf '  ok: exit %s clean, exit %s degraded, in both modes\n' \
   "$ok_human_exit" "$warn_human_exit"
 
-echo "[6/9] the summary is derived, not printed"
+echo "[6/10] the summary is derived, not printed"
 # Without this the two checks above could both pass against a summary hard-coded
 # the other way. The line has to change with the machine.
 summary_ok="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/ok-human.out" \
@@ -195,7 +195,7 @@ if [[ "$summary_ok" == "$summary_human" ]]; then
 fi
 printf '  ok: clean reads "%s"\n' "$summary_ok"
 
-echo "[7/9] every warning says what to do about it, in both modes"
+echo "[7/10] every warning says what to do about it, in both modes"
 # Naming what is missing is not the same as saying what to do. This is
 # exhaustive rather than sampled: the degraded world warns on every check, so
 # a check added without a hint fails here instead of shipping a blank line.
@@ -213,7 +213,10 @@ if blank:
 for check in missing:
     print(check["hint"])
 PY
-mapfile -t hints <"$run_dir/hints.txt"
+hints=()
+while IFS= read -r hint; do
+  hints+=("$hint")
+done <"$run_dir/hints.txt"
 if (( ${#hints[@]} != warn_count )); then
   echo "FAIL: $warn_count checks warned but ${#hints[@]} hints came back" >&2
   exit 1
@@ -234,7 +237,7 @@ for hint in "${hints[@]}"; do
 done
 printf '  ok: all %s hints appear on the screen too\n' "${#hints[@]}"
 
-echo "[8/9] the next step is the one worth doing first"
+echo "[8/10] the next step is the one worth doing first"
 # A next step that just names whichever check happened to run first would send a
 # new operator to install `eza` while `mqlaunch` is not on PATH. Two worlds,
 # differing by one tool, prove the order is a decision rather than an accident.
@@ -299,7 +302,7 @@ for pair in "next-eza:$step_eza" "next-launcher:$step_launcher"; do
 done
 echo "  ok: the screen names the same next step as the document"
 
-echo "[9/9] a healthy machine is told what to run, not just that it is healthy"
+echo "[9/10] a healthy machine is told what to run, not just that it is healthy"
 # ROADMAP P2's exit gate asks that a new operator can find the right next
 # command. A doctor that ends at "12 checks passed" answers half of it: the
 # machine is fine, and now what?
@@ -353,6 +356,39 @@ if [[ "$recommended" == "$step_launcher" ]]; then
   exit 1
 fi
 echo "  ok: the clean screen names it too, and it differs from the degraded advice"
+
+echo "[10/10] --fix-plan is a read-only remediation plan over the same checks"
+fix_plan_exit="$(doctor_run "$degraded" nokey warn-fix-plan --fix-plan)"
+if [[ "$fix_plan_exit" == "0" ]]; then
+  echo "FAIL: fix-plan must keep doctor warning exit semantics" >&2
+  exit 1
+fi
+fix_plan_plain="$(sed -e 's/\x1b\[[0-9;]*m//g' "$run_dir/warn-fix-plan.out")"
+case "$fix_plan_plain" in
+  *"MQ DOCTOR FIX PLAN"*"This plan is read-only"*"PLAN"*) ;;
+  *)
+    echo "FAIL: fix-plan did not render the expected plan surface:" >&2
+    echo "$fix_plan_plain" >&2
+    exit 1
+    ;;
+esac
+for hint in "${hints[@]}"; do
+  case "$fix_plan_plain" in
+    *"$hint"*) ;;
+    *)
+      echo "FAIL: fix-plan dropped hint '$hint'" >&2
+      exit 1
+      ;;
+  esac
+done
+case "$fix_plan_plain" in
+  *"First: $step_launcher"*) ;;
+  *)
+    echo "FAIL: fix-plan did not name the same first action as --json: $step_launcher" >&2
+    exit 1
+    ;;
+esac
+echo "  ok: fix-plan lists every warning hint and the same first action"
 
 bash -n "$0"
 

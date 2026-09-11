@@ -10,6 +10,8 @@ _J_FAIL=0
 _J_SEP=""
 _J_CHECKS=""
 _J_UNRESOLVED=""
+_J_PLAN_ROWS=""
+_J_PLAN_SEP=""
 
 # What to do about a check that did not pass.
 #
@@ -96,6 +98,10 @@ _jc() {
   [[ -n "$detail" ]] && obj="${obj},\"detail\":\"${detail}\""
   [[ -n "$hint" ]] && obj="${obj},\"hint\":\"${hint}\""
   obj="${obj}}"
+  if [[ "$st" != "ok" ]]; then
+    _J_PLAN_ROWS="${_J_PLAN_ROWS}${_J_PLAN_SEP}${name}|${st}|${detail}|${hint}"
+    _J_PLAN_SEP=$'\n'
+  fi
   _J_CHECKS="${_J_CHECKS}${_J_SEP}${obj}"
   _J_SEP=","
 }
@@ -129,6 +135,8 @@ check_warn() {
   else
     warn "$message"
   fi
+  _J_PLAN_ROWS="${_J_PLAN_ROWS}${_J_PLAN_SEP}${name}|warn|${message}|${hint}"
+  _J_PLAN_SEP=$'\n'
 }
 
 # Maps the run's status to an exit code: 0 only when nothing needs attention.
@@ -173,6 +181,64 @@ run_json_mode() {
     "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
     "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
 
+  status_exit_code
+}
+
+
+# Runs the same checks as doctor, but prints a manual remediation plan instead
+# of the full diagnostic screen. Read-only: it never executes a fix command.
+run_fix_plan_mode() {
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  header "MQ DOCTOR FIX PLAN"
+  section "SUMMARY"
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "No fixes needed — $total checks passed"
+    printf '\n  Next: %s\n\n' "$HEALTHY_NEXT"
+    return 0
+  fi
+
+  warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  printf '  This plan is read-only. Review each command before running it.\n'
+
+  section "PLAN"
+  local idx=1 line name st detail hint
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS='|' read -r name st detail hint <<<"$line"
+    printf '  %d. %s\n' "$idx" "$name"
+    [[ -n "$detail" ]] && printf '     Status: %s\n' "$detail"
+    if [[ -n "$hint" ]]; then
+      printf '     Run: %s\n' "$hint"
+    else
+      printf '     Run: inspect manually; no safe one-line fix is known\n'
+    fi
+    idx=$((idx + 1))
+  done <<<"$_J_PLAN_ROWS"
+
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  First: %s\n' "$next"
+  echo
   status_exit_code
 }
 
@@ -230,12 +296,16 @@ run_normal_mode() {
 }
 
 JSON_MODE=0
+FIX_PLAN_MODE=0
 for arg in "$@"; do
   [[ "$arg" == "--json" ]] && JSON_MODE=1
+  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
 done
 
 if [[ $JSON_MODE -eq 1 ]]; then
   run_json_mode
+elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
+  run_fix_plan_mode
 else
   run_normal_mode
 fi

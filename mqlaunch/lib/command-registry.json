@@ -589,7 +589,8 @@
       "safety": "read-only",
       "output_modes": [
         "human",
-        "json"
+        "json",
+        "fix-plan"
       ],
       "json": true,
       "interactive": false,

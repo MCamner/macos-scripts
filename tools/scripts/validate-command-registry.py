@@ -26,7 +26,7 @@ SCHEMA = "mq-command-registry.v1"
 # violation the runtime authority document forbids.
 OWNERS = {"macos-scripts", "mq-agent", "mq-mcp", "mqobsidian", "mq-hal", "repo-signal"}
 SAFETY = {"read-only", "local-write", "delegating", "destructive"}
-OUTPUT_MODES = {"human", "json", "interactive"}
+OUTPUT_MODES = {"human", "json", "interactive", "fix-plan"}
 # What the namespace does with a word it does not recognise. `system` prints an
 # error and exits 2, so its declared list is the whole surface. `repos` hands the
 # word to mq-repos.py, so the list is only what mqlaunch itself routes — the
