@@ -6,11 +6,19 @@ Current version: 2.2.0
 
 `macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-The next major product step is:
+No next release is scoped. v2.2.0 closed the last question the earlier releases
+left open, and nothing has yet required another:
 
 ```text
-mq.pulse.v1 says when it was collected — so the cockpit can be reused, not re-run
+Shipped:  v2.2.0  Pulse freshness and the cost of asking
+On main:  doctor --fix-plan, the HAL Intelligence menu — unreleased
+Next:     unscoped — no version number is reserved
 ```
+
+The two items on `main` are recorded in the changelog under `Unreleased` and
+will be carried by whichever release comes next. They are not a reason to cut
+one, and neither is repairing the `v2.2.0` tag placement documented in the
+changelog: a release exists to deliver a coherent package, not to tidy history.
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
@@ -20,7 +28,7 @@ v2.1.0 shipped on 2026-08-17. It added no new source of truth — it added one r
 
 `mqlaunch next` shipped on 2026-08-17. It reads that contract rather than adding to it: it consumes `mq.pulse.v1`, selects one already-prioritized attention item, performs no scanning of its own and introduces no second operator model. See [Post-v2.1.0 — `mqlaunch next`](#post-v210--mqlaunch-next).
 
-What both releases left open is one question neither of them owned at the time and this repo does: how old a `mq.pulse.v1` document is, and what a reader may conclude from one it did not collect itself. Three separate open boxes — the cache TTL, marking cached data, and reusing a document between `pulse` and `next` — are that question wearing three names. v2.2.0 answers it, adds no command, and makes the cockpit cheap enough to run often. See [v2.2.0 — Pulse freshness and the cost of asking](#v220--pulse-freshness-and-the-cost-of-asking).
+What both releases left open is one question neither of them owned at the time and this repo does: how old a `mq.pulse.v1` document is, and what a reader may conclude from one it did not collect itself. Three separate open boxes — the cache TTL, marking cached data, and reusing a document between `pulse` and `next` — are that question wearing three names. v2.2.0 answered it on 2026-09-10, added no command, and made the cockpit cheap enough to run often. See [v2.2.0 — Pulse freshness and the cost of asking](#v220--pulse-freshness-and-the-cost-of-asking).
 
 The goal is not to add more shortcuts, more menus, or more shell logic. The goal is to make `mqlaunch` feel like one clear, predictable product surface.
 
