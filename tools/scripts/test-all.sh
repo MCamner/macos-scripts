@@ -36,6 +36,7 @@ echo
 echo "== Running mqlaunch headless checks =="
 "$PROJECT_ROOT/tests/headless-smoke.sh"
 "$PROJECT_ROOT/tests/git-status-contract-smoke.sh"
+"$PROJECT_ROOT/tests/vector-store-identity-smoke.sh"
 "$PROJECT_ROOT/tests/runtime-authority-freeze-smoke.sh"
 "$PROJECT_ROOT/tests/hal-args-no-eval-smoke.sh"
 "$PROJECT_ROOT/tests/mq-debug-smoke.sh"

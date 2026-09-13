@@ -8,7 +8,9 @@ BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 source ~/.env 2>/dev/null || true
 source "$BASE_DIR/.env" 2>/dev/null || true
 
-VECTOR_STORE_ID="${MQ_REPO_VECTOR_STORE_ID:-${OPENAI_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}}"
+# shellcheck source=tools/cli/mq-vector-store.sh
+source "$BASE_DIR/tools/cli/mq-vector-store.sh"
+VECTOR_STORE_ID="$(mq_vector_store_id MQ_REPO_VECTOR_STORE_ID OPENAI_VECTOR_STORE_ID)"
 
 PROMPT_BUILDER="${REPO_SIGNAL_PROMPT_BUILDER:-$HOME/repo-signal/tools/build_prompt.py}"
 
