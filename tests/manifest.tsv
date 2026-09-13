@@ -122,3 +122,4 @@ next-command-smoke.sh	active	-
 branch-supersede-smoke.sh	active	-
 theme-exact-sync-smoke.sh	active	-
 openai-key-rotation-smoke.sh	active	Keychain-backed rotation; secret-safe readback, rollback, and process-scoped smoke
+vector-store-identity-smoke.sh	active	Canonical store contract: no consumer may hardcode an id, and the legacy id may never return

@@ -55,6 +55,71 @@ The product problem is that `mqlaunch` currently has too many overlapping comman
 
 ---
 
+## Canonical semantic memory migration ✅
+
+Not a release goal: an open dependency this repo owned, now closed. mq-agent
+declares the canonical semantic memory store in tracked code and falls back to
+it whenever no override is set. Four shell consumers here still named the
+**legacy** store instead, and one of them had no canonical fallback at all —
+`hal-terminal-guide.sh` read only `MQ_TERMINAL_GUIDE_VECTOR_STORE_ID` and
+otherwise used the legacy store unconditionally.
+
+### What changed
+
+`tools/cli/mq-vector-store.sh` is now the single place this repo names a store.
+It declares the canonical id and exposes `mq_vector_store_id`, which takes
+override variable names in priority order: the first non-empty value wins,
+otherwise the canonical store. An unset, empty or whitespace-only variable is
+not an override, so a blank value in a sourced `.env` cannot silently redirect a
+consumer.
+
+All four consumers resolve through it, each keeping the override it already had:
+
+```text
+tools/scripts/ask.sh                MQ_REPO_VECTOR_STORE_ID, OPENAI_VECTOR_STORE_ID
+tools/scripts/chat.sh               MQ_REPO_VECTOR_STORE_ID, OPENAI_VECTOR_STORE_ID
+tools/scripts/fix.sh                MQ_REPO_VECTOR_STORE_ID, OPENAI_VECTOR_STORE_ID
+tools/scripts/hal-terminal-guide.sh MQ_TERMINAL_GUIDE_VECTOR_STORE_ID
+```
+
+No shell consumer carries a store id of its own any more.
+
+### The gate that keeps it closed
+
+`tests/vector-store-identity-smoke.sh` guards two separate failures, because
+checking only the old id would let the same mistake return under a new one:
+
+```text
+architectural  no file under tools/ may hardcode a vector store id except the
+               canonical library, and all four consumers must resolve through it
+legacy         the specific retired store id may never reappear under tools/
+```
+
+It also proves the resolver's semantics: canonical with no environment, an
+explicit override wins, a blank value is not an override, surrounding whitespace
+is stripped. All three failure modes were confirmed by planting them — a
+consumer with its own id, the legacy id restored, and a broken fallback each
+turn the gate red.
+
+### Verified
+
+Full `test-all.sh` suite green with the new test registered in it and in
+`tests/manifest.tsv`; shell lint clean across 242 files; `release-check.sh`
+reports v2.2.0 green.
+
+### Still blocked, deliberately
+
+**Retiring the legacy store is a separate operation and is not part of this
+work.** It stays blocked until this change is merged to `main` *and* all four
+consumers are verified against a real run — repointing them in tracked code is
+not the same as observing them answer from the canonical store. The
+point-in-time inventory establishing that the legacy store holds no unique
+content is recorded in mqobsidian
+(`research/2026-08-04-canonical-semantic-memory-inventory.md`); it does not
+license retirement on its own.
+
+---
+
 ## Product principle
 
 The user should never wonder:

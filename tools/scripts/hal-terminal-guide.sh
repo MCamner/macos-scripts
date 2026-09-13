@@ -4,7 +4,9 @@ set -euo pipefail
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
-VECTOR_STORE_ID="${MQ_TERMINAL_GUIDE_VECTOR_STORE_ID:-vs_69f93de12f508191bd6a36ea3b825beb}"
+# shellcheck source=tools/cli/mq-vector-store.sh
+source "$BASE_DIR/tools/cli/mq-vector-store.sh"
+VECTOR_STORE_ID="$(mq_vector_store_id MQ_TERMINAL_GUIDE_VECTOR_STORE_ID)"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
 HAL_NAV_PENDING=0
 
