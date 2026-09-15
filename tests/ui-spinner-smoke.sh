@@ -44,7 +44,7 @@ test "$captured" = "$direct"
 
 echo "[5/9] MQ_NO_SPINNER=1 disables animation even on a terminal"
 python3 - "$UI" <<'PY'
-import os, pty, sys
+import os, select, subprocess, sys
 
 ui = sys.argv[1]
 # CI runs the whole suite with MQ_NO_TUI=1 (.github/workflows/quality.yml),
@@ -55,14 +55,53 @@ os.environ["MQ_NO_SPINNER"] = "1"
 seen = bytearray()
 
 
-def read(fd):
-    chunk = os.read(fd, 1024)
-    seen.extend(chunk)
-    return chunk
+def run_pty(script, timeout=5):
+    master, slave = os.openpty()
+    try:
+        # os.login_tty makes the pty the child's *controlling* terminal and
+        # dups it onto 0/1/2. Redirecting stdout/stderr alone is not enough:
+        # the child would keep the parent's /dev/tty, and the spinner writes
+        # its frames there by design, so none of them would reach the master.
+        # This is the part pty.spawn did for us.
+        proc = subprocess.Popen(
+            ["bash", "-c", script],
+            stdin=subprocess.DEVNULL,
+            close_fds=True,
+            preexec_fn=lambda: os.login_tty(slave),
+        )
+        os.close(slave)
+        deadline = __import__("time").time() + timeout
+        while proc.poll() is None:
+            if __import__("time").time() > deadline:
+                proc.kill()
+                raise TimeoutError("pty command timed out")
+            readable, _, _ = select.select([master], [], [], 0.1)
+            if readable:
+                try:
+                    seen.extend(os.read(master, 4096))
+                except OSError:
+                    break
+        while True:
+            readable, _, _ = select.select([master], [], [], 0)
+            if not readable:
+                break
+            try:
+                chunk = os.read(master, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            seen.extend(chunk)
+        return proc.wait()
+    finally:
+        try:
+            os.close(master)
+        except OSError:
+            pass
 
 
-status = pty.spawn(["bash", "-c", f"source '{ui}'; ui_spinner 'Working' sleep 0.3"], read)
-assert os.waitstatus_to_exitcode(status) == 0
+status = run_pty(f"source '{ui}'; ui_spinner 'Working' sleep 0.3")
+assert status == 0
 assert b"\xe2\xa0" not in seen, "braille frame leaked with MQ_NO_SPINNER=1"
 PY
 
@@ -73,7 +112,7 @@ echo "[6/9] on a real terminal a human sees frames, and they are cleaned up"
 # Frames go to /dev/tty, so the capture stays clean while the human still sees
 # something move.
 python3 - "$UI" <<'PY'
-import os, pty, sys
+import os, select, subprocess, sys
 
 ui = sys.argv[1]
 # Same reason as step 5: this step is *about* the interactive path, so the
@@ -83,10 +122,49 @@ os.environ.pop("MQ_NO_SPINNER", None)
 seen = bytearray()
 
 
-def read(fd):
-    chunk = os.read(fd, 1024)
-    seen.extend(chunk)
-    return chunk
+def run_pty(script, timeout=5):
+    master, slave = os.openpty()
+    try:
+        # os.login_tty makes the pty the child's *controlling* terminal and
+        # dups it onto 0/1/2. Redirecting stdout/stderr alone is not enough:
+        # the child would keep the parent's /dev/tty, and the spinner writes
+        # its frames there by design, so none of them would reach the master.
+        # This is the part pty.spawn did for us.
+        proc = subprocess.Popen(
+            ["bash", "-c", script],
+            stdin=subprocess.DEVNULL,
+            close_fds=True,
+            preexec_fn=lambda: os.login_tty(slave),
+        )
+        os.close(slave)
+        deadline = __import__("time").time() + timeout
+        while proc.poll() is None:
+            if __import__("time").time() > deadline:
+                proc.kill()
+                raise TimeoutError("pty command timed out")
+            readable, _, _ = select.select([master], [], [], 0.1)
+            if readable:
+                try:
+                    seen.extend(os.read(master, 4096))
+                except OSError:
+                    break
+        while True:
+            readable, _, _ = select.select([master], [], [], 0)
+            if not readable:
+                break
+            try:
+                chunk = os.read(master, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            seen.extend(chunk)
+        return proc.wait()
+    finally:
+        try:
+            os.close(master)
+        except OSError:
+            pass
 
 
 script = (
@@ -95,8 +173,8 @@ script = (
     "out=\"$(ui_spinner 'Capturing' printf 'captured\\n')\"\n"
     "printf 'GOT:%s\\n' \"$out\"\n"
 )
-status = pty.spawn(["bash", "-c", script], read)
-assert os.waitstatus_to_exitcode(status) == 0, "spinner changed the exit status"
+status = run_pty(script)
+assert status == 0, "spinner changed the exit status"
 # Braille frames are U+28xx, which is 0xE2 0xA0 in UTF-8.
 assert b"\xe2\xa0" in seen, "no spinner frame reached the terminal"
 assert b"\x1b[K" in seen, "the spinner line was never erased"
@@ -105,7 +183,7 @@ PY
 
 echo "[7/9] MQ_NO_TUI=1 suppresses the spinner, which is what CI relies on"
 python3 - "$UI" <<'PYNOTUI'
-import os, pty, sys
+import os, select, subprocess, sys
 
 ui = sys.argv[1]
 os.environ.pop("MQ_NO_SPINNER", None)
@@ -113,14 +191,53 @@ os.environ["MQ_NO_TUI"] = "1"
 seen = bytearray()
 
 
-def read(fd):
-    chunk = os.read(fd, 1024)
-    seen.extend(chunk)
-    return chunk
+def run_pty(script, timeout=5):
+    master, slave = os.openpty()
+    try:
+        # os.login_tty makes the pty the child's *controlling* terminal and
+        # dups it onto 0/1/2. Redirecting stdout/stderr alone is not enough:
+        # the child would keep the parent's /dev/tty, and the spinner writes
+        # its frames there by design, so none of them would reach the master.
+        # This is the part pty.spawn did for us.
+        proc = subprocess.Popen(
+            ["bash", "-c", script],
+            stdin=subprocess.DEVNULL,
+            close_fds=True,
+            preexec_fn=lambda: os.login_tty(slave),
+        )
+        os.close(slave)
+        deadline = __import__("time").time() + timeout
+        while proc.poll() is None:
+            if __import__("time").time() > deadline:
+                proc.kill()
+                raise TimeoutError("pty command timed out")
+            readable, _, _ = select.select([master], [], [], 0.1)
+            if readable:
+                try:
+                    seen.extend(os.read(master, 4096))
+                except OSError:
+                    break
+        while True:
+            readable, _, _ = select.select([master], [], [], 0)
+            if not readable:
+                break
+            try:
+                chunk = os.read(master, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            seen.extend(chunk)
+        return proc.wait()
+    finally:
+        try:
+            os.close(master)
+        except OSError:
+            pass
 
 
-status = pty.spawn(["bash", "-c", f"source '{ui}'; ui_spinner 'Working' sleep 0.3"], read)
-assert os.waitstatus_to_exitcode(status) == 0
+status = run_pty(f"source '{ui}'; ui_spinner 'Working' sleep 0.3")
+assert status == 0
 assert b"\xe2\xa0" not in seen, "braille frame leaked with MQ_NO_TUI=1"
 PYNOTUI
 

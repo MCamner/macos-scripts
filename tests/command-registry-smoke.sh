@@ -374,12 +374,13 @@ echo "[23/23] no command is exempt from classification"
 # is a second breach, and the fix is the runtime, not the list — and an exempt
 # command must not also carry a role, or removing it from the list later would
 # silently change nothing.
-exempt="$(python3 -c '
+exempt="$(python3 - "$VALIDATOR" <<'PY'
 import re, sys
-src = open("tools/scripts/validate-command-registry.py").read()
+src = open(sys.argv[1]).read()
 m = re.search(r"^LOCAL_ROLE_EXEMPT[^=]*= (?:set\(\)|\{([^}]*)\})", src, re.M)
 print((m.group(1) or "").strip() if m else "MISSING")
-')"
+PY
+)"
 # `srm` was the one entry here. Its OpenAI fall-through has been retired and it
 # delegates every verb to mq-agent, so it classifies normally and the list is
 # empty. Empty is the only correct value now: a name reappearing means a command

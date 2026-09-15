@@ -35,21 +35,60 @@ fi
 
 echo "[5/11] interactive result uses the canonical box surface"
 python3 - "$UI" "$PROGRESS" <<'PY'
-import os, pty, sys
+import os, select, subprocess, sys
 
 ui, progress = sys.argv[1:]
 os.environ.pop("MQ_NO_TUI", None)
 seen = bytearray()
 
 
-def read(fd):
-    chunk = os.read(fd, 4096)
-    seen.extend(chunk)
-    return chunk
+def run_pty(script, timeout=5):
+    master, slave = os.openpty()
+    try:
+        # os.login_tty makes the pty the child's *controlling* terminal and
+        # dups it onto 0/1/2. Redirecting stdout/stderr alone is not enough:
+        # the child would keep the parent's /dev/tty, and the spinner writes
+        # its frames there by design, so none of them would reach the master.
+        # This is the part pty.spawn did for us.
+        proc = subprocess.Popen(
+            ["bash", "-c", script],
+            stdin=subprocess.DEVNULL,
+            close_fds=True,
+            preexec_fn=lambda: os.login_tty(slave),
+        )
+        os.close(slave)
+        deadline = __import__("time").time() + timeout
+        while proc.poll() is None:
+            if __import__("time").time() > deadline:
+                proc.kill()
+                raise TimeoutError("pty command timed out")
+            readable, _, _ = select.select([master], [], [], 0.1)
+            if readable:
+                try:
+                    seen.extend(os.read(master, 4096))
+                except OSError:
+                    break
+        while True:
+            readable, _, _ = select.select([master], [], [], 0)
+            if not readable:
+                break
+            try:
+                chunk = os.read(master, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            seen.extend(chunk)
+        return proc.wait()
+    finally:
+        try:
+            os.close(master)
+        except OSError:
+            pass
 
 script = f"source '{ui}'; source '{progress}'; ui_result_panel PASS 'Done' 'Next: mqlaunch'"
-status = pty.spawn(["bash", "-c", script], read)
-assert os.waitstatus_to_exitcode(status) == 0
+status = run_pty(script)
+assert status == 0
 text = seen.decode("utf-8", errors="replace")
 assert "┌─ Result" in text
 assert "✓ Done" in text

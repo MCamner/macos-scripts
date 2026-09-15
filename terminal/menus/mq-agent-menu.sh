@@ -229,17 +229,17 @@ _run_agent_review() {
 
   case "$scope" in
     repo)
-      _run_agent review repo "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review repo ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
     file)
       if [[ -z "$file" ]]; then
         printf "Usage: mqlaunch review file <relative-path> [mode]\n" >&2
         return 1
       fi
-      _run_agent review file "$file" "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review file "$file" ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
     diff)
-      _run_agent review diff "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review diff ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
   esac
 }
