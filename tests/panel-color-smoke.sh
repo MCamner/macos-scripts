@@ -209,13 +209,13 @@ pulse_items_reset
 pulse_item_add doctor system FAIL "Environment" "everything is fine"
 pulse_item_add repos repositories PASS "Repositories" "3 broken repos"
 pulse_capture="$(
-  # These are intentionally consumed by functions from the sourced renderer.
-  # shellcheck disable=SC2034
-  PULSE_C_PASS='\033[0;32m'
-  PULSE_C_WARN='\033[1;33m'
-  PULSE_C_FAIL='\033[0;31m'
-  PULSE_C_MUTED='\033[0;36m'
-  PULSE_C_RESET='\033[0m'
+  # Export is deliberate: these values are consumed by functions from the
+  # sourced renderer, which static analysis cannot see from this file alone.
+  export PULSE_C_PASS='\033[0;32m'
+  export PULSE_C_WARN='\033[1;33m'
+  export PULSE_C_FAIL='\033[0;31m'
+  export PULSE_C_MUTED='\033[0;36m'
+  export PULSE_C_RESET='\033[0m'
   pulse_render FAIL 2>&1
 )"
 case "$pulse_capture" in
