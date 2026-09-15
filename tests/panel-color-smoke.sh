@@ -15,10 +15,10 @@ UI="$ROOT/ui/terminal-ui/mq-ui.sh"
 
 echo "SMOKE: panel colour"
 
-echo "[1/8] the ui library exists"
+echo "[1/9] the ui library exists"
 test -f "$UI"
 
-echo "[2/8] the panel colour is a theme variable"
+echo "[2/9] the panel colour is a theme variable"
 grep -q 'MQ_COLOR_PANEL' "$UI" || {
   echo "FAIL: mq-ui.sh does not read MQ_COLOR_PANEL" >&2
   exit 1
@@ -72,7 +72,7 @@ sys.stdout.write(b"".join(chunks).decode("utf-8", "replace"))
 PY
 }
 
-echo "[3/8] the default names white rather than a palette index"
+echo "[3/9] the default names white rather than a palette index"
 # `|| true` so a broken helper reports below instead of killing the script under
 # `set -e`. The first CI run of this test died here without printing anything,
 # which said "exit 1" and nothing about why.
@@ -86,7 +86,7 @@ case "$default_colour" in
 esac
 echo "  ok: default names white outright"
 
-echo "[4/8] a theme can override it"
+echo "[4/9] a theme can override it"
 themed_colour="$(panel_colour "export MQ_COLOR_PANEL=\$'\\033[0;35m'; unset NO_COLOR")" || true
 case "$themed_colour" in
   *'033[0;35m'*) ;;
@@ -97,7 +97,7 @@ case "$themed_colour" in
 esac
 echo "  ok: MQ_COLOR_PANEL wins over the default"
 
-echo "[5/8] no menu hardcodes a panel colour past the theme"
+echo "[5/9] no menu hardcodes a panel colour past the theme"
 # Static, so it fails on any machine. The render checks above only prove the
 # library; a menu assigning its own escape defeats the theme without touching
 # surface_panel_color at all — which is exactly how four of them drifted grey.
@@ -107,7 +107,7 @@ if grep -rn "panel_color=\$'\\\\033\[" "$ROOT/terminal/menus/" 2>/dev/null; then
 fi
 echo "  ok: menus take the colour from the library"
 
-echo "[6/8] no panel is drawn with an empty colour"
+echo "[6/9] no panel is drawn with an empty colour"
 # The step above catches a menu that picks its own colour. It does not catch a
 # menu that passes `""` and gets no colour at all — which is how the HAL and
 # Obsidian "not found" panels drew in the terminal default while every other
@@ -119,7 +119,7 @@ if grep -rnE 'surface_(top|row|split_row|bottom|panel_header) .*"\$width" ""' \
 fi
 echo "  ok: no panel opts out of the colour"
 
-echo "[7/8] the stack has one white"
+echo "[7/9] the stack has one white"
 # C_WHITE meant two different things: 1;97 in gitlaunch, the zsh theme and the
 # prompt preview, but 37 — grey — in the dashboards. The READY banner sits
 # directly above a panel, so the disagreement was visible as two shades of
@@ -167,7 +167,7 @@ then
 fi
 echo "  ok: every C_WHITE names white outright or is deliberately empty"
 
-echo "[8/8] the dashboard header keeps its colour through a command substitution"
+echo "[8/9] the dashboard header keeps its colour through a command substitution"
 # print_dashboard_header runs the dashboard inside `$( )`, so its stdout is a
 # pipe. The dashboard sets its own colours behind a guard that accepts
 # MQ_DASHBOARD_FORCE_COLOR, then sources mq-ui.sh — whose guard was `-t 1`
@@ -195,5 +195,40 @@ case "$dashboard_banner" in
     ;;
 esac
 echo "  ok: the banner keeps its colour when captured"
+
+echo "[9/9] Pulse capture ignores stale terminal colour state"
+# Reproduce the exact class of failure seen when the full smoke suite is launched
+# from mqlaunch: the renderer can have been sourced while stdout was a TTY, then
+# rendered later inside `$(...)`. Seed the old source-time colour state by hand
+# so this remains a real regression test even on a headless CI runner.
+# shellcheck source=/dev/null
+source "$ROOT/mqlaunch/lib/pulse/item.sh"
+# shellcheck source=/dev/null
+source "$ROOT/mqlaunch/lib/pulse/render.sh"
+pulse_items_reset
+pulse_item_add doctor system FAIL "Environment" "everything is fine"
+pulse_item_add repos repositories PASS "Repositories" "3 broken repos"
+pulse_capture="$(
+  PULSE_C_PASS='\033[0;32m'
+  PULSE_C_WARN='\033[1;33m'
+  PULSE_C_FAIL='\033[0;31m'
+  PULSE_C_MUTED='\033[0;36m'
+  PULSE_C_RESET='\033[0m'
+  pulse_render FAIL 2>&1
+)"
+case "$pulse_capture" in
+  *$'\033['*)
+    echo "FAIL: captured Pulse output inherited stale ANSI colour state" >&2
+    exit 1
+    ;;
+esac
+for expected in '✖ Environment' '✔ Repositories' 'Pulse: FAIL'; do
+  grep -qF "$expected" <<< "$pulse_capture" || {
+    echo "FAIL: captured Pulse output lost '$expected'" >&2
+    printf '%s\n' "$pulse_capture" >&2
+    exit 1
+  }
+done
+echo "  ok: captured Pulse output is plain even after terminal-style state was seeded"
 
 echo "OK: panel colour smoke test passed"
