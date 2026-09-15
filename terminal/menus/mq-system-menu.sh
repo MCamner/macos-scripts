@@ -154,8 +154,11 @@ open_system_menu() {
       5) system_checks_menu_loop ;;
       # Stays on the front menu although it is a check: it is reached when
       # something is already wrong and the evidence has to go somewhere, which
-      # is the wrong moment to add a keystroke.
-      6) run_debug_bundle || true; pause_enter ;;
+      # is the wrong moment to add a keystroke — which is also why this arm
+      # does not pause. run_debug_bundle pauses on both its exits, so the arm
+      # calling pause_enter too stopped twice, the same mistake option 4's
+      # comment above warns about.
+      6) run_debug_bundle || true ;;
       7) system_maintenance_menu_loop ;;
       8) system_desktop_menu_loop ;;
       9) open_base_dir ;;
