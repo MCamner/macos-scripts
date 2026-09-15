@@ -119,6 +119,7 @@ echo "  ok: glyphs follow the state, not the prose"
 stub_root="$run_dir/stub"
 mkdir -p "$stub_root/tools/scripts"
 
+# Coordinates make doctor behavior.
 make_doctor() {
   cat > "$stub_root/tools/scripts/doctor.sh"
   chmod +x "$stub_root/tools/scripts/doctor.sh"

@@ -7,6 +7,7 @@ SECURITY_BIN="${MQ_SECURITY_BIN:-/usr/bin/security}"
 PGREP_BIN="${MQ_PGREP_BIN:-/usr/bin/pgrep}"
 TARGET="${1:-$PWD}"
 
+# Marks a failing check.
 fail() {
   printf 'ERROR: %s\n' "$1" >&2
   exit "${2:-1}"

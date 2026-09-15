@@ -13,6 +13,7 @@ if ! command -v surface_row >/dev/null 2>&1; then
   source "$_MQ_PROGRESS_DIR/mq-ui.sh"
 fi
 
+# Coordinates ui progress style behavior.
 _ui_progress_style() {
   case "${1:-pending}" in
     done|pass|success) printf '%s|%s' '✓' "${C_OK:-}" ;;
@@ -58,6 +59,7 @@ ui_progress_steps() {
   done
 }
 
+# Coordinates ui result style behavior.
 _ui_result_style() {
   case "${1:-INFO}" in
     PASS|OK|SUCCESS)      printf '%s|%s' '✓' "${C_OK:-}" ;;

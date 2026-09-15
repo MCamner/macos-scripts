@@ -40,6 +40,7 @@ mkdir -p "$agent_home" "$run_dir/bin"
 export MQ_AGENT_BIN="$agent_home"
 export PATH="$run_dir/bin:$PATH"
 
+# Coordinates write agent behavior.
 write_agent() {
   cat > "$run_dir/bin/uv"
   chmod +x "$run_dir/bin/uv"

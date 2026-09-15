@@ -39,6 +39,7 @@ source "$BASE_DIR/mqlaunch/lib/pulse/cache.sh"
 # are not the same reader.
 NEXT_MAX_AGE="${NEXT_MAX_AGE:-120}"
 
+# Prints usage information.
 usage() {
   cat <<'HELP'
 Usage: mqlaunch next [--input FILE] [--fresh] [--json] [-h|--help]

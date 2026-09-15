@@ -12,13 +12,16 @@ REPORT="$ROOT/skills/branch-supersede-check/scripts/supersede-report.sh"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
+# Coordinates commit behavior.
 commit() { # REPO MESSAGE
   git -C "$1" -c user.email=test@example.invalid -c user.name=Test \
     commit -q -m "$2"
 }
 
+# Coordinates new repo behavior.
 new_repo() { # PATH
   git init -q -b main "$1"
   printf 'shared\n' > "$1/shared.txt"

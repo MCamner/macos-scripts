@@ -37,6 +37,7 @@ echo "SMOKE: zsh status assignment"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1
@@ -117,6 +118,7 @@ echo "[2/4] the allowed and forbidden fixtures behave as claimed under zsh"
 # The matrix above is an assertion about zsh, so it is measured rather than
 # trusted. A gate built on a wrong belief about the shell is worse than none.
 if command -v zsh >/dev/null 2>&1; then
+# Coordinates probe behavior.
   probe() { # SNIPPET -> prints "abort" or "ok"
     printf '#!/usr/bin/env zsh\nf() {\n  %s\n  print REACHED\n}\nf\n' "$1" > "$TMP/probe.zsh"
     if zsh "$TMP/probe.zsh" 2>&1 | grep -q REACHED; then printf 'ok'; else printf 'abort'; fi

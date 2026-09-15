@@ -25,6 +25,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 CACHE="$TMP/cache/pulse.json"
+# Marks a failing check.
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 # ---------------------------------------------------------------- writing side
@@ -56,6 +57,7 @@ git -C "$wstub" config user.name Test
 git -C "$wstub" add -A >/dev/null 2>&1
 git -C "$wstub" commit -qm stub
 
+# Runs pulse.
 run_pulse() {
   set +e
   MACOS_SCRIPTS_HOME="$wstub" MQ_AGENT_BIN="$TMP/absent" MQ_PULSE_CACHE="$CACHE" \
@@ -147,6 +149,7 @@ json.dump({
 PY
 }
 
+# Runs next.
 run_next() {
   set +e
   OUT="$(MACOS_SCRIPTS_HOME="$rstub" MQ_PULSE_CACHE="$CACHE" NO_COLOR=1 \
@@ -155,6 +158,7 @@ run_next() {
   set -e
 }
 
+# Coordinates collections behavior.
 collections() { [[ -f "$TMP/collect.log" ]] && wc -l < "$TMP/collect.log" | tr -d ' ' || echo 0; }
 
 echo "[3/9] a fresh complete document is reused, and the screen says so"

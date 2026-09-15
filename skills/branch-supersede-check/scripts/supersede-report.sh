@@ -19,6 +19,7 @@ BRANCH=""
 VERBOSE=0
 NO_PR=0
 
+# Prints usage information.
 usage() {
   cat <<'USAGE'
 usage: supersede-report.sh <branch> [--repo PATH] [--base REF] [--verbose]
@@ -50,6 +51,7 @@ done
 git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
   || { echo "not a git repository: $REPO" >&2; exit 2; }
 
+# Coordinates git behavior.
 git() { command git -C "$REPO" "$@"; }
 
 for ref in "$BASE" "$BRANCH"; do
