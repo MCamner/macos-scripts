@@ -14,19 +14,32 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/attention.sh"
 
-if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
-  PULSE_C_PASS='\033[0;32m'
-  PULSE_C_WARN='\033[1;33m'
-  PULSE_C_FAIL='\033[0;31m'
-  PULSE_C_MUTED='\033[0;36m'
-  PULSE_C_RESET='\033[0m'
-else
-  PULSE_C_PASS=''
-  PULSE_C_WARN=''
-  PULSE_C_FAIL=''
-  PULSE_C_MUTED=''
-  PULSE_C_RESET=''
-fi
+# Colour belongs to the output destination of a render, not to the shell that
+# happened to source this file. A long-lived mqlaunch process can source us while
+# stdout is a TTY and later capture `pulse_render` through `$(...)`; keeping the
+# source-time decision would then inject ANSI escapes into the captured text.
+# Recompute the palette at each public panel-render boundary instead.
+PULSE_C_PASS=''
+PULSE_C_WARN=''
+PULSE_C_FAIL=''
+PULSE_C_MUTED=''
+PULSE_C_RESET=''
+
+pulse_prepare_colours() {
+  if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+    PULSE_C_PASS='\033[0;32m'
+    PULSE_C_WARN='\033[1;33m'
+    PULSE_C_FAIL='\033[0;31m'
+    PULSE_C_MUTED='\033[0;36m'
+    PULSE_C_RESET='\033[0m'
+  else
+    PULSE_C_PASS=''
+    PULSE_C_WARN=''
+    PULSE_C_FAIL=''
+    PULSE_C_MUTED=''
+    PULSE_C_RESET=''
+  fi
+}
 
 # The clock time the run was collected at, as HH:MM:SS, or nothing when the run
 # carries no stamp.
@@ -193,6 +206,11 @@ pulse_render_attention() {
 pulse_render_attention_only() {
   local overall="$1" rendered
 
+  # This is a public render boundary. Decide colours from this call's stdout
+  # before the attention body is captured internally; a terminal keeps colour,
+  # a pipe/capture does not.
+  pulse_prepare_colours
+
   rendered="$(pulse_render_attention)"
   if [[ -z "$rendered" ]]; then
     printf '\n%bNothing needs attention.%b\n' "$PULSE_C_PASS" "$PULSE_C_RESET"
@@ -240,6 +258,11 @@ pulse_render_plain() {
 # introduced that this file has never heard of, then the attention list.
 pulse_render() {
   local overall="$1" area record seen known
+
+  # `pulse_render` may be called long after this file was sourced and may be
+  # captured even when the source happened on a terminal. Re-evaluate the actual
+  # destination now so captured output never inherits stale ANSI state.
+  pulse_prepare_colours
 
   for area in "${PULSE_AREA_ORDER[@]}"; do
     pulse_render_area "$area" || true
