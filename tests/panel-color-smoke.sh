@@ -209,6 +209,8 @@ pulse_items_reset
 pulse_item_add doctor system FAIL "Environment" "everything is fine"
 pulse_item_add repos repositories PASS "Repositories" "3 broken repos"
 pulse_capture="$(
+  # These are intentionally consumed by functions from the sourced renderer.
+  # shellcheck disable=SC2034
   PULSE_C_PASS='\033[0;32m'
   PULSE_C_WARN='\033[1;33m'
   PULSE_C_FAIL='\033[0;31m'
