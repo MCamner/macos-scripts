@@ -85,14 +85,29 @@ echo "  ok: every link resolves into bin/"
 echo "[5/6] the installed mqlaunch answers what only bin/mqlaunch routes"
 # `repl` is handled in bin/mqlaunch and nowhere else — the launcher it execs
 # reports it as unknown. That makes it the behavioural difference between the
-# two link targets, and a stronger assertion than comparing paths. Driven with
-# no stdin, which the REPL exits on rather than blocking.
-repl_out="$(timeout 30 "$tmp_bin/mqlaunch" repl </dev/null 2>&1 || true)"
+# two link targets, and a stronger assertion than comparing paths. With stdin
+# at EOF the REPL must return promptly; attaching to /dev/tty here would turn a
+# smoke test into an interactive prompt and leave the suite waiting on a human.
+repl_rc=0
+repl_out="$(timeout 5 "$tmp_bin/mqlaunch" repl </dev/null 2>&1)" || repl_rc=$?
+if [[ "$repl_rc" -eq 124 ]]; then
+  echo "FAIL: the installed mqlaunch repl blocked instead of respecting stdin EOF" >&2
+  exit 1
+fi
+if [[ "$repl_rc" -ne 0 ]]; then
+  echo "FAIL: the installed mqlaunch repl exited $repl_rc" >&2
+  printf '%s\n' "$repl_out" >&2
+  exit 1
+fi
 if printf '%s' "$repl_out" | grep -q 'Unknown command: repl'; then
   echo "FAIL: the installed mqlaunch does not route repl; the link goes past bin/mqlaunch" >&2
   exit 1
 fi
-echo "  ok: repl is routed"
+if printf '%s' "$repl_out" | grep -qF 'mqlaunch >'; then
+  echo "FAIL: the installed mqlaunch repl opened an interactive prompt despite stdin EOF" >&2
+  exit 1
+fi
+echo "  ok: repl is routed and exits on stdin EOF"
 
 echo "[6/6] gitlaunch dispatches rather than running the menu itself"
 # It is a wrapper, not a second entrypoint: the repo has one dispatcher, and a
