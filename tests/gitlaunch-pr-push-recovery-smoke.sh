@@ -21,6 +21,7 @@ git -C "$TMP/repo" add file.txt
 git -C "$TMP/repo" commit -q -m initial
 git -C "$TMP/repo" push -q -u origin main
 
+# Coordinates prepare pr branch behavior.
 prepare_pr_branch() {
   git -C "$TMP/repo" switch -q main
   printf 'change-%s\n' "$1" > "$TMP/repo/file.txt"
@@ -28,6 +29,7 @@ prepare_pr_branch() {
   git -C "$TMP/repo" switch -q -C "mq/test-$1"
 }
 
+# Coordinates assert restored behavior.
 assert_restored() {
   [[ "$(git -C "$TMP/repo" branch --show-current)" == main ]]
   [[ "$(git -C "$TMP/repo" rev-parse main)" == "$(git -C "$TMP/repo" rev-parse origin/main)" ]]

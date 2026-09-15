@@ -8,11 +8,13 @@ TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/mq-godmode-test.XXXXXX")"
 CODEX_DIR="$TEST_ROOT/codex"
 CLAUDE_DIR="$TEST_ROOT/claude"
 
+# Coordinates cleanup behavior.
 cleanup() {
   rm -rf -- "$TEST_ROOT"
 }
 trap cleanup EXIT HUP INT TERM
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1

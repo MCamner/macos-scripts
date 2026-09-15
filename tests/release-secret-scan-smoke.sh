@@ -35,6 +35,7 @@ fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1
@@ -47,6 +48,7 @@ fake_token() {
   printf 'ghp_%s' "$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 36)"
 }
 
+# Coordinates new repo behavior.
 new_repo() { # PATH
   mkdir -p "$1"
   git -C "$1" init -q

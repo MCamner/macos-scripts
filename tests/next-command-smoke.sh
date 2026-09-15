@@ -39,6 +39,7 @@ chmod +x "$stub/tools/scripts/next.sh"
 
 NEXT="$stub/tools/scripts/next.sh"
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1
@@ -60,6 +61,7 @@ make_pulse() { # CODE
   chmod +x "$stub/tools/scripts/pulse.sh"
 }
 
+# Runs next.
 run_next() {
   set +e
   OUT="$(MACOS_SCRIPTS_HOME="$stub" NO_COLOR=1 "$NEXT" "$@" 2>"$TMP/err")"

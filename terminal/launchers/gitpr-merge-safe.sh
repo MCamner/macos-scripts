@@ -42,6 +42,7 @@ if [[ -f "$_mq_ui_lib" ]]; then
   source "$_mq_ui_lib"
 fi
 if ! declare -f ui_spinner >/dev/null; then
+# Coordinates ui spinner behavior.
   ui_spinner() { local _label="$1"; shift; "$@"; }
 fi
 unset _mq_ui_lib

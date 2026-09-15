@@ -51,7 +51,9 @@ grep -Fq "PR branch" "$DOCS"
 {
   sed -n '/^function pr_aware_push()/,/^}/p' "$LEGACY_MENU"
   cat <<'ZSH_TEST'
+# Checks whether protected branch applies.
 function is_protected_branch() { return 1; }
+# Coordinates git behavior.
 function git() {
   case "$1" in
     branch) print -r -- "test/menu-loop" ;;

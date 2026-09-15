@@ -8,6 +8,7 @@ DRY_RUN=0
 STAMP="$(date +%Y%m%d-%H%M%S)-$$"
 TEMP_DIR=""
 
+# Prints usage information.
 usage() {
   cat <<'EOF'
 Usage: install-godmode.sh [options]
@@ -22,6 +23,7 @@ Options:
 EOF
 }
 
+# Coordinates die usage behavior.
 die_usage() {
   echo "install-godmode.sh: $1" >&2
   usage >&2
@@ -57,6 +59,7 @@ done
 [ -n "$CODEX_DIR" ] || die_usage "Codex directory must not be empty"
 [ -n "$CLAUDE_DIR" ] || die_usage "Claude directory must not be empty"
 
+# Prompts for content with script-level validation.
 prompt_content() {
   cat <<'EOF'
 ---
@@ -116,6 +119,7 @@ Task: $ARGUMENTS
 EOF
 }
 
+# Coordinates cleanup behavior.
 cleanup() {
   if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
     rm -rf -- "$TEMP_DIR"
@@ -127,6 +131,7 @@ TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mq-godmode.XXXXXX")"
 PROMPT_SOURCE="$TEMP_DIR/godmode.md"
 prompt_content > "$PROMPT_SOURCE"
 
+# Coordinates install prompt behavior.
 install_prompt() {
   local agent="$1"
   local destination="$2"

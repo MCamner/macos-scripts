@@ -19,6 +19,7 @@ git_menu_exit_is_restartable() {
   esac
 }
 
+# Opens git menu.
 open_git_menu() {
   local repo_arg="${1:-}"
   local git_script="$BASE_DIR/terminal/launchers/gitlaunch.sh"

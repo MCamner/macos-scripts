@@ -35,6 +35,7 @@ echo '{"checks":[{"name":"git","status":"ok"}]}'
 EOF
 chmod +x "$stub/tools/scripts/doctor.sh"
 
+# Coordinates pulse run behavior.
 pulse_run() {
   local out="$1"; shift
   set +e

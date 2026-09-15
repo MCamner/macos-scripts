@@ -29,6 +29,7 @@ echo "SMOKE: the suite does not wait on the caller's stdin"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 echo "[1/3] the runner detaches stdin before it runs anything"

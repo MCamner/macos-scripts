@@ -83,7 +83,9 @@ out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "
   source '$UI'
   source '$PROGRESS'
   source '$MENU'
+# Coordinates ui spinner behavior.
   ui_spinner() { shift; \"\$@\"; }
+# Coordinates run agent behavior.
   _run_agent() { printf 'review body\\n→ brain: memory/reviews/demo.md\\n'; }
   _run_agent_review_brain_ui
 ")"
@@ -99,7 +101,9 @@ out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "
   source '$UI'
   source '$PROGRESS'
   source '$MENU'
+# Coordinates ui spinner behavior.
   ui_spinner() { shift; \"\$@\"; }
+# Coordinates run agent behavior.
   _run_agent() { printf 'review body\\nbrain: mqobsidian unavailable\\n'; }
   _run_agent_review_brain_ui
 ")"
@@ -113,7 +117,9 @@ out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" zsh -c "
   source '$UI'
   source '$PROGRESS'
   source '$MENU'
+# Coordinates ui spinner behavior.
   ui_spinner() { shift; \"\$@\"; }
+# Coordinates run agent behavior.
   _run_agent() { print -u2 -- 'review failed'; return 7; }
   rc=0
   _run_agent_review_brain_ui || rc=\$?

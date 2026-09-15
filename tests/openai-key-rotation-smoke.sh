@@ -83,6 +83,7 @@ export MQ_OPENAI_KEYCHAIN_ACCOUNT="test-user"
 OLD='sk-test-old-key-material-for-tests-VpEA'
 NEW='sk-test-new-key-material-for-tests-Zq8A'
 
+# Coordinates reset old key behavior.
 reset_old_key() {
   printf '%s' "$OLD" > "$KEYCHAIN_FILE"
   : > "$MQ_TEST_OPEN_LOG"

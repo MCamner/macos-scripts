@@ -26,6 +26,7 @@ echo "SMOKE: pulse collector concurrency"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 stub="$TMP/stub"
@@ -55,6 +56,7 @@ git -C "$stub" config user.name Test
 git -C "$stub" add -A >/dev/null 2>&1
 git -C "$stub" commit -qm stub
 
+# Coordinates pulse run behavior.
 pulse_run() {
   local out="$1"; shift
   set +e
@@ -175,6 +177,7 @@ probe="$TMP/probe.out"
 bash -c '
   set -uo pipefail
   source "'"$ROOT"'/mqlaunch/lib/pulse/collectors.sh"
+# Coordinates half a collector behavior.
   half_a_collector() {
     pulse_item_add system system PASS "First" "found before the exit"
     exit 0

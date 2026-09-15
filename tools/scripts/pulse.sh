@@ -23,6 +23,7 @@ source "$BASE_DIR/mqlaunch/lib/pulse/document.sh"
 # shellcheck source=/dev/null
 source "$BASE_DIR/mqlaunch/lib/pulse/cache.sh"
 
+# Prints usage information.
 usage() {
   cat <<'HELP'
 Usage: mqlaunch pulse [scope] [--json|--plain] [--no-stack] [--no-network] [--verbose]
@@ -138,6 +139,7 @@ PULSE_NO_NETWORK="$skip_network"
 # list so that a consumer reading a scoped document cannot mistake an absent
 # section for a healthy area — docs/PULSE_CONTRACT.md, "What absence means".
 collected=()
+# Coordinates note behavior.
 note() { collected+=("$1"); }
 
 # The stack and memory collectors, in one lane and in that order.

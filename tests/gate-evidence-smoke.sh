@@ -37,6 +37,7 @@ echo "SMOKE: gate evidence"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1

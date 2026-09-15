@@ -40,6 +40,7 @@ git -C "$stub" config user.email t@example.com
 git -C "$stub" config user.name Test
 git -C "$stub" commit -q --allow-empty -m stub
 
+# Marks a failing check.
 fail() {
   echo "FAIL: $1" >&2
   exit 1
