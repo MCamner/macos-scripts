@@ -88,8 +88,11 @@ echo "[5/6] the installed mqlaunch answers what only bin/mqlaunch routes"
 # two link targets, and a stronger assertion than comparing paths. With stdin
 # at EOF the REPL must return promptly; attaching to /dev/tty here would turn a
 # smoke test into an interactive prompt and leave the suite waiting on a human.
+# This test installs into a temporary bin rather than $HOME/macos-scripts, so
+# point the wrapper at the checkout explicitly instead of relying on its user
+# installation default.
 repl_rc=0
-repl_out="$(timeout 5 "$tmp_bin/mqlaunch" repl </dev/null 2>&1)" || repl_rc=$?
+repl_out="$(BASE_DIR="$ROOT" timeout 5 "$tmp_bin/mqlaunch" repl </dev/null 2>&1)" || repl_rc=$?
 if [[ "$repl_rc" -eq 124 ]]; then
   echo "FAIL: the installed mqlaunch repl blocked instead of respecting stdin EOF" >&2
   exit 1
