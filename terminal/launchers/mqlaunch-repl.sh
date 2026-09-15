@@ -162,9 +162,18 @@ dispatch_command() {
   esac
 }
 
-# Reads prompt input from user input or stdin.
+# Reads prompt input from a terminal when interactive, otherwise from stdin.
+# Non-interactive callers must be able to signal EOF without the REPL reaching
+# around redirected stdin and attaching itself to the caller's controlling tty.
 read_prompt_input() {
   local line context_line
+
+  if [[ ! -t 0 ]]; then
+    IFS= read -r line || return 1
+    REPLY="$line"
+    return 0
+  fi
+
   context_line="$(get_context_line)"
 
   {
@@ -179,7 +188,7 @@ read_prompt_input() {
     printf '\033[%dC' "${#PROMPT_LABEL}"
   } > /dev/tty
 
-  IFS= read -r line < /dev/tty
+  IFS= read -r line < /dev/tty || return 1
 
   {
     printf '\033[5B'
@@ -194,7 +203,9 @@ main() {
   local line status
 
   while true; do
-    read_prompt_input
+    if ! read_prompt_input; then
+      break
+    fi
     line="$REPLY"
     echo
 
