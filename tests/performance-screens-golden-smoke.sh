@@ -106,10 +106,14 @@ render_screen() {
   # exist and gawk rejects `load` as a variable name. Stubbing makes the fixture
   # portable and, more to the point, makes it measure the thing it is for —
   # drift in *rendering*, not whether `df` still works.
+  #
+  # Shell diagnostics are part of the pinned stderr too. Force the C locale so
+  # macOS with a Swedish login and Linux CI both render those diagnostics in the
+  # same language; locale is environment state, not performance-screen output.
   timeout 7 env \
     PATH="$ROOT/tests/fixtures/perf-stubs:$PATH" \
     BASE_DIR="$ROOT" PROJECT_ROOT="$ROOT" MACOS_SCRIPTS_HOME="$ROOT" \
-    NO_COLOR=1 TERM=dumb COLUMNS=92 \
+    LC_ALL=C LANG=C NO_COLOR=1 TERM=dumb COLUMNS=92 \
     bash -c '
       set -uo pipefail
       # shellcheck source=/dev/null
