@@ -93,9 +93,16 @@ run_debug_bundle() {
     return 1
   fi
 
-  local outfile
-  outfile="$("$bundle_script")"
-  local rc=$?
+  # The bundle runs the whole smoke suite and writes everything into the file,
+  # so stdout carries only the path — which is why the call is captured. That
+  # capture is also why the screen sat blank for the whole run: there was
+  # nothing to print. ui_spinner is built for exactly this shape; its frames go
+  # to /dev/tty, so the substitution still captures the path unchanged.
+  #
+  # This is the moment something is already wrong and the operator is waiting
+  # on evidence, which is the worst moment to look hung.
+  local outfile rc=0
+  outfile="$(ui_spinner "Collecting diagnostics" "$bundle_script")" || rc=$?
 
   echo
   if [[ $rc -eq 0 ]]; then
