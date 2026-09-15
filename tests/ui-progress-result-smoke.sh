@@ -57,7 +57,7 @@ assert "Next: mqlaunch" in text
 assert "└" in text
 PY
 
-echo "[6/11] NO_COLOR removes status color while preserving semantics"
+echo "[6/12] NO_COLOR removes status color while preserving semantics"
 out="$(NO_COLOR=1 bash -c "source '$UI'; source '$PROGRESS'; ui_progress_steps 'done|Scan'; ui_result_panel PASS 'Done'")"
 if printf '%s' "$out" | LC_ALL=C grep -q $'\033'; then
   echo "ANSI escape leaked with NO_COLOR=1" >&2
@@ -66,19 +66,27 @@ fi
 grep -q '✓ Scan' <<<"$out"
 grep -q '✓ Done' <<<"$out"
 
-echo "[7/11] both primitives run under zsh, the interactive menu shell"
+echo "[7/12] both primitives run under zsh, the interactive menu shell"
 out="$(zsh -c "source '$UI'; source '$PROGRESS'; ui_progress_steps 'active|zsh-step'; ui_result_panel INFO 'zsh-result'" 2>&1)"
 grep -q '■ zsh-step' <<<"$out"
 grep -q 'i zsh-result' <<<"$out"
 ! grep -qi 'read-only variable\|parse error\|command not found' <<<"$out"
 
-echo "[8/11] Review repo → brain routes through the shared integration helper"
+echo "[8/12] Review repo → brain routes through the shared integration helper"
 grep -q '^_run_agent_review_brain_ui()' "$MENU"
 grep -q '1) _run_agent_review_brain_ui; pause_enter ;;' "$MENU"
 grep -q '^_run_agent_menu_wait()' "$MENU"
 grep -q '_run_agent_menu_wait "Running signal → brain" _run_agent signal --brain .' "$MENU"
 
-echo "[9/11] successful review + brain write finishes both steps and the PASS footer"
+echo "[9/12] panel-rendering repo analysis commands bypass the active spinner"
+grep -q '^_run_agent_menu_passthrough()' "$MENU"
+grep -q '_run_agent_menu_passthrough "Scoring repository" _run_agent score .' "$MENU"
+grep -q '_run_agent_menu_passthrough "Running signal assessment" _run_agent signal .' "$MENU"
+grep -q '_run_agent_menu_passthrough "Building repo summary" _run_agent repo-summary .' "$MENU"
+grep -q '_run_agent_menu_passthrough "Listing mq-agent tools" _run_agent tools' "$MENU"
+! grep -q '_run_agent_menu_wait "Scoring repository" _run_agent score .' "$MENU"
+
+echo "[10/12] successful review + brain write finishes both steps and the PASS footer"
 out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "
   source '$UI'
   source '$PROGRESS'
@@ -96,7 +104,7 @@ grep -q '^✓ Save review to brain$' <<<"$out"
 grep -q '^✓ Review complete$' <<<"$out"
 grep -q '^Brain: memory/reviews/demo.md$' <<<"$out"
 
-echo "[10/11] brain warning stays WARN even when the review command exits zero"
+echo "[11/12] brain warning stays WARN even when the review command exits zero"
 out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "
   source '$UI'
   source '$PROGRESS'
@@ -112,7 +120,7 @@ grep -q '^! Save review to brain$' <<<"$out"
 grep -q '^! Review complete; brain write needs attention$' <<<"$out"
 grep -q '^Brain: mqobsidian unavailable$' <<<"$out"
 
-echo "[11/11] review failure preserves the delegated exit code and skips brain"
+echo "[12/12] review failure preserves the delegated exit code and skips brain"
 out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" zsh -c "
   source '$UI'
   source '$PROGRESS'

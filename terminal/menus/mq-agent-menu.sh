@@ -74,6 +74,20 @@ _run_agent_menu_wait() {
   fi
 }
 
+# Runs a delegate that is expected to print its own structured output.
+#
+# Rich panels and other full-width output must not be produced while a spinner
+# is still active on the same terminal row; the spinner text and the first box
+# corner otherwise occupy the same line. Use a short completed status line
+# before the command instead.
+_run_agent_menu_passthrough() {
+  local label="$1"
+  shift
+
+  printf "%b•%b %s\n\n" "${C_INFO:-}" "${C_RESET:-}" "$label"
+  "$@"
+}
+
 # Runs the interactive repo-review -> mqobsidian path with truthful UI state.
 #
 # mq-agent owns both review orchestration and the brain write. mqlaunch only
@@ -229,17 +243,17 @@ _run_agent_review() {
 
   case "$scope" in
     repo)
-      _run_agent review repo "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review repo ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
     file)
       if [[ -z "$file" ]]; then
         printf "Usage: mqlaunch review file <relative-path> [mode]\n" >&2
         return 1
       fi
-      _run_agent review file "$file" "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review file "$file" ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
     diff)
-      _run_agent review diff "${mode_args[@]}" "${passthrough[@]}"
+      _run_agent review diff ${mode_args[@]+"${mode_args[@]}"} ${passthrough[@]+"${passthrough[@]}"}
       ;;
   esac
 }
@@ -658,10 +672,10 @@ agent_repo_analysis_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent_menu_wait "Scoring repository" _run_agent score .; pause_enter ;;
-      2) _run_agent_menu_wait "Running signal assessment" _run_agent signal .; pause_enter ;;
-      3) _run_agent_menu_wait "Building repo summary" _run_agent repo-summary .; pause_enter ;;
-      4) _run_agent_menu_wait "Listing mq-agent tools" _run_agent tools; pause_enter ;;
+      1) _run_agent_menu_passthrough "Scoring repository" _run_agent score .; pause_enter ;;
+      2) _run_agent_menu_passthrough "Running signal assessment" _run_agent signal .; pause_enter ;;
+      3) _run_agent_menu_passthrough "Building repo summary" _run_agent repo-summary .; pause_enter ;;
+      4) _run_agent_menu_passthrough "Listing mq-agent tools" _run_agent tools; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
