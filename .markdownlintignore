@@ -1,0 +1,10 @@
+node_modules
+backups
+.git
+
+# Vendored third-party skills. Their files are kept byte-identical to upstream
+# and pinned by skills/vendor-evals/<name>.sha256, so this repo's markdown
+# style rules must not rewrite them. They were never linted before either:
+# they used to live under .agents/, and the "**/*.md" glob does not descend
+# into dot-directories.
+skills/pdf/

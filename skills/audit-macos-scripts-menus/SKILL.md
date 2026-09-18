@@ -88,13 +88,28 @@ Vid fel:
 
 1. Reproducera det minsta felande testet.
 2. Klassificera felet som `syntax`, `registry`, `routing`, `menu behavior`,
-   `dependency/environment` eller `test infrastructure`.
+   `dependency` / `environment` eller `test infrastructure`.
 3. Ange första relevanta felrad, testnamn och exitkod.
 4. Jämför mot aktuell kod och kontrakt; gissa inte.
 5. Föreslå minsta säkra fix. Implementera endast om användaren har bett om fix.
 
 Om ett test fallerar på sandbox, cache eller nekad skrivning utanför repot,
 kör om samma test med korrekt behörighet innan det räknas som kodfel.
+
+## Evals
+
+### Ska trigga
+
+- "granska alla mqlaunch-menyer och script"
+- "en meny är trasig, ta reda på vilken och varför"
+- "verifiera command-surface efter mina ändringar"
+- "ge mig en evidensbaserad funktionsrapport för repot"
+
+### Ska inte trigga
+
+- "är repot redo att släppas?" → använd `release-readiness`
+- "hur ser den här menyns utskrift ut rent visuellt?" → använd `terminal-ui-polisher`
+- "vilka brancher kan jag ta bort?" → använd `branch-supersede-check`
 
 ## Rapport
 
