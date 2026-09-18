@@ -39,52 +39,12 @@ jobs:
       - name: Runtime authority freeze (no new live -> mqlaunch-v1 edges)
         run: ./scripts/check-runtime-authority.sh
 
-      - name: bash -n on install.sh
-        run: bash -n install.sh
-
-      - name: bash -n on release.sh
-        run: bash -n release.sh
-
-      - name: bash -n on scripts/
-        run: |
-          if [ -d scripts ]; then
-            find scripts -name "*.sh" -print0 | xargs -0 -n1 bash -n
-          fi
-
-      - name: Syntax check all .sh files by shebang (exclude backups/)
-        run: |
-          # The count is checked before the loop, and the success line reports
-          # it. Without that, an enumeration that produced nothing ran the loop
-          # body zero times and printed "All .sh files pass syntax check" —
-          # green, having checked nothing. A broken checkout, a wrong working
-          # directory or an exclusion that swallowed the tree all look like a
-          # clean repo to a loop that never runs.
-          #
-          #     could-not-measure != measured-clean
-          #
-          # Syntax errors themselves were always caught: the pipeline's status
-          # is the while loop's, so `exit 1` in the subshell does fail the step.
-          # Verified before changing anything; that half was not broken.
-          mapfile -d '' -t files < <(
-            find . \
-              -name "*.sh" \
-              -not -path "./.git/*" \
-              -not -path "./backups/*" \
-              -print0
-          )
-          if (( ${#files[@]} == 0 )); then
-            echo "FAIL: found no .sh files to check — the enumeration is broken"
-            exit 1
-          fi
-          for f in "${files[@]}"; do
-            shebang="$(head -1 "$f")"
-            if [[ "$shebang" == *zsh* ]]; then
-              zsh -n "$f" || { echo "FAIL (zsh -n): $f"; exit 1; }
-            else
-              bash -n "$f" || { echo "FAIL (bash -n): $f"; exit 1; }
-            fi
-          done
-          echo "All ${#files[@]} .sh files (excl. backups/) pass syntax check"
+      # One definition of the syntax sweep, called by CI and by
+      # release-check.sh alike. This used to be four steps here and a
+      # five-file loop in the local gate; the two disagreed about what
+      # "shell syntax passes" meant by a factor of fifty.
+      - name: Shell syntax (all .sh, routed by shebang)
+        run: ./scripts/check-shell-syntax.sh
 
       # Enforced, and delegated to tools/scripts/lint.sh rather than re-deriving
       # the file list here. The old step had its own `find` with different
@@ -138,6 +98,13 @@ jobs:
 
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
+
+      # The local release gate and CI drifted apart once already: the Python
+      # tests and markdownlint ran in CI only, and the local shell syntax check
+      # covered five files where this workflow covered 261. Both gates now
+      # assert they check the same things.
+      - name: Local gate and CI check the same things
+        run: python -m pip install pyyaml && python scripts/check-gate-parity.py
 
       - name: Run B2 TUI tests
         run: python -m pytest mqlaunch/b2_tui/tests

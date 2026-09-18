@@ -88,15 +88,31 @@ count="$(sed -n 's/.*(\([0-9][0-9]*\) files).*/\1/p' "$TMP/out3" | tail -1)"
 [[ "$count" -gt 0 ]] || fail "the linter passed after reading $count files"
 echo "  ok: passed over $count file(s), and the count is in the output"
 
-echo "[4/4] the CI syntax step counts before it reports"
-WORKFLOW="$ROOT/.github/workflows/quality.yml"
+echo "[4/4] the syntax sweep counts before it reports"
+SWEEP="$ROOT/scripts/check-shell-syntax.sh"
+[[ -x "$SWEEP" ]] || fail "the shared syntax sweep is missing at $SWEEP"
+
 # It printed "All .sh files pass syntax check" unconditionally after a loop that
-# ran zero times when find produced nothing. Asserted against the file because
-# the behaviour only differs in a checkout this suite cannot create.
-grep -q 'found no .sh files to check' "$WORKFLOW" \
-  || fail "the CI syntax step no longer fails on an empty enumeration"
-grep -q 'All \${#files\[@\]} .sh files' "$WORKFLOW" \
-  || fail "the CI syntax step no longer reports how many files it checked"
-echo "  ok: empty enumeration fails, and the success line carries the count"
+# ran zero times when find produced nothing. This used to be asserted by
+# grepping quality.yml, because an inline workflow block cannot be executed
+# here. The sweep is now a script, so the empty case can be run for real.
+#
+# The copy is named without a .sh suffix on purpose: the sweep resolves its
+# tree from its own location, so a copy called *.sh would find itself and the
+# enumeration would not be empty.
+mkdir -p "$TMP/emptytree/bin"
+cp "$SWEEP" "$TMP/emptytree/bin/sweep"
+chmod +x "$TMP/emptytree/bin/sweep"
+set +e
+"$TMP/emptytree/bin/sweep" >"$TMP/out4" 2>&1
+rc=$?
+set -e
+[[ "$rc" -ne 0 ]] \
+  || fail "the syntax sweep passed on an empty enumeration (exit $rc)"
+grep -q 'found no .sh files to check' "$TMP/out4" \
+  || fail "the syntax sweep failed on an empty tree without saying why: $(cat "$TMP/out4")"
+grep -q 'All \${#files\[@\]} .sh files' "$SWEEP" \
+  || fail "the syntax sweep no longer reports how many files it checked"
+echo "  ok: empty enumeration fails for real, and the success line carries the count"
 
 echo "OK: gate evidence smoke test passed"

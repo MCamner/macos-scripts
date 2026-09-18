@@ -69,13 +69,16 @@ run "skills consistent" bash scripts/check-skills.sh
 run "runtime authority freeze" bash scripts/check-runtime-authority.sh
 
 say "--- Shell syntax ---"
-# shellcheck disable=SC2016  # intentional: the loop runs in the child bash -c
-run "bash -n (install/release/scripts)" bash -c '
-  set -e
-  bash -n install.sh
-  bash -n release.sh
-  for f in scripts/*.sh; do [ -e "$f" ] && bash -n "$f"; done
-'
+run "check-shell-syntax.sh" bash scripts/check-shell-syntax.sh
+
+say "--- Markdown ---"
+run "markdownlint" npx --yes markdownlint-cli "**/*.md" --ignore node_modules --ignore backups --ignore .git
+
+say "--- Gate parity ---"
+run "check-gate-parity.py" python3 scripts/check-gate-parity.py
+
+say "--- Python tests ---"
+run "pytest b2_tui" python3 -m pytest mqlaunch/b2_tui/tests -q
 
 say "--- mqlaunch smoke suite ---"
 run "test-all.sh" env MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 ./tools/scripts/test-all.sh
