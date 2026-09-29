@@ -15,22 +15,23 @@ This workflow is for OpenAI vector stores and MQ semantic repository memory. It 
 
 Refreshing uploads repo-derived content to OpenAI. Before running the upload step, state the repo path and target vector store ID and get explicit approval if the user has not already granted it in the current turn. Never print API keys or `.env` contents.
 
-Deletion or replacement of existing vector-store files is destructive. Prefer the non-destructive MQ flow below unless the user explicitly requests cleanup.
+Deletion or replacement of vector-store attachments is destructive. Use `--cleanup-stale` only when cleanup was explicitly requested. The mq-agent flow uploads and verifies the new generation first, then detaches stale retrieval attachments. It does not delete the underlying OpenAI Storage file objects.
 
 ## Preferred MQ Flow
 
 For `macos-scripts`, prefer the `mq-agent` semantic memory commands:
 
 ```bash
-mq-agent memory status --json
+mq-agent memory status /Users/mansys/macos-scripts --json
 mq-agent memory build /Users/mansys/macos-scripts
-mq-agent memory refresh --approve /Users/mansys/macos-scripts
+mq-agent memory refresh --approve --cleanup-stale /Users/mansys/macos-scripts
+mq-agent memory status /Users/mansys/macos-scripts --json
 ```
 
 If `OPENAI_API_KEY` is missing from the process environment, load it without printing it:
 
 ```bash
-zsh -lc 'set -a; source ~/.env 2>/dev/null || true; source /Users/mansys/macos-scripts/.env 2>/dev/null || true; set +a; mq-agent memory refresh --approve /Users/mansys/macos-scripts'
+zsh -lc 'set -a; source ~/.env 2>/dev/null || true; source /Users/mansys/macos-scripts/.env 2>/dev/null || true; set +a; mq-agent memory refresh --approve --cleanup-stale /Users/mansys/macos-scripts'
 ```
 
 Use `memory build` as the preview. It should report the intended `repo-signal semantic-upload` action and must not upload.
@@ -47,7 +48,7 @@ curl -sS "https://api.openai.com/v1/vector_stores/$VECTOR_STORE_ID" \
 mq-agent memory search "recent repo-specific terms" --json
 ```
 
-Report the vector store ID, status, file counts, newest uploaded file, and whether retrieval worked.
+Report configured/reachable/freshness separately, the vector store ID, authoritative generation count, non-authoritative retrieval count, newest uploaded file, and whether retrieval worked.
 
 For `macos-scripts`, the active store should come from `mq-agent memory status --json`, not old helper-script defaults. Historical scripts may reference an older default store.
 
@@ -87,3 +88,25 @@ Keep the final report short:
   retrieval or MCP verification result without printing secrets.
 - A sandbox-only Python/httpx `Operation not permitted` failure is diagnosed
   separately from MCP server health by checking the HTTP endpoints directly.
+
+
+## Latest-only postcondition
+
+A successful refresh is not just a completed upload. For the target repo,
+verify all of the following after cleanup:
+
+- `status == ready`
+- `freshness == fresh`
+- `authoritative_active_count == 1`
+- `non_authoritative_retrieval_count == 0`
+- `stored_source_revision == current_source_revision`
+
+OpenAI vector-store list/delete visibility can converge briefly after a detach.
+Current mq-agent retries that postcondition for a bounded window before
+reporting failure. If a refresh reports failure but the immediately following
+status already satisfies every condition above, treat that as evidence of a
+visibility race and use the status as the final observed state.
+
+For macos-scripts, the retired store `vs_69f93de12f508191bd6a36ea3b825beb`
+may be cleaned only for the macos-scripts symbol-memory identity. Do not use
+that as authority to clean unrelated legacy stores.
