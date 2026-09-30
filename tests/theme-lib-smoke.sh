@@ -53,7 +53,8 @@ output="$(MQ_ZSH_VARIANT=green zsh -fc \
 test "$output" = "scalar"
 
 echo "[8/9] launcher dock exposes all five remembered commands"
-output="$(MQ_ZSH_VARIANT=macos zsh -fc 'source "$1"; mq_prompt_launchers' _ "$THEME")"
+raw_output="$(MQ_ZSH_VARIANT=macos zsh -fc 'source "$1"; mq_prompt_launchers' _ "$THEME")"
+output="$(MQ_ZSH_VARIANT=macos zsh -fc 'source "$1"; print -P -- "$(mq_prompt_launchers)"' _ "$THEME")"
 for needle in \
   "MQLAUNCH mqlaunch" \
   "MONGO mongoTerminal" \
@@ -68,7 +69,7 @@ done
 
 echo "[9/9] launcher dock keeps one distinct pill colour per command"
 for color in 208 45 82 141 220; do
-  grep -Fq "%F{${color}}%K{${color}}" <<< "$output" || {
+  grep -Fq "%F{${color}}%K{${color}}" <<< "$raw_output" || {
     echo "missing launcher dock colour: $color" >&2
     exit 1
   }
