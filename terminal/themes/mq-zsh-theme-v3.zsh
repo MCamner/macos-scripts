@@ -330,6 +330,29 @@ mq_prompt_git() {
   print -r -- "$git_info"
 }
 
+# Handles one rounded launcher pill.
+mq_prompt_launcher_pill() {
+  local color="$1"
+  local label="$2"
+  local command_name="$3"
+
+  print -nr -- "%F{${color}}%K{${color}}%F{231}%B ${label}%b ${command_name} %k%F{${color}}%f"
+}
+
+# Handles launcher shortcuts shown between the status row and command prompt.
+mq_prompt_launchers() {
+  local mqlaunch_pill mongo_pill apps_pill nlm_pill nlm_mgr_pill
+
+  mqlaunch_pill="$(mq_prompt_launcher_pill 208 MQLAUNCH mqlaunch)"
+  mongo_pill="$(mq_prompt_launcher_pill 45 MONGO mongoTerminal)"
+  apps_pill="$(mq_prompt_launcher_pill 82 APPS mongoApps)"
+  nlm_pill="$(mq_prompt_launcher_pill 141 NLM mongoNotebookLM)"
+  nlm_mgr_pill="$(mq_prompt_launcher_pill 220 NLM-MGR mongoNotebookLMManager)"
+
+  print -r -- "  ${mqlaunch_pill}  ${mongo_pill}  ${apps_pill}"
+  print -nr -- "  ${nlm_pill}  ${nlm_mgr_pill}"
+}
+
 
 # ------------------------------------------------------------
 # macOS-style prompt (clean, 2-line)
@@ -358,8 +381,12 @@ mq_build_prompt() {
     git_part=" ${MQC_DIM}•%f ${MQC_GIT} ${git_info}%f"
   fi
 
+  local launcher_part
+  launcher_part="$(mq_prompt_launchers)"
+
   # The MQ theme owns this prompt so the selected palette remains visible.
   PROMPT="${user_host} ${path_part}${git_part}
+${launcher_part}
 ${status_icon} "
   RPROMPT="$(mq_prompt_right "$exit_code")"
 }
