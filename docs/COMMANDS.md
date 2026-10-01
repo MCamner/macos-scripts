@@ -4,8 +4,8 @@ Complete command listing for `mqlaunch`. Run `mqlaunch help` for a quick index.
 
 ## What help shows, and what only this page shows
 
-This page is the complete surface: all 74 commands. `mqlaunch help` and
-`mqlaunch commands` show the 48 that are public operator entrypoints, grouped by
+This page is the complete surface: all 76 commands. `mqlaunch help` and
+`mqlaunch commands` show the 49 that are public operator entrypoints, grouped by
 namespace.
 
 The split is a registry field, not an editorial habit. Each entry in
@@ -618,6 +618,11 @@ mqlaunch stack contract-check                   # delegate stack contract check 
 mqlaunch stack truth-export                     # delegate stack truth export to mq-agent
 mqlaunch route inspect "task"                   # inspect a routing decision, read-only
 mqlaunch route report --json                    # show verified routing outcomes
+mqlaunch feedback status --json                 # Feedback Engine health and coverage
+mqlaunch feedback run --task-class repo-review --repo . --task "review repo"
+mqlaunch feedback inspect <feedback-run-id>      # experiment/comparison/candidate chain
+mqlaunch feedback compare <feedback-run-id>      # stored deterministic comparison
+mqlaunch feedback candidates                     # reviewable proposals
 mqlaunch mcp-status                             # mq-mcp status, tool count, contract health
 mqlaunch ui                                     # copy UI prompt to clipboard
 ```
@@ -651,6 +656,14 @@ the command as typed, and the bare command has no JSON mode.
 returns the delegate's exact exit status. The entrypoint contains no model call,
 fallback, confidence threshold, or routing policy. `mq-agent` owns the command,
 its help, validation, shadow behavior, reports, and JSON contract.
+
+`mqlaunch feedback` follows the same rule: every argument and the delegate's
+exit status pass through to `mq-agent feedback`. The shell owns no experiment,
+comparison, verdict, candidate, memory or activation logic. Read-only commands
+and `feedback run` therefore expose the same contracts as direct mq-agent use;
+the latter may append bounded runtime feedback evidence but still has zero
+production-task effect.
+
 
 ### Workflow orchestration (flow)
 
