@@ -59,7 +59,7 @@ nearest_cli_command() {
   local unknown="${1:-}"
 
   printf '%s\n' \
-    about agent architecture ask brain bundle check commands demo dev doctor \
+    about agent architecture ask brain bundle check commands demo dev doctor feedback \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory netpulse network next notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
@@ -502,6 +502,18 @@ dispatch_cli_command() {
       shift
       if declare -f run_agent_command >/dev/null; then
         run_agent_command route "$@"
+        command_status=$?
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return "$command_status"
+      ;;
+
+    feedback)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command feedback "$@"
         command_status=$?
       else
         echo "ERROR: mq-agent bridge not loaded" >&2

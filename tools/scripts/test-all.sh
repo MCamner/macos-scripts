@@ -121,6 +121,7 @@ bash "$PROJECT_ROOT/tests/ui-progress-result-smoke.sh"
 "$PROJECT_ROOT/tests/skills-repos-smoke.sh"
 "$PROJECT_ROOT/tests/mq-agent-routing-smoke.sh"
 "$PROJECT_ROOT/tests/mq-route-entrypoint-smoke.sh"
+bash "$PROJECT_ROOT/tests/feedback-delegation-smoke.sh"
 "$PROJECT_ROOT/tests/mq-memory-cochange-routing-smoke.sh"
 "$PROJECT_ROOT/tests/mq-obsidian-command-routes-smoke.sh"
 

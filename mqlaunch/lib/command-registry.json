@@ -219,6 +219,23 @@
       "operator_surface": true
     },
     {
+      "name": "feedback",
+      "aliases": [],
+      "namespace": "agent",
+      "summary": "Inspect and run bounded feedback experiments",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent feedback",
+      "operator_surface": true
+    },
+    {
       "name": "mcp-status",
       "aliases": [
         "/mcp-status"
