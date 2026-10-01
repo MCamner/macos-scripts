@@ -98,6 +98,7 @@ EXERCISED=(
 COVERED_ELSEWHERE=(
   "release-check	tests/release-check-contract-smoke.sh"
   "route	tests/mq-route-entrypoint-smoke.sh"
+  "feedback	tests/feedback-delegation-smoke.sh"
   "pulse	tests/pulse-machine-surface-smoke.sh"
   "next	tests/next-command-smoke.sh"
 )
