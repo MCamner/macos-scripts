@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+# Print a best-effort macOS system snapshot without changing settings.
+# The exit status is not an aggregate health result; failed checks do not stop the report.
+
 echo "=========================================="
 echo "         SYSTEM CHECK (macOS)"
 echo "=========================================="
@@ -38,6 +41,8 @@ pmset -g batt 2>/dev/null || echo "No battery info available"
 echo
 
 echo "Wi-Fi / IP:"
+# Probe en0, then en1, for IPv4; these interface names do not identify Wi-Fi.
+# The first successful result need not belong to the default-route interface.
 ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "No active Wi-Fi IP found"
 echo
 
