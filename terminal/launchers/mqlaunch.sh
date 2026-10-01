@@ -1,4 +1,6 @@
 #!/bin/zsh
+# macOS menu and command entrypoint; shared libraries use this launcher's UI scope.
+# Run with zsh: argument expansion and builtins below are not portable to bash.
 
 set -u
 
