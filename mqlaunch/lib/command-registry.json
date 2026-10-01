@@ -233,7 +233,6 @@
       "interactive": false,
       "compat_only": false,
       "delegates_to": "mq-agent feedback",
-      "unknown_subcommand": "forward",
       "operator_surface": true
     },
     {
