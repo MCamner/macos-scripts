@@ -58,7 +58,7 @@ x=next(c for c in d["commands"] if c["name"]=="feedback")
 assert x["owner"]=="mq-agent"
 assert x["delegates_to"]=="mq-agent feedback"
 assert x["safety"]=="delegating"
-assert x["unknown_subcommand"]=="forward"
+assert "unknown_subcommand" not in x
 assert x["json"] is True
 assert "local_role" not in x
 PY
