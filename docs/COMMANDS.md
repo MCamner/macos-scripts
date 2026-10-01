@@ -664,7 +664,6 @@ and `feedback run` therefore expose the same contracts as direct mq-agent use;
 the latter may append bounded runtime feedback evidence but still has zero
 production-task effect.
 
-
 ### Workflow orchestration (flow)
 
 ```bash
