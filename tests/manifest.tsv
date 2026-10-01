@@ -84,6 +84,7 @@ mq-obsidian-triage-ui-smoke.sh	active	-
 brain-bridge-smoke.sh	active	-
 mq-agent-routing-smoke.sh	active	-
 mq-route-entrypoint-smoke.sh	active	-
+feedback-delegation-smoke.sh	active	Thin mqlaunch -> mq-agent feedback delegation and exit-code/JSON parity
 mq-memory-cochange-routing-smoke.sh	active	-
 mq-obsidian-command-routes-smoke.sh	active	-
 skills-repos-smoke.sh	active	-
