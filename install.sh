@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Install executable bin/ entrypoints as symlinks and update the managed zsh block.
+# Links follow checkout changes; install state supports a later uninstall.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -176,7 +178,9 @@ read_state_if_present() {
   fi
 }
 
-# Links one entrypoint from bin/ into BIN_DIR.
+# Link one bin/ entrypoint; replacement requires confirmation unless --yes is set.
+# Existing files/links are removed without backup. Directory targets make rm -f
+# fail under set -e; earlier entrypoints are not rolled back on a later failure.
 install_one_symlink() {
   local name="$1" source_path link_path
   source_path="$INSTALL_DIR/$BIN_REL/$name"
