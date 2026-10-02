@@ -59,7 +59,7 @@ nearest_cli_command() {
   local unknown="${1:-}"
 
   printf '%s\n' \
-    about agent architecture ask brain bundle check commands demo dev doctor feedback \
+    about agent architecture ask auth brain bundle check commands demo dev doctor feedback \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory netpulse network next notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
@@ -106,6 +106,17 @@ print_unknown_command_error() {
 # Prints dependency-light help for public mqlaunch namespaces.
 print_namespace_help() {
   case "${1:-}" in
+    auth)
+      cat <<'HELP'
+Usage: mqlaunch auth <command> [args]
+
+Commands:
+  status [--json]       local-only Keychain/process credential status
+  test openai [--json] explicit OpenAI API access test
+
+Credential values are never printed. status makes no network request.
+HELP
+      ;;
     agent)
       cat <<'HELP'
 Usage: mqlaunch agent <command> [args]
@@ -354,7 +365,7 @@ dispatch_cli_command() {
   # path and opened the interactive menu, which never returned without a
   # terminal.
   case "$namespace" in
-    agent|dev|git|hal|obsidian|release|repos|skills|srm|stack|system)
+    agent|auth|dev|git|hal|obsidian|release|repos|skills|srm|stack|system)
       case "$sub" in
         -h|--help|help)
           if [[ $# -ne 2 ]]; then
@@ -769,8 +780,25 @@ dispatch_cli_command() {
       ;;
 
     auth)
-      "$BASE_DIR/tools/scripts/auth.sh" "${@:2}"
-      command_status=$?
+      case "$sub" in
+        "")
+          print_namespace_help auth
+          return 0
+          ;;
+        status)
+          "$BASE_DIR/tools/scripts/auth.sh" status "${@:3}"
+          command_status=$?
+          ;;
+        test)
+          "$BASE_DIR/tools/scripts/auth.sh" test "${@:3}"
+          command_status=$?
+          ;;
+        *)
+          printf 'ERROR: unknown mqlaunch auth command: %s\n' "$sub" >&2
+          print_namespace_help auth
+          return 2
+          ;;
+      esac
       case " $* " in
         *" --json "*) ;;
         *) [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter ;;
