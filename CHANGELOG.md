@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Add `mqlaunch auth status` and `mqlaunch auth test openai` as the first
+  credential observability surface. `status` is local-only and reports
+  Keychain storage, current-process visibility, and whether those credentials
+  agree without printing either value. The explicit OpenAI test performs the
+  network request, preferring the current process credential and falling back
+  to the canonical Keychain item when the environment is unset.
+
 * `mqlaunch doctor --fix-plan` prints a read-only manual remediation
   plan over the same checks and fix order as `doctor`/`doctor --json`,
   so operators can see exact next commands without executing them.
