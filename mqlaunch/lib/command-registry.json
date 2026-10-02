@@ -596,6 +596,47 @@
       "local_role": "thin-entrypoint"
     },
     {
+      "name": "auth",
+      "aliases": [],
+      "namespace": "checks",
+      "summary": "Inspect credential storage, process visibility, and API access",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null,
+      "unknown_subcommand": "reject",
+      "subcommands": [
+        {
+          "name": "status",
+          "aliases": [],
+          "summary": "Compare Keychain storage with the current process",
+          "output_modes": [
+            "human",
+            "json"
+          ],
+          "json": true
+        },
+        {
+          "name": "test",
+          "aliases": [],
+          "summary": "Test provider API access; v1 supports OpenAI",
+          "output_modes": [
+            "human",
+            "json"
+          ],
+          "json": true
+        }
+      ],
+      "operator_surface": true,
+      "local_role": "host-operation"
+    },
+    {
       "name": "doctor",
       "aliases": [
         "/doctor"
