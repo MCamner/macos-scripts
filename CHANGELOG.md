@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch hal changes` forwards to `mq-hal changes` with flags as separate
+  arguments (`--since`, `--current`, `--no-save`, `--json`). Without the
+  explicit case the bridge fallback joined them into one free-text prompt for
+  the Ollama router.
+
 * Add `mqlaunch auth status` and `mqlaunch auth test openai` as the first
   credential observability surface. `status` is local-only and reports
   Keychain storage, current-process visibility, and whether those credentials
