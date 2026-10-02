@@ -32,6 +32,7 @@ delegated-exit-code-smoke.sh	active	-
 delegate-missing-message-smoke.sh	active	-
 docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
+auth-status-smoke.sh	active	Keychain/process visibility and explicit OpenAI API access contract; secrets never printed
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
 git-menu-surface-smoke.sh	active	-
