@@ -30,7 +30,7 @@ hint_for() {
       # with one, and two in a line reads as a broken sentence.
       printf 'ships with macOS; this shell is not on one' ;;
     OPENAI_API_KEY)
-      printf 'export OPENAI_API_KEY=... in your shell profile' ;;
+      printf 'mqlaunch auth status' ;;
     mqlaunch)
       printf 'run ./install.sh from the repo to install the symlink' ;;
     *)
