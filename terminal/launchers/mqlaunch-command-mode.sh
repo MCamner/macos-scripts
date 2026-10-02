@@ -783,7 +783,7 @@ dispatch_cli_command() {
       case "$sub" in
         "")
           print_namespace_help auth
-          return 0
+          command_status=0
           ;;
         status)
           "$BASE_DIR/tools/scripts/auth.sh" status "${@:3}"
