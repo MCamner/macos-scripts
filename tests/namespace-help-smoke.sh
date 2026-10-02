@@ -58,7 +58,7 @@ echo "SMOKE: namespace help contract"
 # One help route for every namespace mqlaunch routes itself. `system`, `release`
 # and `dev` used to reach their own `*` fallback and exit 2; `git` interpreted
 # `help` as a repo path and opened the menu, which never returned.
-for namespace in agent dev git hal obsidian release repos skills srm stack system; do
+for namespace in agent auth dev git hal obsidian release repos skills srm stack system; do
   run_help "$namespace" --help
   run_help "$namespace" -h
   run_help "$namespace" help
@@ -92,7 +92,7 @@ echo "SMOKE: unknown subcommand contract"
 # `workspace` let their delegate own the command set — none of them has a closed
 # set for mqlaunch to police, and duplicating one here is the drift the registry
 # exists to prevent.
-for namespace in obsidian system release dev help; do
+for namespace in auth obsidian system release dev help; do
   set +e
   HOME="$TMPDIR_TEST" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 MQLAUNCH_HEADLESS=1 \
     "$TIMEOUT_BIN" 20 "$LAUNCHER" "$namespace" no-such-subcommand \
