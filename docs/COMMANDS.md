@@ -249,11 +249,24 @@ mqlaunch next --fresh               # collect now, whatever the last run left be
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch doctor --fix-plan          # read-only manual remediation plan
+mqlaunch auth status                # local-only: Keychain vs current process
+mqlaunch auth status --json         # mq.auth-status.v1, no network request
+mqlaunch auth test openai           # explicit OpenAI API access test
+mqlaunch auth test openai --json    # mq.auth-test.v1
 mqlaunch workflows validate         # workflow command-surface health check
 mqlaunch selftest                   # smoke tests + shell lint
 mqlaunch check                      # alias for selftest
 mqlaunch self-check                 # launcher self-check (lighter than selftest)
 ```
+
+`auth status` never talks to the network. It reports the canonical OpenAI
+Keychain item separately from `OPENAI_API_KEY` in the current process and
+marks whether the two values match without printing either value.
+`auth test openai` is the explicit network check: it tests the current
+process credential when one is present, otherwise it reads the canonical
+Keychain item for the request. This makes a stale process credential visible
+instead of silently masking it with Keychain, while a Keychain-only setup can
+still be verified without a manual `export`.
 
 ### Pulse
 

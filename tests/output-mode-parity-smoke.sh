@@ -96,6 +96,8 @@ EXERCISED=(
 # would make this gate the owner of a document shape it does not define. The
 # named test drives `--json` against a stub pulse.sh instead.
 COVERED_ELSEWHERE=(
+  "auth status	tests/auth-status-smoke.sh"
+  "auth test	tests/auth-status-smoke.sh"
   "release-check	tests/release-check-contract-smoke.sh"
   "route	tests/mq-route-entrypoint-smoke.sh"
   "feedback	tests/feedback-delegation-smoke.sh"

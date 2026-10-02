@@ -97,6 +97,7 @@ MENUS
   mqlaunch workflows      Project boot, surface validation, snapshots
 
 CHECKS
+  mqlaunch auth           Inspect credential storage, process visibility, and API access
   mqlaunch check          Run the system check
   mqlaunch doctor         Check the environment and dependencies
   mqlaunch next           The single next action, selected from Pulse's attention list

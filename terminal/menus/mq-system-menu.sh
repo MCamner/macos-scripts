@@ -69,7 +69,8 @@ _system_submenu_panel() {
 system_checks_menu_loop() {
   local choice
   while true; do
-    _system_submenu_panel "Checks" "1. Self-check" "2. System check" "3. Vault scan"
+    _system_submenu_panel "Checks" "1. Self-check" "2. System check" "3. Vault scan" \
+      "4. Credentials"
     read_menu_choice "" "checks" || return
     choice="$REPLY"
     echo
@@ -77,6 +78,7 @@ system_checks_menu_loop() {
       1) "$BASE_DIR/bin/mqlaunch" self-check ;;
       2) system_check; pause_enter ;;
       3) "$BASE_DIR/tools/scripts/vault-scan.sh"; pause_enter ;;
+      4) "$BASE_DIR/bin/mqlaunch" auth status ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) echo "${C_ERR}Invalid selection:${C_RESET} $choice"; pause_enter ;;
