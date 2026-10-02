@@ -603,10 +603,9 @@
       "owner": "macos-scripts",
       "safety": "read-only",
       "output_modes": [
-        "human",
-        "json"
+        "human"
       ],
-      "json": true,
+      "json": false,
       "interactive": false,
       "compat_only": false,
       "delegates_to": null,
