@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch hal changes` forwards to `mq-hal changes` with flags as separate
+  arguments (`--since`, `--current`, `--no-save`, `--json`). Without the
+  explicit case the bridge fallback joined them into one free-text prompt for
+  the Ollama router.
+
 * `mqlaunch doctor --fix-plan` prints a read-only manual remediation
   plan over the same checks and fix order as `doctor`/`doctor --json`,
   so operators can see exact next commands without executing them.

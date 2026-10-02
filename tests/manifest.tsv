@@ -41,6 +41,7 @@ gitlaunch-menu-surface-smoke.sh	active	-
 gitlaunch-pr-push-recovery-smoke.sh	active	-
 gitmerge-safe-smoke.sh	active	-
 hal-args-no-eval-smoke.sh	active	-
+hal-changes-bridge-smoke.sh	active	-
 hal-command-surface-smoke.sh	active	-
 hal-format-smoke.sh	active	-
 hal-gallery-smoke.sh	active	-

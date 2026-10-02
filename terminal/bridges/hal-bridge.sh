@@ -36,6 +36,7 @@ Usage:
   mqlaunch hal fix-doctor              # safe fix plan
   mqlaunch hal timeline                # session timeline
   mqlaunch hal timeline --details      # session timeline with details
+  mqlaunch hal changes                 # new/resolved/persisting since last check
   mqlaunch hal session                 # session memory
   mqlaunch hal last                    # latest memory item
   mqlaunch hal remember "note"         # save memory note
@@ -153,6 +154,11 @@ mq_hal_main() {
     timeline)
       shift || true
       "$MQ_HAL_BIN" timeline "$@"
+      ;;
+
+    changes)
+      shift || true
+      "$MQ_HAL_BIN" changes "$@"
       ;;
 
     memory-path|session-path)
