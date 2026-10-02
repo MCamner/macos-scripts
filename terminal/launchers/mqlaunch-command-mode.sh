@@ -768,6 +768,16 @@ dispatch_cli_command() {
       return "$_selftest_rc"
       ;;
 
+    auth)
+      "$BASE_DIR/tools/scripts/auth.sh" "${@:2}"
+      command_status=$?
+      case " $* " in
+        *" --json "*) ;;
+        *) [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter ;;
+      esac
+      return "$command_status"
+      ;;
+
     doctor|/doctor)
       "$BASE_DIR/tools/scripts/doctor.sh" "${@:2}"
       command_status=$?
