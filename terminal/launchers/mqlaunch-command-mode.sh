@@ -799,10 +799,9 @@ dispatch_cli_command() {
           return 2
           ;;
       esac
-      case " $* " in
-        *" --json "*) ;;
-        *) [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter ;;
-      esac
+      if ! has_json_flag "$@"; then
+        [[ -z "${MQ_NO_TUI:-}" ]] && pause_enter
+      fi
       return "$command_status"
       ;;
 
