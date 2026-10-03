@@ -14,6 +14,12 @@ All notable changes to this project will be documented in this file.
   the existing repair priority and carrying an explicit verification command.
   It executes nothing and does not depend on `jq`.
 
+* Skill browser: Tools → Skills → `4. Browse` lists this repo's skills with
+  their descriptions and opens the chosen `SKILL.md` in `less`. Backed by new
+  `mqlaunch skills list` and `mqlaunch skills show <name>`. `mq-skills.py` now
+  reads folded YAML descriptions (`description: >`), which it previously
+  parsed as a lone `>`.
+
 * `mqlaunch hal changes` forwards to `mq-hal changes` with flags as separate
   arguments (`--since`, `--current`, `--no-save`, `--json`). Without the
   explicit case the bridge fallback joined them into one free-text prompt for

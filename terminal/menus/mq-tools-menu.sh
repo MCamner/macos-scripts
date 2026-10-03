@@ -838,7 +838,7 @@ print_tools_skills_menu() {
   surface_panel_header "Skills" "Tools" "$width" "$panel_color"
   surface_row "SKILLS" "$width" "$panel_color"
   surface_split_row "1. Audit" "2. Validate" "$width" "$panel_color"
-  surface_split_row "3. Ecosystem validate" "" "$width" "$panel_color"
+  surface_split_row "3. Ecosystem validate" "4. Browse" "$width" "$panel_color"
   surface_split_row "b. Back" "" "$width" "$panel_color"
   surface_row "" "$width" "$panel_color"
   surface_row "Status: ready" "$width" "$panel_color"
@@ -860,9 +860,76 @@ tools_skills_menu_loop() {
       1) run_mq_skills_audit ;;
       2) run_mq_skills_validate ;;
       3) run_mq_skills_ecosystem_validate ;;
+      4) tools_skills_browse_loop ;;
       b|B|x|X|exit) ui_ok "Back."; break ;;
       *) ui_err "Invalid option."; pause_enter ;;
     esac
+  done
+}
+
+# Prints this repo's skills as a numbered list. Expects "name<TAB>description"
+# lines in $1, as `mq-skills.py list --format tsv` prints them.
+print_tools_skills_browse() {
+  local listing="$1"
+  local width panel_color inner n name desc text
+  width="$(surface_terminal_width)"
+  panel_color="$(surface_panel_color)"
+  inner=$(( width - 4 ))
+  # shellcheck disable=SC2034
+  MQ_SURFACE_WIDTH="$width"
+
+  clear_screen
+  surface_panel_header "Browse" "Skills" "$width" "$panel_color"
+  surface_row "SKILLS IN $(basename "$BASE_DIR")" "$width" "$panel_color"
+  n=0
+  while IFS=$'\t' read -r name desc; do
+    [[ -n "$name" ]] || continue
+    n=$(( n + 1 ))
+    text="$(printf '%2d. %-28s %s' "$n" "$name" "$desc")"
+    (( ${#text} > inner )) && text="${text:0:$(( inner - 1 ))}…"
+    surface_row "$text" "$width" "$panel_color"
+  done <<<"$listing"
+  surface_row "" "$width" "$panel_color"
+  surface_row "Number opens SKILL.md · b. Back" "$width" "$panel_color"
+  surface_bottom "$width" "$panel_color"
+  printf '\n'
+}
+
+# Runs the skill browser: pick a number, read that SKILL.md in a pager.
+#
+# The list is kept as text and picked with sed rather than an array, because
+# mqlaunch.sh sources this file from zsh, where arrays start at 1, not 0.
+tools_skills_browse_loop() {
+  local listing count choice name
+
+  listing="$(python3 "$MQ_SKILLS" list --repo "$BASE_DIR" --format tsv)" || {
+    ui_err "Could not list skills."
+    pause_enter
+    return 1
+  }
+  count="$(printf '%s\n' "$listing" | grep -c .)"
+
+  while true; do
+    print_tools_skills_browse "$listing"
+    read_menu_choice "" "browse" || return
+    choice="$REPLY"
+    echo
+
+    case "$choice" in
+      b|B|x|X|exit) ui_ok "Back."; break ;;
+    esac
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= count )); then
+      name="$(printf '%s\n' "$listing" | sed -n "${choice}p" | cut -f1)"
+      if command -v less >/dev/null 2>&1; then
+        python3 "$MQ_SKILLS" show "$name" --repo "$BASE_DIR" | less -R
+      else
+        python3 "$MQ_SKILLS" show "$name" --repo "$BASE_DIR"
+        pause_enter
+      fi
+    else
+      ui_err "Invalid option."
+      pause_enter
+    fi
   done
 }
 
@@ -1025,6 +1092,8 @@ Commands:
   skills      Audit local MQ ecosystem skills
   skills-ecosystem
               Validate skills across all known MQ repos
+  skills-browse
+              Browse this repo's skills and read their SKILL.md
   repos       Summarize local MQ ecosystem repos
   repos-status
               Show branch, upstream and dirty state for known MQ repos
@@ -1050,6 +1119,7 @@ main() {
     docwrite|document-functions-write) run_document_functions_update ;;
     skills|skills-audit) run_mq_skills_audit ;;
     skills-validate) run_mq_skills_validate ;;
+    skills-browse) tools_skills_browse_loop ;;
     skills-ecosystem|skills-validate-ecosystem) run_mq_skills_ecosystem_validate ;;
     repos|repos-summary) run_mq_repos_summary ;;
     repos-diff|diff-summary) run_mq_repos_diff_summary ;;
