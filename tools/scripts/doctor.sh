@@ -242,6 +242,68 @@ run_fix_plan_mode() {
   status_exit_code
 }
 
+# Emits a versioned, read-only repair plan over the same doctor checks.
+# All serialized values come from the closed doctor vocabulary: check names,
+# fixed details, fixed hints, and VERSION. No jq dependency is allowed here
+# because jq itself may be the missing dependency being reported.
+run_fix_plan_json_mode() {
+  local version
+  version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
+
+  local cmd
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  local actions="" sep="" idx=1 candidate line name st detail hint
+  local command_json
+  for candidate in "${FIX_ORDER[@]}"; do
+    while IFS= read -r line; do
+      [[ -n "$line" ]] || continue
+      IFS='|' read -r name st detail hint <<<"$line"
+      [[ "$name" == "$candidate" ]] || continue
+
+      command_json="null"
+      if [[ -n "$hint" ]]; then
+        command_json="\"${hint}\""
+      fi
+
+      actions="${actions}${sep}{\"order\":${idx},\"check\":\"${name}\",\"observed_status\":\"${st}\",\"observed_detail\":\"${detail}\",\"command\":${command_json},\"execution\":\"manual-review\",\"verify\":\"mqlaunch doctor --json\"}"
+      sep=","
+      idx=$((idx + 1))
+    done <<<"$_J_PLAN_ROWS"
+  done
+
+  local first
+  first="$(next_step)"
+  local first_json="null"
+  if [[ "$_J_STATUS" != "ok" && -n "$first" ]]; then
+    first_json="\"${first}\""
+  fi
+
+  printf '{"schema":"mq.doctor-fix-plan.v1","project":"macos-scripts","version":"%s","status":"%s","read_only":true,"source":{"schema":"mq.doctor-status.v1","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}},"actions":[%s],"first_action":%s,"verification":"mqlaunch doctor --json"}\n' \
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$actions" "$first_json"
+
+  status_exit_code
+}
+
 # Runs normal interactive mode.
 run_normal_mode() {
   header "MQ DOCTOR"
@@ -302,7 +364,9 @@ for arg in "$@"; do
   [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
 done
 
-if [[ $JSON_MODE -eq 1 ]]; then
+if [[ $FIX_PLAN_MODE -eq 1 && $JSON_MODE -eq 1 ]]; then
+  run_fix_plan_json_mode
+elif [[ $JSON_MODE -eq 1 ]]; then
   run_json_mode
 elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
   run_fix_plan_mode
