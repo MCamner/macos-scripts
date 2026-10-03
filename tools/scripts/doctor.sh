@@ -391,10 +391,10 @@ run_fix_plan_json_mode() {
   local next
   next="$(next_step)"
 
-  printf '{"schema":"mq.repair-plan.v1","status":"%s","source":{"command":"mqlaunch doctor","status":"%s","summary":{"ok":%d,"warn":%d,"fail":%d}},"execution":{"mode":"manual-only","apply_supported":false,"applied":false},"summary":{"actions":%d,"read_only":%d,"local_write":%d,"manual":%d,"automatic":0},"first_action_id":%s,"next":"%s","actions":[%s]}\n' \
-    "$plan_status" "$_J_STATUS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+  printf '{"schema":"mq.repair-plan.v1","status":"%s","source":{"command":"mqlaunch doctor","status":"%s","summary":{"ok":%d,"warn":%d,"fail":%d},"next":"%s"},"execution":{"mode":"manual-only","apply_supported":false,"applied":false},"summary":{"actions":%d,"read_only":%d,"local_write":%d,"manual":%d,"automatic":0},"first_action_id":%s,"actions":[%s]}\n' \
+    "$plan_status" "$_J_STATUS" "$_J_OK" "$_J_WARN" "$_J_FAIL" "$(json_escape "$next")" \
     "$action_count" "$read_only" "$local_write" "$manual" \
-    "$first_json" "$(json_escape "$next")" "$actions"
+    "$first_json" "$actions"
 
   status_exit_code
 }
