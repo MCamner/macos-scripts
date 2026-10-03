@@ -41,6 +41,13 @@ All notable changes to this project will be documented in this file.
   This work landed after the `v2.2.0` tag was cut, so it is not part of the
   published v2.2.0 release.
 
+### Fixed
+
+* The main menu prompt printed "Unknown command" twice for an unknown word,
+  and labelled a known command that failed as unknown. The menu reported its
+  own error after any non-zero dispatch status; dispatch has already reported,
+  so the menu now only pauses and returns that status.
+
 ## [2.2.0] - 2026-09-10
 
 Release provenance:

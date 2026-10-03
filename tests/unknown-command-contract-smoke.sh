@@ -147,7 +147,50 @@ BASH
   }
 }
 
+# Runs the main-menu prompt path once dispatch has run.
+#
+# dispatch_cli_command already reports an unknown command itself. The menu used
+# to treat every non-zero return as "unknown" and report it again, so typing
+# `qqq` printed the error twice — and a known command that merely failed was
+# labelled unknown. zsh, because the menu splits with ${=normalized}.
+run_menu_dispatch_contract() {
+  local output
+
+  output="$(
+    ROOT_UNDER_TEST="$ROOT" zsh 2>&1 <<'ZSH'
+BASE_DIR="$ROOT_UNDER_TEST"
+APP_TITLE="MQLAUNCH"
+source "$ROOT_UNDER_TEST/terminal/menus/mq-main-menu.sh"
+pause_enter() { :; }
+dispatch_cli_command() {
+  case "$1" in
+    failing) printf 'failing ran\n' >&2; return 1 ;;
+    *) printf 'ERROR: Unknown command: %s\n' "$1" >&2; return 2 ;;
+  esac
+}
+handle_main_prompt_command "qqq" "qqq"; printf 'status:%s\n' "$?"
+handle_main_prompt_command "failing" "failing"; printf 'status:%s\n' "$?"
+ZSH
+  )"
+
+  [[ "$(grep -c 'Unknown command: qqq' <<<"$output")" == 1 ]] || {
+    echo "menu: unknown command not reported exactly once:" >&2
+    printf '%s\n' "$output" >&2
+    return 1
+  }
+  ! grep -q 'Unknown command: failing' <<<"$output" || {
+    echo "menu: a failing known command was reported as unknown" >&2
+    return 1
+  }
+  grep -q 'status:2' <<<"$output" && grep -q 'status:1' <<<"$output" || {
+    echo "menu: dispatch status not propagated:" >&2
+    printf '%s\n' "$output" >&2
+    return 1
+  }
+}
+
 echo "SMOKE: unknown command contract"
+run_menu_dispatch_contract
 run_unknown redirected
 printf '' | run_unknown headless
 run_unknown nearest-command doctro
