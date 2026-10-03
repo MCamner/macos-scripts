@@ -786,10 +786,10 @@ agent_mcp_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent_menu_wait "Checking MCP status" _run_agent mcp status; pause_enter ;;
-      2) _run_agent_menu_wait "Listing MCP tools" _run_agent mcp tools; pause_enter ;;
-      3) _run_agent_menu_wait "Starting MCP server" _mcp_start; pause_enter ;;
-      4) _run_agent_menu_wait "Stopping MCP server" _mcp_stop; pause_enter ;;
+      1) _run_agent_menu_passthrough "Checking MCP status" _run_agent mcp status; pause_enter ;;
+      2) _run_agent_menu_passthrough "Listing MCP tools" _run_agent mcp tools; pause_enter ;;
+      3) _run_agent_menu_passthrough "Starting MCP server" _mcp_start; pause_enter ;;
+      4) _run_agent_menu_passthrough "Stopping MCP server" _mcp_stop; pause_enter ;;
       b|B|x|X|exit) return ;;
       *) printf "%b Invalid selection:%b %s\n" "${C_ERR:-}" "${C_RESET:-}" "$choice"; pause_enter ;;
     esac
@@ -847,7 +847,7 @@ handle_agent_menu_choice() {
     3) _run_agent_menu_wait "Running release check" _run_agent release-check; pause_enter ;;
     4) _run_agent_menu_wait "Diagnosing CI" _run_agent fix-ci;     pause_enter ;;
     5) agent_review_brain_menu_loop ;;
-    6) _run_agent_menu_wait "Running stack health sweep → brain" _run_agent stack sweep --brain; pause_enter ;;
+    6) _run_agent_menu_passthrough "Running stack health sweep → brain" _run_agent stack sweep --brain; pause_enter ;;
     7) _run_agent_menu_wait "Building stack loop plan" _run_agent stack loop; pause_enter ;;
     8) agent_cochange_menu_loop ;;
     9) agent_mcp_menu_loop ;;

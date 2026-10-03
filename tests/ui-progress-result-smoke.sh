@@ -81,6 +81,13 @@ grep -q '_run_agent_menu_passthrough "Building repo summary" _run_agent repo-sum
 grep -q '_run_agent_menu_passthrough "Listing mq-agent tools" _run_agent tools' "$MENU"
 ! grep -q '_run_agent_menu_wait "Scoring repository" _run_agent score .' "$MENU"
 
+# Stack sweep prints delegated panels and must not share a row with a spinner.
+grep -q '_run_agent_menu_passthrough "Running stack health sweep → brain" _run_agent stack sweep --brain' "$MENU"
+
+# MCP panels must also bypass the active spinner.
+grep -q '_run_agent_menu_passthrough "Checking MCP status" _run_agent mcp status' "$MENU"
+grep -q '_run_agent_menu_passthrough "Listing MCP tools" _run_agent mcp tools' "$MENU"
+
 echo "[10/12] successful review + brain write finishes both steps and the PASS footer"
 out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" bash -c "
   source '$UI'
