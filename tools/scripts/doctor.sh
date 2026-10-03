@@ -66,7 +66,7 @@ plan_verify_for() {
 
 plan_safety_for() {
   case "$1" in
-    git|gh|uv|python3|node|eza|fz|jq|gitleaks|mqlaunch)
+    git|gh|uv|python3|node|eza|fzf|jq|gitleaks|mqlaunch)
       printf 'local-write' ;;
     OPENAI_API_KEY)
       printf 'read-only' ;;
