@@ -249,6 +249,7 @@ mqlaunch next --fresh               # collect now, whatever the last run left be
 mqlaunch doctor                     # interactive environment check
 mqlaunch doctor --json              # machine-readable JSON report
 mqlaunch doctor --fix-plan          # read-only manual remediation plan
+mqlaunch doctor --fix-plan --json   # mq.doctor-fix-plan.v1; evidence-bound, executes nothing
 mqlaunch auth status                # local-only: Keychain vs current process
 mqlaunch auth status --json         # mq.auth-status.v1, no network request
 mqlaunch auth test openai           # explicit OpenAI API access test
@@ -504,7 +505,21 @@ names how many checks need attention. `tests/doctor-status-contract-smoke.sh`
 holds the two modes to the same answer.
 
 Every check that does not pass carries a hint saying what to do about it, and
-the run ends with the one to do first:
+the run ends with the one to do first.
+
+`mqlaunch doctor --fix-plan --json` exposes the same remediation logic as
+`mq.doctor-fix-plan.v1`. Each action names the exact doctor check and observed
+status that justified it, carries `execution: "manual-review"`, and provides
+`mqlaunch doctor --json` as its verification command. The document is
+read-only: it never runs a repair command. A healthy machine returns an empty
+`actions` list and `first_action: null` rather than inventing work.
+
+The plan is ordered by `FIX_ORDER`, not by the order checks happen to print,
+so `first_action` and action 1 are the same decision. JSON generation does
+not depend on `jq`, because a missing `jq` is itself one of the states the
+plan must be able to report.
+
+Example human guidance:
 
 ```text
 ⚠ gh missing — brew install gh

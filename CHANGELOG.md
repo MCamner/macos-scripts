@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch doctor --fix-plan --json` emits
+  `mq.doctor-fix-plan.v1`: a read-only remediation document whose actions are
+  tied to the exact non-passing doctor checks that produced them, ordered by
+  the existing repair priority and carrying an explicit verification command.
+  It executes nothing and does not depend on `jq`.
+
 * `mqlaunch hal changes` forwards to `mq-hal changes` with flags as separate
   arguments (`--since`, `--current`, `--no-save`, `--json`). Without the
   explicit case the bridge fallback joined them into one free-text prompt for
