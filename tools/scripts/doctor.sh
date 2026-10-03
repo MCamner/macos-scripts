@@ -149,6 +149,530 @@ status_exit_code() {
   return 1
 }
 
+# Collect the canonical doctor checks once per mode. Every machine-readable and
+# remediation surface uses this function so they cannot drift into different
+# inventories or verdicts.
+collect_doctor_checks() {
+  local cmd
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+}
+
+# Escape controlled doctor strings without depending on jq: jq itself is one
+# of the dependencies doctor must be able to report as missing.
+json_escape() {
+  local s="${1:-}"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//# Runs JSON report mode.
+run_json_mode() {
+  local version
+  version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
+
+  collect_doctor_checks
+
+  local next
+  next="$(next_step)"
+
+  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
+
+  status_exit_code
+}
+
+
+# Runs the same checks as doctor, but prints a manual remediation plan instead
+# of the full diagnostic screen. Read-only: it never executes a fix command.
+run_fix_plan_mode() {
+  collect_doctor_checks
+
+  header "MQ DOCTOR FIX PLAN"
+  section "SUMMARY"
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "No fixes needed — $total checks passed"
+    printf '\n  Next: %s\n\n' "$HEALTHY_NEXT"
+    return 0
+  fi
+
+  warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  printf '  This plan is read-only. Review each command before running it.\n'
+
+  section "PLAN"
+  local idx=1 line name st detail hint
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS='|' read -r name st detail hint <<<"$line"
+    printf '  %d. %s\n' "$idx" "$name"
+    [[ -n "$detail" ]] && printf '     Status: %s\n' "$detail"
+    if [[ -n "$hint" ]]; then
+      printf '     Run: %s\n' "$hint"
+    else
+      printf '     Run: inspect manually; no safe one-line fix is known\n'
+    fi
+    idx=$((idx + 1))
+  done <<<"$_J_PLAN_ROWS"
+
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  First: %s\n' "$next"
+  echo
+  status_exit_code
+}
+
+# Emits a versioned, read-only repair plan. Each action carries the doctor
+# observation that justified it; nothing is executed and no action is invented
+# from an absent check.
+run_fix_plan_json_mode() {
+  local version
+  version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
+  collect_doctor_checks
+
+  local actions="" sep="" idx=1 candidate line name st detail hint
+  for candidate in "${FIX_ORDER[@]}"; do
+    while IFS= read -r line; do
+      [[ -n "$line" ]] || continue
+      IFS='|' read -r name st detail hint <<<"$line"
+      [[ "$name" == "$candidate" ]] || continue
+
+      local command_json="null"
+      if [[ -n "$hint" ]]; then
+        command_json="\"$(json_escape "$hint")\""
+      fi
+
+      actions="${actions}${sep}{\"order\":${idx},\"check\":\"$(json_escape "$name")\",\"observed_status\":\"$(json_escape "$st")\",\"observed_detail\":\"$(json_escape "$detail")\",\"command\":${command_json},\"execution\":\"manual-review\",\"verify\":\"mqlaunch doctor --json\"}"
+      sep=","
+      idx=$((idx + 1))
+    done <<<"$_J_PLAN_ROWS"
+  done
+
+  local first
+  first="$(next_step)"
+  local first_json="null"
+  if [[ "$_J_STATUS" != "ok" && -n "$first" ]]; then
+    first_json="\"$(json_escape "$first")\""
+  fi
+
+  printf '{"schema":"mq.doctor-fix-plan.v1","project":"macos-scripts","version":"%s","status":"%s","read_only":true,"source":{"schema":"mq.doctor-status.v1","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}},"actions":[%s],"first_action":%s,"verification":"mqlaunch doctor --json"}\n' \
+    "$(json_escape "$version")" "$(json_escape "$_J_STATUS")" "$_J_CHECKS" \
+    "$_J_OK" "$_J_WARN" "$_J_FAIL" "$actions" "$first_json"
+
+  status_exit_code
+}
+
+# Runs normal interactive mode.
+run_normal_mode() {
+  header "MQ DOCTOR"
+
+  section "SYSTEM"
+  ok "User: $USER"
+  ok "Shell: $SHELL"
+
+  section "TOOLS"
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      check_ok "$cmd"
+    else
+      check_warn "$cmd" "$cmd missing"
+    fi
+  done
+
+  section "ENV"
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    check_ok "OPENAI_API_KEY set"
+  else
+    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
+  fi
+
+  section "MQ SETUP"
+  if command -v mqlaunch >/dev/null 2>&1; then
+    check_ok "mqlaunch available"
+  else
+    check_warn "mqlaunch" "mqlaunch not in PATH"
+  fi
+
+  section "SUMMARY"
+  # Branch on the status rather than on a warn count, so a `fail` check added
+  # later cannot slip past a `warn`-shaped condition and print "operational"
+  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "MQ operational — $total checks passed"
+  else
+    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  fi
+
+  # One instruction, not a list, and on every run rather than only the bad ones.
+  # When something needs attention the warnings above each carry their own hint
+  # and this names which to do first; when nothing does, it names where to go.
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
+
+  echo
+  status_exit_code
+}
+
+JSON_MODE=0
+FIX_PLAN_MODE=0
+for arg in "$@"; do
+  [[ "$arg" == "--json" ]] && JSON_MODE=1
+  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
+done
+
+if [[ $FIX_PLAN_MODE -eq 1 && $JSON_MODE -eq 1 ]]; then
+  run_fix_plan_json_mode
+elif [[ $JSON_MODE -eq 1 ]]; then
+  run_json_mode
+elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
+  run_fix_plan_mode
+else
+  run_normal_mode
+fi
+\n'/\\n}"
+  s="${s//# Runs JSON report mode.
+run_json_mode() {
+  local version
+  version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
+
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  local next
+  next="$(next_step)"
+
+  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
+
+  status_exit_code
+}
+
+
+# Runs the same checks as doctor, but prints a manual remediation plan instead
+# of the full diagnostic screen. Read-only: it never executes a fix command.
+run_fix_plan_mode() {
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  header "MQ DOCTOR FIX PLAN"
+  section "SUMMARY"
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "No fixes needed — $total checks passed"
+    printf '\n  Next: %s\n\n' "$HEALTHY_NEXT"
+    return 0
+  fi
+
+  warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  printf '  This plan is read-only. Review each command before running it.\n'
+
+  section "PLAN"
+  local idx=1 line name st detail hint
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS='|' read -r name st detail hint <<<"$line"
+    printf '  %d. %s\n' "$idx" "$name"
+    [[ -n "$detail" ]] && printf '     Status: %s\n' "$detail"
+    if [[ -n "$hint" ]]; then
+      printf '     Run: %s\n' "$hint"
+    else
+      printf '     Run: inspect manually; no safe one-line fix is known\n'
+    fi
+    idx=$((idx + 1))
+  done <<<"$_J_PLAN_ROWS"
+
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  First: %s\n' "$next"
+  echo
+  status_exit_code
+}
+
+# Runs normal interactive mode.
+run_normal_mode() {
+  header "MQ DOCTOR"
+
+  section "SYSTEM"
+  ok "User: $USER"
+  ok "Shell: $SHELL"
+
+  section "TOOLS"
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      check_ok "$cmd"
+    else
+      check_warn "$cmd" "$cmd missing"
+    fi
+  done
+
+  section "ENV"
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    check_ok "OPENAI_API_KEY set"
+  else
+    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
+  fi
+
+  section "MQ SETUP"
+  if command -v mqlaunch >/dev/null 2>&1; then
+    check_ok "mqlaunch available"
+  else
+    check_warn "mqlaunch" "mqlaunch not in PATH"
+  fi
+
+  section "SUMMARY"
+  # Branch on the status rather than on a warn count, so a `fail` check added
+  # later cannot slip past a `warn`-shaped condition and print "operational"
+  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "MQ operational — $total checks passed"
+  else
+    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  fi
+
+  # One instruction, not a list, and on every run rather than only the bad ones.
+  # When something needs attention the warnings above each carry their own hint
+  # and this names which to do first; when nothing does, it names where to go.
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
+
+  echo
+  status_exit_code
+}
+
+JSON_MODE=0
+FIX_PLAN_MODE=0
+for arg in "$@"; do
+  [[ "$arg" == "--json" ]] && JSON_MODE=1
+  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
+done
+
+if [[ $JSON_MODE -eq 1 ]]; then
+  run_json_mode
+elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
+  run_fix_plan_mode
+else
+  run_normal_mode
+fi
+\r'/\\r}"
+  s="${s//# Runs JSON report mode.
+run_json_mode() {
+  local version
+  version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
+
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  local next
+  next="$(next_step)"
+
+  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
+
+  status_exit_code
+}
+
+
+# Runs the same checks as doctor, but prints a manual remediation plan instead
+# of the full diagnostic screen. Read-only: it never executes a fix command.
+run_fix_plan_mode() {
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  header "MQ DOCTOR FIX PLAN"
+  section "SUMMARY"
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "No fixes needed — $total checks passed"
+    printf '\n  Next: %s\n\n' "$HEALTHY_NEXT"
+    return 0
+  fi
+
+  warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  printf '  This plan is read-only. Review each command before running it.\n'
+
+  section "PLAN"
+  local idx=1 line name st detail hint
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS='|' read -r name st detail hint <<<"$line"
+    printf '  %d. %s\n' "$idx" "$name"
+    [[ -n "$detail" ]] && printf '     Status: %s\n' "$detail"
+    if [[ -n "$hint" ]]; then
+      printf '     Run: %s\n' "$hint"
+    else
+      printf '     Run: inspect manually; no safe one-line fix is known\n'
+    fi
+    idx=$((idx + 1))
+  done <<<"$_J_PLAN_ROWS"
+
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  First: %s\n' "$next"
+  echo
+  status_exit_code
+}
+
+# Runs normal interactive mode.
+run_normal_mode() {
+  header "MQ DOCTOR"
+
+  section "SYSTEM"
+  ok "User: $USER"
+  ok "Shell: $SHELL"
+
+  section "TOOLS"
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      check_ok "$cmd"
+    else
+      check_warn "$cmd" "$cmd missing"
+    fi
+  done
+
+  section "ENV"
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    check_ok "OPENAI_API_KEY set"
+  else
+    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
+  fi
+
+  section "MQ SETUP"
+  if command -v mqlaunch >/dev/null 2>&1; then
+    check_ok "mqlaunch available"
+  else
+    check_warn "mqlaunch" "mqlaunch not in PATH"
+  fi
+
+  section "SUMMARY"
+  # Branch on the status rather than on a warn count, so a `fail` check added
+  # later cannot slip past a `warn`-shaped condition and print "operational"
+  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
+  local total=$((_J_OK + _J_WARN + _J_FAIL))
+  if [[ "$_J_STATUS" == "ok" ]]; then
+    ok "MQ operational — $total checks passed"
+  else
+    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
+  fi
+
+  # One instruction, not a list, and on every run rather than only the bad ones.
+  # When something needs attention the warnings above each carry their own hint
+  # and this names which to do first; when nothing does, it names where to go.
+  local next
+  next="$(next_step)"
+  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
+
+  echo
+  status_exit_code
+}
+
+JSON_MODE=0
+FIX_PLAN_MODE=0
+for arg in "$@"; do
+  [[ "$arg" == "--json" ]] && JSON_MODE=1
+  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
+done
+
+if [[ $JSON_MODE -eq 1 ]]; then
+  run_json_mode
+elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
+  run_fix_plan_mode
+else
+  run_normal_mode
+fi
+\t'/\\t}"
+  printf '%s' "$s"
+}
+
 # Runs JSON report mode.
 run_json_mode() {
   local version
