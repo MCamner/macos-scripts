@@ -38,6 +38,83 @@ hint_for() {
   esac
 }
 
+# Repair-plan v1 keeps diagnostic hints human-friendly while publishing a
+# separate machine contract whose commands are actually runnable.
+plan_command_for() {
+  case "$1" in
+    git|gh|uv|python3|node|eza|fzf|jq|gitleaks)
+      printf 'brew install %s' "$1" ;;
+    mqlaunch)
+      printf './install.sh' ;;
+    OPENAI_API_KEY)
+      printf 'mqlaunch auth status' ;;
+    pbcopy)
+      printf '' ;;
+    *)
+      printf '' ;;
+  esac
+}
+
+plan_verify_for() {
+  case "$1" in
+    OPENAI_API_KEY)
+      printf 'mqlaunch auth status' ;;
+    *)
+      printf 'command -v %s' "$1" ;;
+  esac
+}
+
+plan_safety_for() {
+  case "$1" in
+    git|gh|uv|python3|node|eza|fz|jq|gitleaks|mqlaunch)
+      printf 'local-write' ;;
+    OPENAI_API_KEY)
+      printf 'read-only' ;;
+    pbcopy)
+      printf 'manual' ;;
+    *)
+      printf 'manual' ;;
+  esac
+}
+
+plan_disposition_for() {
+  case "$1" in
+    OPENAI_API_KEY)
+      printf 'inspect' ;;
+    pbcopy)
+      printf 'manual' ;;
+    *)
+      printf 'command' ;;
+  esac
+}
+
+plan_reason_for() {
+  local name="$1" detail="${2:-}"
+  case "$name" in
+    mqlaunch)
+      printf 'mqlaunch is not on PATH; reinstall the repo-managed launcher symlink.' ;;
+    OPENAI_API_KEY)
+      printf 'The current process cannot see an OpenAI credential; inspect canonical credential state before changing anything.' ;;
+    pbcopy)
+      printf 'pbcopy is a macOS system tool; no package installation is proposed.' ;;
+    *)
+      if [[ "$detail" == "missing" ]]; then
+        printf '%s is missing from PATH.' "$name"
+      else
+        printf '%s requires attention: %s.' "$name" "$detail"
+      fi
+      ;;
+  esac
+}
+
+json_escape() {
+  printf '%s' "${1:-}" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+plan_action_id() {
+  printf 'repair-%s' "$1" | tr '[:upper:]_' '[:lower:]-'
+}
+
 # The order a machine is worth fixing in, which is not the order the checks are
 # printed in — those are grouped for reading. The launcher comes first because
 # nothing else here is reachable without it, then the tools the launcher itself
@@ -242,6 +319,86 @@ run_fix_plan_mode() {
   status_exit_code
 }
 
+# Emits mq.repair-plan.v1 over the same observations as doctor. The plan is
+# manual-only by construction: there is no apply path and no action is run.
+run_fix_plan_json_mode() {
+  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+      _jc "$cmd" "ok"
+    else
+      _jc "$cmd" "warn" "missing"
+    fi
+  done
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    _jc "OPENAI_API_KEY" "ok"
+  else
+    _jc "OPENAI_API_KEY" "warn" "missing"
+  fi
+
+  if command -v mqlaunch >/dev/null 2>&1; then
+    _jc "mqlaunch" "ok"
+  else
+    _jc "mqlaunch" "warn" "not in PATH"
+  fi
+
+  local actions="" sep="" first_id="" idx=1
+  local read_only=0 local_write=0 manual=0
+  local candidate line name st detail hint
+  local command verify safety disposition reason action_id confirm command_json
+
+  for candidate in "${FIX_ORDER[@]}"; do
+    while IFS= read -r line; do
+      [[ -n "$line" ]] || continue
+      IFS='|' read -r name st detail hint <<<"$line"
+      [[ "$name" == "$candidate" ]] || continue
+
+      command="$(plan_command_for "$name")"
+      verify="$(plan_verify_for "$name")"
+      safety="$(plan_safety_for "$name")"
+      disposition="$(plan_disposition_for "$name")"
+      reason="$(plan_reason_for "$name" "$detail")"
+      action_id="$(plan_action_id "$name")"
+      [[ -n "$first_id" ]] || first_id="$action_id"
+
+      confirm=false
+      case "$safety" in
+        read-only) read_only=$((read_only + 1)) ;;
+        local-write) local_write=$((local_write + 1)); confirm=true ;;
+        *) manual=$((manual + 1)) ;;
+      esac
+
+      if [[ -n "$command" ]]; then
+        command_json="\"$(json_escape "$command")\""
+      else
+        command_json="null"
+      fi
+
+      actions="${actions}${sep}{\"id\":\"$(json_escape "$action_id")\",\"priority\":${idx},\"check\":\"$(json_escape "$name")\",\"finding_status\":\"$(json_escape "$st")\",\"disposition\":\"$(json_escape "$disposition")\",\"safety\":\"$(json_escape "$safety")\",\"reason\":\"$(json_escape "$reason")\",\"command\":${command_json},\"verify_command\":\"$(json_escape "$verify")\",\"requires_confirmation\":${confirm},\"auto_execute\":false}"
+      sep=","
+      idx=$((idx + 1))
+      break
+    done <<<"$_J_PLAN_ROWS"
+  done
+
+  local action_count=$((idx - 1))
+  local plan_status="NO_ACTION"
+  [[ "$_J_STATUS" != "ok" ]] && plan_status="PLAN_READY"
+
+  local first_json="null"
+  [[ -n "$first_id" ]] && first_json="\"$(json_escape "$first_id")\""
+
+  local next
+  next="$(next_step)"
+
+  printf '{"schema":"mq.repair-plan.v1","status":"%s","source":{"command":"mqlaunch doctor","status":"%s","summary":{"ok":%d,"warn":%d,"fail":%d}},"execution":{"mode":"manual-only","apply_supported":false,"applied":false},"summary":{"actions":%d,"read_only":%d,"local_write":%d,"manual":%d,"automatic":0},"first_action_id":%s,"next":"%s","actions":[%s]}\n' \
+    "$plan_status" "$_J_STATUS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$action_count" "$read_only" "$local_write" "$manual" \
+    "$first_json" "$(json_escape "$next")" "$actions"
+
+  status_exit_code
+}
+
 # Runs normal interactive mode.
 run_normal_mode() {
   header "MQ DOCTOR"
@@ -300,9 +457,15 @@ FIX_PLAN_MODE=0
 for arg in "$@"; do
   [[ "$arg" == "--json" ]] && JSON_MODE=1
   [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
+  if [[ "$arg" == "--apply" ]]; then
+    printf 'ERROR: doctor repair plans are manual-only; --apply is not supported.\n' >&2
+    exit 2
+  fi
 done
 
-if [[ $JSON_MODE -eq 1 ]]; then
+if [[ $FIX_PLAN_MODE -eq 1 && $JSON_MODE -eq 1 ]]; then
+  run_fix_plan_json_mode
+elif [[ $JSON_MODE -eq 1 ]]; then
   run_json_mode
 elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
   run_fix_plan_mode
