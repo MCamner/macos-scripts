@@ -521,7 +521,6 @@ plan must be able to report.
 
 Example human guidance:
 
-
 ```text
 ⚠ gh missing — brew install gh
 ⚠ mqlaunch not in PATH — run ./install.sh from the repo to install the symlink
