@@ -242,217 +242,10 @@ run_fix_plan_mode() {
   status_exit_code
 }
 
-# Escape controlled doctor strings without depending on jq: jq itself is one
-# of the dependencies doctor must be able to report as missing.
-json_escape() {
-  local s="${1:-}"
-  s="${s//\\/\\\\}"
-  s="${s//\"/\\\"}"
-  s="${s//  header "MQ DOCTOR"
-
-  section "SYSTEM"
-  ok "User: $USER"
-  ok "Shell: $SHELL"
-
-  section "TOOLS"
-  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
-    if command -v "$cmd" >/dev/null 2>&1; then
-      check_ok "$cmd"
-    else
-      check_warn "$cmd" "$cmd missing"
-    fi
-  done
-
-  section "ENV"
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    check_ok "OPENAI_API_KEY set"
-  else
-    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
-  fi
-
-  section "MQ SETUP"
-  if command -v mqlaunch >/dev/null 2>&1; then
-    check_ok "mqlaunch available"
-  else
-    check_warn "mqlaunch" "mqlaunch not in PATH"
-  fi
-
-  section "SUMMARY"
-  # Branch on the status rather than on a warn count, so a `fail` check added
-  # later cannot slip past a `warn`-shaped condition and print "operational"
-  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
-  local total=$((_J_OK + _J_WARN + _J_FAIL))
-  if [[ "$_J_STATUS" == "ok" ]]; then
-    ok "MQ operational — $total checks passed"
-  else
-    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
-  fi
-
-  # One instruction, not a list, and on every run rather than only the bad ones.
-  # When something needs attention the warnings above each carry their own hint
-  # and this names which to do first; when nothing does, it names where to go.
-  local next
-  next="$(next_step)"
-  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
-
-  echo
-  status_exit_code
-}
-
-JSON_MODE=0
-FIX_PLAN_MODE=0
-for arg in "$@"; do
-  [[ "$arg" == "--json" ]] && JSON_MODE=1
-  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
-done
-
-if [[ $FIX_PLAN_MODE -eq 1 && $JSON_MODE -eq 1 ]]; then
-  run_fix_plan_json_mode
-elif [[ $JSON_MODE -eq 1 ]]; then
-  run_json_mode
-elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
-  run_fix_plan_mode
-else
-  run_normal_mode
-fi
-\n'/\\n}"
-  s="${s//  header "MQ DOCTOR"
-
-  section "SYSTEM"
-  ok "User: $USER"
-  ok "Shell: $SHELL"
-
-  section "TOOLS"
-  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
-    if command -v "$cmd" >/dev/null 2>&1; then
-      check_ok "$cmd"
-    else
-      check_warn "$cmd" "$cmd missing"
-    fi
-  done
-
-  section "ENV"
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    check_ok "OPENAI_API_KEY set"
-  else
-    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
-  fi
-
-  section "MQ SETUP"
-  if command -v mqlaunch >/dev/null 2>&1; then
-    check_ok "mqlaunch available"
-  else
-    check_warn "mqlaunch" "mqlaunch not in PATH"
-  fi
-
-  section "SUMMARY"
-  # Branch on the status rather than on a warn count, so a `fail` check added
-  # later cannot slip past a `warn`-shaped condition and print "operational"
-  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
-  local total=$((_J_OK + _J_WARN + _J_FAIL))
-  if [[ "$_J_STATUS" == "ok" ]]; then
-    ok "MQ operational — $total checks passed"
-  else
-    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
-  fi
-
-  # One instruction, not a list, and on every run rather than only the bad ones.
-  # When something needs attention the warnings above each carry their own hint
-  # and this names which to do first; when nothing does, it names where to go.
-  local next
-  next="$(next_step)"
-  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
-
-  echo
-  status_exit_code
-}
-
-JSON_MODE=0
-FIX_PLAN_MODE=0
-for arg in "$@"; do
-  [[ "$arg" == "--json" ]] && JSON_MODE=1
-  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
-done
-
-if [[ $JSON_MODE -eq 1 ]]; then
-  run_json_mode
-elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
-  run_fix_plan_mode
-else
-  run_normal_mode
-fi
-\r'/\\r}"
-  s="${s//  header "MQ DOCTOR"
-
-  section "SYSTEM"
-  ok "User: $USER"
-  ok "Shell: $SHELL"
-
-  section "TOOLS"
-  for cmd in git gh uv python3 node eza fzf jq gitleaks pbcopy; do
-    if command -v "$cmd" >/dev/null 2>&1; then
-      check_ok "$cmd"
-    else
-      check_warn "$cmd" "$cmd missing"
-    fi
-  done
-
-  section "ENV"
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    check_ok "OPENAI_API_KEY set"
-  else
-    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
-  fi
-
-  section "MQ SETUP"
-  if command -v mqlaunch >/dev/null 2>&1; then
-    check_ok "mqlaunch available"
-  else
-    check_warn "mqlaunch" "mqlaunch not in PATH"
-  fi
-
-  section "SUMMARY"
-  # Branch on the status rather than on a warn count, so a `fail` check added
-  # later cannot slip past a `warn`-shaped condition and print "operational"
-  # again. The word is reachable from exactly one place: `_J_STATUS` being ok.
-  local total=$((_J_OK + _J_WARN + _J_FAIL))
-  if [[ "$_J_STATUS" == "ok" ]]; then
-    ok "MQ operational — $total checks passed"
-  else
-    warn "$((_J_WARN + _J_FAIL)) of $total checks need attention"
-  fi
-
-  # One instruction, not a list, and on every run rather than only the bad ones.
-  # When something needs attention the warnings above each carry their own hint
-  # and this names which to do first; when nothing does, it names where to go.
-  local next
-  next="$(next_step)"
-  [[ -n "$next" ]] && printf '\n  Next: %s\n' "$next"
-
-  echo
-  status_exit_code
-}
-
-JSON_MODE=0
-FIX_PLAN_MODE=0
-for arg in "$@"; do
-  [[ "$arg" == "--json" ]] && JSON_MODE=1
-  [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
-done
-
-if [[ $JSON_MODE -eq 1 ]]; then
-  run_json_mode
-elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
-  run_fix_plan_mode
-else
-  run_normal_mode
-fi
-\t'/\\t}"
-  printf '%s' "$s"
-}
-
 # Emits a versioned, read-only repair plan over the same doctor checks.
-# Nothing is executed; each action carries the observation that justified it.
+# All serialized values come from the closed doctor vocabulary: check names,
+# fixed details, fixed hints, and VERSION. No jq dependency is allowed here
+# because jq itself may be the missing dependency being reported.
 run_fix_plan_json_mode() {
   local version
   version="$(cat "$BASE_DIR/VERSION" 2>/dev/null || printf 'unknown')"
@@ -488,10 +281,10 @@ run_fix_plan_json_mode() {
 
       command_json="null"
       if [[ -n "$hint" ]]; then
-        command_json="\"$(json_escape "$hint")\""
+        command_json="\"${hint}\""
       fi
 
-      actions="${actions}${sep}{\"order\":${idx},\"check\":\"$(json_escape "$name")\",\"observed_status\":\"$(json_escape "$st")\",\"observed_detail\":\"$(json_escape "$detail")\",\"command\":${command_json},\"execution\":\"manual-review\",\"verify\":\"mqlaunch doctor --json\"}"
+      actions="${actions}${sep}{\"order\":${idx},\"check\":\"${name}\",\"observed_status\":\"${st}\",\"observed_detail\":\"${detail}\",\"command\":${command_json},\"execution\":\"manual-review\",\"verify\":\"mqlaunch doctor --json\"}"
       sep=","
       idx=$((idx + 1))
     done <<<"$_J_PLAN_ROWS"
@@ -501,12 +294,12 @@ run_fix_plan_json_mode() {
   first="$(next_step)"
   local first_json="null"
   if [[ "$_J_STATUS" != "ok" && -n "$first" ]]; then
-    first_json="\"$(json_escape "$first")\""
+    first_json="\"${first}\""
   fi
 
   printf '{"schema":"mq.doctor-fix-plan.v1","project":"macos-scripts","version":"%s","status":"%s","read_only":true,"source":{"schema":"mq.doctor-status.v1","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d}},"actions":[%s],"first_action":%s,"verification":"mqlaunch doctor --json"}\n' \
-    "$(json_escape "$version")" "$(json_escape "$_J_STATUS")" "$_J_CHECKS" \
-    "$_J_OK" "$_J_WARN" "$_J_FAIL" "$actions" "$first_json"
+    "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
+    "$actions" "$first_json"
 
   status_exit_code
 }
@@ -571,7 +364,9 @@ for arg in "$@"; do
   [[ "$arg" == "--fix-plan" ]] && FIX_PLAN_MODE=1
 done
 
-if [[ $JSON_MODE -eq 1 ]]; then
+if [[ $FIX_PLAN_MODE -eq 1 && $JSON_MODE -eq 1 ]]; then
+  run_fix_plan_json_mode
+elif [[ $JSON_MODE -eq 1 ]]; then
   run_json_mode
 elif [[ $FIX_PLAN_MODE -eq 1 ]]; then
   run_fix_plan_mode
