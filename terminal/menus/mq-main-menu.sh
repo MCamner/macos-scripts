@@ -469,20 +469,21 @@ handle_main_prompt_command() {
   esac
 
   if command -v dispatch_cli_command >/dev/null 2>&1; then
+    local command_status
     # zsh-style splitting is intentional when this menu is sourced by mqlaunch.
     # shellcheck disable=SC2086
-    if dispatch_cli_command ${=normalized}; then
-      return 0
-    fi
+    dispatch_cli_command ${=normalized}
+    command_status=$?
+    (( command_status == 0 )) && return 0
+    # Dispatch has already said what went wrong — "Unknown command" for a word
+    # it does not know, or the command's own error. Reporting it again printed
+    # the error twice and called failing known commands unknown.
+    pause_enter
+    return "$command_status"
   fi
 
-  if command -v print_unknown_command_error >/dev/null 2>&1; then
-    print_unknown_command_error "$original"
-  else
-    printf 'ERROR: Unknown command: %s\n' "$original" >&2
-    printf 'Run: mqlaunch help\n' >&2
-  fi
-
+  printf 'ERROR: Unknown command: %s\n' "$original" >&2
+  printf 'Run: mqlaunch help\n' >&2
   pause_enter
   return 127
 }
