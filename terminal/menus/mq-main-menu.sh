@@ -32,7 +32,8 @@ main_menu_direct_entry() {
 print_main_menu() {
   print_header
   render_main_menu_panel
-  render_command_surface
+  # The dashboard header carries the figures and the status this box repeated.
+  [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]] || render_command_surface
 }
 
 # Formats action word for the compact terminal surface.
@@ -102,11 +103,28 @@ render_main_menu_panel() {
   git_state="$(surface_git_state)"
   mode="Main"
 
-  surface_top "Main Menu" "$width" "$panel_color"
-  surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
+  # One colour per section heading so the three groups read apart at a glance.
+  # Not OK/WARN/ERR: those mean status, and green CORE would read as "healthy".
+  # Each heading hands back to the frame colour so the right border keeps it.
+  local c_core="" c_quick="" c_discover=""
+  # Defaults assigned outside "${...:-...}": zsh keeps $'...' literal there.
+  if [[ -n "${C_RESET:-}" ]]; then
+    c_core="${MQ_COLOR_SECTION_CORE:-}"
+    [[ -n "$c_core" ]] || c_core=$'\033[1;33m'
+    c_quick="${MQ_COLOR_SECTION_QUICK:-}"
+    [[ -n "$c_quick" ]] || c_quick=$'\033[1;36m'
+    c_discover="${MQ_COLOR_SECTION_DISCOVER:-}"
+    [[ -n "$c_discover" ]] || c_discover=$'\033[1;35m'
+  fi
 
-  surface_row "CORE" "$width" "$panel_color"
+  surface_top "Main Menu" "$width" "$panel_color"
+  # Under the dashboard header host, user and git state are already on screen.
+  if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" != "1" ]]; then
+    surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$panel_color"
+    surface_row "" "$width" "$panel_color"
+  fi
+
+  surface_row "${c_core}CORE${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Repos" "$width" "$panel_color"
@@ -114,19 +132,21 @@ render_main_menu_panel() {
   surface_split_row "9. MQ Obsidian" "10. Recommendations" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "QUICK ACCESS" "$width" "$panel_color"
+  surface_row "${c_quick}QUICK ACCESS${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
-  surface_row "v. VS Code MQ (Keychain)" "$width" "$panel_color"
+  surface_split_row "v. VS Code MQ (Keychain)" "f. Full header" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "DISCOVER" "$width" "$panel_color"
+  surface_row "${c_discover}DISCOVER${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "/  Palette" "?  Help index" "$width" "$panel_color"
   surface_split_row "<command>  Run mqlaunch" "!<command>  Run shell" "$width" "$panel_color"
   surface_split_row "more: mqlaunch help" "x. Exit" "$width" "$panel_color"
 
-  surface_row "" "$width" "$panel_color"
-  surface_row "Ready: choose number, type command, / palette, ? help" "$width" "$panel_color"
+  if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" != "1" ]]; then
+    surface_row "" "$width" "$panel_color"
+    surface_row "Ready: choose number, type command, / palette, ? help" "$width" "$panel_color"
+  fi
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -313,6 +333,11 @@ handle_main_menu_choice() {
     h) system_check ;;
     v) bash "$BASE_DIR/tools/scripts/start-vscode-mq.sh" "$PWD"; pause_enter ;;
     z) restart_mqlaunch ;;
+    f)
+      # Read by mq_header_layout in mq-ui.sh on the next redraw.
+      # shellcheck disable=SC2034
+      MQ_FULL_HEADER_REQUEST=1
+      ;;
     /|/.|/\ palette|/.\ palette) open_command_palette_or_help ;;
     \?|\?.|\?\ help|\?.\ help\ index) open_help_or_index ;;
 

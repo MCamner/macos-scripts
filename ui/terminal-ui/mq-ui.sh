@@ -361,6 +361,8 @@ surface_panel_header() {
   git_state="$(surface_git_state)"
 
   surface_top "$title" "$width" "$color"
+  # The dashboard header above already shows host, user and git state.
+  [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]] && return 0
   surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$color"
   surface_row "" "$width" "$color"
 }
@@ -576,10 +578,11 @@ mq_dashboard_cache_invalidate() {
 # working directory because the dashboard's git status depends on it.
 print_dashboard_header() {
   local dashboard="$1"
+  local layout="${2:-full}"
   local ttl now key force_color
   ttl="${MQ_DASHBOARD_CACHE_TTL:-5}"
   now="$(date +%s)"
-  key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}"
+  key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}|${layout}"
   force_color=0
   if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
     force_color=1
@@ -593,10 +596,51 @@ print_dashboard_header() {
     return
   fi
 
-  MQ_DASHBOARD_CACHE_OUTPUT="$(MQ_DASHBOARD_FORCE_COLOR="$force_color" bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
+  MQ_DASHBOARD_CACHE_OUTPUT="$(MQ_DASHBOARD_FORCE_COLOR="$force_color" MQ_DASHBOARD_LAYOUT="$layout" bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
   MQ_DASHBOARD_CACHE_KEY="$key"
   MQ_DASHBOARD_CACHE_TS="$now"
   printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"
+}
+
+# Prints the terminal height, or 0 when it cannot be read. MQ_TERM_LINES
+# overrides it, for tests and for terminals that misreport.
+mq_terminal_lines() {
+  local lines="${MQ_TERM_LINES:-}"
+  [[ -n "$lines" ]] || lines="$(tput lines 2>/dev/null || true)"
+  [[ "$lines" =~ ^[0-9]+$ ]] || lines=0
+  printf '%s' "$lines"
+}
+
+# Answers which dashboard header to draw: "full" or "compact".
+#
+# The full header is 38 lines. Drawn on every redraw it pushed the menu off a
+# normal terminal, so it is shown once — on the first draw, when the window is
+# tall enough to hold it and a menu — and again only on request (f in the main
+# menu). An unknown height counts as tall: that keeps the old behaviour where
+# nothing can be measured.
+mq_header_layout() {
+  local lines
+  if [[ "${MQ_FULL_HEADER_REQUEST:-0}" == "1" ]]; then
+    printf 'full'
+    return
+  fi
+  if [[ "${MQ_HEADER_FULL_SHOWN:-0}" == "1" ]]; then
+    printf 'compact'
+    return
+  fi
+  lines="$(mq_terminal_lines)"
+  if (( lines == 0 || lines >= ${MQ_FULL_HEADER_MIN_LINES:-45} )); then
+    printf 'full'
+  else
+    printf 'compact'
+  fi
+}
+
+# Records that the first header has been drawn. Exported so menus that run as
+# child processes (workflows, tools) do not draw the full header again.
+mq_header_mark_shown() {
+  export MQ_HEADER_FULL_SHOWN=1
+  MQ_FULL_HEADER_REQUEST=0
 }
 
 # Prints header.
@@ -614,7 +658,10 @@ print_header() {
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
     dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
     if [[ -f "$dashboard" ]]; then
-      print_dashboard_header "$dashboard"
+      local layout
+      layout="$(mq_header_layout)"
+      print_dashboard_header "$dashboard" "$layout"
+      mq_header_mark_shown
       printf '\n'
       return
     fi
