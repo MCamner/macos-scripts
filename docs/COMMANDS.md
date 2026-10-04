@@ -572,6 +572,8 @@ The menu fix action requires explicit confirmation before files are changed.
 mqlaunch skills audit                 # list local skills, indexes and roadmap gaps
 mqlaunch skills validate              # validate SKILL.md frontmatter and indexes
 mqlaunch skills validate --ecosystem  # validate cross-repo skill uniqueness and roadmap hints
+mqlaunch skills list                  # list skills with their descriptions
+mqlaunch skills show shell-script-auditor  # print one skill's SKILL.md
 mqlaunch skills new my-skill --repo mq-mcp --description "Use when ..."
 mqlaunch repos list                   # list known local MQ repos
 mqlaunch repos status                 # show branch/upstream/origin/dirty state per repo
@@ -585,6 +587,9 @@ mqlaunch repos diff-summary --untracked   # show only untracked files
 
 These commands are read-only except `skills new`, which creates a local
 `skills/<name>/SKILL.md` scaffold in the requested repo.
+
+Tools → Skills → Browse lists this repo's skills in the terminal; a number
+opens that `SKILL.md` in `less`.
 
 ---
 

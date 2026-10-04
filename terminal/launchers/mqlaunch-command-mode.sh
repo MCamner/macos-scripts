@@ -151,7 +151,7 @@ HELP
       cat <<'HELP'
 Usage: mqlaunch skills <command> [args]
 
-Commands: audit, validate, new
+Commands: audit, validate, list, show, new
 HELP
       ;;
     srm)
