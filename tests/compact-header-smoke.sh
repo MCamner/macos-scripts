@@ -40,6 +40,12 @@ grep -q "Next:" <<<"$compact" || fail "next action missing"
 grep -qE "MEM .*BAT " <<<"$compact" || fail "MEM/BAT missing"
 ! grep -q "PHOSPHOR" <<<"$compact" || fail "compact header still draws the banner"
 
+# Host and user in bold red, as asked for — the one line that says which machine.
+coloured="$(cd "$TMP" && MQ_DASHBOARD_LAYOUT=compact MQ_DASHBOARD_FORCE_COLOR=1 \
+  MACOS_SCRIPTS_HOME="$ROOT" bash "$DASHBOARD" MQ test ONLINE 2>/dev/null)"
+host="$(hostname -s 2>/dev/null || hostname)"
+grep -qF $'\033[1m\033[31m'"$host · " <<<"$coloured" || fail "host · user is not bold red"
+
 echo "[2/7] full layout is unchanged by default"
 full="$(cd "$TMP" && MACOS_SCRIPTS_HOME="$ROOT" bash "$DASHBOARD" MQ test ONLINE 2>/dev/null)"
 grep -q "PHOSPHOR" <<<"$full" || fail "full header lost its banner"
