@@ -103,6 +103,20 @@ render_main_menu_panel() {
   git_state="$(surface_git_state)"
   mode="Main"
 
+  # One colour per section heading so the three groups read apart at a glance.
+  # Not OK/WARN/ERR: those mean status, and green CORE would read as "healthy".
+  # Each heading hands back to the frame colour so the right border keeps it.
+  local c_core="" c_quick="" c_discover=""
+  # Defaults assigned outside "${...:-...}": zsh keeps $'...' literal there.
+  if [[ -n "${C_RESET:-}" ]]; then
+    c_core="${MQ_COLOR_SECTION_CORE:-}"
+    [[ -n "$c_core" ]] || c_core=$'\033[1;33m'
+    c_quick="${MQ_COLOR_SECTION_QUICK:-}"
+    [[ -n "$c_quick" ]] || c_quick=$'\033[1;36m'
+    c_discover="${MQ_COLOR_SECTION_DISCOVER:-}"
+    [[ -n "$c_discover" ]] || c_discover=$'\033[1;35m'
+  fi
+
   surface_top "Main Menu" "$width" "$panel_color"
   # Under the dashboard header host, user and git state are already on screen.
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" != "1" ]]; then
@@ -110,7 +124,7 @@ render_main_menu_panel() {
     surface_row "" "$width" "$panel_color"
   fi
 
-  surface_row "CORE" "$width" "$panel_color"
+  surface_row "${c_core}CORE${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
   surface_split_row "3. Git" "4. Release" "$width" "$panel_color"
   surface_split_row "5. Dev" "6. Repos" "$width" "$panel_color"
@@ -118,13 +132,13 @@ render_main_menu_panel() {
   surface_split_row "9. MQ Obsidian" "10. Recommendations" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "QUICK ACCESS" "$width" "$panel_color"
+  surface_row "${c_quick}QUICK ACCESS${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
   surface_split_row "v. VS Code MQ (Keychain)" "f. Full header" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
-  surface_row "DISCOVER" "$width" "$panel_color"
+  surface_row "${c_discover}DISCOVER${C_RESET}${panel_color}" "$width" "$panel_color"
   surface_split_row "/  Palette" "?  Help index" "$width" "$panel_color"
   surface_split_row "<command>  Run mqlaunch" "!<command>  Run shell" "$width" "$panel_color"
   surface_split_row "more: mqlaunch help" "x. Exit" "$width" "$panel_color"

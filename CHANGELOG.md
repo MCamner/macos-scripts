@@ -17,6 +17,11 @@ All notable changes to this project will be documented in this file.
   The separate Command Surface box and the per-panel Host/User row are gone
   under the dashboard header, which already shows both.
 
+* Main menu section headings in their own colours: CORE amber, QUICK ACCESS
+  cyan, DISCOVER magenta — not the status colours, so none reads as a health
+  signal. Override with `MQ_COLOR_SECTION_CORE`, `MQ_COLOR_SECTION_QUICK` and
+  `MQ_COLOR_SECTION_DISCOVER`.
+
 * `mqlaunch doctor --fix-plan --json` emits
   `mq.doctor-fix-plan.v1`: a read-only remediation document whose actions are
   tied to the exact non-passing doctor checks that produced them, ordered by
