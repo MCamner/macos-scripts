@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Compact header: after the first draw, mqlaunch menus show a six-line boxed
+  header — the Command Surface figures beside host, repo, git state, MEM/BAT
+  and the next action, framed like the menu panel below — instead of
+  redrawing the 38-line dashboard. The main menu fits on a normal terminal
+  again (28 lines to the prompt, from about 72). The full dashboard shows on the first draw when the window has at
+  least 45 rows (`MQ_FULL_HEADER_MIN_LINES`), and on `f` in the main menu.
+  The separate Command Surface box and the per-panel Host/User row are gone
+  under the dashboard header, which already shows both.
+
 * `mqlaunch doctor --fix-plan --json` emits
   `mq.doctor-fix-plan.v1`: a read-only remediation document whose actions are
   tied to the exact non-passing doctor checks that produced them, ordered by

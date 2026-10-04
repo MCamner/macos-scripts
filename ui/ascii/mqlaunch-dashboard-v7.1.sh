@@ -477,6 +477,41 @@ mq_git_next_action() {
   fi
 }
 
+# Prints the compact header: the Command Surface figures on the left, the same
+# status the full dashboard shows on four lines beside them, then a rule.
+# Used for every redraw after the first, so the menu stays on screen.
+mq_dashboard_compact() {
+  local width="$1" host="$2" user="$3" repo="$4" branch="$5" dirty="$6"
+  local ahead_behind="$7" severity="$8" severity_color="$9"
+  local mem_widget="${10}" batt_widget="${11}" health_chip="${12}" next_action="${13}"
+  local text_width line1 line2 line3 line4 fig_l fig_r frame
+  # Same width and frame colour as the menu panel drawn right below, so the
+  # two boxes line up.
+  if command -v surface_terminal_width >/dev/null 2>&1; then
+    width="$(surface_terminal_width)"
+  fi
+  frame="$(surface_panel_color)"
+  # 4 columns of frame, 21 of figures: 1 indent, 8 + 2 gap + 8, 2 before text.
+  text_width=$(( width - 4 - 21 ))
+  fig_l="$ACCENT_GREEN"
+  fig_r="$ACCENT_YELLOW"
+
+  line1="$(mq_truncate "${host} · ${user}" "$text_width")"
+  line2="$(mq_truncate "${repo:-no repo}@${branch:-N/A} · ${dirty:-N/A} ${ahead_behind} · ${severity}" "$text_width")"
+  line3="${ACCENT_YELLOW}${mem_widget}${C_RESET}   ${ACCENT_CYAN}${batt_widget}${C_RESET}"
+  [[ -n "$health_chip" ]] && line3+="   ${health_chip}"
+  # Too wide for a narrow window: drop the colour and cut, like the other rows.
+  (( $(mq_len "$line3") > text_width )) && line3="$(mq_truncate "$line3" "$text_width")"
+  line4="$(mq_truncate "$(date '+%H:%M') · Next: ${next_action:-N/A}" "$text_width")"
+
+  surface_top "MQLAUNCH" "$width" "$frame"
+  surface_row " ${fig_l}▄▄████▄▄${C_RESET}   ${fig_r}▄▄██▄▄${C_RESET}   ${C_BOLD}${line1}${C_RESET}${frame}" "$width" "$frame"
+  surface_row " ${fig_l}████████${C_RESET}  ${fig_r}█▀████▀█${C_RESET}  ${severity_color}${line2}${C_RESET}${frame}" "$width" "$frame"
+  surface_row " ${fig_l}██▄██▄██${C_RESET}  ${fig_r}██▀██▀██${C_RESET}  ${line3}${frame}" "$width" "$frame"
+  surface_row " ${fig_l} ▄█▀▀█▄ ${C_RESET}  ${fig_r} ▀▄██▄▀ ${C_RESET}  ${line4}${frame}" "$width" "$frame"
+  surface_bottom "$width" "$frame"
+}
+
 # Handles mqlaunch dashboard v71.
 mqlaunch_dashboard_v71() {
   local title="${1:-MQLAUNCH}"
@@ -536,6 +571,14 @@ mqlaunch_dashboard_v71() {
   if command -v surface_health_color >/dev/null 2>&1; then
     rule_color="$(surface_health_color "$(surface_health_state)")"
     [[ -n "$rule_color" ]] || rule_color="$ACCENT_CYAN"
+  fi
+  # Before the filler below: the compact header shows a Pulse chip or nothing.
+  if [[ "${MQ_DASHBOARD_LAYOUT:-full}" == "compact" ]]; then
+    clear 2>/dev/null || true
+    mq_dashboard_compact "$width" "$host" "$user" "$repo" "$branch" "$dirty" \
+      "$ahead_behind" "$severity" "$severity_color" "$mem_widget" "$batt_widget" \
+      "$health_chip" "$next_action"
+    return
   fi
   [[ -n "$health_chip" ]] || health_chip="${C_DIM}adaptive layout active${C_RESET}"
 

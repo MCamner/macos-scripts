@@ -32,7 +32,8 @@ main_menu_direct_entry() {
 print_main_menu() {
   print_header
   render_main_menu_panel
-  render_command_surface
+  # The dashboard header carries the figures and the status this box repeated.
+  [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]] || render_command_surface
 }
 
 # Formats action word for the compact terminal surface.
@@ -103,8 +104,11 @@ render_main_menu_panel() {
   mode="Main"
 
   surface_top "Main Menu" "$width" "$panel_color"
-  surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$panel_color"
-  surface_row "" "$width" "$panel_color"
+  # Under the dashboard header host, user and git state are already on screen.
+  if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" != "1" ]]; then
+    surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$panel_color"
+    surface_row "" "$width" "$panel_color"
+  fi
 
   surface_row "CORE" "$width" "$panel_color"
   surface_split_row "1. Workflows" "2. System" "$width" "$panel_color"
@@ -117,7 +121,7 @@ render_main_menu_panel() {
   surface_row "QUICK ACCESS" "$width" "$panel_color"
   surface_split_row "p. Performance" "n. Network" "$width" "$panel_color"
   surface_split_row "h. Health Check" "z. Restart mqlaunch" "$width" "$panel_color"
-  surface_row "v. VS Code MQ (Keychain)" "$width" "$panel_color"
+  surface_split_row "v. VS Code MQ (Keychain)" "f. Full header" "$width" "$panel_color"
 
   surface_row "" "$width" "$panel_color"
   surface_row "DISCOVER" "$width" "$panel_color"
@@ -125,8 +129,10 @@ render_main_menu_panel() {
   surface_split_row "<command>  Run mqlaunch" "!<command>  Run shell" "$width" "$panel_color"
   surface_split_row "more: mqlaunch help" "x. Exit" "$width" "$panel_color"
 
-  surface_row "" "$width" "$panel_color"
-  surface_row "Ready: choose number, type command, / palette, ? help" "$width" "$panel_color"
+  if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" != "1" ]]; then
+    surface_row "" "$width" "$panel_color"
+    surface_row "Ready: choose number, type command, / palette, ? help" "$width" "$panel_color"
+  fi
   surface_bottom "$width" "$panel_color"
   printf '\n'
 }
@@ -313,6 +319,11 @@ handle_main_menu_choice() {
     h) system_check ;;
     v) bash "$BASE_DIR/tools/scripts/start-vscode-mq.sh" "$PWD"; pause_enter ;;
     z) restart_mqlaunch ;;
+    f)
+      # Read by mq_header_layout in mq-ui.sh on the next redraw.
+      # shellcheck disable=SC2034
+      MQ_FULL_HEADER_REQUEST=1
+      ;;
     /|/.|/\ palette|/.\ palette) open_command_palette_or_help ;;
     \?|\?.|\?\ help|\?.\ help\ index) open_help_or_index ;;
 
