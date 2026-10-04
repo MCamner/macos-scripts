@@ -40,11 +40,14 @@ grep -q "Next:" <<<"$compact" || fail "next action missing"
 grep -qE "MEM .*BAT " <<<"$compact" || fail "MEM/BAT missing"
 ! grep -q "PHOSPHOR" <<<"$compact" || fail "compact header still draws the banner"
 
-# Host and user in bold red, as asked for — the one line that says which machine.
+# Host and user in bold white — the frame's white, spelled out so the terminal
+# cannot remap it. Not red: line 2 turns red at HIGH git severity, and two red
+# lines stacked would hide which one is the warning.
 coloured="$(cd "$TMP" && MQ_DASHBOARD_LAYOUT=compact MQ_DASHBOARD_FORCE_COLOR=1 \
   MACOS_SCRIPTS_HOME="$ROOT" bash "$DASHBOARD" MQ test ONLINE 2>/dev/null)"
 host="$(hostname -s 2>/dev/null || hostname)"
-grep -qF $'\033[1m\033[31m'"$host · " <<<"$coloured" || fail "host · user is not bold red"
+grep -qF $'\033[1m\033[97m\033[38;2;255;255;255m'"$host · " <<<"$coloured" \
+  || fail "host · user is not bold white"
 
 echo "[2/7] full layout is unchanged by default"
 full="$(cd "$TMP" && MACOS_SCRIPTS_HOME="$ROOT" bash "$DASHBOARD" MQ test ONLINE 2>/dev/null)"
