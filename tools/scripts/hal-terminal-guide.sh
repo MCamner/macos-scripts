@@ -547,7 +547,7 @@ guide_context() {
 
   printf '%s\n' "$question" | tr -s ' ?!,;:"' '\n' | grep -E '.{4,}' | head -5 \
     | while IFS= read -r term; do
-        rg -i -F -m 15 -- "$term" "$guide" || true
+        grep -i -F -m 15 -- "$term" "$guide" || true
       done \
     | sed -E 's/<[^>]+>//g; s/^[[:space:]]+//' \
     | awk 'NF && !seen[$0]++' \
