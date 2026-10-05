@@ -15,13 +15,13 @@ trap 'rm -rf "$TMP"' EXIT
 # Marks a failing check.
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
-# Coordinates commit behavior.
+# Commits in a test repo with a fixed test identity.
 commit() { # REPO MESSAGE
   git -C "$1" -c user.email=test@example.invalid -c user.name=Test \
     commit -q -m "$2"
 }
 
-# Coordinates new repo behavior.
+# Creates a repo on main with one shared commit.
 new_repo() { # PATH
   git init -q -b main "$1"
   printf 'shared\n' > "$1/shared.txt"

@@ -41,13 +41,13 @@ C_YELLOW='\033[33m'
 C_BLUE='\033[34m'
 C_CYAN='\033[36m'
 
-# Handles log.
+# Prints a line in blue.
 log()  { printf "%b%s%b\n" "$C_BLUE" "$1" "$C_RESET"; }
-# Handles ok.
+# Prints a line in green.
 ok()   { printf "%b%s%b\n" "$C_GREEN" "$1" "$C_RESET"; }
-# Handles warn.
+# Prints a line in yellow.
 warn() { printf "%b%s%b\n" "$C_YELLOW" "$1" "$C_RESET"; }
-# Handles err.
+# Prints a line in red to stderr.
 err()  { printf "%b%s%b\n" "$C_RED" "$1" "$C_RESET" >&2; }
 
 
@@ -93,7 +93,7 @@ run_cmd() {
   fi
 }
 
-# Handles read pref.
+# Prints a defaults value, or nothing when it is not set.
 read_pref() {
   local domain="$1"
   local key="$2"
@@ -161,7 +161,7 @@ backup_selected() {
   ok "Backup saved."
 }
 
-# Handles latest backup.
+# Prints the newest preferences backup file, or nothing.
 latest_backup() {
   ls -t "$BACKUP_DIR"/backup-*.txt 2>/dev/null | head -n 1 || true
 }
@@ -234,7 +234,8 @@ restart_affected_apps() {
   ok "Done."
 }
 
-# Handles apply dev tweaks.
+# Applies the developer tweaks: hidden files, extensions, Finder bars, list view
+# and fast key repeat.
 apply_dev_tweaks() {
   log "${C_BOLD}Applying developer tweaks...${C_RESET}"
 
@@ -256,7 +257,8 @@ apply_dev_tweaks() {
   ok "Developer tweaks applied."
 }
 
-# Handles apply clean tweaks.
+# Applies the clean UI tweaks to Dock and Finder and stops .DS_Store on network
+# and USB volumes.
 apply_clean_tweaks() {
   log "${C_BOLD}Applying clean UI tweaks...${C_RESET}"
 
@@ -273,7 +275,8 @@ apply_clean_tweaks() {
   ok "Clean tweaks applied."
 }
 
-# Handles apply fast tweaks.
+# Applies the speed tweaks: no personalised ads, immediate screen-lock password,
+# PNG screenshots in ~/Screenshots.
 apply_fast_tweaks() {
   log "${C_BOLD}Applying speed/productivity tweaks...${C_RESET}"
 
@@ -287,7 +290,7 @@ apply_fast_tweaks() {
   ok "Fast tweaks applied."
 }
 
-# Handles apply workstation tweaks.
+# Applies the workstation profile to Finder and the Dock.
 apply_workstation_tweaks() {
   log "${C_BOLD}Applying workstation profile...${C_RESET}"
 
@@ -360,7 +363,7 @@ print_tweaks_menu() {
   printf "${C_BLUE}Select option [0-9]: ${C_RESET}"
 }
 
-# Handles interactive menu.
+# Shows the tweaks menu and runs choices until the user leaves.
 interactive_menu() {
   while true; do
     print_tweaks_menu
@@ -428,7 +431,7 @@ interactive_menu() {
   done
 }
 
-# Handles parse args.
+# Sets COMMAND and the options from the command-line arguments.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in

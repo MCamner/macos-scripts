@@ -31,15 +31,15 @@ TARGET_LINK_NAME="mqlaunch"
 # what happened to gitlaunch and mq.
 BIN_REL="bin"
 
-# Handles log.
+# Prints a blue [INFO] line.
 log()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
-# Handles ok.
+# Prints a green [ OK ] line.
 ok()   { printf "\033[1;32m[ OK ]\033[0m %s\n" "$*"; }
-# Handles warn.
+# Prints a yellow [WARN] line to stderr.
 warn() { printf "\033[1;33m[WARN]\033[0m %s\n" "$*" >&2; }
-# Handles err.
+# Prints a red [ERR ] line to stderr.
 err()  { printf "\033[1;31m[ERR ]\033[0m %s\n" "$*" >&2; }
-# Handles die.
+# Prints an error and exits 1.
 die()  { err "$*"; exit 1; }
 
 # Prints usage information.
@@ -66,12 +66,12 @@ Examples:
 EOF
 }
 
-# Handles require cmd.
+# Exits unless the command is on PATH.
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
 }
 
-# Handles realpath fallback.
+# Prints the resolved absolute path using Python, for systems without realpath.
 realpath_fallback() {
   python3 - <<'PY' "$1"
 import os, sys
@@ -79,7 +79,7 @@ print(os.path.realpath(sys.argv[1]))
 PY
 }
 
-# Handles abs path.
+# Prints the absolute path, with realpath or the Python fallback.
 abs_path() {
   local p="$1"
   if command -v realpath >/dev/null 2>&1; then
@@ -100,7 +100,7 @@ run_cmd() {
   fi
 }
 
-# Handles confirm.
+# Asks a yes/no question; --yes answers yes.
 confirm() {
   local prompt="${1:-Continue? [y/N]}"
   if (( AUTO_YES )); then
@@ -123,12 +123,12 @@ ensure_dirs() {
   run_cmd mkdir -p "$STATE_DIR"
 }
 
-# Handles target launcher.
+# Prints the path of the launcher in the install dir.
 target_launcher() {
   printf '%s\n' "$INSTALL_DIR/$LAUNCHER_REL"
 }
 
-# Handles target link.
+# Prints the path of the mqlaunch link in the bin dir.
 target_link() {
   printf '%s\n' "$BIN_DIR/$TARGET_LINK_NAME"
 }
@@ -142,7 +142,7 @@ entrypoint_names() {
   done
 }
 
-# Handles shell rc file.
+# Prints the zsh rc file, honouring ZDOTDIR.
 shell_rc_file() {
   if [[ -n "${ZDOTDIR:-}" ]]; then
     printf '%s\n' "$ZDOTDIR/.zshrc"
@@ -151,7 +151,8 @@ shell_rc_file() {
   fi
 }
 
-# Handles write state.
+# Writes the install dir, launcher and link to the state file; with --dry-run
+# only says so.
 write_state() {
   local launcher_path link_path
   launcher_path="$(target_launcher)"
@@ -170,7 +171,7 @@ TARGET_LAUNCHER='$launcher_path'
 EOF
 }
 
-# Handles read state if present.
+# Loads the state file from a previous install, if any.
 read_state_if_present() {
   if [[ -f "$STATE_FILE" ]]; then
     # shellcheck disable=SC1090
@@ -207,7 +208,7 @@ install_one_symlink() {
   ok "Installed symlink: $link_path -> $source_path"
 }
 
-# Handles install symlink.
+# Links every entrypoint in bin/ into the bin dir.
 install_symlink() {
   local name
 
@@ -221,7 +222,8 @@ install_symlink() {
   done < <(entrypoint_names)
 }
 
-# Handles managed block content.
+# Prints the managed .zshrc block that sets MACOS_SCRIPTS_HOME and puts its bin/
+# on PATH.
 managed_block_content() {
   local install_dir_escaped
   install_dir_escaped="$INSTALL_DIR"
@@ -237,7 +239,7 @@ $MANAGED_END
 EOF
 }
 
-# Handles remove managed block.
+# Removes the managed block from the zsh rc file.
 remove_managed_block() {
   local rc_file tmp_file
   rc_file="$(shell_rc_file)"
@@ -259,7 +261,7 @@ remove_managed_block() {
   fi
 }
 
-# Handles append managed block.
+# Adds the managed block to the zsh rc file, creating the file if needed.
 append_managed_block() {
   local rc_file
   rc_file="$(shell_rc_file)"
@@ -300,7 +302,7 @@ run_onboarding_if_present() {
   fi
 }
 
-# Handles do install.
+# Installs: links, the .zshrc block, the state file and onboarding.
 do_install() {
   ensure_repo_layout
   ensure_dirs
@@ -319,7 +321,7 @@ do_install() {
   printf '  mqlaunch\n'
 }
 
-# Handles remove symlink.
+# Removes the links this installer created in the bin dir.
 remove_symlink() {
   local link_path name removed=0
 
@@ -350,7 +352,7 @@ remove_symlink() {
   (( removed > 0 )) || warn "Nothing to remove in: $BIN_DIR"
 }
 
-# Handles remove state.
+# Removes the state file.
 remove_state() {
   if [[ -f "$STATE_FILE" ]]; then
     run_cmd rm -f "$STATE_FILE"
@@ -358,7 +360,7 @@ remove_state() {
   fi
 }
 
-# Handles do uninstall.
+# Uninstalls: links, the .zshrc block and the state file.
 do_uninstall() {
   read_state_if_present
   remove_symlink
@@ -367,7 +369,7 @@ do_uninstall() {
   ok "Uninstall complete"
 }
 
-# Handles parse args.
+# Sets the installer options from the command-line arguments.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in

@@ -54,7 +54,8 @@ git -C "$stub" config user.name Test
 git -C "$stub" add -A >/dev/null 2>&1
 git -C "$stub" commit -qm stub
 
-# Coordinates pulse run behavior.
+# Runs a command against the stub tree and saves its stdout, stderr and exit
+# status.
 pulse_run() {
   local out="$1"; shift
   set +e

@@ -23,7 +23,7 @@ STUBEOF
 chmod +x "$STUB"
 export COUNT_FILE
 
-# Coordinates runs behavior.
+# Prints how many times the dashboard stub has run.
 runs() { wc -l < "$COUNT_FILE" | tr -d ' '; }
 
 # shellcheck disable=SC1090

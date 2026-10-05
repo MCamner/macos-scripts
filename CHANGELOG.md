@@ -8,6 +8,24 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch apps` (HAL terminal guide) answers with a local Ollama model when
+  `OPENAI_API_KEY` is not set. It sends `qwen3:4b-instruct` (or
+  `MQ_HAL_GUIDE_OLLAMA_MODEL`) the guide lines that match the question; until
+  now it only grepped the guide. OpenAI stays first, and grep stays the last
+  fallback when Ollama is not running.
+
+* `mqlaunch doctor` checks local AI: Ollama installed, its server answering at
+  `OLLAMA_HOST`, and the `qwen3:4b-instruct` and `nomic-embed-text` models that
+  `hal`, `ollama-review` and mq-agent's semantic memory use. Each warning
+  carries its fix (`brew install --cask ollama-app`, `open -a Ollama`,
+  `ollama pull ...`). Read-only: doctor asks the HTTP API and never runs
+  `ollama`, which would start the server.
+
+* `mqlaunch ollama-review --keep-alive` (or `MQ_OLLAMA_REVIEW_KEEP_ALIVE`)
+  sets how long Ollama keeps the model loaded after a review. Default `30m`,
+  so a second review within half an hour skips the cold model load; `0`
+  unloads at once. Invalid values exit 2 before Ollama is called.
+
 * `mqlaunch doctor --json` declares its contract: the output now carries
   `"schema": "mq.doctor-status.v1"`, described by
   `schemas/mq.doctor-status.v1.json`. mq-hal reads this output; until now it

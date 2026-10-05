@@ -8,7 +8,7 @@ TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/mq-godmode-test.XXXXXX")"
 CODEX_DIR="$TEST_ROOT/codex"
 CLAUDE_DIR="$TEST_ROOT/claude"
 
-# Coordinates cleanup behavior.
+# Removes the test root.
 cleanup() {
   rm -rf -- "$TEST_ROOT"
 }
