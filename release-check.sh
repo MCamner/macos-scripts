@@ -25,14 +25,15 @@ done
 : "$DRY_RUN"
 
 BLOCKERS=()
-# Coordinates say behavior.
+# Prints a line unless --json is set.
 say()  { [[ "$JSON" -eq 1 ]] || echo "$1"; }
-# Coordinates ok behavior.
+# Prints a passing check unless --json is set.
 ok()   { [[ "$JSON" -eq 1 ]] || echo "  ok: $1"; }
 # Marks a failing check.
 fail() { BLOCKERS+=("$1"); [[ "$JSON" -eq 1 ]] || echo "FAIL: $1" >&2; }
 
-# Coordinates run behavior.
+# Runs a command as a named check; on failure records a blocker and shows the
+# command's output.
 run() {
   local label="$1"; shift
   local out

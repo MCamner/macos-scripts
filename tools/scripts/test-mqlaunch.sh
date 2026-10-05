@@ -21,7 +21,7 @@ fail() {
   exit 1
 }
 
-# Coordinates assert file behavior.
+# Fails unless the file exists.
 assert_file() {
   local path="$1"
   local label="$2"
@@ -29,7 +29,7 @@ assert_file() {
   pass "$label exists"
 }
 
-# Coordinates assert grep behavior.
+# Fails unless the file matches the pattern.
 assert_grep() {
   local pattern="$1"
   local file="$2"
@@ -38,7 +38,7 @@ assert_grep() {
   pass "$label"
 }
 
-# Coordinates assert absent grep behavior.
+# Fails if the file matches the pattern.
 assert_not_grep() {
   local pattern="$1"
   local file="$2"
@@ -47,7 +47,7 @@ assert_not_grep() {
   pass "$label"
 }
 
-# Coordinates assert cmd ok behavior.
+# Fails unless the command succeeds.
 assert_cmd_ok() {
   local label="$1"
   shift

@@ -237,7 +237,7 @@ run_document_functions_command() {
   fi
 }
 
-# Coordinates pause if interactive behavior.
+# Waits for Enter only when stdin is a terminal.
 pause_if_interactive() {
   if [[ -t 0 ]]; then
     pause_enter
@@ -266,7 +266,8 @@ run_tool_script() {
   pause_enter
 }
 
-# Coordinates select document function targets behavior.
+# Asks which paths document-functions should process and stores them in
+# SELECTED_DOCUMENT_FUNCTION_TARGETS.
 select_document_function_targets() {
   local action="${1:-update}"
   local selection custom target

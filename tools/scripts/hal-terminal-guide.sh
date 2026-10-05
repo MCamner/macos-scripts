@@ -11,7 +11,7 @@ REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
 OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3:4b-instruct}"
 HAL_NAV_PENDING=0
 
-# Coordinates hal width behavior.
+# Prints the terminal width, clamped to 64-80 columns.
 hal_width() {
   local cols
   cols="$(tput cols 2>/dev/null || echo 80)"
@@ -20,7 +20,7 @@ hal_width() {
   printf '%s\n' "$cols"
 }
 
-# Coordinates hal repeat behavior.
+# Prints a character repeated count times.
 hal_repeat() {
   local count="$1"
   local char="${2:- }"
@@ -34,7 +34,7 @@ hal_repeat() {
   printf '%s' "$out"
 }
 
-# Coordinates hal pad behavior.
+# Pads text with spaces to width, or cuts it.
 hal_pad() {
   local text="$1"
   local width="$2"
@@ -50,7 +50,7 @@ hal_pad() {
   printf '%s%s' "$text" "$(hal_repeat "$pad" " ")"
 }
 
-# Coordinates hal top behavior.
+# Draws the top border of a box with a title.
 hal_top() {
   local title="$1"
   local width="$2"
@@ -62,7 +62,7 @@ hal_top() {
   printf '┌─ %s %s┐\n' "$title" "$(hal_repeat "$rest" "─")"
 }
 
-# Coordinates hal row behavior.
+# Draws one boxed row of text.
 hal_row() {
   local text="$1"
   local width="$2"
@@ -71,7 +71,7 @@ hal_row() {
   printf '│ %s │\n' "$(hal_pad "$text" "$inner")"
 }
 
-# Coordinates hal split row behavior.
+# Draws one boxed row with two half-width columns.
 hal_split_row() {
   local left="$1"
   local right="$2"
@@ -84,7 +84,7 @@ hal_split_row() {
   printf '│ %s%s │\n' "$(hal_pad "$left" "$left_width")" "$(hal_pad "$right" "$right_width")"
 }
 
-# Coordinates hal bottom behavior.
+# Draws the bottom border of a box.
 hal_bottom() {
   local width="$1"
   printf '└%s┘\n' "$(hal_repeat "$(( width - 2 ))" "─")"
@@ -138,7 +138,7 @@ Examples:
 USAGE
 }
 
-# Coordinates guide file behavior.
+# Prints the terminal guide path, preferring docs/ over the bundled copy.
 guide_file() {
   if [[ -f "$GUIDE_HTML" ]]; then
     printf '%s\n' "$GUIDE_HTML"
@@ -160,12 +160,12 @@ open_guide() {
   fi
 }
 
-# Coordinates lower text behavior.
+# Prints the text in lowercase.
 lower_text() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-# Coordinates trim text behavior.
+# Prints the text without leading and trailing whitespace.
 trim_text() {
   local text="$1"
   text="${text#"${text%%[![:space:]]*}"}"
@@ -497,7 +497,8 @@ print_hal_menu() {
   hal_bottom "$width"
 }
 
-# Coordinates local guide search behavior.
+# Prints up to five guide lines matching the first word of four or more letters
+# in the query.
 local_guide_search() {
   local query guide term
   query="$1"

@@ -10,7 +10,8 @@ DOC="$ROOT/docs/COMMANDS.md"
 
 echo "SMOKE: mqlaunch route thin entrypoint"
 
-# Coordinates dispatch behavior.
+# Sources the agent menu and command mode in a subshell and dispatches the
+# arguments.
 dispatch() {
   (
     export MACOS_SCRIPTS_HOME="$ROOT"
@@ -18,7 +19,8 @@ dispatch() {
     source "$AGENT_MENU" >/dev/null 2>&1
     # shellcheck source=/dev/null
     source "$COMMAND_MODE" >/dev/null 2>&1
-# Coordinates run agent behavior.
+    # Stub that prints each mq-agent argument in brackets and exits with
+    # STUB_EXIT.
     _run_agent() {
       printf 'mq-agent'
       printf ' <%s>' "$@"

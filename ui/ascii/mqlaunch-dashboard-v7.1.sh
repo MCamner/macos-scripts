@@ -165,7 +165,7 @@ mq_file_mtime() {
   stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0
 }
 
-# Coordinates mq spark path behavior.
+# Prints the cache path of a sparkline series.
 mq_spark_path() {
   printf '%s/macos-scripts/spark-%s' "${XDG_CACHE_HOME:-$HOME/.cache}" "$1"
 }

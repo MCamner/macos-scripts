@@ -267,7 +267,7 @@ provide_ollama "$eza_and_launcher"
 doctor_run "$only_eza" key next-eza >/dev/null
 doctor_run "$eza_and_launcher" key next-launcher >/dev/null
 
-# Coordinates next step behavior.
+# Prints the "next" step from a doctor JSON document.
 next_step() {
   # next_step <json-file>
   python3 - "$1" <<'PY'

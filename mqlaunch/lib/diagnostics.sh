@@ -143,7 +143,8 @@ show_release_notes() {
   pause_enter
 }
 
-# Coordinates system check behavior.
+# Prints the SYSTEM CHECK panel: AI backend, prompt dir, terminal guide and the
+# ~/bin/mqlaunch symlink.
 system_check() {
   local prompt_count="0"
   local resolved_prompt_dir=""

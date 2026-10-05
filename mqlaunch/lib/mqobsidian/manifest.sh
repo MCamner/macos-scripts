@@ -34,7 +34,7 @@ _mqobs_require_jq() {
   return 1
 }
 
-# Coordinates list supported views behavior.
+# Prints the key of every view in the manifest.
 list_supported_views() {
   local mf
   _mqobs_require_jq || return 1

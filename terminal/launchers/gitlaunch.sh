@@ -182,7 +182,7 @@ function set_repo() {
   fi
 }
 
-# Coordinates switch repo behavior.
+# Asks for a repo path and switches gitlaunch to it.
 function switch_repo() {
   echo "Enter local repo path:"
   echo -n "> "
@@ -257,12 +257,12 @@ function clear_screen() {
   clear
 }
 
-# Coordinates use gum menu behavior.
+# True when gum is installed and both stdin and stdout are terminals.
 function use_gum_menu() {
   [[ -t 0 && -t 1 && -n "$GUM_BIN" ]]
 }
 
-# Coordinates repeat char behavior.
+# Prints a character repeated count times.
 function repeat_char() {
   local char="$1"
   local count="$2"
@@ -281,7 +281,7 @@ function update_ui_width() {
   UI_INNER=$((UI_WIDTH - 4))
 }
 
-# Coordinates truncate text behavior.
+# Shortens text to max characters, ending with "..." when cut.
 function truncate_text() {
   local text="$1"
   local max="$2"
@@ -375,7 +375,8 @@ function render_banner() {
   frame_mid
 }
 
-# Coordinates remote state behavior.
+# Prints the branch's state against its upstream: NO UPSTREAM, DIVERGED, AHEAD
+# n, BEHIND n or OK.
 function remote_state() {
   local ahead behind
 
@@ -463,7 +464,8 @@ function fallback_status_row() {
 # STATUS
 # ------------------------
 
-# Coordinates status check behavior.
+# Draws the gitlaunch status panel: repo, path, branch, changes and remote
+# state.
 function status_check() {
   BRANCH=$(git branch --show-current)
   CHANGES=$(git status --porcelain | wc -l | xargs)
@@ -805,7 +807,7 @@ function is_protected_branch() {
   [[ "$protected" == *" $branch "* ]]
 }
 
-# Coordinates branch slug behavior.
+# Turns text into a lowercase branch-name slug of at most 48 characters.
 function branch_slug() {
   local text="$1"
   local slug
@@ -906,7 +908,8 @@ function create_pr_branch_for_push() {
   return "$rc"
 }
 
-# Coordinates pr aware push behavior.
+# Pushes the current branch; on a protected branch, or when GitHub demands a
+# pull request, moves the commit to a PR branch instead.
 function pr_aware_push() {
   local commit_message="${1:-update project files}"
   local branch output push_status

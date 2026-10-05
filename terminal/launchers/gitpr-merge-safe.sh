@@ -8,16 +8,16 @@ IFS=$'\n\t'
 # pushes. This script closes a REMOTE pull request via `gh pr merge`, with the
 # same guardrails: show the plan, refuse without a TTY, confirm before acting.
 
-# Coordinates red behavior.
+# Prints a line in red.
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
-# Coordinates green behavior.
+# Prints a line in green.
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
-# Coordinates yellow behavior.
+# Prints a line in yellow.
 yellow() { printf '\033[33m%s\033[0m\n' "$*"; }
-# Coordinates blue behavior.
+# Prints a line in blue.
 blue()   { printf '\033[34m%s\033[0m\n' "$*"; }
 
-# Coordinates die behavior.
+# Prints an error in red and exits 1.
 die() {
   red "Error: $*"
   exit 1
@@ -42,7 +42,7 @@ if [[ -f "$_mq_ui_lib" ]]; then
   source "$_mq_ui_lib"
 fi
 if ! declare -f ui_spinner >/dev/null; then
-# Coordinates ui spinner behavior.
+  # Without the shared UI library, runs the command with no spinner.
   ui_spinner() { local _label="$1"; shift; "$@"; }
 fi
 unset _mq_ui_lib

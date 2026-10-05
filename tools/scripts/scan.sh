@@ -16,14 +16,14 @@ suggest_fallback() {
   echo "- Restart session"
 }
 
-# Coordinates insight v2 behavior.
+# Prints the three processes using the most CPU.
 insight_v2() {
   echo
   echo "Analysis:"
   ps -Ao pcpu,comm | sort -nr | awk 'NR>1 && NR<=4 {print "- " $2}'
 }
 
-# Coordinates memory insight behavior.
+# Prints the five processes using the most memory.
 memory_insight() {
   echo
   section "MEMORY (Top consumers)"
@@ -37,7 +37,8 @@ memory_insight() {
 	    '
 }
 
-# Coordinates memory pressure v4 behavior.
+# Reads available and compressed memory from vm_stat and sets MEM_STATUS and
+# MQ_MEM_SCORE.
 memory_pressure_v4() {
   # PAGEOUTS names the third field so the first two land in the right
   # variables. Dropping it would make `read` append it to COMPRESSED_MB.
@@ -89,7 +90,7 @@ memory_pressure_v4() {
   fi
 }
 
-# Coordinates combined insight v2 behavior.
+# Prints the top CPU process and the top memory process.
 combined_insight_v2() {
   echo
   section "COMBINED INSIGHT"
@@ -111,7 +112,7 @@ combined_insight_v2() {
   echo "Top Memory: $MEM_NAME ($(awk "BEGIN {print $MEM_RSS/1024}") MB)"
 }
 
-# Coordinates severity score behavior.
+# Scores CPU load and memory pressure out of 100 and prints the status.
 severity_score() {
   echo
   section "HEALTH SCORE"
@@ -149,7 +150,8 @@ severity_score() {
   echo "Status: $STATUS"
 }
 
-# Coordinates no action mode behavior.
+# Prints "no action required" and succeeds when the score is 70 or more, memory
+# is OK and load is under 4.
 no_action_mode() {
   [ -n "$HEALTH_SCORE" ] || return 1
   [ -n "$MEM_STATUS" ] || return 1
@@ -197,7 +199,8 @@ suggest_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Coordinates smart kill behavior.
+# Offers to TERM the top CPU process when it uses 15% or more and is not a
+# system process.
 smart_kill() {
   read PID CPU NAME <<< \
   "$(ps -Ao pid,pcpu,comm | sort -k2 -nr | awk 'NR==2 {print $1, $2, $3}')"
@@ -222,7 +225,8 @@ smart_kill() {
   [[ "$choice" == "y" ]] && kill -15 "$PID" && echo "✔ killed"
 }
 
-# Coordinates track offender behavior.
+# Logs the top CPU process and offers to TERM it once it has been top three
+# times.
 track_offender() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -268,7 +272,7 @@ track_offender() {
   fi
 }
 
-# Coordinates score offenders behavior.
+# Ranks the top processes by CPU, memory and how often they were seen recently.
 score_offenders() {
   echo
   section "OFFENDER RANKING"
@@ -301,7 +305,8 @@ score_offenders() {
   echo
 }
 
-# Coordinates top weighted action behavior.
+# Offers to TERM the top CPU process when it uses 15% or more and is not a
+# system process.
 top_weighted_action() {
   read PID CPU MEM NAME <<< \
   "$(ps -Ao pid,pcpu,pmem,comm \
@@ -331,7 +336,7 @@ top_weighted_action() {
 # DECAY MODEL v1
 # ----------------------------
 
-# Coordinates track offender decay behavior.
+# Logs the top CPU process with a timestamp, keeping the latest 100 rows.
 track_offender_decay() {
   LOG="$HOME/.mq/offenders.log"
   mkdir -p "$HOME/.mq"
@@ -347,7 +352,7 @@ track_offender_decay() {
   tail -n 100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
 }
 
-# Coordinates recent count behavior.
+# Prints how many times the process was logged in the last five minutes.
 recent_count() {
   LOG="$HOME/.mq/offenders.log"
   NOW=$(date +%s)
@@ -375,7 +380,8 @@ recent_count() {
 # MEMORY-WEIGHTED SCORING v3
 # ----------------------------
 
-# Coordinates score offenders v3 behavior.
+# Ranks the top processes by memory, CPU and recent sightings, with the figures
+# behind each score.
 score_offenders_v3() {
   echo
   section "OFFENDER RANKING (v3)"
@@ -411,7 +417,7 @@ score_offenders_v3() {
   echo
 }
 
-# Coordinates top weighted action v3 behavior.
+# Offers to TERM the highest-scoring process when it uses 10% CPU or more.
 top_weighted_action_v3() {
   # Select the highest score from the same calculation.
   TOP_LINE=$(ps -Ao pid,pcpu,pmem,rss,comm \
@@ -466,7 +472,7 @@ top_weighted_action_v3() {
 # AUDIO FILTERING v2
 # ----------------------------
 
-# Coordinates audio insight behavior.
+# When coreaudiod is busy, lists apps likely to be playing audio and what to do.
 audio_insight() {
   # Trigger only when coreaudiod appears high in the process list.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi coreaudiod; then
@@ -519,7 +525,7 @@ audio_insight() {
 # GUI-AWARE INSIGHT v1
 # ----------------------------
 
-# Coordinates gui insight behavior.
+# When WindowServer is busy, lists the GUI-heavy apps likely behind it.
 gui_insight() {
   # Trigger only when WindowServer is a top CPU process.
   if ! ps -Ao pcpu,comm | sort -nr | head -n 5 | grep -qi WindowServer; then
@@ -562,7 +568,8 @@ gui_insight() {
 # ROOT CAUSE ENGINE v1
 # ----------------------------
 
-# Coordinates root cause engine behavior.
+# Groups processes by app and names the one most likely behind the load, with
+# confidence and an action.
 root_cause_engine() {
   echo
   section "ROOT CAUSE"
@@ -673,7 +680,8 @@ root_cause_engine() {
   echo "- Close or restart $NAME"
 }
 
-# Coordinates trend engine v1 behavior.
+# Logs the root-cause app's memory and says whether it is growing, easing or
+# stable.
 trend_engine_v1() {
   [ -n "$ROOT_CAUSE_NAME" ] || return
   [ -n "$ROOT_MEM_TOP3" ] || return

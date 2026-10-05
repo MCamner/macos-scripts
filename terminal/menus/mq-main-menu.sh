@@ -12,7 +12,8 @@ main_menu_is_sourced() {
   [[ "${BASH_SOURCE[0]:-}" != "$0" ]]
 }
 
-# Coordinates main menu direct entry behavior.
+# Runs this menu through the mqlaunch launcher when the file is executed
+# directly.
 main_menu_direct_entry() {
   local base_dir launcher
   base_dir="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
@@ -564,7 +565,7 @@ read_main_choice() {
   fi
 }
 
-# Coordinates main loop behavior.
+# Shows the main menu and handles choices until the user leaves.
 main_loop() {
   local choice
 

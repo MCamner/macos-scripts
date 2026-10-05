@@ -23,7 +23,7 @@ Options:
 EOF
 }
 
-# Coordinates die usage behavior.
+# Prints an error and the usage, and exits 2.
 die_usage() {
   echo "install-godmode.sh: $1" >&2
   usage >&2
@@ -119,7 +119,7 @@ Task: $ARGUMENTS
 EOF
 }
 
-# Coordinates cleanup behavior.
+# Removes the temporary directory.
 cleanup() {
   if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
     rm -rf -- "$TEMP_DIR"
@@ -131,7 +131,8 @@ TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mq-godmode.XXXXXX")"
 PROMPT_SOURCE="$TEMP_DIR/godmode.md"
 prompt_content > "$PROMPT_SOURCE"
 
-# Coordinates install prompt behavior.
+# Installs the godmode prompt for one agent, backing up a changed file; with
+# --dry-run only says what it would do.
 install_prompt() {
   local agent="$1"
   local destination="$2"

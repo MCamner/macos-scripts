@@ -4,7 +4,7 @@ set -euo pipefail
 
 MQ_AGENT_BIN="${MQ_AGENT_BIN:-$HOME/mq-agent}"
 
-# Coordinates run agent behavior.
+# Runs mq-agent through uv in its own project, outside any active virtualenv.
 _run_agent() {
   (cd "$MQ_AGENT_BIN" && env -u VIRTUAL_ENV UV_NO_CONFIG=1 uv --project "$MQ_AGENT_BIN" run mq-agent "$@")
 }
