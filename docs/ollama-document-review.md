@@ -38,6 +38,18 @@ Override with:
 MQ_OLLAMA_REVIEW_MODEL=another-local-model mqlaunch ollama-review .
 ```
 
+## Keep-alive
+
+The model stays loaded for `30m` after a run (Ollama's own default is 5m), so
+a second review within that window skips the cold load.
+
+```bash
+mqlaunch ollama-review --keep-alive 0 .        # unload right after the run
+MQ_OLLAMA_REVIEW_KEEP_ALIVE=-1 mqlaunch ollama-review .  # keep loaded
+```
+
+Bare integers are seconds; other values are durations such as `10m` or `1h`.
+
 ## Safety
 
 Skips common secret-like filenames (`.env`, `id_rsa`, `token`, etc.) and only
