@@ -49,6 +49,7 @@ MQ_OLLAMA_REVIEW_KEEP_ALIVE=-1 mqlaunch ollama-review .  # keep loaded
 ```
 
 Bare integers are seconds; other values are durations such as `10m` or `1h`.
+Anything else exits 2 before Ollama is called.
 
 ## Safety
 

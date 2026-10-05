@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -63,13 +64,23 @@ def ollama_endpoint() -> str:
     return f"{host}/api/generate"
 
 
+# Go duration syntax, which Ollama uses to parse keep_alive strings.
+KEEP_ALIVE_DURATION = re.compile(r"-?(\d+(\.\d+)?(ns|us|µs|ms|s|m|h))+")
+
+
 def parse_keep_alive(value: str) -> str | int:
     # Ollama reads bare numbers as seconds (0 unloads, -1 keeps forever)
-    # and strings as durations such as "30m".
+    # and strings as durations such as "30m". Rejecting anything else here
+    # gives a clear error instead of Ollama's bare HTTP 400.
     try:
         return int(value)
     except ValueError:
+        pass
+    if KEEP_ALIVE_DURATION.fullmatch(value):
         return value
+    raise argparse.ArgumentTypeError(
+        f"{value!r} is not a duration (use e.g. 30m, 1h30m, 120, 0 or -1)"
+    )
 
 
 def is_secret_like(path: Path) -> bool:
@@ -272,7 +283,7 @@ def main() -> int:
     parser.add_argument(
         "--keep-alive",
         type=parse_keep_alive,
-        default=parse_keep_alive(DEFAULT_KEEP_ALIVE),
+        default=DEFAULT_KEEP_ALIVE,
         help=(
             f"How long Ollama keeps the model loaded after the run "
             f"(default: {DEFAULT_KEEP_ALIVE}; 0 unloads, -1 keeps forever)"
