@@ -247,7 +247,7 @@ mqlaunch next --json                # the mq.next.v1 document
 mqlaunch next --input FILE          # select from a pulse document you already have
 mqlaunch next --fresh               # collect now, whatever the last run left behind
 mqlaunch doctor                     # interactive environment check
-mqlaunch doctor --json              # machine-readable JSON report
+mqlaunch doctor --json              # mq.doctor-status.v1 (schemas/mq.doctor-status.v1.json)
 mqlaunch doctor --fix-plan          # read-only manual remediation plan
 mqlaunch doctor --fix-plan --json   # mq.doctor-fix-plan.v1; evidence-bound, executes nothing
 mqlaunch auth status                # local-only: Keychain vs current process
