@@ -131,3 +131,4 @@ theme-exact-sync-smoke.sh	active	-
 openai-key-rotation-smoke.sh	active	Keychain-backed rotation; secret-safe readback, rollback, and process-scoped smoke
 vector-store-identity-smoke.sh	active	Canonical store contract: no consumer may hardcode an id, and the legacy id may never return
 compact-header-smoke.sh	active	-
+fig-colors-smoke.sh	active	figure colours: launcher pick reaches the compact header; fixed opts out

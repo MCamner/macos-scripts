@@ -496,6 +496,11 @@ mq_dashboard_compact() {
   text_width=$(( width - 4 - 21 ))
   fig_l="$ACCENT_GREEN"
   fig_r="$ACCENT_YELLOW"
+  # Launcher-chosen colours; only when colour is on, else keep the theme's.
+  if [[ -n "$fig_l" && "${MQ_FIG_COLORS:-}" =~ ^([0-9]{1,3})\ ([0-9]{1,3})$ ]]; then
+    fig_l=$'\033[38;5;'"${BASH_REMATCH[1]}m"
+    fig_r=$'\033[38;5;'"${BASH_REMATCH[2]}m"
+  fi
 
   line1="$(mq_truncate "${host} · ${user}" "$text_width")"
   line2="$(mq_truncate "${repo:-no repo}@${branch:-N/A} · ${dirty:-N/A} ${ahead_behind} · ${severity}" "$text_width")"
