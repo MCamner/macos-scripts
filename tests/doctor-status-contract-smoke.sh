@@ -59,6 +59,18 @@ build_world() {
   done
 }
 
+# A working local Ollama: the binary, and a curl that answers /api/tags with
+# the two models doctor looks for. tests/doctor-ollama-smoke.sh covers the
+# states in between; here it is only part of a provisioned machine.
+provide_ollama() {
+  local dir="$1"
+  printf '#!/usr/bin/env bash\nexit 0\n' >"$dir/ollama"
+  printf '#!/usr/bin/env bash\nprintf %s\n' \
+    "'{\"models\":[{\"name\":\"qwen3:4b-instruct\"},{\"name\":\"nomic-embed-text:latest\"}]}'" \
+    >"$dir/curl"
+  chmod +x "$dir/ollama" "$dir/curl"
+}
+
 # A checked tool that is also a helper could never be withheld, and the world
 # would quietly test something other than what it says.
 for tool in "${CHECKED[@]}" mqlaunch; do
@@ -73,6 +85,7 @@ done
 provisioned="$run_dir/bin-provisioned"
 degraded="$run_dir/bin-degraded"
 build_world "$provisioned" "${CHECKED[@]}" mqlaunch
+provide_ollama "$provisioned"
 build_world "$degraded"
 echo "  ok: ${#CHECKED[@]} checked tools, present in one world and absent in the other"
 
@@ -81,7 +94,7 @@ echo "  ok: ${#CHECKED[@]} checked tools, present in one world and absent in the
 # left unset on purpose: the tools must stay quiet without one, which
 # tests/plain-output-contract-smoke.sh pins separately.
 #
-# `OPENAI_API_KEY` is one of the twelve checks, so the provisioned world sets it
+# `OPENAI_API_KEY` is one of the checks, so the provisioned world sets it
 # and the degraded world does not, the same split as the tools.
 doctor_run() {
   # doctor_run <world-bin> <key|nokey> <out-prefix> [args...]
@@ -249,6 +262,8 @@ only_eza="$run_dir/bin-only-eza-missing"
 eza_and_launcher="$run_dir/bin-eza-and-launcher-missing"
 build_world "$only_eza" git gh uv python3 node fzf jq gitleaks pbcopy mqlaunch
 build_world "$eza_and_launcher" git gh uv python3 node fzf jq gitleaks pbcopy
+provide_ollama "$only_eza"
+provide_ollama "$eza_and_launcher"
 doctor_run "$only_eza" key next-eza >/dev/null
 doctor_run "$eza_and_launcher" key next-launcher >/dev/null
 

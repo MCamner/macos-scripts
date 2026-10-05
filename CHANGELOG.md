@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch doctor` checks local AI: Ollama installed, its server answering at
+  `OLLAMA_HOST`, and the `qwen3:4b-instruct` and `nomic-embed-text` models that
+  `hal`, `ollama-review` and mq-agent's semantic memory use. Each warning
+  carries its fix (`brew install --cask ollama-app`, `open -a Ollama`,
+  `ollama pull ...`). Read-only: doctor asks the HTTP API and never runs
+  `ollama`, which would start the server.
+
 * `mqlaunch ollama-review --keep-alive` (or `MQ_OLLAMA_REVIEW_KEEP_ALIVE`)
   sets how long Ollama keeps the model loaded after a review. Default `30m`,
   so a second review within half an hour skips the cold model load; `0`
