@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch ollama-review --keep-alive` (or `MQ_OLLAMA_REVIEW_KEEP_ALIVE`)
+  sets how long Ollama keeps the model loaded after a review. Default `30m`,
+  so a second review within half an hour skips the cold model load; `0`
+  unloads at once.
+
 * `mqlaunch doctor --json` declares its contract: the output now carries
   `"schema": "mq.doctor-status.v1"`, described by
   `schemas/mq.doctor-status.v1.json`. mq-hal reads this output; until now it
