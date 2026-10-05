@@ -505,7 +505,7 @@ mq_dashboard_compact() {
   line4="$(mq_truncate "$(date '+%H:%M') · Next: ${next_action:-N/A}" "$text_width")"
 
   surface_top "MQLAUNCH" "$width" "$frame"
-  surface_row " ${fig_l}▄▄████▄▄${C_RESET}   ${fig_r}▄▄██▄▄${C_RESET}   ${C_BOLD}${line1}${C_RESET}${frame}" "$width" "$frame"
+  surface_row " ${fig_l}▄▄████▄▄${C_RESET}   ${fig_r}▄▄██▄▄${C_RESET}   ${C_BOLD}${C_WHITE}${line1}${C_RESET}${frame}" "$width" "$frame"
   surface_row " ${fig_l}████████${C_RESET}  ${fig_r}█▀████▀█${C_RESET}  ${severity_color}${line2}${C_RESET}${frame}" "$width" "$frame"
   surface_row " ${fig_l}██▄██▄██${C_RESET}  ${fig_r}██▀██▀██${C_RESET}  ${line3}${frame}" "$width" "$frame"
   surface_row " ${fig_l} ▄█▀▀█▄ ${C_RESET}  ${fig_r} ▀▄██▄▀ ${C_RESET}  ${line4}${frame}" "$width" "$frame"
