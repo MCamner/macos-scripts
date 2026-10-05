@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch doctor --json` declares its contract: the output now carries
+  `"schema": "mq.doctor-status.v1"`, described by
+  `schemas/mq.doctor-status.v1.json`. mq-hal reads this output; until now it
+  had no schema, so a renamed key reached it unannounced. The output is
+  validated against the schema in `tests/contracts/`, on a provisioned and a
+  degraded machine, in CI and in `release-check.sh`.
+
 * Compact header: after the first draw, mqlaunch menus show a six-line boxed
   header — the Command Surface figures beside host, repo, git state, MEM/BAT
   and the next action, framed like the menu panel below — instead of

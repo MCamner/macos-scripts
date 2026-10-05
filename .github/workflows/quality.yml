@@ -108,3 +108,9 @@ jobs:
 
       - name: Run B2 TUI tests
         run: python -m pytest mqlaunch/b2_tui/tests
+
+      # JSON this repo publishes to other MQ repos, validated against its
+      # schema. Here rather than in the shell suite because it needs
+      # jsonschema, and this job is the one with a pip-installable Python.
+      - name: Run contract tests
+        run: python -m pytest tests/contracts

@@ -177,7 +177,9 @@ run_json_mode() {
   local next
   next="$(next_step)"
 
-  printf '{"project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
+  # mq.doctor-status.v1 — schemas/mq.doctor-status.v1.json. mq-hal reads this;
+  # a new key or status value is a contract change.
+  printf '{"schema":"mq.doctor-status.v1","project":"macos-scripts","version":"%s","status":"%s","checks":[%s],"summary":{"ok":%d,"warn":%d,"fail":%d},"next":%s}\n' \
     "$version" "$_J_STATUS" "$_J_CHECKS" "$_J_OK" "$_J_WARN" "$_J_FAIL" \
     "$([[ -n "$next" ]] && printf '"%s"' "$next" || printf 'null')"
 
