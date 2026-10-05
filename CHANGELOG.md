@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch apps` (HAL terminal guide) answers with a local Ollama model when
+  `OPENAI_API_KEY` is not set. It sends `qwen3:4b-instruct` (or
+  `MQ_HAL_GUIDE_OLLAMA_MODEL`) the guide lines that match the question; until
+  now it only grepped the guide. OpenAI stays first, and grep stays the last
+  fallback when Ollama is not running.
+
 * `mqlaunch doctor` checks local AI: Ollama installed, its server answering at
   `OLLAMA_HOST`, and the `qwen3:4b-instruct` and `nomic-embed-text` models that
   `hal`, `ollama-review` and mq-agent's semantic memory use. Each warning
