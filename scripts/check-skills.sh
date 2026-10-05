@@ -39,10 +39,10 @@ END_MARK="<!-- END GENERATED SKILLS TABLE -->"
 FAIL=0
 # Marks a failing check.
 fail() { echo "FAIL: $1"; FAIL=1; }
-# Coordinates ok behavior.
+# Prints a passing check.
 ok()   { echo "PASS: $1"; }
 
-# Coordinates frontmatter field behavior.
+# Prints the value of a frontmatter key from a SKILL.md file.
 frontmatter_field() {
   awk -v key="$2" -F': ' '$1 == key { sub("^" key ": ", ""); print; exit }' "$1"
 }

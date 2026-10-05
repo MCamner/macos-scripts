@@ -17,7 +17,8 @@ is_valid_mqobsidian_root() {
   [[ -d "$dir/systems" && -d "$dir/memory" ]]
 }
 
-# Coordinates assert mqobsidian dir behavior.
+# Warns when MQ_OBSIDIAN_DIR is unset and fails unless the resolved root exists
+# and has systems/ and memory/.
 assert_mqobsidian_dir() {
   local dir
   dir="$(resolve_mqobsidian_dir)"

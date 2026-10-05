@@ -158,7 +158,7 @@ run_next() {
   set -e
 }
 
-# Coordinates collections behavior.
+# Prints how many times the collector ran.
 collections() { [[ -f "$TMP/collect.log" ]] && wc -l < "$TMP/collect.log" | tr -d ' ' || echo 0; }
 
 echo "[3/9] a fresh complete document is reused, and the screen says so"

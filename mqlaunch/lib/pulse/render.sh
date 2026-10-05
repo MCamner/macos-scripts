@@ -98,7 +98,7 @@ pulse_colour() {
 # own name uppercased — a collector added later shows up rather than vanishing.
 PULSE_AREA_ORDER=(system repositories stack memory git quality)
 
-# Coordinates pulse area heading behavior.
+# Maps an area key to its section heading; unknown keys are upper-cased.
 pulse_area_heading() {
   case "$1" in
     system)       printf 'SYSTEM' ;;

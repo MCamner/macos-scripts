@@ -4,25 +4,25 @@ set -euo pipefail
 APP_NAME="MISSION CONTROL"
 WIDTH=68
 
-# Coordinates line behavior.
+# Prints a double rule as wide as the screen.
 line() {
   printf '═%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Coordinates subline behavior.
+# Prints a single rule as wide as the screen.
 subline() {
   printf '─%.0s' $(seq 1 "$WIDTH")
   printf '\n'
 }
 
-# Coordinates section behavior.
+# Prints a section title over a rule.
 section() {
   printf '\n%s\n' "$1"
   subline
 }
 
-# Coordinates kv behavior.
+# Prints a key and value in two columns.
 kv() {
   printf '%-20s %s\n' "$1" "$2"
 }
@@ -155,7 +155,7 @@ get_git_info() {
   fi
 }
 
-# Coordinates top processes behavior.
+# Prints the five processes using the most CPU.
 top_processes() {
   ps -Ao pid,comm,%cpu,%mem -r | head -n 6
 }

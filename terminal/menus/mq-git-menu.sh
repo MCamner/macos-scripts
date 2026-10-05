@@ -38,7 +38,7 @@ ensure_repo() {
   fi
 }
 
-# Coordinates repo name behavior.
+# Prints the current repo's directory name.
 repo_name() {
   basename "$CURRENT_REPO"
 }
@@ -65,7 +65,7 @@ normalize_remote_url() {
   echo "${remote_url%.git}"
 }
 
-# Coordinates github web url behavior.
+# Prints the GitHub web URL of the origin remote; fails without one.
 github_web_url() {
   local remote_url=""
   remote_url="$(git -C "$CURRENT_REPO" remote get-url origin 2>/dev/null || true)"
@@ -348,7 +348,8 @@ suggest_commit() {
   pause_enter
 }
 
-# Coordinates next action behavior.
+# Suggests the next git step from the working tree and the branch's ahead/behind
+# counts.
 next_action() {
   ensure_repo || return 1
 

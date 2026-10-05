@@ -125,7 +125,8 @@ render_screen() {
   return "$rc"
 }
 
-# Coordinates capture all behavior.
+# Renders every screen and writes its exit code, stdout and stderr, normalized,
+# to one file.
 capture_all() {
   local perf_file="$1" dest="$2" fn rc so se
   : >"$dest"
