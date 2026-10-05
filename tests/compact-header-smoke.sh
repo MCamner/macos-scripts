@@ -34,7 +34,7 @@ grep -q "▄▄████▄▄" <<<"$compact" || fail "figures missing"
 head -1 <<<"$compact" | grep -q "┌─ MQLAUNCH" || fail "box top with MQLAUNCH title missing"
 tail -1 <<<"$compact" | grep -q "└" || fail "box bottom missing"
 # Every row as wide as the menu panel below it, or the two frames do not line up.
-widths="$(printf '%s\n' "$compact" | while IFS= read -r l; do printf '%s\n' "${#l}"; done | sort -u)"
+widths="$(printf '%s\n' "$compact" | sed $'s/\e\\[[0-9;]*m//g' | while IFS= read -r l; do printf '%s\n' "${#l}"; done | sort -u)"
 [[ "$(wc -l <<<"$widths" | tr -d ' ')" == 1 ]] || fail "box rows differ in width: $(tr '\n' ' ' <<<"$widths")"
 grep -q "Next:" <<<"$compact" || fail "next action missing"
 grep -qE "MEM .*BAT " <<<"$compact" || fail "MEM/BAT missing"
