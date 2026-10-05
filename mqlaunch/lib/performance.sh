@@ -45,24 +45,24 @@ if ! command -v print_divider >/dev/null 2>&1; then
   }
 fi
 
-# Handles performance reports dir.
+# Prints the performance reports directory, creating it.
 performance_reports_dir() {
   local dir="$PROJECT_ROOT/backups/performance-reports"
   mkdir -p "$dir"
   printf "%s\n" "$dir"
 }
 
-# Handles perf has command.
+# True when the command is on PATH.
 perf_has_command() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Handles perf cpu count.
+# Prints the number of logical CPUs.
 perf_cpu_count() {
   sysctl -n hw.logicalcpu 2>/dev/null || echo "1"
 }
 
-# Handles perf load 1m.
+# Prints the 1-minute load average.
 perf_load_1m() {
   # Split on whitespace, not on ", ". macOS separates the three load averages
   # with spaces — "load averages: 1.50 1.25 1.10" — so splitting on ", " kept
@@ -74,24 +74,24 @@ perf_load_1m() {
   uptime | awk -F'load averages?: ' '{print $2}' | awk '{print $1}' | tr -d ' ,'
 }
 
-# Handles perf disk percent root.
+# Prints how full the root volume is, as a number.
 perf_disk_percent_root() {
   df -h / | tail -1 | awk '{print $5}' | tr -d '%'
 }
 
-# Handles perf disk line root.
+# Prints the df line for the root volume.
 perf_disk_line_root() {
   df -h / | tail -1
 }
 
-# Handles perf battery percent.
+# Prints the battery percentage, or nothing without a battery.
 perf_battery_percent() {
   if perf_has_command pmset; then
     pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -1 | tr -d '%' || true
   fi
 }
 
-# Handles perf battery line.
+# Prints pmset's battery line, or "Battery info unavailable".
 perf_battery_line() {
   if perf_has_command pmset; then
     pmset -g batt 2>/dev/null | tail -1 || echo "Battery info unavailable"
@@ -100,14 +100,14 @@ perf_battery_line() {
   fi
 }
 
-# Handles perf memory pressure raw.
+# Prints memory_pressure's output, or nothing when it is not installed.
 perf_memory_pressure_raw() {
   if perf_has_command memory_pressure; then
     memory_pressure 2>/dev/null || true
   fi
 }
 
-# Handles perf memory pressure tail.
+# Prints the last five lines of memory_pressure, or a notice.
 perf_memory_pressure_tail() {
   local mp
   mp="$(perf_memory_pressure_raw)"
@@ -118,7 +118,8 @@ perf_memory_pressure_tail() {
   fi
 }
 
-# Handles perf memory pressure level.
+# Prints the memory pressure level (normal, medium, high, critical or unknown)
+# from the free percentage.
 perf_memory_pressure_level() {
   local mp
   mp="$(perf_memory_pressure_raw)"
@@ -147,12 +148,12 @@ perf_memory_pressure_level() {
   echo "unknown"
 }
 
-# Handles perf network ip.
+# Prints the IP address of en0 or en1, or nothing.
 perf_network_ip() {
   ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true
 }
 
-# Handles perf network display.
+# Prints the IP address, or Unavailable.
 perf_network_display() {
   local ip
   ip="$(perf_network_ip)"
@@ -160,7 +161,7 @@ perf_network_display() {
   echo "$ip"
 }
 
-# Handles perf battery display.
+# Prints the battery percentage, or N/A.
 perf_battery_display() {
   local batt
   batt="$(perf_battery_percent)"
@@ -168,7 +169,7 @@ perf_battery_display() {
   echo "$batt"
 }
 
-# Handles perf score status.
+# Maps a health score to Excellent, Good, Warning or Critical.
 perf_score_status() {
   local score="$1"
   if (( score >= 90 )); then
@@ -182,7 +183,7 @@ perf_score_status() {
   fi
 }
 
-# Handles perf score color.
+# Maps a health score to its colour.
 perf_score_color() {
   local score="$1"
   if (( score >= 90 )); then
@@ -196,7 +197,8 @@ perf_score_color() {
   fi
 }
 
-# Handles perf health score.
+# Prints a health score out of 100, then the warnings behind the deductions
+# (disk, battery, load, memory, network).
 perf_health_score() {
   local score=100
   local warnings=()
@@ -288,7 +290,7 @@ perf_health_score() {
   fi
 }
 
-# Handles command perf health score.
+# Shows the health score screen with its status and warnings.
 command_perf_health_score() {
   local output score perf_status color warnings width
   width="$(surface_terminal_width)"
@@ -322,7 +324,8 @@ command_perf_health_score() {
   pause_enter
 }
 
-# Handles command perf overview.
+# Shows the performance overview: load, memory, disk, IP, battery and health
+# score.
 command_perf_overview() {
   local cpu_line mem_pressure disk_line ip_addr battery_line score_output score perf_status color warnings width
   width="$(surface_terminal_width)"
@@ -362,7 +365,7 @@ command_perf_overview() {
   pause_enter
 }
 
-# Handles command perf cpu top.
+# Shows the 15 processes using the most CPU.
 command_perf_cpu_top() {
   print_header
   print_section "Top CPU Processes"
@@ -372,7 +375,7 @@ command_perf_cpu_top() {
   pause_enter
 }
 
-# Handles command perf mem top.
+# Shows the 15 processes using the most memory.
 command_perf_mem_top() {
   print_header
   print_section "Top Memory Processes"
@@ -382,7 +385,7 @@ command_perf_mem_top() {
   pause_enter
 }
 
-# Handles command perf disk usage.
+# Shows disk usage and the largest folders in the project root.
 command_perf_disk_usage() {
   print_header
   print_section "Disk Usage"
@@ -396,7 +399,7 @@ command_perf_disk_usage() {
   pause_enter
 }
 
-# Handles command perf network.
+# Shows the active IP address and the routing table.
 command_perf_network() {
   print_header
   print_section "Network Overview"
@@ -415,7 +418,7 @@ command_perf_network() {
   pause_enter
 }
 
-# Handles command perf battery.
+# Shows battery and power-source status.
 command_perf_battery() {
   print_header
   print_section "Battery Status"
@@ -431,7 +434,7 @@ command_perf_battery() {
   pause_enter
 }
 
-# Handles command perf snapshot.
+# Writes a performance report with the health score to the reports directory.
 command_perf_snapshot() {
   print_header
   print_section "Create Performance Snapshot"
@@ -517,7 +520,7 @@ command_perf_snapshot() {
   pause_enter
 }
 
-# Handles command perf quick watch.
+# Redraws the health score, disk and battery every two seconds until Ctrl+C.
 command_perf_quick_watch() {
   print_header
   print_section "Quick Watch"

@@ -29,13 +29,13 @@ Examples:
 EOF
 }
 
-# Handles die.
+# Prints an error and exits 1.
 die() {
   echo "ERROR: $*" >&2
   exit 1
 }
 
-# Handles require shortcuts.
+# Exits unless the macOS shortcuts CLI is available.
 require_shortcuts() {
   command -v shortcuts >/dev/null 2>&1 || die "The macOS 'shortcuts' CLI is not available"
 }
@@ -62,7 +62,7 @@ print_header() {
   echo "== $1 =="
 }
 
-# Handles list shortcuts.
+# Lists shortcuts, optionally only those in one folder.
 list_shortcuts() {
   local folder="${1:-}"
 
@@ -75,13 +75,13 @@ list_shortcuts() {
   fi
 }
 
-# Handles list folders.
+# Lists shortcut folders.
 list_folders() {
   print_header "SHORTCUT FOLDERS"
   run_shortcuts_cli shortcuts list --folders
 }
 
-# Handles search shortcuts.
+# Lists the shortcuts whose names match the query, optionally within one folder.
 search_shortcuts() {
   local query="${1:-}"
   local folder="${2:-}"
@@ -129,7 +129,7 @@ run_shortcut() {
   fi
 }
 
-# Handles view shortcut.
+# Shows one shortcut.
 view_shortcut() {
   local name="${1:-}"
 

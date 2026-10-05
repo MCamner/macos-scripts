@@ -34,7 +34,7 @@ DOCS_DIR="$BASE_DIR/docs"
 MACOS_TWEAKS_BACKUP="${HOME}/.macos-tweaks-backup"
 TERMINAL_TWEAKS_BACKUP="${HOME}/.terminal-tweaks-backup"
 
-# Handles status word.
+# Prints OK when the path exists, otherwise MISSING.
 status_word() {
   local path="$1"
   if [[ -e "$path" ]]; then
@@ -44,7 +44,8 @@ status_word() {
   fi
 }
 
-# Handles status exec word.
+# Prints OK when the path is executable, FOUND when it only exists, otherwise
+# MISSING.
 status_exec_word() {
   local path="$1"
   if [[ -x "$path" ]]; then
@@ -56,7 +57,7 @@ status_exec_word() {
   fi
 }
 
-# Handles tool word.
+# Prints INSTALLED when the tool is on PATH, otherwise NOT FOUND.
 tool_word() {
   local tool="$1"
   if command -v "$tool" >/dev/null 2>&1; then
@@ -66,13 +67,13 @@ tool_word() {
   fi
 }
 
-# Handles latest backup dir.
+# Prints the newest entry in a backup directory, or nothing.
 latest_backup_dir() {
   local dir="$1"
   ls -td "$dir"/* 2>/dev/null | head -n 1 || true
 }
 
-# Handles shorten path.
+# Shortens a path from the left to max characters.
 shorten_path() {
   local p="$1"
   local max="${2:-58}"
@@ -83,17 +84,17 @@ shorten_path() {
   fi
 }
 
-# Handles git branch.
+# Prints the repo's current branch, or "-".
 git_branch() {
   git -C "$BASE_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || printf "-"
 }
 
-# Handles git short status count.
+# Prints the number of changed files in the repo.
 git_short_status_count() {
   git -C "$BASE_DIR" status --short 2>/dev/null | wc -l | tr -d ' '
 }
 
-# Handles git dirty word.
+# Prints CLEAN, or DIRTY with the number of changed files.
 git_dirty_word() {
   local count
   count="$(git_short_status_count)"
@@ -104,12 +105,12 @@ git_dirty_word() {
   fi
 }
 
-# Handles git last commit.
+# Prints the last commit's short hash and subject, or "-".
 git_last_commit() {
   git -C "$BASE_DIR" log -1 --pretty=format:'%h %s' 2>/dev/null || printf "-"
 }
 
-# Handles git remote url.
+# Prints the origin URL, or "-".
 git_remote_url() {
   git -C "$BASE_DIR" remote get-url origin 2>/dev/null || printf "-"
 }
@@ -249,7 +250,7 @@ show_git_changes_screen() {
   pause_enter
 }
 
-# Handles interactive menu.
+# Shows the dashboard and its menu and runs choices until the user leaves.
 interactive_menu() {
   local choice
 
