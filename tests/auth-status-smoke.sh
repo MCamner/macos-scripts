@@ -75,11 +75,11 @@ set +e
 out="$(env -u OPENAI_API_KEY "$SCRIPT" status)"
 rc=$?
 set -e
-[[ $rc -eq 1 ]]
+[[ $rc -eq 0 ]]
 grep -q 'Keychain store: present' <<<"$out"
 grep -q 'Process env:    missing' <<<"$out"
 grep -q 'Effective:      keychain' <<<"$out"
-grep -q 'Status:         warn' <<<"$out"
+grep -q 'Status:         ok' <<<"$out"
 [[ ! -s "$CURL_LOG" ]]
 ! grep -q "$KEYCHAIN_KEY" <<<"$out"
 printf '  ok\n'
@@ -135,7 +135,7 @@ printf '  ok\n'
 
 printf '[8/8] JSON contracts are parseable and secret-free\n'
 printf '%s' "$KEYCHAIN_KEY" > "$KEYCHAIN_FILE"
-env -u OPENAI_API_KEY "$SCRIPT" status --json > "$TMP/status.json" || true
+env -u OPENAI_API_KEY "$SCRIPT" status --json > "$TMP/status.json"
 env -u OPENAI_API_KEY "$SCRIPT" test openai --json > "$TMP/test.json"
 python3 - "$TMP/status.json" "$TMP/test.json" <<'PY'
 import json
@@ -145,6 +145,7 @@ status = json.load(open(sys.argv[1], encoding="utf-8"))
 test = json.load(open(sys.argv[2], encoding="utf-8"))
 
 assert status["schema"] == "mq.auth-status.v1"
+assert status["status"] == "ok"
 assert status["keychain"]["status"] == "present"
 assert status["process"]["status"] == "missing"
 assert status["api_tested"] is False
