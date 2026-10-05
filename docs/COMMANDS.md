@@ -844,6 +844,12 @@ mqlaunch apps                       # HAL terminal guide
 mqlaunch apps "how do I rename a branch"   # ask it a question
 ```
 
+`mqlaunch apps` answers questions with OpenAI file search over the terminal
+guide. Without `OPENAI_API_KEY` it asks a local Ollama model instead
+(`qwen3:4b-instruct`, or `MQ_HAL_GUIDE_OLLAMA_MODEL`, at `OLLAMA_HOST`) with
+the guide lines that match the question. If Ollama is not running or lacks the
+model, it falls back to a plain search of the guide.
+
 `status --json` (and `about --json`) print exactly one JSON document to stdout —
 no banner, no ANSI, no prompt:
 

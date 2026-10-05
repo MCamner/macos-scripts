@@ -34,6 +34,7 @@ docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
 doctor-fix-plan-json-smoke.sh	active	mq.doctor-fix-plan.v1 read-only evidence-bound remediation contract
 doctor-ollama-smoke.sh	active	-
+hal-guide-ollama-smoke.sh	active	-
 auth-status-smoke.sh	active	Keychain/process visibility and explicit OpenAI API access contract; secrets never printed
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-

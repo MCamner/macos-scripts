@@ -8,6 +8,7 @@ GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 source "$BASE_DIR/tools/cli/mq-vector-store.sh"
 VECTOR_STORE_ID="$(mq_vector_store_id MQ_TERMINAL_GUIDE_VECTOR_STORE_ID)"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
+OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3:4b-instruct}"
 HAL_NAV_PENDING=0
 
 # Coordinates hal width behavior.
@@ -537,13 +538,73 @@ read_hal_prompt() {
   printf '>> press 1-14, use ! <command>, or /quit\n'
 }
 
-# Coordinates ask vector store behavior.
+# Prints the guide lines that mention a word of the question, without HTML,
+# capped so a small local model gets a short prompt.
+guide_context() {
+  local question="$1" guide term
+  guide="$(guide_file)"
+  [[ -f "$guide" ]] || return 0
+
+  printf '%s\n' "$question" | tr -s ' ?!,;:"' '\n' | grep -E '.{4,}' | head -5 \
+    | while IFS= read -r term; do
+        grep -i -F -m 15 -- "$term" "$guide" || true
+      done \
+    | sed -E 's/<[^>]+>//g; s/^[[:space:]]+//' \
+    | awk 'NF && !seen[$0]++' \
+    | head -80
+}
+
+# Answers from the guide with a local Ollama model. Returns non-zero, having
+# printed nothing, when Ollama is not running or lacks the model, so the caller
+# can fall back to grep. It only asks the API: `ollama` would start the server.
+ask_ollama() {
+  local question="$1"
+  local host context payload response text
+
+  command -v jq >/dev/null 2>&1 || return 1
+  host="${OLLAMA_HOST:-127.0.0.1:11434}"
+  [[ "$host" == *://* ]] || host="http://$host"
+  context="$(guide_context "$question")"
+
+  payload="$(jq -n \
+    --arg model "$OLLAMA_GUIDE_MODEL" \
+    --arg q "$question" \
+    --arg ctx "$context" \
+    '{
+      model: $model,
+      stream: false,
+      keep_alive: "30m",
+      prompt: (
+        "You are HAL Terminal Guide for mqlaunch. Answer from these lines of the mac terminal guide. " +
+        "Answer in English unless the user explicitly asks for another language. Be concise and practical. " +
+        "If the lines do not cover the question, say so. " +
+        "If a command is potentially destructive or uses sudo, warn before showing it.\n\n" +
+        "Guide lines:\n" + $ctx + "\n\nQuestion: " + $q
+      )
+    }')"
+
+  printf 'HAL thinking (local %s)... ' "$OLLAMA_GUIDE_MODEL"
+  response="$(curl -fsS -m 120 "${host%/}/api/generate" \
+    -H "Content-Type: application/json" \
+    -d "$payload" 2>/dev/null)" || response=""
+  printf '\r\033[2K'
+
+  text="$(printf '%s' "$response" | jq -r '.response // ""' 2>/dev/null)" || text=""
+  [[ -n "$text" ]] || return 1
+
+  printf '%s\n' "$text"
+  printf '\n(answered locally by %s from the mac terminal guide)\n' "$OLLAMA_GUIDE_MODEL"
+}
+
+# Asks OpenAI with file search over the guide; without a key, asks a local
+# Ollama model instead, and falls back to grep when neither answers.
 ask_vector_store() {
   local question="$1"
   local payload response text
 
   if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-    printf 'OPENAI_API_KEY is not set. Falling back to local guide search.\n'
+    ask_ollama "$question" && return 0
+    printf 'OPENAI_API_KEY is not set and local Ollama did not answer. Falling back to local guide search.\n'
     local_guide_search "$question"
     return 0
   fi
