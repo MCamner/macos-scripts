@@ -19,7 +19,7 @@ original = text
 # 1) Add theme helper functions if missing
 # ------------------------------------------------------------
 theme_block = r'''
-# Handles theme cmd.
+# Runs the theme manager, making it executable if needed.
 theme_cmd() {
   local theme_script="$BASE_DIR/terminal/themes/mq-theme-manager.sh"
   local cmd="${1:-list}"
@@ -59,7 +59,7 @@ print_themes_menu() {
   printf "${C_TITLE}Select theme option [0-10]: ${C_RESET}"
 }
 
-# Handles themes menu loop.
+# Shows the themes menu and runs choices until the user leaves.
 themes_menu_loop() {
   local choice
 

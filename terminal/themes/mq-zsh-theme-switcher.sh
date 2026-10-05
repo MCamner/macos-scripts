@@ -38,7 +38,7 @@ if [[ -f "$SYNC_LIB" ]]; then
   source "$SYNC_LIB"
 fi
 
-# Handles theme list.
+# Prints the zsh theme variants.
 theme_list() {
   cat <<'LIST'
 amber
@@ -49,7 +49,7 @@ macos
 LIST
 }
 
-# Handles theme description.
+# Prints a variant's description; fails for an unknown variant.
 theme_description() {
   case "$1" in
     amber)   echo "Retro amber + MQ feel" ;;
@@ -61,7 +61,7 @@ theme_description() {
   esac
 }
 
-# Handles current variant.
+# Prints the MQ_ZSH_VARIANT set in .zshrc, or not-set.
 current_variant() {
   if grep -Eq '^export MQ_ZSH_VARIANT=' "$ZSHRC" 2>/dev/null; then
     grep -E '^export MQ_ZSH_VARIANT=' "$ZSHRC" | tail -n 1 | sed -E 's/^export MQ_ZSH_VARIANT="?([^"]+)"?/\1/'
@@ -70,7 +70,7 @@ current_variant() {
   fi
 }
 
-# Handles theme source present.
+# True when .zshrc sources the MQ zsh theme.
 theme_source_present() {
   grep -Fq 'source "$HOME/macos-scripts/terminal/themes/mq-zsh-theme-v3.zsh"' "$ZSHRC" 2>/dev/null
 }
@@ -90,7 +90,7 @@ backup_zshrc() {
   fi
 }
 
-# Handles clean existing theme lines.
+# Removes the MQ theme lines from .zshrc, creating it if missing.
 clean_existing_theme_lines() {
   local tmp
   tmp="$(mktemp)"
@@ -103,7 +103,7 @@ clean_existing_theme_lines() {
   fi
 }
 
-# Handles apply theme.
+# Backs up .zshrc and writes the theme source and variant into it.
 apply_theme() {
   local variant="$1"
 
@@ -151,7 +151,7 @@ apply_theme() {
   pause_enter
 }
 
-# Handles reset theme.
+# Backs up .zshrc, removes the MQ theme lines and resets the paired UI theme.
 reset_theme() {
   local backup_file sync_note="" mine theirs
   backup_file="$(backup_zshrc)"

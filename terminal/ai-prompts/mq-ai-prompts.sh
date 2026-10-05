@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Handles mq ai copy prompt.
+# Copies a prompt to the clipboard and says how to paste it.
 mq_ai_copy_prompt() {
   local name="$1"
   local prompt="$2"
@@ -15,12 +15,12 @@ mq_ai_copy_prompt() {
   echo "→ Paste in ChatGPT with Cmd+V, then press Enter."
 }
 
-# Handles mq ai open chatgpt.
+# Opens ChatGPT in the browser.
 mq_ai_open_chatgpt() {
   open "https://chatgpt.com/" >/dev/null 2>&1 || true
 }
 
-# Handles mq ai prompt review.
+# Copies the repo product-audit prompt.
 mq_ai_prompt_review() {
   local prompt
   prompt="$(cat <<'PROMPT'
@@ -43,7 +43,7 @@ PROMPT
   mq_ai_open_chatgpt
 }
 
-# Handles mq ai prompt ui.
+# Copies the terminal UI polish prompt.
 mq_ai_prompt_ui() {
   local prompt
   prompt="$(cat <<'PROMPT'
@@ -67,7 +67,7 @@ PROMPT
   mq_ai_open_chatgpt
 }
 
-# Handles mq ai prompt atlas.
+# Prints the Atlas system prompt.
 mq_ai_prompt_atlas() {
   cat <<'PROMPT'
 You are Atlas — a senior systems engineer and macOS specialist embedded in mqlaunch.
@@ -81,7 +81,7 @@ Your role:
 PROMPT
 }
 
-# Handles mq ai repl atlas.
+# Asks Atlas questions in a loop until exit.
 mq_ai_repl_atlas() {
   local system_prompt input
   system_prompt="$(mq_ai_prompt_atlas)"
@@ -113,7 +113,7 @@ $input"
   done
 }
 
-# Handles mq ai run atlas.
+# Asks Atlas one question, or opens the loop when none is given.
 mq_ai_run_atlas() {
   local user_input="$*"
 
@@ -132,7 +132,8 @@ User request:
 $user_input"
 }
 
-# Handles mq ai prompt ask.
+# Answers a question with the current repo, branch and status as context;
+# "quick" skips the context.
 mq_ai_prompt_ask() {
   local question="$*"
   local repo_root branch status_short prompt
