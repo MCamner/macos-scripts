@@ -25,6 +25,8 @@ PULSE_C_FAIL=''
 PULSE_C_MUTED=''
 PULSE_C_RESET=''
 
+# Sets the PULSE_C_* colours when stdout is a terminal and NO_COLOR is unset,
+# and clears them otherwise.
 pulse_prepare_colours() {
   if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
     PULSE_C_PASS='\033[0;32m'
