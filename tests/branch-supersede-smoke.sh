@@ -164,7 +164,7 @@ git -C "$CC" checkout -q main
 bases="$(git -C "$CC" merge-base --all main feat | wc -l | tr -d ' ')"
 [[ "$bases" -eq 2 ]] || fail "the fixture does not have two merge bases, got $bases"
 
-out="$("$REPORT" feat --repo "$CC" --no-pr 2>&1)"
+out="$(LC_ALL=C "$REPORT" feat --repo "$CC" --no-pr 2>&1)"
 grep -q 'warning' <<< "$out" \
   || fail "the fixture did not make git warn, so this proves nothing: $out"
 grep -qE '(IDENTICAL|GONE-FROM-BOTH|ONLY-ON-BRANCH|DIVERGED|BASE-AHEAD|BRANCH-AHEAD) +warning' <<< "$out" \

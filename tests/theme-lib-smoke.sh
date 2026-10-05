@@ -55,13 +55,14 @@ test "$output" = "scalar"
 echo "[8/9] launcher dock exposes all five remembered commands"
 raw_output="$(MQ_ZSH_VARIANT=macos zsh -fc 'source "$1"; mq_prompt_launchers' _ "$THEME")"
 output="$(MQ_ZSH_VARIANT=macos zsh -fc 'source "$1"; print -P -- "$(mq_prompt_launchers)"' _ "$THEME")"
+visible_output="$(sed $'s/\e\\[[0-9;]*m//g' <<< "$output")"
 for needle in \
   "MQLAUNCH mqlaunch" \
   "MONGO mongoTerminal" \
   "APPS mongoApps" \
   "NLM mongoNotebookLM" \
   "NLM-MGR mongoNotebookLMManager"; do
-  grep -Fq "$needle" <<< "$output" || {
+  grep -Fq "$needle" <<< "$visible_output" || {
     echo "missing launcher dock entry: $needle" >&2
     exit 1
   }
