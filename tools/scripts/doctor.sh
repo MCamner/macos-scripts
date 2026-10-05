@@ -33,6 +33,14 @@ hint_for() {
       printf 'mqlaunch auth status' ;;
     mqlaunch)
       printf 'run ./install.sh from the repo to install the symlink' ;;
+    ollama)
+      printf 'brew install --cask ollama-app' ;;
+    ollama-server)
+      printf 'open -a Ollama' ;;
+    ollama-model)
+      printf 'ollama pull %s' "$OLLAMA_CHAT_MODEL" ;;
+    ollama-embed)
+      printf 'ollama pull %s' "$OLLAMA_EMBED_MODEL" ;;
     *)
       printf '' ;;
   esac
@@ -43,7 +51,14 @@ hint_for() {
 # nothing else here is reachable without it, then the tools the launcher itself
 # shells out to, then the ones only some commands need. `eza` is last of the
 # tools because it only changes how listings look.
-FIX_ORDER=(mqlaunch git python3 jq fzf gh uv node gitleaks pbcopy eza OPENAI_API_KEY)
+FIX_ORDER=(mqlaunch git python3 jq fzf gh uv node gitleaks
+           ollama ollama-server ollama-model ollama-embed
+           pbcopy eza OPENAI_API_KEY)
+
+# The models the local AI commands need: `hal` and `ollama-review` default to
+# the chat model, mq-agent's semantic memory embeds with the other.
+OLLAMA_CHAT_MODEL="qwen3:4b-instruct"
+OLLAMA_EMBED_MODEL="nomic-embed-text"
 
 # What to do on a machine where every check passes.
 #
@@ -149,6 +164,54 @@ status_exit_code() {
   return 1
 }
 
+# Records one Ollama check in either output mode.
+_ollama_row() {
+  # _ollama_row <json|human> <name> <ok|warn> [detail] [screen label]
+  local mode="$1" name="$2" st="$3" detail="${4:-}" label="${5:-$2}"
+  if [[ "$mode" == "json" ]]; then
+    _jc "$name" "$st" "$detail"
+  elif [[ "$st" == "ok" ]]; then
+    check_ok "$label"
+  else
+    check_warn "$name" "$name $detail"
+  fi
+}
+
+# Checks that Ollama is installed, answering, and has the models MQ uses.
+#
+# Asks the HTTP API rather than running `ollama list`: that command starts the
+# server when it is down, and doctor only reads. Each check runs only when the
+# one before it passed, so a missing install is one warning, not four.
+run_ollama_checks() {
+  local mode="$1" host tags model name
+  if ! command -v ollama >/dev/null 2>&1; then
+    _ollama_row "$mode" ollama warn "missing"
+    return 0
+  fi
+  _ollama_row "$mode" ollama ok
+
+  # Resolved the way Ollama resolves it: OLLAMA_HOST may omit the scheme.
+  host="${OLLAMA_HOST:-127.0.0.1:11434}"
+  [[ "$host" == *://* ]] || host="http://$host"
+  if ! tags="$(curl -fsS -m 2 "${host%/}/api/tags" 2>/dev/null)"; then
+    _ollama_row "$mode" ollama-server warn "not reachable"
+    return 0
+  fi
+  _ollama_row "$mode" ollama-server ok
+
+  for name in ollama-model ollama-embed; do
+    model="$OLLAMA_CHAT_MODEL"
+    [[ "$name" == "ollama-embed" ]] && model="$OLLAMA_EMBED_MODEL"
+    # Exact name, or the untagged name Ollama stores as :latest.
+    if [[ "$tags" == *"\"name\":\"$model\""* \
+       || "$tags" == *"\"name\":\"$model:latest\""* ]]; then
+      _ollama_row "$mode" "$name" ok "" "$name $model"
+    else
+      _ollama_row "$mode" "$name" warn "$model not pulled"
+    fi
+  done
+}
+
 # Runs JSON report mode.
 run_json_mode() {
   local version
@@ -167,6 +230,8 @@ run_json_mode() {
   else
     _jc "OPENAI_API_KEY" "warn" "missing"
   fi
+
+  run_ollama_checks json
 
   if command -v mqlaunch >/dev/null 2>&1; then
     _jc "mqlaunch" "ok"
@@ -203,6 +268,8 @@ run_fix_plan_mode() {
   else
     _jc "OPENAI_API_KEY" "warn" "missing"
   fi
+
+  run_ollama_checks json
 
   if command -v mqlaunch >/dev/null 2>&1; then
     _jc "mqlaunch" "ok"
@@ -267,6 +334,8 @@ run_fix_plan_json_mode() {
     _jc "OPENAI_API_KEY" "warn" "missing"
   fi
 
+  run_ollama_checks json
+
   if command -v mqlaunch >/dev/null 2>&1; then
     _jc "mqlaunch" "ok"
   else
@@ -329,6 +398,9 @@ run_normal_mode() {
   else
     check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
   fi
+
+  section "LOCAL AI"
+  run_ollama_checks human
 
   section "MQ SETUP"
   if command -v mqlaunch >/dev/null 2>&1; then

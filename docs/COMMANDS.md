@@ -499,6 +499,13 @@ check passes, `1` when any check warns or fails. A machine without `eza` or
 should read the document rather than the status — the pipeline above already
 does, since `jq` supplies the exit code there.
 
+The `LOCAL AI` checks cover what `hal`, `ollama-review` and mq-agent's semantic
+memory need: `ollama` (installed), `ollama-server` (`/api/tags` answers at
+`OLLAMA_HOST` within 2 s), `ollama-model` (`qwen3:4b-instruct`) and
+`ollama-embed` (`nomic-embed-text`). Each runs only when the one before passed.
+doctor asks the HTTP API and never runs `ollama` itself, because `ollama list`
+starts the server when it is down.
+
 The human screen carries the same verdict in words. It reads
 `MQ operational — N checks passed` only when the status is `ok`; otherwise it
 names how many checks need attention. `tests/doctor-status-contract-smoke.sh`

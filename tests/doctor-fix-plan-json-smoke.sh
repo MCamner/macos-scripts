@@ -26,6 +26,18 @@ build_world() {
   done
 }
 
+# A working local Ollama: the binary, and a curl that answers /api/tags with
+# the two models doctor looks for. tests/doctor-ollama-smoke.sh covers the
+# states in between; here it is only part of a provisioned machine.
+provide_ollama() {
+  local dir="$1"
+  printf '#!/usr/bin/env bash\nexit 0\n' >"$dir/ollama"
+  printf '#!/usr/bin/env bash\nprintf %s\n' \
+    "'{\"models\":[{\"name\":\"qwen3:4b-instruct\"},{\"name\":\"nomic-embed-text:latest\"}]}'" \
+    >"$dir/curl"
+  chmod +x "$dir/ollama" "$dir/curl"
+}
+
 doctor_run() {
   local bin="$1" key="$2" out="$3"; shift 3
   local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin")
@@ -42,6 +54,7 @@ degraded="$run_dir/degraded"
 # Deliberately omit jq from the degraded world: JSON plan generation must not
 # depend on the dependency it may be recommending the operator install.
 build_world "$provisioned" "${CHECKED[@]}" mqlaunch
+provide_ollama "$provisioned"
 build_world "$degraded"
 
 echo "[1/6] script compiles"
@@ -99,7 +112,7 @@ doc = json.load(open(sys.argv[1], encoding="utf-8"))
 names = [a["check"] for a in doc["actions"]]
 expected = [
     "mqlaunch", "git", "python3", "jq", "fzf", "gh", "uv", "node",
-    "gitleaks", "pbcopy", "eza", "OPENAI_API_KEY",
+    "gitleaks", "ollama", "pbcopy", "eza", "OPENAI_API_KEY",
 ]
 assert names == expected, (names, expected)
 assert doc["first_action"] == doc["actions"][0]["command"], doc
