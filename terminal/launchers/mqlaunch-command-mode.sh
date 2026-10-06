@@ -921,19 +921,33 @@ dispatch_cli_command() {
 
     git)
       case "$sub" in
-        ""|menu)
+        "")
+          # Ending the interactive Git menu because stdin/TTY is unavailable is
+          # not an operational failure. The menu renders once and exits cleanly.
+          open_git_menu
+          return 0
+          ;;
+        menu)
+          # Bare `mqlaunch git menu` has the same interactive lifecycle.
+          if [[ $# -eq 2 ]]; then
+            open_git_menu
+            return 0
+          fi
+
+          # An explicit repo path is a real request. Validation/runtime failures
+          # from Gitlaunch must therefore reach the caller unchanged.
           open_git_menu "${3:-}"
+          command_status=$?
+          return "$command_status"
           ;;
         *)
+          # `mqlaunch git <repo>` is operational, not just menu lifecycle:
+          # a bad repo/path must remain non-zero.
           open_git_menu "${2:-}"
+          command_status=$?
+          return "$command_status"
           ;;
       esac
-      # The bare `return 0` this replaces discarded whatever the menu returned,
-      # so `mqlaunch git /nonexistent/repo` reported the bad path and still
-      # succeeded. Same defect the theme arm had in #150, and it reaches further
-      # now that bin/gitlaunch puts this on PATH.
-      command_status=$?
-      return "$command_status"
       ;;
 
     release)
