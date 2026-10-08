@@ -20,6 +20,9 @@ Stop memorizing commands. Start running workflows.
 * `install.sh` supports `--dry-run`, `--uninstall`, and `--yes` (non-interactive)
 * `tools/scripts/install-godmode.sh` installs one bounded MQ/CodeGraph prompt for Codex and Claude
 * `release.sh` validates VERSION, README badge, and CHANGELOG before every release
+* `mqlaunch auth status` compares Keychain storage with the current process
+  (local-only); `mqlaunch auth test openai` explicitly verifies API access
+  using the environment or Keychain credential, without printing the key
 * `mqlaunch doctor` supports `--json` output — machine-readable health report
 * `mqlaunch selftest` runs launcher smoke checks and shell syntax lint
 * `mqlaunch release-check` gates every release on a `repo-signal`
