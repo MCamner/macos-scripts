@@ -2,14 +2,17 @@
 schema: context-card.v1
 repo: macos-scripts
 role: macOS workflow launcher and mqlaunch operator entrypoint
-updated_at: 2026-06-19T00:00:00Z
+updated_at: 2026-09-29T00:00:00Z
+freshness: current
+scope: repo
+publishability: public-safe
 ---
 
 # Context Card: macos-scripts
 
-## Role
+## Current blockers
 
-macOS workflow launcher and mqlaunch operator entrypoint.
+* No confirmed runtime blockers as of 2026-09-13.
 
 ## Owns
 
