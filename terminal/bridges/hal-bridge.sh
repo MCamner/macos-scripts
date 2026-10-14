@@ -31,6 +31,7 @@ Usage:
   mqlaunch hal route readiness         # learned-routing readiness from mq-agent
   mqlaunch hal route divergence        # current-era route divergence from mq-agent
   mqlaunch hal provenance              # runtime provenance
+  mqlaunch hal compatibility           # stack compatibility from mq-agent
   mqlaunch hal code-plan --provider openai --repo <repo> "<goal>"
   mqlaunch hal context                 # mqobsidian context-pack status
   mqlaunch hal audit                   # publish quality + README score via repo-signal
@@ -116,6 +117,11 @@ mq_hal_main() {
     provenance)
       shift || true
       "$MQ_HAL_BIN" provenance "$@"
+      ;;
+
+    compatibility)
+      shift || true
+      "$MQ_HAL_BIN" compatibility "$@"
       ;;
 
     code-plan)

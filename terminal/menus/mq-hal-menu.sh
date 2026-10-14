@@ -234,7 +234,7 @@ hal_menu_intelligence_loop() {
   local choice
   while true; do
     _hal_submenu_panel "Intelligence" "1. Routing" "2. Provenance" \
-      "3. Cloud code plan"
+      "3. Cloud code plan" "4. Stack compatibility"
     _hal_submenu_read "intelligence" || return
     choice="$REPLY"
     echo
@@ -242,6 +242,7 @@ hal_menu_intelligence_loop() {
       1) hal_menu_routing_loop ;;
       2) "$MQ_HAL_BIN" provenance; _hal_pause_enter ;;
       3) hal_menu_code_plan ;;
+      4) "$MQ_HAL_BIN" compatibility; _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown intelligence choice: %s\n' "$choice"; _hal_pause_enter ;;
