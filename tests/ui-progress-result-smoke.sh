@@ -135,4 +135,45 @@ grep -q '^Brain: not updated$' <<<"$out"
 grep -q '^RC:7$' <<<"$out"
 ! grep -qi 'read-only variable\|parse error\|command not found' <<<"$out"
 
+echo "[13/14] MCP panel commands run through the real submenu without a spinner"
+for menu_shell in bash zsh; do
+  for menu_choice in 1 2; do
+    out="$(MQ_NO_TUI=1 BASE_DIR="$ROOT" "$menu_shell" -c '
+      source "$1"
+      selected="$2"
+      reads=0
+      print_agent_mcp_menu() { :; }
+      read_menu_choice() {
+        reads=$((reads + 1))
+        if [ "$reads" -eq 1 ]; then REPLY="$selected"; else REPLY=b; fi
+      }
+      pause_enter() { :; }
+      # No repaint: any spinner would visibly glue its marker to the panel.
+      ui_spinner() { printf "SPINNER_ACTIVE"; shift; "$@"; }
+      _run_agent() { printf "╭─ MCP panel ─╮\nARGS:%s %s\n" "$1" "$2"; }
+      agent_mcp_menu_loop
+    ' _ "$MENU" "$menu_choice")"
+    ! grep -q 'SPINNER_ACTIVE' <<<"$out"
+    grep -q '^╭─ MCP panel ─╮$' <<<"$out"
+    case "$menu_choice" in
+      1) grep -q '^ARGS:mcp status$' <<<"$out" ;;
+      2) grep -q '^ARGS:mcp tools$' <<<"$out" ;;
+    esac
+  done
+done
+
+echo "[14/14] panel passthrough preserves delegate failure and exact arguments"
+for menu_shell in bash zsh; do
+  out="$(MQ_NO_TUI=1 "$menu_shell" -c '
+    source "$1"
+    _run_agent() { printf "ARG:%s\n" "$@"; return 7; }
+    rc=0
+    _run_agent_menu_passthrough "Checking MCP status" _run_agent mcp status || rc=$?
+    printf "RC:%s\n" "$rc"
+  ' _ "$MENU")"
+  grep -q '^ARG:mcp$' <<<"$out"
+  grep -q '^ARG:status$' <<<"$out"
+  grep -q '^RC:7$' <<<"$out"
+done
+
 echo "OK: progress/result UI smoke passed"
