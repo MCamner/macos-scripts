@@ -43,10 +43,12 @@ for backend_cmd in audit release-brief provenance; do
     exit 1
   }
 done
-grep -q 'MQ_HAL_BIN" route status' "$MENU" || {
-  echo "FAIL: routing submenu does not call mq-hal route status" >&2
-  exit 1
-}
+for route_view in status readiness divergence; do
+  grep -q "MQ_HAL_BIN\" route $route_view" "$MENU" || {
+    echo "FAIL: routing submenu does not call mq-hal route $route_view" >&2
+    exit 1
+  }
+done
 grep -q 'MQ_HAL_BIN" code-plan --provider "$provider" --repo "$repo" "$goal"' "$MENU" || {
   echo "FAIL: cloud code-plan dialog does not delegate to mq-hal code-plan" >&2
   exit 1
@@ -71,6 +73,17 @@ chmod +x "$tmp_hal/mq-hal"
 MQ_HAL_BIN="$tmp_hal/mq-hal" "$ROOT/terminal/launchers/mqlaunch.sh" hal release-brief --sample --json >/tmp/mqlaunch-hal-release-brief.json
 python3 -m json.tool /tmp/mqlaunch-hal-release-brief.json >/dev/null
 ! grep -q "Press Enter" /tmp/mqlaunch-hal-release-brief.json
+
+echo "[8b/12] HAL route evidence views forward losslessly"
+cat > "$tmp_hal/mq-hal" <<'FAKE_HAL'
+#!/usr/bin/env bash
+printf 'mq-hal'
+printf ' <%s>' "$@"
+printf '\n'
+FAKE_HAL
+chmod +x "$tmp_hal/mq-hal"
+[[ "$(MQ_HAL_BIN="$tmp_hal/mq-hal" "$ROOT/terminal/launchers/mqlaunch.sh" hal route readiness --json)" ==   'mq-hal <route> <readiness> <--json>' ]]
+[[ "$(MQ_HAL_BIN="$tmp_hal/mq-hal" "$ROOT/terminal/launchers/mqlaunch.sh" hal route divergence --task-class docs-review --era execution-completeness --json)" ==   'mq-hal <route> <divergence> <--task-class> <docs-review> <--era> <execution-completeness> <--json>' ]]
 
 echo "[9/12] unknown input is not run as a shell command"
 # The front menu used to end in `*) /bin/zsh -lc "$choice" 2>/dev/null || true`,
