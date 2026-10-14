@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* HAL Intelligence → Routing now exposes `Readiness` and `Divergence`.
+  `mqlaunch hal route readiness` and `mqlaunch hal route divergence` forward
+  to mq-hal, which presents mq-agent's authoritative evidence. mqlaunch adds no
+  threshold calculation, route ranking, promotion authority, or automatic
+  routing behavior. Optional divergence filters such as `--task-class`,
+  `--era`, and `--json` are forwarded unchanged.
+
 * `mqlaunch apps` (HAL terminal guide) answers with a local Ollama model when
   `OPENAI_API_KEY` is not set. It sends `qwen3:4b-instruct` (or
   `MQ_HAL_GUIDE_OLLAMA_MODEL`) the guide lines that match the question; until

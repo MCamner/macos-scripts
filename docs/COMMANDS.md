@@ -1012,6 +1012,9 @@ mqlaunch hal
 Opens the interactive MQ HAL menu.
 
 The menu is a thin command surface over `mq-hal`. It does not contain HAL logic.
+The Intelligence → Routing submenu includes read-only `Readiness` and
+`Divergence` views. Their evidence state and promotion boundaries remain owned
+by `mq-agent`; mqlaunch only forwards through mq-hal.
 
 Menu actions include:
 
@@ -1118,6 +1121,28 @@ mqlaunch hal brief --repo macos-scripts
 ```
 
 Shows a compact repo status brief. Collects git state, GitHub Actions CI runs, latest release tag, and the last HAL Session Memory note. Fully deterministic — no Ollama required.
+
+### HAL Routing Evidence
+
+```bash
+mqlaunch hal route readiness
+mqlaunch hal route readiness --json
+mqlaunch hal route divergence
+mqlaunch hal route divergence --task-class docs-review
+mqlaunch hal route divergence --task-class docs-review --era execution-completeness --json
+```
+
+These are presentation-only delegations:
+
+```text
+mqlaunch
+→ mq-hal route readiness/divergence
+→ mq-agent route readiness/divergence
+```
+
+mqlaunch does not calculate readiness thresholds, reinterpret
+`INSUFFICIENT_EVIDENCE` / `NOT_ELIGIBLE`, rank routes, grant promotion, or
+enable automatic routing.
 
 ### HAL direct commands
 

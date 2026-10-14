@@ -204,7 +204,8 @@ hal_menu_routing_loop() {
   local choice decision_id
   while true; do
     _hal_submenu_panel "Routing" "1. Status" "2. History" \
-      "3. Accuracy" "4. Explain decision"
+      "3. Accuracy" "4. Explain decision" \
+      "5. Readiness" "6. Divergence"
     _hal_submenu_read "routing" || return
     choice="$REPLY"
     echo
@@ -219,6 +220,8 @@ hal_menu_routing_loop() {
         "$MQ_HAL_BIN" route explain "$decision_id"
         _hal_pause_enter
         ;;
+      5) "$MQ_HAL_BIN" route readiness;  _hal_pause_enter ;;
+      6) "$MQ_HAL_BIN" route divergence; _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown routing choice: %s\n' "$choice"; _hal_pause_enter ;;

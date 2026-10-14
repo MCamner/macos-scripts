@@ -28,6 +28,8 @@ Usage:
   mqlaunch hal brief                   # compact repo status brief
   mqlaunch hal release-brief           # release readiness brief
   mqlaunch hal route                   # model-routing control room
+  mqlaunch hal route readiness         # learned-routing readiness from mq-agent
+  mqlaunch hal route divergence        # current-era route divergence from mq-agent
   mqlaunch hal provenance              # runtime provenance
   mqlaunch hal code-plan --provider openai --repo <repo> "<goal>"
   mqlaunch hal context                 # mqobsidian context-pack status
