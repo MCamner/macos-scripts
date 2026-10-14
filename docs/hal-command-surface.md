@@ -97,6 +97,8 @@ mqlaunch hal "visa git status"
 | `mqlaunch hal release-brief` | `mq-hal release-brief` | read-only | Release readiness summary |
 | `mqlaunch hal repo-status` | `mq-hal repo-status` | read-only | Git repo status, commits, tags |
 | `mqlaunch hal ci` | `mq-hal ci` | read-only | GitHub Actions status |
+| `mqlaunch hal route readiness` | `mq-hal route readiness` | read-only | Learned-routing evidence gates from mq-agent |
+| `mqlaunch hal route divergence` | `mq-hal route divergence` | read-only | Current-era route comparison from mq-agent |
 | `mqlaunch hal doctor` | `mq-hal doctor-summary` | read-only | Doctor summary |
 | `mqlaunch hal fix-doctor` | `mq-hal fix-doctor` | planning | Safe manual fix plan |
 | `mqlaunch hal timeline` | `mq-hal timeline` | read-only | Local HAL memory timeline |
@@ -129,6 +131,17 @@ summarize output
 show recommendations
 print safe commands
 write local notes only when explicitly requested
+```
+
+Routing evidence boundary:
+
+```text
+mqlaunch presents mq-hal output
+mq-hal presents mq-agent readiness/divergence
+mqlaunch does not recompute eligibility
+mqlaunch does not rank routes
+mqlaunch does not grant promotion
+mqlaunch does not enable automatic routing
 ```
 
 Disallowed behavior:
