@@ -704,6 +704,21 @@ and `feedback run` therefore expose the same contracts as direct mq-agent use;
 the latter may append bounded runtime feedback evidence but still has zero
 production-task effect.
 
+### Explicit task entry
+
+```bash
+mqlaunch do "review this repo" --repo . --plan --json
+mqlaunch do "diagnose this repo" --repo .
+```
+
+`mqlaunch do` delegates to `mq-agent workflow do`. mq-agent selects an approved
+bounded template, applies approvals and executes it. Unknown or ambiguous tasks
+fail there without shell planning. Use `--plan` to inspect the selection.
+Launcher repository paths (including relative paths and paths with spaces) are
+resolved to the Git root before entering mq-agent. Invalid or duplicate targets
+fail before delegation. Doctor uses the local auth resolver, including Keychain;
+credential availability does not claim API access or quota has been tested.
+
 ### Workflow orchestration (flow)
 
 ```bash

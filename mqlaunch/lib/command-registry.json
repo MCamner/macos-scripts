@@ -272,6 +272,23 @@
       "operator_surface": true
     },
     {
+      "name": "do",
+      "aliases": [],
+      "namespace": "agent",
+      "summary": "Select an approved workflow from an explicit task",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent workflow do",
+      "operator_surface": true
+    },
+    {
       "name": "ui",
       "aliases": [
         "/ui"

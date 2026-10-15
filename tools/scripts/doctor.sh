@@ -3,6 +3,18 @@
 BASE_DIR="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}"
 source "$BASE_DIR/tools/cli/mq-ui.sh"
 
+# Auth owns credential lookup. Read only its redacted local status; never test
+# the provider or duplicate Keychain selectors in doctor.
+_openai_credential_available() {
+  [[ -n "${OPENAI_API_KEY:-}" ]] && return 0
+  local auth_status
+  auth_status="$(bash "$BASE_DIR/tools/scripts/auth.sh" status --json 2>/dev/null)" || true
+  case "$auth_status" in
+    *'"effective_source":"keychain"'*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 _J_STATUS="ok"
 _J_OK=0
 _J_WARN=0
@@ -135,7 +147,7 @@ check_ok() {
 #
 # Takes the check's name as well as the message: the name is what `hint_for` and
 # the fix order are keyed on, and it is not always a prefix of what is printed
-# ("OPENAI_API_KEY missing" versus "mqlaunch not in PATH").
+# ("OpenAI credential missing" versus "mqlaunch not in PATH").
 check_warn() {
   local name="$1" message="$2"
   _J_WARN=$((_J_WARN+1))
@@ -225,7 +237,7 @@ run_json_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  if _openai_credential_available; then
     _jc "OPENAI_API_KEY" "ok"
   else
     _jc "OPENAI_API_KEY" "warn" "missing"
@@ -263,7 +275,7 @@ run_fix_plan_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  if _openai_credential_available; then
     _jc "OPENAI_API_KEY" "ok"
   else
     _jc "OPENAI_API_KEY" "warn" "missing"
@@ -328,7 +340,7 @@ run_fix_plan_json_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  if _openai_credential_available; then
     _jc "OPENAI_API_KEY" "ok"
   else
     _jc "OPENAI_API_KEY" "warn" "missing"
@@ -393,10 +405,10 @@ run_normal_mode() {
   done
 
   section "ENV"
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    check_ok "OPENAI_API_KEY set"
+  if _openai_credential_available; then
+    check_ok "OpenAI credential available (local check; API not tested)"
   else
-    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
+    check_warn "OPENAI_API_KEY" "OpenAI credential missing"
   fi
 
   section "LOCAL AI"

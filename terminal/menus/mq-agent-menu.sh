@@ -363,6 +363,7 @@ _brain_pick_and_promote() {
 # one place next to the delegate that owns it.
 _print_flow_help() {
   cat <<'HELP'
+mqlaunch do TASK --repo PATH [--plan]  select an approved workflow via mq-agent
 mqlaunch flow                          list available workflow templates
 mqlaunch flow list                     list available workflow templates
 mqlaunch flow run <template> [repo]    plan, gate and run a workflow (read-only)
@@ -377,13 +378,40 @@ All planning, policy gating and execution happen in mq-agent / mq-mcp.
 HELP
 }
 
-# True when the given args already carry an explicit --repo option.
-_flow_has_repo_flag() {
-  local arg
-  for arg in "$@"; do
-    [[ "$arg" == "--repo" || "$arg" == --repo=* ]] && return 0
+# Resolve caller-relative targets before the agent delegate changes directory.
+# Only Git repositories are accepted; selection/execution remains in mq-agent.
+_workflow_target_args() {
+  local repo="$1" explicit=0 arg
+  shift
+  local forwarded=()
+  while [[ $# -gt 0 ]]; do
+    arg="$1"; shift
+    case "$arg" in
+      --repo)
+        [[ $# -gt 0 && "$1" != -* ]] || { echo "ERROR: --repo requires a path" >&2; return 2; }
+        [[ $explicit -eq 0 && -z "$repo" ]] || { echo "ERROR: duplicate repository target" >&2; return 2; }
+        repo="$1"; shift; explicit=1 ;;
+      --repo=*)
+        [[ $explicit -eq 0 && -z "$repo" ]] || { echo "ERROR: duplicate repository target" >&2; return 2; }
+        repo="${arg#--repo=}"; explicit=1
+        [[ -n "$repo" ]] || { echo "ERROR: --repo requires a path" >&2; return 2; } ;;
+      *) forwarded+=("$arg") ;;
+    esac
   done
-  return 1
+  repo="$(git -C "${repo:-$PWD}" rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "ERROR: workflow target must be an existing Git repository" >&2; return 2;
+  }
+  repo="$(cd "$repo" && pwd -P)" || return 2
+  _run_agent workflow "$WORKFLOW_VERB" "$WORKFLOW_TASK" --repo "$repo" ${forwarded[@]+"${forwarded[@]}"}
+}
+
+_run_agent_do() {
+  local WORKFLOW_VERB=do WORKFLOW_TASK="${1:-}"
+  [[ -n "$WORKFLOW_TASK" && "$WORKFLOW_TASK" != -* ]] || {
+    echo 'Usage: mqlaunch do TASK --repo PATH [--plan] [--json] [--yes]' >&2; return 2;
+  }
+  shift
+  _workflow_target_args "" "$@"
 }
 
 # Runs a workflow-orchestration command through `mq-agent workflow` (Phase 7).
@@ -395,6 +423,10 @@ _flow_has_repo_flag() {
 _run_agent_flow() {
   local sub="${1:-list}"
   case "$sub" in
+    do)
+      shift
+      _run_agent_do "$@"
+      ;;
     ""|list)
       shift || true
       _run_agent workflow list "$@"
@@ -412,11 +444,8 @@ _run_agent_flow() {
         repo="$1"
         shift
       fi
-      if _flow_has_repo_flag "$@"; then
-        _run_agent workflow "$sub" "$template" "$@"
-      else
-        _run_agent workflow "$sub" "$template" --repo "${repo:-$PWD}" "$@"
-      fi
+      local WORKFLOW_VERB="$sub" WORKFLOW_TASK="$template"
+      _workflow_target_args "$repo" "$@"
       ;;
     show|status|resume|cancel)
       _run_agent workflow "$@"
@@ -576,6 +605,10 @@ run_agent_command() {
     mcp-status)
       shift || true
       _run_agent mcp status "$@"
+      ;;
+    do)
+      shift || true
+      _run_agent_do "$@"
       ;;
     flow)
       shift || true

@@ -27,7 +27,7 @@ grep -Eq "^\s*flow\)" "$AGENT_MENU"
 
 echo "[5/7] flow forwards to mq-agent workflow (no local orchestration)"
 grep -q "_run_agent workflow list" "$AGENT_MENU"
-grep -q '_run_agent workflow "\$sub" "\$template"' "$AGENT_MENU"
+grep -q '_workflow_target_args "$repo" "$@"' "$AGENT_MENU"
 # Boundary guard: the delegate must not embed planning/execution/policy logic.
 ! grep -qiE "instantiate|policyprovider|normalize_result|tool-polic" "$AGENT_MENU"
 

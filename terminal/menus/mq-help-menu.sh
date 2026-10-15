@@ -122,6 +122,7 @@ AI
 AGENT  (owner: mq-agent)
   mqlaunch agent          Run orchestration commands
   mqlaunch architecture   Analyse the repository architecture
+  mqlaunch do             Select an approved workflow from an explicit task
   mqlaunch feedback       Inspect and run bounded feedback experiments
   mqlaunch flow           Run a guided flow
   mqlaunch learn-promote  Promote a learned pattern

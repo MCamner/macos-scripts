@@ -59,7 +59,7 @@ nearest_cli_command() {
   local unknown="${1:-}"
 
   printf '%s\n' \
-    about agent architecture ask auth brain bundle check commands demo dev doctor feedback \
+    about agent architecture ask auth brain bundle check commands demo dev do doctor feedback \
     excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory netpulse network next notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
@@ -122,7 +122,7 @@ HELP
 Usage: mqlaunch agent <command> [args]
 
 Commands: doctor, score, audit, release-check, review, architecture,
-          risk-review, repo-health, stack, mcp-status, mcp-tools, flow
+          risk-review, repo-health, stack, mcp-status, mcp-tools, flow, do
 HELP
       ;;
     hal)
@@ -274,6 +274,7 @@ Quick commands:
   mqlaunch repo-health
   mqlaunch stack status
   mqlaunch mcp-status
+  mqlaunch do "review this repo" --repo . --plan
   mqlaunch flow
   mqlaunch flow run repo-preflight ~/macos-scripts
   mqlaunch ui
@@ -543,6 +544,16 @@ dispatch_cli_command() {
         return 1
       fi
       return "$command_status"
+      ;;
+
+    do)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command do "$@"
+        return $?
+      fi
+      echo "ERROR: mq-agent bridge not loaded" >&2
+      return 1
       ;;
 
     flow|/flow)
