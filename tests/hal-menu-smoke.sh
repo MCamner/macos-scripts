@@ -26,6 +26,7 @@ grep -q "release-brief|release)" "$ROOT/terminal/bridges/hal-bridge.sh"
 echo "[6b/12] bridge routes HAL intelligence commands explicitly"
 grep -q "route)" "$ROOT/terminal/bridges/hal-bridge.sh"
 grep -q "provenance)" "$ROOT/terminal/bridges/hal-bridge.sh"
+grep -q "compatibility)" "$ROOT/terminal/bridges/hal-bridge.sh"
 grep -q "code-plan)" "$ROOT/terminal/bridges/hal-bridge.sh"
 
 echo "[7/12] audit and release readiness are reachable from the menu"
@@ -35,7 +36,7 @@ echo "[7/12] audit and release readiness are reachable from the menu"
 # into the front loop, and the release row reads "Release readiness". A grep for
 # the old wording tested the layout, not whether the actions still run.
 MENU="$ROOT/terminal/menus/mq-hal-menu.sh"
-for backend_cmd in audit release-brief provenance; do
+for backend_cmd in audit release-brief provenance compatibility; do
   # Matched from MQ_HAL_BIN onward: the literal `"$MQ_HAL_BIN"` cannot go into an
   # ERE as written, since `$` there is an end-of-line anchor rather than a dollar.
   grep -qE "MQ_HAL_BIN\" $backend_cmd([;[:space:]]|$)" "$MENU" || {

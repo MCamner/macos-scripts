@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch hal compatibility` and HAL menu Intelligence → 4 delegate to
+  `mq-hal compatibility`, which renders mq-agent's stack compatibility report.
+  mqlaunch only routes: no compatibility logic, and mq-agent's exit code
+  (2 for FAIL, 3 for UNAVAILABLE) passes through unchanged.
+
 * HAL Intelligence → Routing now exposes `Readiness` and `Divergence`.
   `mqlaunch hal route readiness` and `mqlaunch hal route divergence` forward
   to mq-hal, which presents mq-agent's authoritative evidence. mqlaunch adds no
