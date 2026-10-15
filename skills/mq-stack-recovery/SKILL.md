@@ -12,7 +12,7 @@ Shared workflow for **Codex** and **Claude Code**. Treat CI evidence and server 
 1. Capture `mqlaunch stack status --json`; inspect each repository's `verification.status`, `reason`, `scopes`, exact `commit`, `branch`, and `dirty`.
 2. For a failing scope, inspect GitHub check-runs **on that exact SHA**. Distinguish pending, skipped, missing, failing and stale. Never reuse a green check on an older SHA.
 3. For `mq-agent`, distinguish PR-specific `Contract and release gates (CI mode)` from main-push `Contract and release gates`. PR branch protection and main-head verification require different jobs; skipped is not success. Inspect workflow event predicates and the verifier code before proposing edits.
-4. For `STALE`, check evidence freshness (24h default) and whether local checkout is behind `origin/main`. Do not create empty commits to refresh a status or pull over uncommitted changes.
+4. For `STALE`, check evidence freshness (24h default) and whether local checkout is behind origin/main. Do not create empty commits to refresh a status or pull over uncommitted changes.
 5. For MCP compatibility, check declarations, lockfiles, manifests, active checkout, and `--live` warnings independently.
 6. For launchd failures, inspect user LaunchAgent status and error logs, then port owners. `Address already in use` means identify duplicate manual services; do not kill processes without checking their command and parent.
 7. For auth warnings, use `mqlaunch auth status` then `mqlaunch auth test openai`. Environment variable missing is not necessarily a failure when Keychain is the effective source. Do not print keys or put secrets in plist, logs or repository files.
