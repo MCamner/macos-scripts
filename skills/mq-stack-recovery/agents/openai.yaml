@@ -1,0 +1,4 @@
+interface:
+  display_name: "MQ Stack Recovery"
+  short_description: "Diagnose MQ CI, MCP and launchd safely"
+  default_prompt: "Use $mq-stack-recovery to diagnose the MQ stack from actual evidence, repair minimal confirmed faults, test changes, and report what remains unverified."
