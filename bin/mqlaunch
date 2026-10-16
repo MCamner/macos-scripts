@@ -13,6 +13,10 @@ fi
 
 if [[ $# -gt 0 ]]; then
   case "$1" in
+    dashboard)
+      shift || true
+      exec /usr/bin/python3 "$BASE_DIR/terminal/dashboard/mq_dashboard.py" "$@"
+      ;;
     repl|prompt|shell)
       shift || true
 
