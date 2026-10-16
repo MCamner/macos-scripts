@@ -786,8 +786,8 @@ agent_mcp_menu_loop() {
     choice="$REPLY"
     echo
     case "$choice" in
-      1) _run_agent_menu_wait "Checking MCP status" _run_agent mcp status; pause_enter ;;
-      2) _run_agent_menu_wait "Listing MCP tools" _run_agent mcp tools; pause_enter ;;
+      1) _run_agent_menu_passthrough "Checking MCP status" _run_agent mcp status; pause_enter ;;
+      2) _run_agent_menu_passthrough "Listing MCP tools" _run_agent mcp tools; pause_enter ;;
       3) _run_agent_menu_wait "Starting MCP server" _mcp_start; pause_enter ;;
       4) _run_agent_menu_wait "Stopping MCP server" _mcp_stop; pause_enter ;;
       b|B|x|X|exit) return ;;
