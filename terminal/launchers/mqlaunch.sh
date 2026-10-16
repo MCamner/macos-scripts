@@ -943,6 +943,10 @@ tweaks_menu_loop() {
 if [[ $# -gt 0 ]]; then
   # Atlas REPL — intercept before dispatch to avoid ai-mode.sh routing
   case "${1:l}" in
+    dashboard)
+      shift
+      exec /usr/bin/python3 "$BASE_DIR/terminal/dashboard/mq_dashboard.py" "$@"
+      ;;
     atlas)
       shift
       mq_ai_run_atlas "$@"
