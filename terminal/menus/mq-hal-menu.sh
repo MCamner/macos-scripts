@@ -204,7 +204,8 @@ hal_menu_routing_loop() {
   local choice decision_id
   while true; do
     _hal_submenu_panel "Routing" "1. Status" "2. History" \
-      "3. Accuracy" "4. Explain decision"
+      "3. Accuracy" "4. Explain decision" \
+      "5. Readiness" "6. Divergence"
     _hal_submenu_read "routing" || return
     choice="$REPLY"
     echo
@@ -219,6 +220,8 @@ hal_menu_routing_loop() {
         "$MQ_HAL_BIN" route explain "$decision_id"
         _hal_pause_enter
         ;;
+      5) "$MQ_HAL_BIN" route readiness;  _hal_pause_enter ;;
+      6) "$MQ_HAL_BIN" route divergence; _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown routing choice: %s\n' "$choice"; _hal_pause_enter ;;
@@ -231,7 +234,7 @@ hal_menu_intelligence_loop() {
   local choice
   while true; do
     _hal_submenu_panel "Intelligence" "1. Routing" "2. Provenance" \
-      "3. Cloud code plan"
+      "3. Cloud code plan" "4. Stack compatibility"
     _hal_submenu_read "intelligence" || return
     choice="$REPLY"
     echo
@@ -239,6 +242,7 @@ hal_menu_intelligence_loop() {
       1) hal_menu_routing_loop ;;
       2) "$MQ_HAL_BIN" provenance; _hal_pause_enter ;;
       3) hal_menu_code_plan ;;
+      4) "$MQ_HAL_BIN" compatibility; _hal_pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) printf 'Unknown intelligence choice: %s\n' "$choice"; _hal_pause_enter ;;

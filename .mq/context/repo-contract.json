@@ -30,7 +30,8 @@
     ],
     "mq-hal": [
       "operator summaries",
-      "local status and briefings"
+      "local status and briefings",
+      "learned-routing evidence presentation"
     ]
   },
   "must_not": [
@@ -38,6 +39,7 @@
     "execute recommended command templates",
     "auto-promote memory",
     "write to GitHub without explicit approval",
-    "embed private machine paths in public docs"
+    "embed private machine paths in public docs",
+    "recompute routing readiness or divergence, rank routes, or grant promotion"
   ]
 }

@@ -35,6 +35,8 @@ echo "[9/10] includes HAL intelligence menu items"
 grep -q "INTELLIGENCE" "$MENU"
 grep -q "5. Intelligence" "$MENU"
 grep -q "1. Routing" "$MENU"
+grep -q "5. Readiness" "$MENU"
+grep -q "6. Divergence" "$MENU"
 grep -q "2. Provenance" "$MENU"
 grep -q "3. Cloud code plan" "$MENU"
 
