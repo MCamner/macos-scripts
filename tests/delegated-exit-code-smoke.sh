@@ -16,7 +16,7 @@ pause_enter() {
   return 0
 }
 
-# Coordinates assert status behavior.
+# Runs a command and fails unless it exits with the expected status.
 assert_status() {
   local expected="$1"
   shift
@@ -46,14 +46,14 @@ MQ_TEST_BACKEND_STATUS=2 assert_status 2 dispatch_cli_command review
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command stack status
 
 echo "[3/12] HAL pause does not overwrite backend status"
-# Coordinates mq hal run behavior.
+# Stub backend that exits with MQ_TEST_BACKEND_STATUS.
 mq_hal_run() { return "${MQ_TEST_BACKEND_STATUS:-0}"; }
 rm -f "$TMPDIR_TEST/pause.log"
 MQ_TEST_BACKEND_STATUS=42 assert_status 42 dispatch_cli_command hal brief
 [[ -s "$TMPDIR_TEST/pause.log" ]]
 
 echo "[4/12] JSON stdout stays clean"
-# Coordinates mq hal run behavior.
+# Stub backend that prints JSON and exits 42.
 mq_hal_run() {
   printf '{"schema":"hal.test.v1"}\n'
   return 42
@@ -215,7 +215,7 @@ echo "[8/12] the brain bridge's exit status reaches the caller"
 brain_status() {
   local code="$1" verb="$2"
   (
-# Coordinates mq brain run behavior.
+    # Stub backend that exits with the given code.
     mq_brain_run() { return "$code"; }
     dispatch_cli_command "$verb" note-arg >/dev/null 2>&1
   )
@@ -263,7 +263,7 @@ fn_status() {
   )
 }
 
-# Coordinates expect status behavior.
+# Fails unless the mqlaunch arm returns the exit status its delegate returned.
 expect_status() {
   local want="$1" fn="$2"
   shift 2
@@ -332,7 +332,7 @@ exit 7
 STUB
 chmod +x "$apps_fake/tools/scripts/hal-terminal-guide.sh"
 
-# Coordinates apps status behavior.
+# Prints the exit status of dispatching apps against the stub tree.
 apps_status() {
   local got=0
   (

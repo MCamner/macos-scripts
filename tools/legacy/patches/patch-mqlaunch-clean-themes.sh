@@ -55,7 +55,7 @@ print_themes_menu() {
   printf "${C_TITLE}Select theme option [0-6]: ${C_RESET}"
 }
 
-# Handles themes menu loop.
+# Shows the themes menu and runs choices until the user leaves.
 themes_menu_loop() {
   local choice
 

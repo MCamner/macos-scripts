@@ -59,7 +59,7 @@ run_shortcuts_screen() {
   pause_enter
 }
 
-# Coordinates list shortcuts menu behavior.
+# Lists shortcuts, optionally only those in one folder.
 list_shortcuts_menu() {
   local folder=""
 
@@ -78,7 +78,7 @@ list_shortcuts_menu() {
   fi
 }
 
-# Coordinates search shortcuts menu behavior.
+# Asks for a query and lists the shortcuts that match it.
 search_shortcuts_menu() {
   local query=""
   local folder=""
@@ -134,7 +134,7 @@ run_shortcut_menu() {
   fi
 }
 
-# Coordinates view shortcut menu behavior.
+# Asks for a shortcut name and shows its details.
 view_shortcut_menu() {
   local name=""
 

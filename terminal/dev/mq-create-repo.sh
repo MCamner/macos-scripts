@@ -4,24 +4,25 @@ set -u
 DEFAULT_ROOT="/Users/mansys"
 DEFAULT_OWNER="MCamner"
 
-# Handles hr.
+# Prints a horizontal rule.
 hr() {
   printf '%s\n' "────────────────────────────────────────────────────────────"
 }
 
-# Handles pause.
+# Waits for Enter.
 pause() {
   printf '\nPress Enter to continue...'
   read -r _
 }
 
-# Handles fail.
+# Prints an error and exits 1.
 fail() {
   echo "✖ $1"
   exit 1
 }
 
-# Handles safe repo name.
+# Turns a path into a lowercase repo name with only letters, digits, dot, dash
+# and underscore.
 safe_repo_name() {
   basename "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9._-'
 }

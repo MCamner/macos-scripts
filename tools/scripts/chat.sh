@@ -13,7 +13,7 @@ source "$BASE_DIR/tools/cli/mq-vector-store.sh"
 VECTOR_STORE_ID="$(mq_vector_store_id MQ_REPO_VECTOR_STORE_ID OPENAI_VECTOR_STORE_ID)"
 previous_id=""
 
-# Coordinates chat sep behavior.
+# Prints a separator as wide as the terminal.
 _chat_sep() { printf '%.0s─' $(seq 1 "${COLUMNS:-80}"); printf '\n'; }
 
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then

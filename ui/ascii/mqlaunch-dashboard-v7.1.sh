@@ -43,19 +43,19 @@ if [[ -f "$_MQ_DASHBOARD_UI" ]]; then
   source "$_MQ_DASHBOARD_UI"
 fi
 
-# Handles mq strip ansi.
+# Prints the text without ANSI colour codes.
 mq_strip_ansi() {
   printf '%s' "$1" | perl -pe 's/\e\[[0-9;]*m//g'
 }
 
-# Handles mq len.
+# Prints the visible length of the text, ignoring colour codes.
 mq_len() {
   local s="$1"
   s="$(mq_strip_ansi "$s")"
   printf '%s' "${#s}"
 }
 
-# Handles mq repeat.
+# Prints a character repeated count times.
 mq_repeat() {
   local char="${1:--}"
   local count="${2:-10}"
@@ -67,7 +67,7 @@ mq_repeat() {
   printf '%s' "$out"
 }
 
-# Handles mq pad right.
+# Pads text with spaces to a visible width.
 mq_pad_right() {
   local text="$1"
   local width="$2"
@@ -79,7 +79,7 @@ mq_pad_right() {
   printf "%*s" "$pad" ""
 }
 
-# Handles mq truncate.
+# Cuts text to a visible width, ending with "..." when cut.
 mq_truncate() {
   local text="$1"
   local width="${2:-20}"
@@ -93,7 +93,7 @@ mq_truncate() {
   fi
 }
 
-# Handles mq term width.
+# Prints the terminal width, at least 60 and 92 when unknown.
 mq_term_width() {
   local cols
   cols="$(tput cols 2>/dev/null || true)"
@@ -102,32 +102,32 @@ mq_term_width() {
   printf '%s' "$cols"
 }
 
-# Handles mq user.
+# Prints the user name.
 mq_user() { printf '%s' "${USER:-unknown}"; }
-# Handles mq host.
+# Prints the short host name.
 mq_host() { hostname -s 2>/dev/null || hostname 2>/dev/null || printf '%s' "unknown"; }
-# Handles mq time.
+# Prints the current date and time.
 mq_time() { date '+%Y-%m-%d %H:%M:%S'; }
-# Handles mq shell name.
+# Prints the shell name.
 mq_shell_name() { basename "${SHELL:-shell}"; }
-# Handles mq os name.
+# Prints the OS name.
 mq_os_name() { uname -s; }
-# Handles mq cwd.
+# Prints the current directory.
 mq_cwd() { pwd; }
 
-# Handles mq git repo.
+# Prints the name of the current git repo, or nothing outside one.
 mq_git_repo() {
   git rev-parse --show-toplevel >/dev/null 2>&1 || return 0
   basename "$(git rev-parse --show-toplevel 2>/dev/null)"
 }
 
-# Handles mq git branch.
+# Prints the current branch, or nothing outside a repo.
 mq_git_branch() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git branch --show-current 2>/dev/null
 }
 
-# Handles mq git ahead behind.
+# Prints the commits ahead and behind upstream, no-upstream, or unknown.
 mq_git_ahead_behind() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1 || {
@@ -165,7 +165,7 @@ mq_file_mtime() {
   stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0
 }
 
-# Coordinates mq spark path behavior.
+# Prints the cache path of a sparkline series.
 mq_spark_path() {
   printf '%s/macos-scripts/spark-%s' "${XDG_CACHE_HOME:-$HOME/.cache}" "$1"
 }
@@ -242,7 +242,7 @@ mq_spark_suffix() {
   [[ -n "$line" ]] && printf ' %s' "$line"
 }
 
-# Handles mq memory widget.
+# Prints memory use as MEM n% with a sparkline, or MEM N/A.
 mq_memory_widget() {
   if command -v vm_stat >/dev/null 2>&1; then
     local pages_free pages_active pages_inactive pages_speculative pages_wired total used pct
@@ -271,7 +271,7 @@ mq_memory_widget() {
   printf '%s' "MEM N/A"
 }
 
-# Handles mq battery widget.
+# Prints the battery as BAT n% with a sparkline, or BAT N/A.
 mq_battery_widget() {
   if command -v pmset >/dev/null 2>&1; then
     local batt
@@ -309,7 +309,7 @@ mq_health_chip() {
   printf '%s%sPULSE: %s%s %s%sm ago%s' "$color" "$C_BOLD" "$state" "$C_RESET" "$C_DIM" "$age" "$C_RESET"
 }
 
-# Handles mq mode color.
+# Maps a mode name to its accent colour.
 mq_mode_color() {
   local mode="$1"
   if [[ "$mode" =~ ERROR|FAIL|OFFLINE ]]; then
@@ -323,7 +323,7 @@ mq_mode_color() {
   fi
 }
 
-# Handles mq state color.
+# Prints red for DIRTY, green otherwise.
 mq_state_color() {
   local state="$1"
   if [[ "$state" == "DIRTY" ]]; then
@@ -333,7 +333,7 @@ mq_state_color() {
   fi
 }
 
-# Handles mq box top.
+# Draws the top border of a box with a title.
 mq_box_top() {
   local title="$1"
   local width="$2"
@@ -342,13 +342,13 @@ mq_box_top() {
   printf "%b┌─ %s %s┐%b\n" "$C_WHITE" "$title" "$(mq_repeat "─" "$inner")" "$C_RESET"
 }
 
-# Handles mq box bottom.
+# Draws the bottom border of a box.
 mq_box_bottom() {
   local width="$1"
   printf "%b└%s┘%b\n" "$C_WHITE" "$(mq_repeat "─" $(( width - 2 )))" "$C_RESET"
 }
 
-# Handles mq box row.
+# Draws one boxed row with a label column and a value column.
 mq_box_row() {
   local left="$1"
   local right="$2"
@@ -374,7 +374,7 @@ mq_box_row() {
     "$C_RESET"
 }
 
-# Handles mq box single.
+# Draws one boxed row of text, cut to fit.
 mq_box_single() {
   local text="$1"
   local width="$2"
@@ -383,7 +383,7 @@ mq_box_single() {
   printf "%b│ %s%b │%b\n" "$C_WHITE" "$(mq_pad_right "$text" "$inner")" "$C_WHITE" "$C_RESET"
 }
 
-# Handles mq bar.
+# Draws a labelled bar filled in proportion to value out of max.
 mq_bar() {
   local label="$1"
   local value="${2:-0}"
@@ -410,7 +410,7 @@ mq_bar() {
   printf '%s %s%s%s %s' "$label" "$color" "$bar" "$C_RESET" "$value"
 }
 
-# Handles mq dirty severity color.
+# Maps a change severity to its colour.
 mq_dirty_severity_color() {
   local severity="$1"
   case "$severity" in
@@ -422,7 +422,7 @@ mq_dirty_severity_color() {
   esac
 }
 
-# Handles mq severity meter.
+# Draws a meter filled according to the change severity.
 mq_severity_meter() {
   local severity="$1"
   local color="$2"
@@ -451,7 +451,8 @@ mq_severity_meter() {
   printf '%s%s%s %s' "$color" "$bar" "$C_RESET" "$severity"
 }
 
-# Handles mq git next action.
+# Suggests the next git step from the staged, unstaged and untracked counts and
+# the ahead/behind state.
 mq_git_next_action() {
   local staged="${1:-0}"
   local unstaged="${2:-0}"
@@ -477,7 +478,47 @@ mq_git_next_action() {
   fi
 }
 
-# Handles mqlaunch dashboard v71.
+# Prints the compact header: the Command Surface figures on the left, the same
+# status the full dashboard shows on four lines beside them, then a rule.
+# Used for every redraw after the first, so the menu stays on screen.
+mq_dashboard_compact() {
+  local width="$1" host="$2" user="$3" repo="$4" branch="$5" dirty="$6"
+  local ahead_behind="$7" severity="$8" severity_color="$9"
+  local mem_widget="${10}" batt_widget="${11}" health_chip="${12}" next_action="${13}"
+  local text_width line1 line2 line3 line4 fig_l fig_r frame
+  # Same width and frame colour as the menu panel drawn right below, so the
+  # two boxes line up.
+  if command -v surface_terminal_width >/dev/null 2>&1; then
+    width="$(surface_terminal_width)"
+  fi
+  frame="$(surface_panel_color)"
+  # 4 columns of frame, 21 of figures: 1 indent, 8 + 2 gap + 8, 2 before text.
+  text_width=$(( width - 4 - 21 ))
+  fig_l="$ACCENT_GREEN"
+  fig_r="$ACCENT_YELLOW"
+  # Launcher-chosen colours; only when colour is on, else keep the theme's.
+  if [[ -n "$fig_l" && "${MQ_FIG_COLORS:-}" =~ ^([0-9]{1,3})\ ([0-9]{1,3})$ ]]; then
+    fig_l=$'\033[38;5;'"${BASH_REMATCH[1]}m"
+    fig_r=$'\033[38;5;'"${BASH_REMATCH[2]}m"
+  fi
+
+  line1="$(mq_truncate "${host} · ${user}" "$text_width")"
+  line2="$(mq_truncate "${repo:-no repo}@${branch:-N/A} · ${dirty:-N/A} ${ahead_behind} · ${severity}" "$text_width")"
+  line3="${ACCENT_YELLOW}${mem_widget}${C_RESET}   ${ACCENT_CYAN}${batt_widget}${C_RESET}"
+  [[ -n "$health_chip" ]] && line3+="   ${health_chip}"
+  # Too wide for a narrow window: drop the colour and cut, like the other rows.
+  (( $(mq_len "$line3") > text_width )) && line3="$(mq_truncate "$line3" "$text_width")"
+  line4="$(mq_truncate "$(date '+%H:%M') · Next: ${next_action:-N/A}" "$text_width")"
+
+  surface_top "MQLAUNCH" "$width" "$frame"
+  surface_row " ${fig_l}▄▄████▄▄${C_RESET}   ${fig_r}▄▄██▄▄${C_RESET}   ${C_BOLD}${C_WHITE}${line1}${C_RESET}${frame}" "$width" "$frame"
+  surface_row " ${fig_l}████████${C_RESET}  ${fig_r}█▀████▀█${C_RESET}  ${severity_color}${line2}${C_RESET}${frame}" "$width" "$frame"
+  surface_row " ${fig_l}██▄██▄██${C_RESET}  ${fig_r}██▀██▀██${C_RESET}  ${line3}${frame}" "$width" "$frame"
+  surface_row " ${fig_l} ▄█▀▀█▄ ${C_RESET}  ${fig_r} ▀▄██▄▀ ${C_RESET}  ${line4}${frame}" "$width" "$frame"
+  surface_bottom "$width" "$frame"
+}
+
+# Draws the v7.1 dashboard: system, repo, git state, changes and next action.
 mqlaunch_dashboard_v71() {
   local title="${1:-MQLAUNCH}"
   local subtitle="${2:-Branded Neon Command Surface}"
@@ -536,6 +577,14 @@ mqlaunch_dashboard_v71() {
   if command -v surface_health_color >/dev/null 2>&1; then
     rule_color="$(surface_health_color "$(surface_health_state)")"
     [[ -n "$rule_color" ]] || rule_color="$ACCENT_CYAN"
+  fi
+  # Before the filler below: the compact header shows a Pulse chip or nothing.
+  if [[ "${MQ_DASHBOARD_LAYOUT:-full}" == "compact" ]]; then
+    clear 2>/dev/null || true
+    mq_dashboard_compact "$width" "$host" "$user" "$repo" "$branch" "$dirty" \
+      "$ahead_behind" "$severity" "$severity_color" "$mem_widget" "$batt_widget" \
+      "$health_chip" "$next_action"
+    return
   fi
   [[ -n "$health_chip" ]] || health_chip="${C_DIM}adaptive layout active${C_RESET}"
 

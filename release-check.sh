@@ -25,14 +25,15 @@ done
 : "$DRY_RUN"
 
 BLOCKERS=()
-# Coordinates say behavior.
+# Prints a line unless --json is set.
 say()  { [[ "$JSON" -eq 1 ]] || echo "$1"; }
-# Coordinates ok behavior.
+# Prints a passing check unless --json is set.
 ok()   { [[ "$JSON" -eq 1 ]] || echo "  ok: $1"; }
 # Marks a failing check.
 fail() { BLOCKERS+=("$1"); [[ "$JSON" -eq 1 ]] || echo "FAIL: $1" >&2; }
 
-# Coordinates run behavior.
+# Runs a command as a named check; on failure records a blocker and shows the
+# command's output.
 run() {
   local label="$1"; shift
   local out
@@ -79,6 +80,7 @@ run "check-gate-parity.py" python3 scripts/check-gate-parity.py
 
 say "--- Python tests ---"
 run "pytest b2_tui" python3 -m pytest mqlaunch/b2_tui/tests -q
+run "pytest contracts" python3 -m pytest tests/contracts -q
 
 say "--- mqlaunch smoke suite ---"
 run "test-all.sh" env MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 ./tools/scripts/test-all.sh

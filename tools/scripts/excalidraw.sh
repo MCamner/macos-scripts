@@ -9,24 +9,24 @@ LOG_DIR="${EXCALIDRAW_LOG_DIR:-$HOME/Library/Logs/mqlaunch}"
 
 mkdir -p "$LOG_DIR"
 
-# Coordinates die behavior.
+# Prints an error and exits 1.
 die() {
   printf 'excalidraw: %s\n' "$*" >&2
   exit 1
 }
 
-# Coordinates need dir behavior.
+# Fails unless the directory exists.
 need_dir() {
   [[ -d "$1" ]] || die "missing directory: $1"
 }
 
-# Coordinates port listening behavior.
+# True when something listens on the TCP port.
 port_listening() {
   local port="$1"
   lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
 }
 
-# Coordinates wait for url behavior.
+# Waits up to 45 seconds for the URL to answer; fails otherwise.
 wait_for_url() {
   local url="$1"
   local label="$2"
@@ -52,7 +52,7 @@ ensure_yarn() {
   corepack prepare yarn@1.22.22 --activate >/dev/null
 }
 
-# Coordinates start proxy behavior.
+# Starts the Excalidraw AI proxy on port 3016 unless it is already running.
 start_proxy() {
   need_dir "$PROXY_DIR"
 
@@ -73,7 +73,7 @@ start_proxy() {
   )
 }
 
-# Coordinates start frontend behavior.
+# Starts the Excalidraw frontend on port 3003 unless it is already running.
 start_frontend() {
   need_dir "$EXCALIDRAW_DIR"
 

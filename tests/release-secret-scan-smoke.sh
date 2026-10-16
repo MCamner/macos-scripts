@@ -48,7 +48,7 @@ fake_token() {
   printf 'ghp_%s' "$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 36)"
 }
 
-# Coordinates new repo behavior.
+# Creates a repo with one committed Python file.
 new_repo() { # PATH
   mkdir -p "$1"
   git -C "$1" init -q

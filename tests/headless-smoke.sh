@@ -41,7 +41,8 @@ MQLAUNCH_HEADLESS=1 run_doctor /tmp/mqlaunch-doctor-env-headless.out
 
 echo "[4/7] doctor json stays machine-readable"
 run_doctor /tmp/mqlaunch-doctor-headless.json --json
-grep -q '^{"project":"macos-scripts"' /tmp/mqlaunch-doctor-headless.json
+# Starts with the contract id: schemas/mq.doctor-status.v1.json.
+grep -q '^{"schema":"mq.doctor-status.v1","project":"macos-scripts"' /tmp/mqlaunch-doctor-headless.json
 ! grep -q "Press Enter" /tmp/mqlaunch-doctor-headless.json
 
 echo "[5/7] main menu exposes Keychain-backed VS Code launch"

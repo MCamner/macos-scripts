@@ -33,6 +33,8 @@ delegate-missing-message-smoke.sh	active	-
 docs-file-inventory-smoke.sh	active	-
 doctor-status-contract-smoke.sh	active	-
 doctor-fix-plan-json-smoke.sh	active	mq.doctor-fix-plan.v1 read-only evidence-bound remediation contract
+doctor-ollama-smoke.sh	active	-
+hal-guide-ollama-smoke.sh	active	-
 auth-status-smoke.sh	active	Keychain/process visibility and explicit OpenAI API access contract; secrets never printed
 document-functions-quality-smoke.sh	active	-
 ollama-document-review-smoke.sh	active	-
@@ -91,6 +93,7 @@ feedback-delegation-smoke.sh	active	Thin mqlaunch -> mq-agent feedback delegatio
 mq-memory-cochange-routing-smoke.sh	active	-
 mq-obsidian-command-routes-smoke.sh	active	-
 skills-repos-smoke.sh	active	-
+skills-browser-smoke.sh	active	-
 test-inventory-smoke.sh	active	-
 command-discovery-inventory-smoke.sh	active	-
 panel-color-smoke.sh	active	-
@@ -127,3 +130,5 @@ branch-supersede-smoke.sh	active	-
 theme-exact-sync-smoke.sh	active	-
 openai-key-rotation-smoke.sh	active	Keychain-backed rotation; secret-safe readback, rollback, and process-scoped smoke
 vector-store-identity-smoke.sh	active	Canonical store contract: no consumer may hardcode an id, and the legacy id may never return
+compact-header-smoke.sh	active	-
+fig-colors-smoke.sh	active	figure colours: launcher pick reaches the compact header; fixed opts out

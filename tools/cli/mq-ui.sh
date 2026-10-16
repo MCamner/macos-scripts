@@ -76,7 +76,7 @@ _mq_cli_ui_self="${BASH_SOURCE[0]-}"
 source "${_mq_cli_ui_self%/*}/../../ui/terminal-ui/terminal-width.sh"
 unset _mq_cli_ui_self
 
-# Handles hr.
+# Prints a rule as wide as the terminal.
 hr() {
   local pad
   # Not `| tr ' ' '─'`. tr is byte-oriented: in a C locale it maps each space to
@@ -87,24 +87,24 @@ hr() {
   printf '%s\n' "${pad// /─}"
 }
 
-# Handles header.
+# Prints a title over a rule.
 header() {
   echo -e "${C_TITLE}$1${C_RESET}"
   hr
 }
 
-# Handles section.
+# Prints a section title over a rule, after a blank line.
 section() {
   echo
   echo -e "${C_TITLE}$1${C_RESET}"
   hr
 }
 
-# Handles ok.
+# Prints a green check line.
 ok()   { printf "${C_OK}✔ %-30s${C_RESET}\n" "$1"; }
-# Handles warn.
+# Prints a yellow warning line.
 warn() { printf "${C_WARN}⚠ %-30s${C_RESET}\n" "$1"; }
-# Handles err.
+# Prints a red error line.
 err()  { printf "${C_ERR}✖ %-30s${C_RESET}\n" "$1"; }
 
 # Blink helper (used for CRITICAL)

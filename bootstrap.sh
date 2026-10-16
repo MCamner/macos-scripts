@@ -5,18 +5,18 @@ REPO_URL="${REPO_URL:-https://github.com/MCamner/macos-scripts.git}"
 BRANCH="${BRANCH:-main}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/macos-scripts}"
 
-# Handles log.
+# Prints a blue [INFO] line.
 log()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
-# Handles ok.
+# Prints a green [ OK ] line.
 ok()   { printf "\033[1;32m[ OK ]\033[0m %s\n" "$*"; }
-# Handles warn.
+# Prints a yellow [WARN] line to stderr.
 warn() { printf "\033[1;33m[WARN]\033[0m %s\n" "$*" >&2; }
-# Handles err.
+# Prints a red [ERR ] line to stderr.
 err()  { printf "\033[1;31m[ERR ]\033[0m %s\n" "$*" >&2; }
-# Handles die.
+# Prints an error and exits 1.
 die()  { err "$*"; exit 1; }
 
-# Handles require cmd.
+# Exits unless the command is on PATH.
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
 }

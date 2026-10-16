@@ -6,7 +6,7 @@ if ! command -v surface_top >/dev/null 2>&1; then
   [[ -f "$BASE_DIR/ui/terminal-ui/mq-ui.sh" ]] && source "$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 fi
 
-# Coordinates help center git state behavior.
+# Prints Clean, or Dirty with the number of changed files.
 help_center_git_state() {
   local count
   count="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"

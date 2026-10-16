@@ -91,7 +91,7 @@ status_command() {
     effective_source="keychain"
   fi
 
-  if [[ "$env_state" == "present" && "$keychain_state" == "present" && "$consistency" == "match" ]]; then
+  if [[ "$keychain_state" == "present" && "$consistency" != "different" ]]; then
     overall="ok"
     rc=0
   elif [[ "$env_state" == "missing" && "$keychain_state" == "missing" ]]; then
@@ -116,7 +116,7 @@ status_command() {
     if [[ "$consistency" == "different" ]]; then
       printf 'Note: current process credential differs from canonical Keychain.\n'
     elif [[ "$env_state" == "missing" && "$keychain_state" == "present" ]]; then
-      printf 'Note: Keychain is available, but this process does not expose OPENAI_API_KEY.\n'
+      printf 'Note: using Keychain; OPENAI_API_KEY is not required in this process.\n'
     elif [[ "$env_state" == "present" && "$keychain_state" == "missing" ]]; then
       printf 'Note: this process has a credential, but the canonical Keychain item is missing.\n'
     elif [[ "$keychain_state" == "unavailable" ]]; then

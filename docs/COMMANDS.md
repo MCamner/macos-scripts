@@ -247,7 +247,7 @@ mqlaunch next --json                # the mq.next.v1 document
 mqlaunch next --input FILE          # select from a pulse document you already have
 mqlaunch next --fresh               # collect now, whatever the last run left behind
 mqlaunch doctor                     # interactive environment check
-mqlaunch doctor --json              # machine-readable JSON report
+mqlaunch doctor --json              # mq.doctor-status.v1 (schemas/mq.doctor-status.v1.json)
 mqlaunch doctor --fix-plan          # read-only manual remediation plan
 mqlaunch doctor --fix-plan --json   # mq.doctor-fix-plan.v1; evidence-bound, executes nothing
 mqlaunch auth status                # local-only: Keychain vs current process
@@ -499,6 +499,13 @@ check passes, `1` when any check warns or fails. A machine without `eza` or
 should read the document rather than the status — the pipeline above already
 does, since `jq` supplies the exit code there.
 
+The `LOCAL AI` checks cover what `hal`, `ollama-review` and mq-agent's semantic
+memory need: `ollama` (installed), `ollama-server` (`/api/tags` answers at
+`OLLAMA_HOST` within 2 s), `ollama-model` (`qwen3:4b-instruct`) and
+`ollama-embed` (`nomic-embed-text`). Each runs only when the one before passed.
+doctor asks the HTTP API and never runs `ollama` itself, because `ollama list`
+starts the server when it is down.
+
 The human screen carries the same verdict in words. It reads
 `MQ operational — N checks passed` only when the status is `ok`; otherwise it
 names how many checks need attention. `tests/doctor-status-contract-smoke.sh`
@@ -572,6 +579,8 @@ The menu fix action requires explicit confirmation before files are changed.
 mqlaunch skills audit                 # list local skills, indexes and roadmap gaps
 mqlaunch skills validate              # validate SKILL.md frontmatter and indexes
 mqlaunch skills validate --ecosystem  # validate cross-repo skill uniqueness and roadmap hints
+mqlaunch skills list                  # list skills with their descriptions
+mqlaunch skills show shell-script-auditor  # print one skill's SKILL.md
 mqlaunch skills new my-skill --repo mq-mcp --description "Use when ..."
 mqlaunch repos list                   # list known local MQ repos
 mqlaunch repos status                 # show branch/upstream/origin/dirty state per repo
@@ -585,6 +594,9 @@ mqlaunch repos diff-summary --untracked   # show only untracked files
 
 These commands are read-only except `skills new`, which creates a local
 `skills/<name>/SKILL.md` scaffold in the requested repo.
+
+Tools → Skills → Browse lists this repo's skills in the terminal; a number
+opens that `SKILL.md` in `less`.
 
 ---
 
@@ -832,6 +844,12 @@ mqlaunch apps                       # HAL terminal guide
 mqlaunch apps "how do I rename a branch"   # ask it a question
 ```
 
+`mqlaunch apps` answers questions with OpenAI file search over the terminal
+guide. Without `OPENAI_API_KEY` it asks a local Ollama model instead
+(`qwen3:4b-instruct`, or `MQ_HAL_GUIDE_OLLAMA_MODEL`, at `OLLAMA_HOST`) with
+the guide lines that match the question. If Ollama is not running or lacks the
+model, it falls back to a plain search of the guide.
+
 `status --json` (and `about --json`) print exactly one JSON document to stdout —
 no banner, no ANSI, no prompt:
 
@@ -994,6 +1012,9 @@ mqlaunch hal
 Opens the interactive MQ HAL menu.
 
 The menu is a thin command surface over `mq-hal`. It does not contain HAL logic.
+The Intelligence → Routing submenu includes read-only `Readiness` and
+`Divergence` views. Their evidence state and promotion boundaries remain owned
+by `mq-agent`; mqlaunch only forwards through mq-hal.
 
 Menu actions include:
 
@@ -1100,6 +1121,28 @@ mqlaunch hal brief --repo macos-scripts
 ```
 
 Shows a compact repo status brief. Collects git state, GitHub Actions CI runs, latest release tag, and the last HAL Session Memory note. Fully deterministic — no Ollama required.
+
+### HAL Routing Evidence
+
+```bash
+mqlaunch hal route readiness
+mqlaunch hal route readiness --json
+mqlaunch hal route divergence
+mqlaunch hal route divergence --task-class docs-review
+mqlaunch hal route divergence --task-class docs-review --era execution-completeness --json
+```
+
+These are presentation-only delegations:
+
+```text
+mqlaunch
+→ mq-hal route readiness/divergence
+→ mq-agent route readiness/divergence
+```
+
+mqlaunch does not calculate readiness thresholds, reinterpret
+`INSUFFICIENT_EVIDENCE` / `NOT_ELIGIBLE`, rank routes, grant promotion, or
+enable automatic routing.
 
 ### HAL direct commands
 

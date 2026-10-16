@@ -35,7 +35,8 @@ echo '{"checks":[{"name":"git","status":"ok"}]}'
 EOF
 chmod +x "$stub/tools/scripts/doctor.sh"
 
-# Coordinates pulse run behavior.
+# Runs a command against the stub tree and saves its stdout, stderr and exit
+# status.
 pulse_run() {
   local out="$1"; shift
   set +e

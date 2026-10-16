@@ -241,6 +241,7 @@ quality_check_file() {
       if (lower_comment ~ /^# shows show /) return 1
       if (lower_comment ~ /^# opens open /) return 1
       if (lower_comment ~ /^# checks whether is /) return 1
+      if (lower_comment ~ /^# coordinates .* behavior\.$/) return 1
       if (lower_comment ~ /^# handles [a-z0-9 ]+\.$/ && lower_comment ~ normalized) return 1
 
       return 0
@@ -313,6 +314,7 @@ document_file() {
       if (lower_comment ~ /^# shows show /) return 1
       if (lower_comment ~ /^# opens open /) return 1
       if (lower_comment ~ /^# checks whether is /) return 1
+      if (lower_comment ~ /^# coordinates .* behavior\.$/) return 1
       if (lower_comment ~ /^# handles [a-z0-9 ]+\.$/ && lower_comment ~ normalized) return 1
 
       return 0
@@ -547,7 +549,9 @@ document_file() {
         return "# Pings " strip_prefix(name, "ping") "."
       }
 
-      return "# Coordinates " words(name) " behavior."
+      # No template fits. An empty answer leaves the function undocumented,
+      # which stays visible; "Coordinates <name> behavior." only restated it.
+      return ""
     }
 
     function generated_comment(name) {
@@ -589,6 +593,11 @@ document_file() {
       if (name != "") {
         prev = trim(pending)
         expected = generated_comment(name)
+        if (expected == "") {
+          emit_pending()
+          print
+          next
+        }
         if (prev ~ /^#/) {
           if (rewrite_weak == 1 && weak_comment(prev, name)) {
             pending = expected

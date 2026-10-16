@@ -8,11 +8,70 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch hal compatibility` and HAL menu Intelligence → 4 delegate to
+  `mq-hal compatibility`, which renders mq-agent's stack compatibility report.
+  mqlaunch only routes: no compatibility logic, and mq-agent's exit code
+  (2 for FAIL, 3 for UNAVAILABLE) passes through unchanged.
+
+* HAL Intelligence → Routing now exposes `Readiness` and `Divergence`.
+  `mqlaunch hal route readiness` and `mqlaunch hal route divergence` forward
+  to mq-hal, which presents mq-agent's authoritative evidence. mqlaunch adds no
+  threshold calculation, route ranking, promotion authority, or automatic
+  routing behavior. Optional divergence filters such as `--task-class`,
+  `--era`, and `--json` are forwarded unchanged.
+
+* `mqlaunch apps` (HAL terminal guide) answers with a local Ollama model when
+  `OPENAI_API_KEY` is not set. It sends `qwen3:4b-instruct` (or
+  `MQ_HAL_GUIDE_OLLAMA_MODEL`) the guide lines that match the question; until
+  now it only grepped the guide. OpenAI stays first, and grep stays the last
+  fallback when Ollama is not running.
+
+* `mqlaunch doctor` checks local AI: Ollama installed, its server answering at
+  `OLLAMA_HOST`, and the `qwen3:4b-instruct` and `nomic-embed-text` models that
+  `hal`, `ollama-review` and mq-agent's semantic memory use. Each warning
+  carries its fix (`brew install --cask ollama-app`, `open -a Ollama`,
+  `ollama pull ...`). Read-only: doctor asks the HTTP API and never runs
+  `ollama`, which would start the server.
+
+* `mqlaunch ollama-review --keep-alive` (or `MQ_OLLAMA_REVIEW_KEEP_ALIVE`)
+  sets how long Ollama keeps the model loaded after a review. Default `30m`,
+  so a second review within half an hour skips the cold model load; `0`
+  unloads at once. Invalid values exit 2 before Ollama is called.
+
+* `mqlaunch doctor --json` declares its contract: the output now carries
+  `"schema": "mq.doctor-status.v1"`, described by
+  `schemas/mq.doctor-status.v1.json`. mq-hal reads this output; until now it
+  had no schema, so a renamed key reached it unannounced. The output is
+  validated against the schema in `tests/contracts/`, on a provisioned and a
+  degraded machine, in CI and in `release-check.sh`.
+
+* Compact header: after the first draw, mqlaunch menus show a six-line boxed
+  header — the Command Surface figures beside host, repo, git state, MEM/BAT
+  and the next action, framed like the menu panel below — instead of
+  redrawing the 38-line dashboard. The main menu fits on a normal terminal
+  again (28 lines to the prompt, from about 72). The full dashboard shows on the first draw when the window has at
+  least 45 rows (`MQ_FULL_HEADER_MIN_LINES`), and on `f` in the main menu.
+  The separate Command Surface box and the per-panel Host/User row are gone
+  under the dashboard header, which already shows both.
+
+* Compact header shows host and user (`Zephyr · mansys`) in bold white.
+
+* Main menu section headings in their own colours: CORE amber, QUICK ACCESS
+  cyan, DISCOVER magenta — not the status colours, so none reads as a health
+  signal. Override with `MQ_COLOR_SECTION_CORE`, `MQ_COLOR_SECTION_QUICK` and
+  `MQ_COLOR_SECTION_DISCOVER`.
+
 * `mqlaunch doctor --fix-plan --json` emits
   `mq.doctor-fix-plan.v1`: a read-only remediation document whose actions are
   tied to the exact non-passing doctor checks that produced them, ordered by
   the existing repair priority and carrying an explicit verification command.
   It executes nothing and does not depend on `jq`.
+
+* Skill browser: Tools → Skills → `4. Browse` lists this repo's skills with
+  their descriptions and opens the chosen `SKILL.md` in `less`. Backed by new
+  `mqlaunch skills list` and `mqlaunch skills show <name>`. `mq-skills.py` now
+  reads folded YAML descriptions (`description: >`), which it previously
+  parsed as a lone `>`.
 
 * `mqlaunch hal changes` forwards to `mq-hal changes` with flags as separate
   arguments (`--since`, `--current`, `--no-save`, `--json`). Without the
@@ -40,6 +99,13 @@ All notable changes to this project will be documented in this file.
 
   This work landed after the `v2.2.0` tag was cut, so it is not part of the
   published v2.2.0 release.
+
+### Fixed
+
+* The main menu prompt printed "Unknown command" twice for an unknown word,
+  and labelled a known command that failed as unknown. The menu reported its
+  own error after any non-zero dispatch status; dispatch has already reported,
+  so the menu now only pauses and returns that status.
 
 ## [2.2.0] - 2026-09-10
 

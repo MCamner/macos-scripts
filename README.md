@@ -214,6 +214,8 @@ mqlaunch architecture            # show mq-mcp architecture memory
 mqlaunch repo-health             # repo-signal + mq-mcp contract health
 mqlaunch stack status            # canonical stack truth status via mq-agent
 mqlaunch route inspect "task"    # explain the recommended model route
+mqlaunch hal route readiness   # present learned-routing readiness via mq-hal
+mqlaunch hal route divergence  # present current-era divergence via mq-hal
 mqlaunch mcp-status              # mq-mcp status and tool count
 mqlaunch hal                     # open HAL menu
 mqlaunch hal "your request"      # local Ollama-powered safe command router

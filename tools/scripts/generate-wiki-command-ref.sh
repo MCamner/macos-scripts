@@ -72,7 +72,7 @@ extract_usage() {
     | sed -E 's/^[[:space:]]*//' || true
 }
 
-# Coordinates category label behavior.
+# Maps a repo path to its section in the command reference.
 category_label() {
   local rel="$1"
   case "$rel" in
@@ -91,7 +91,7 @@ category_label() {
   esac
 }
 
-# Coordinates should skip behavior.
+# True for paths left out of the command reference.
 should_skip() {
   local rel="$1"
   case "$rel" in

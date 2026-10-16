@@ -15,13 +15,13 @@ trap 'rm -rf "$TMP"' EXIT
 # Marks a failing check.
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
-# Coordinates commit behavior.
+# Commits in a test repo with a fixed test identity.
 commit() { # REPO MESSAGE
   git -C "$1" -c user.email=test@example.invalid -c user.name=Test \
     commit -q -m "$2"
 }
 
-# Coordinates new repo behavior.
+# Creates a repo on main with one shared commit.
 new_repo() { # PATH
   git init -q -b main "$1"
   printf 'shared\n' > "$1/shared.txt"
@@ -164,7 +164,7 @@ git -C "$CC" checkout -q main
 bases="$(git -C "$CC" merge-base --all main feat | wc -l | tr -d ' ')"
 [[ "$bases" -eq 2 ]] || fail "the fixture does not have two merge bases, got $bases"
 
-out="$("$REPORT" feat --repo "$CC" --no-pr 2>&1)"
+out="$(LC_ALL=C "$REPORT" feat --repo "$CC" --no-pr 2>&1)"
 grep -q 'warning' <<< "$out" \
   || fail "the fixture did not make git warn, so this proves nothing: $out"
 grep -qE '(IDENTICAL|GONE-FROM-BOTH|ONLY-ON-BRANCH|DIVERGED|BASE-AHEAD|BRANCH-AHEAD) +warning' <<< "$out" \

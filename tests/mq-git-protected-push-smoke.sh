@@ -53,7 +53,7 @@ grep -Fq "PR branch" "$DOCS"
   cat <<'ZSH_TEST'
 # Checks whether protected branch applies.
 function is_protected_branch() { return 1; }
-# Coordinates git behavior.
+# Stub git for the menu: a fixed branch name and a successful push.
 function git() {
   case "$1" in
     branch) print -r -- "test/menu-loop" ;;

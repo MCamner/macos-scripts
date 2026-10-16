@@ -40,13 +40,14 @@ The old OpenAI key is never revoked automatically in v1.
 USAGE
 }
 
-# Marks a failing check.
+# Prints the message to stderr and exits (default status 1).
 fail() {
   printf 'ERROR: %s\n' "$1" >&2
   exit "${2:-1}"
 }
 
-# Coordinates key suffix behavior.
+# Prints the last four characters of a key, or "none"; the only part of a key
+# this script ever shows.
 key_suffix() {
   local key="${1:-}"
   if [[ ${#key} -ge 4 ]]; then
@@ -56,7 +57,8 @@ key_suffix() {
   fi
 }
 
-# Coordinates check no shell override behavior.
+# Exits 2 if OPENAI_API_KEY is exported or assigned in a shell startup file,
+# since either would shadow the Keychain item after rotation.
 check_no_shell_override() {
   local startup file hits=()
 
@@ -82,14 +84,16 @@ check_no_shell_override() {
   fi
 }
 
-# Coordinates validate keychain selector behavior.
+# Exits 2 unless the value uses only characters that are safe inside the
+# `security -i` command line built by write_keychain_key.
 validate_keychain_selector() {
   local value="$1" name="$2"
   [[ "$value" =~ ^[A-Za-z0-9._@+-]+$ ]] \
     || fail "$name contains unsupported characters for the secret-safe Keychain command path." 2
 }
 
-# Coordinates check prerequisites behavior.
+# Exits unless security, curl, uv and mq-agent are present and the Keychain
+# account/service names are safe.
 check_prerequisites() {
   [[ -x "$SECURITY_BIN" ]] || fail "macOS Keychain command not found or not executable: $SECURITY_BIN"
   [[ -d "$MQ_AGENT_HOME" ]] || fail "mq-agent directory not found: $MQ_AGENT_HOME"
@@ -99,7 +103,7 @@ check_prerequisites() {
   validate_keychain_selector "$KEYCHAIN_SERVICE" "Keychain service"
 }
 
-# Reads keychain key from user input or stdin.
+# Prints the current key from the Keychain item; non-zero if there is none.
 read_keychain_key() {
   "$SECURITY_BIN" find-generic-password \
     -a "$KEYCHAIN_ACCOUNT" \
@@ -107,7 +111,7 @@ read_keychain_key() {
     -w 2>/dev/null
 }
 
-# Coordinates write keychain key behavior.
+# Creates or replaces (-U) the Keychain item without putting the key in argv.
 write_keychain_key() {
   local key="$1"
 
@@ -122,21 +126,23 @@ write_keychain_key() {
     | "$SECURITY_BIN" -q -i >/dev/null 2>&1
 }
 
-# Coordinates delete keychain key behavior.
+# Deletes the Keychain item; used by rollback when there was no previous key.
 delete_keychain_key() {
   "$SECURITY_BIN" delete-generic-password \
     -a "$KEYCHAIN_ACCOUNT" \
     -s "$KEYCHAIN_SERVICE" >/dev/null 2>&1
 }
 
-# Coordinates validate key shape behavior.
+# Exits 2 unless the value looks like a complete sk- key, before any network
+# call or Keychain change.
 validate_key_shape() {
   local key="$1"
   [[ "$key" =~ ^sk-[A-Za-z0-9_-]{20,}$ ]] \
     || fail "The pasted value does not look like a complete OpenAI API key. Nothing was changed." 2
 }
 
-# Coordinates verify key before write behavior.
+# Calls the OpenAI models endpoint with the new key, sending the header via curl
+# stdin so the key stays out of argv. Exits unless the reply is HTTP 200.
 verify_key_before_write() {
   local key="$1" http_code
 
@@ -154,7 +160,7 @@ verify_key_before_write() {
   esac
 }
 
-# Coordinates confirm install behavior.
+# Asks y/N before touching the Keychain; anything but yes exits 2.
 confirm_install() {
   local answer=""
   printf 'Install the verified key into macOS Keychain service %s? [y/N] ' "$KEYCHAIN_SERVICE" >&2
@@ -165,7 +171,8 @@ confirm_install() {
   esac
 }
 
-# Coordinates credential smoke behavior.
+# Lists models through mq-agent's uv environment with the key passed only to
+# that child process.
 credential_smoke() {
   local key="$1"
 
@@ -179,7 +186,8 @@ OpenAI().models.list()
 PY
 }
 
-# Coordinates rollback keychain behavior.
+# Restores the previous Keychain state (old key, or no item) and verifies it
+# by reading back; non-zero if the restore cannot be confirmed.
 rollback_keychain() {
   local had_old="$1" old_key="$2"
 
@@ -198,7 +206,7 @@ rollback_keychain() {
   fi
 }
 
-# Opens keys page.
+# Opens the OpenAI API keys page, or prints its URL when `open` is missing.
 open_keys_page() {
   if command -v open >/dev/null 2>&1; then
     open "$OPENAI_KEYS_URL" >/dev/null 2>&1 || true
@@ -207,7 +215,7 @@ open_keys_page() {
   fi
 }
 
-# Runs the main entry point.
+# Runs the rotation flow described in usage().
 main() {
   local old_key="" old_suffix new_key="" saved_key="" recommended_name had_old=0
 

@@ -45,22 +45,23 @@ Options:
 EOF
 }
 
-# Handles info.
+# Prints a "==>" progress line.
 info() {
   printf '==> %s\n' "$*"
 }
 
-# Handles note.
+# Prints an indented bullet line.
 note() {
   printf ' • %s\n' "$*"
 }
 
-# Handles log line.
+# Prints a line and appends it to the log file.
 log_line() {
   printf '%s\n' "$*" | tee -a "$LOG_FILE"
 }
 
-# Handles command for terminal.
+# Builds the shell command the new Terminal window runs; outside menu mode it
+# hands off to the full mqlaunch menu afterwards.
 command_for_terminal() {
   local mq_base_cmd="$1"
   local mq_cmd="$2"
@@ -74,7 +75,7 @@ command_for_terminal() {
   fi
 }
 
-# Handles detect mqlaunch base.
+# Prints the mqlaunch to launch: the one on PATH, else the repo's bin/mqlaunch.
 detect_mqlaunch_base() {
   if command -v mqlaunch >/dev/null 2>&1; then
     command -v mqlaunch
@@ -99,7 +100,8 @@ detect_mqlaunch_base() {
   return 1
 }
 
-# Handles fallback terminal command.
+# Builds a Terminal command that shows the project and git status when mqlaunch
+# is not found.
 fallback_terminal_command() {
   printf 'cd %q && clear && printf "\\n🚀 mqlogin booting %s\\n\\n" && pwd && printf "\\n"; git status || true; printf "\\nTip: install or expose mqlaunch to unlock the full launcher.\\n"' \
     "$PROJECT_ROOT" "$PROJECT_NAME"
@@ -154,7 +156,7 @@ end tell
 OSA
 }
 
-# Handles parse args.
+# Sets MODE and the other options from the command-line arguments.
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in

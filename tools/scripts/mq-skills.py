@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit, validate and scaffold local MQ ecosystem skills."""
+"""Audit, validate, browse and scaffold local MQ ecosystem skills."""
 from __future__ import annotations
 
 import argparse
@@ -106,11 +106,20 @@ def parse_frontmatter(path: Path) -> tuple[str | None, str | None]:
     block = text[4:end]
     name = None
     description = None
-    for line in block.splitlines():
+    lines = block.splitlines()
+    for i, line in enumerate(lines):
         if line.startswith("name:"):
             name = line.split(":", 1)[1].strip().strip('"\'')
         if line.startswith("description:"):
             description = line.split(":", 1)[1].strip().strip('"\'')
+            # `description: >` or `|`: the text is the indented lines below.
+            if description in (">", ">-", "|", "|-"):
+                folded = []
+                for cont in lines[i + 1:]:
+                    if cont and not cont[0].isspace():
+                        break
+                    folded.append(cont.strip())
+                description = " ".join(part for part in folded if part) or None
     return name, description
 
 
@@ -286,6 +295,28 @@ def fix_suggestion(message: str) -> str:
     return "inspect the skill folder and update SKILL.md"
 
 
+def list_skills(args: argparse.Namespace) -> int:
+    for repo in repo_paths(args.repo):
+        for skill in find_skills(repo):
+            name = skill.path.parent.name
+            description = skill.description or ""
+            if args.format == "tsv":
+                print(f"{name}\t{description}")
+            else:
+                print(f"{repo.name}/{name}: {description}")
+    return 0
+
+
+def show_skill(args: argparse.Namespace) -> int:
+    for repo in repo_paths(args.repo):
+        skill_file = repo / "skills" / args.name / "SKILL.md"
+        if skill_file.is_file():
+            sys.stdout.write(skill_file.read_text(encoding="utf-8", errors="replace"))
+            return 0
+    print(f"Skill not found: {args.name}", file=sys.stderr)
+    return 1
+
+
 def scaffold(args: argparse.Namespace) -> int:
     repo = repo_paths([args.repo])[0] if repo_paths([args.repo]) else Path(args.repo).expanduser()
     if not repo.is_absolute():
@@ -322,6 +353,14 @@ def main(argv: list[str]) -> int:
     validate_p.add_argument("--repo", action="append", help="Repo name/path to inspect; may be repeated")
     validate_p.add_argument("--ecosystem", action="store_true", help="Run cross-repo ecosystem checks")
     validate_p.set_defaults(func=validate)
+    list_p = sub.add_parser("list", help="List skills with their descriptions")
+    list_p.add_argument("--repo", action="append", help="Repo name/path to inspect; may be repeated")
+    list_p.add_argument("--format", choices=["text", "tsv"], default="text")
+    list_p.set_defaults(func=list_skills)
+    show_p = sub.add_parser("show", help="Print a skill's SKILL.md")
+    show_p.add_argument("name")
+    show_p.add_argument("--repo", action="append", help="Repo name/path to search; may be repeated")
+    show_p.set_defaults(func=show_skill)
     new_p = sub.add_parser("new", help="Create a local skill scaffold")
     new_p.add_argument("name")
     new_p.add_argument("--repo", required=True, help="Repo name or absolute path")

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -17,6 +18,8 @@ from pathlib import Path
 DEFAULT_MODEL = os.getenv("MQ_OLLAMA_REVIEW_MODEL", "qwen3:4b-instruct")
 DEFAULT_MAX_FILES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_FILES", "8"))
 DEFAULT_MAX_BYTES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_BYTES", "45000"))
+# Keep the model loaded between runs; Ollama's own default is 5m.
+DEFAULT_KEEP_ALIVE = os.getenv("MQ_OLLAMA_REVIEW_KEEP_ALIVE", "30m")
 
 ALLOWED_SUFFIXES = {".py", ".sh", ".bash", ".zsh"}
 
@@ -59,6 +62,25 @@ def ollama_endpoint() -> str:
         return explicit
     host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
     return f"{host}/api/generate"
+
+
+# Go duration syntax, which Ollama uses to parse keep_alive strings.
+KEEP_ALIVE_DURATION = re.compile(r"-?(\d+(\.\d+)?(ns|us|µs|ms|s|m|h))+")
+
+
+def parse_keep_alive(value: str) -> str | int:
+    # Ollama reads bare numbers as seconds (0 unloads, -1 keeps forever)
+    # and strings as durations such as "30m". Rejecting anything else here
+    # gives a clear error instead of Ollama's bare HTTP 400.
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    if KEEP_ALIVE_DURATION.fullmatch(value):
+        return value
+    raise argparse.ArgumentTypeError(
+        f"{value!r} is not a duration (use e.g. 30m, 1h30m, 120, 0 or -1)"
+    )
 
 
 def is_secret_like(path: Path) -> bool:
@@ -175,12 +197,18 @@ def build_prompt(path: Path, content: str, include_diff: bool = False) -> str:
     )
 
 
-def call_ollama(model: str, endpoint: str, prompt: str) -> str:
+def call_ollama(
+    model: str,
+    endpoint: str,
+    prompt: str,
+    keep_alive: str | int = DEFAULT_KEEP_ALIVE,
+) -> str:
     payload = {
         "model": model,
         "system": SYSTEM_PROMPT,
         "prompt": prompt,
         "stream": False,
+        "keep_alive": keep_alive,
         "options": {"temperature": 0.2},
     }
 
@@ -253,6 +281,15 @@ def main() -> int:
         help=f"Max bytes per file (default: {DEFAULT_MAX_BYTES})",
     )
     parser.add_argument(
+        "--keep-alive",
+        type=parse_keep_alive,
+        default=DEFAULT_KEEP_ALIVE,
+        help=(
+            f"How long Ollama keeps the model loaded after the run "
+            f"(default: {DEFAULT_KEEP_ALIVE}; 0 unloads, -1 keeps forever)"
+        ),
+    )
+    parser.add_argument(
         "--diff",
         action="store_true",
         help="Allow small unified diffs in the review output.",
@@ -286,6 +323,7 @@ def main() -> int:
                 args.model,
                 args.endpoint,
                 build_prompt(path, content, include_diff=args.diff),
+                keep_alive=args.keep_alive,
             )
         except RuntimeError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)

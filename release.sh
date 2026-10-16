@@ -80,17 +80,18 @@ Safety:
 USAGE
 }
 
-# Handles log step.
+# Prints a "==>" step line.
 log_step() {
   printf '==> %s\n' "$1"
 }
 
-# Handles error.
+# Prints an error line to stderr.
 error() {
   printf 'ERROR: %s\n' "$1" >&2
 }
 
-# Handles rollback local changes.
+# Restores VERSION, README and the contract file from git after a failed
+# release.
 rollback_local_changes() {
   git checkout -- "${VERSION_FILE}" "${README_FILE}" "${CONTRACT_FILE}" 2>/dev/null || true
   log_step "Rolled back local file changes"
@@ -127,7 +128,7 @@ cleanup_failed_release() {
   restore_base_branch || true
 }
 
-# Handles on error.
+# ERR trap: reports the failing exit code and undoes the release in progress.
 on_error() {
   error "Release command failed with exit code: $?"
   cleanup_failed_release
@@ -148,7 +149,7 @@ on_exit() {
 trap on_error ERR
 trap on_exit EXIT
 
-# Handles require clean tree.
+# Exits unless the working tree has no changes and no untracked files.
 require_clean_tree() {
   if ! git diff --quiet || ! git diff --cached --quiet; then
     error "Git working tree is not clean. Commit or stash changes first."
@@ -161,13 +162,13 @@ require_clean_tree() {
   fi
 }
 
-# Handles require file.
+# Exits unless the file exists.
 require_file() {
   local file="$1"
   [[ -f "$file" ]] || { error "Required file missing: $file"; exit 1; }
 }
 
-# Handles require changelog version.
+# Exits unless CHANGELOG.md has a section for the version.
 require_changelog_version() {
   local version="$1"
 
@@ -177,7 +178,7 @@ require_changelog_version() {
   fi
 }
 
-# Handles update version file.
+# Writes the version to VERSION.
 update_version_file() {
   local version="$1"
   log_step "Updating VERSION -> ${version}"
@@ -238,7 +239,7 @@ verify_contract_matches_version() {
   log_step "Verified ${CONTRACT_FILE} matches VERSION (${version})"
 }
 
-# Handles update readme badge.
+# Updates the version badge in README.md, if it has one.
 update_readme_badge() {
   local version="$1"
 
@@ -251,7 +252,7 @@ update_readme_badge() {
   fi
 }
 
-# Handles init changelog section.
+# Adds a dated CHANGELOG.md section for the version unless one exists.
 init_changelog_section() {
   local version="$1"
   local today tmp_file
@@ -311,14 +312,14 @@ require_release_branch_absent() {
   fi
 }
 
-# Handles create release branch.
+# Creates and switches to the release branch.
 create_release_branch() {
   log_step "Creating release branch ${RELEASE_BRANCH}"
   git switch -c "${RELEASE_BRANCH}" >/dev/null 2>&1 || git checkout -b "${RELEASE_BRANCH}"
   RELEASE_BRANCH_CREATED=true
 }
 
-# Handles create release commit.
+# Commits VERSION, README, CHANGELOG and the contract file for the release.
 create_release_commit() {
   local version="$1"
 
@@ -326,7 +327,7 @@ create_release_commit() {
   git commit -m "Prepare v${version} release"
 }
 
-# Handles create release commit and tag.
+# Commits the release files and creates an annotated v<version> tag.
 create_release_commit_and_tag() {
   local version="$1"
   local tag="v${version}"
@@ -335,7 +336,7 @@ create_release_commit_and_tag() {
   git tag -a "${tag}" -m "${tag}"
 }
 
-# Handles push release.
+# Pushes main and the release tag.
 push_release() {
   local version="$1"
   local tag="v${version}"
@@ -344,7 +345,7 @@ push_release() {
   git push origin "${tag}"
 }
 
-# Handles push release branch.
+# Pushes the release branch and sets its upstream.
 push_release_branch() {
   log_step "Pushing ${RELEASE_BRANCH}"
   git push -u origin "${RELEASE_BRANCH}"
@@ -442,7 +443,7 @@ update_wiki_command_ref() {
   rm -rf "$wiki_tmp"
 }
 
-# Handles create github release.
+# Creates the GitHub release for the tag with gh.
 create_github_release() {
   local version="$1"
   local tag="v${version}"

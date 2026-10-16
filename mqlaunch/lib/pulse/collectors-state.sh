@@ -243,7 +243,8 @@ pulse_gh_probe_read() {
   done < "$file"
 }
 
-# Coordinates pulse collect git behavior.
+# Adds pulse items for the worktree, unpushed commits and GitHub, and says
+# UNAVAILABLE outside a repository rather than "clean".
 pulse_collect_git() {
   local skip_network="${1:-0}"
   local started ended
@@ -576,7 +577,8 @@ pulse_quality_emit() {
     duration_ms="$duration"
 }
 
-# Coordinates pulse collect quality behavior.
+# Runs the five quality gates in parallel and adds one pulse item per gate; a
+# missing gate is UNAVAILABLE.
 pulse_collect_quality() {
   local -a subjects=(
     "Command registry"

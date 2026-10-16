@@ -17,7 +17,7 @@ trap 'rm -rf "$TMP"' EXIT
 # Marks a failing check.
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
-# Coordinates fresh home behavior.
+# Resets the test home to an empty .zshrc.
 fresh_home() {
   rm -rf "${TMP:?}/home"
   mkdir -p "$TMP/home"
@@ -33,7 +33,7 @@ run_manager()  { HOME="$TMP/home" MACOS_SCRIPTS_HOME="$ROOT" MQ_NO_TUI=1 \
 
 # Prompts for variant with script-level validation.
 prompt_variant() { sed -n 's/^export MQ_ZSH_VARIANT="\(.*\)"$/\1/p' "$TMP/home/.zshrc" | tail -1; }
-# Coordinates ui theme behavior.
+# Prints the theme name saved in the test home, or NONE.
 ui_theme() {
   [[ -f "$TMP/home/.mq-theme" ]] || { printf 'NONE'; return; }
   sed -n 's/^export MQ_THEME_NAME="\{0,1\}\([a-z]*\)"\{0,1\}$/\1/p' "$TMP/home/.mq-theme" | tail -1

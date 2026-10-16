@@ -2,16 +2,16 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Coordinates red behavior.
+# Prints a line in red.
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
-# Coordinates green behavior.
+# Prints a line in green.
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
-# Coordinates yellow behavior.
+# Prints a line in yellow.
 yellow() { printf '\033[33m%s\033[0m\n' "$*"; }
-# Coordinates blue behavior.
+# Prints a line in blue.
 blue()   { printf '\033[34m%s\033[0m\n' "$*"; }
 
-# Coordinates die behavior.
+# Prints an error in red and exits 1.
 die() {
   red "Error: $*"
   exit 1

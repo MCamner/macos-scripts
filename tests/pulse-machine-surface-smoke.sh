@@ -40,7 +40,7 @@ make_doctor() {
   chmod +x "$stub/tools/scripts/doctor.sh"
 }
 
-# Coordinates make repos behavior.
+# Writes a stub mq-repos.py from stdin.
 make_repos() {
   cat > "$stub/tools/scripts/mq-repos.py"
 }

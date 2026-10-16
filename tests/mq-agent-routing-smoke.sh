@@ -59,7 +59,7 @@ translate() {
   (
     # shellcheck source=/dev/null
     source "$AGENT_MENU" >/dev/null 2>&1
-# Coordinates run agent behavior.
+    # Stub that prints the mq-agent command line instead of running it.
     _run_agent() {
       printf 'mq-agent'
       printf ' %s' "$@"
@@ -69,7 +69,8 @@ translate() {
   )
 }
 
-# Coordinates expect translation behavior.
+# Fails unless mqlaunch review translates the arguments into the expected mq-
+# agent command.
 expect_translation() {
   local want="$1"
   shift
@@ -107,7 +108,7 @@ dispatch() {
   (
     # shellcheck source=/dev/null
     source "$AGENT_MENU" >/dev/null 2>&1
-# Coordinates run agent behavior.
+    # Stub that prints the mq-agent command line and exits with STUB_EXIT.
     _run_agent() {
       printf 'mq-agent'
       printf ' %s' "$@"
@@ -118,7 +119,7 @@ dispatch() {
   )
 }
 
-# Coordinates expect dispatch behavior.
+# Fails unless dispatching the arguments produces the expected mq-agent command.
 expect_dispatch() {
   local want="$1"
   shift
@@ -189,7 +190,7 @@ cli() {
   )
 }
 
-# Coordinates expect cli behavior.
+# Fails unless the command-mode CLI prints the expected output.
 expect_cli() {
   local want="$1"
   shift

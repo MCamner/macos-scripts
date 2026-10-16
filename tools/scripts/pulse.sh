@@ -139,7 +139,7 @@ PULSE_NO_NETWORK="$skip_network"
 # list so that a consumer reading a scoped document cannot mistake an absent
 # section for a healthy area — docs/PULSE_CONTRACT.md, "What absence means".
 collected=()
-# Coordinates note behavior.
+# Records a collector's name.
 note() { collected+=("$1"); }
 
 # The stack and memory collectors, in one lane and in that order.

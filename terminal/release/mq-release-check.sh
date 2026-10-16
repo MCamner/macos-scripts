@@ -117,7 +117,8 @@ else
 fi
 
 section "MQOBSIDIAN MANIFEST CONTRACT"
-# Coordinates check mqobsidian manifest contract behavior.
+# Fails unless the view manifest is a non-empty JSON array of views with unique
+# keys, a label, a relative_path and type file or folder.
 check_mqobsidian_manifest_contract() {
   local manifest="$BASE_DIR/mqlaunch/config/mqobsidian/views.json"
 

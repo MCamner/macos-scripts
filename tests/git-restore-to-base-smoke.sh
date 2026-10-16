@@ -14,10 +14,10 @@ GIT_MENU="$ROOT/terminal/menus/mq-git-menu.sh"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# Coordinates git behavior.
+# Runs git in the given repo.
 _git() { git -C "$1" "${@:2}"; }
 
-# Coordinates assert restored behavior.
+# Fails unless the repo is back on main, in sync with origin/main, and clean.
 assert_restored() {
   local repo="$1"
 

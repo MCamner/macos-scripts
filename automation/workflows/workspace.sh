@@ -45,12 +45,13 @@ ensure_snapshot_root() {
   mkdir -p "$SNAPSHOT_ROOT"
 }
 
-# Handles current repo root.
+# Prints the top of the git repo containing the current directory, or nothing.
 current_repo_root() {
   git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true
 }
 
-# Handles git value.
+# Runs git in a repo and prints its output, or nothing when there is no repo or
+# git fails.
 git_value() {
   local repo="$1"
   shift
@@ -59,12 +60,12 @@ git_value() {
   git -C "$repo" "$@" 2>/dev/null || true
 }
 
-# Handles quote value.
+# Prints the value shell-quoted.
 quote_value() {
   printf "%q" "$1"
 }
 
-# Handles latest id.
+# Prints the id of the latest snapshot; fails if there is none.
 latest_id() {
   [[ -f "$SNAPSHOT_ROOT/latest" ]] || return 1
   sed -n '1p' "$SNAPSHOT_ROOT/latest"
@@ -81,13 +82,14 @@ resolve_snapshot_id() {
   fi
 }
 
-# Handles snapshot dir.
+# Prints the directory of a snapshot id.
 snapshot_dir() {
   local id="$1"
   printf '%s/%s\n' "$SNAPSHOT_ROOT" "$id"
 }
 
-# Handles save snapshot.
+# Saves the current directory and its repo's branch, upstream and change counts
+# as a new snapshot.
 save_snapshot() {
   ensure_snapshot_root
 
@@ -143,7 +145,7 @@ save_snapshot() {
   printf 'Path: %s\n' "$dir"
 }
 
-# Handles list snapshots.
+# Lists snapshots, newest first, with directory, branch and change count.
 list_snapshots() {
   ensure_snapshot_root
 
@@ -193,7 +195,8 @@ show_snapshot() {
   sed -n '1,20p' "$dir/changed-files.txt"
 }
 
-# Handles restore snapshot.
+# Opens a snapshot's directory after confirmation and prints the command to
+# check out its branch.
 restore_snapshot() {
   ensure_snapshot_root
 

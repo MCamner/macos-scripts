@@ -19,7 +19,7 @@ if [[ -f "$SYNC_LIB" ]]; then
   source "$SYNC_LIB"
 fi
 
-# Handles theme list.
+# Prints the theme names.
 theme_list() {
   cat <<'LIST'
 classic
@@ -30,7 +30,7 @@ synth
 LIST
 }
 
-# Handles theme description.
+# Prints a theme's description; fails for an unknown theme.
 theme_description() {
   case "$1" in
     classic) echo "Yellow/blue MQ default feel" ;;
@@ -42,7 +42,7 @@ theme_description() {
   esac
 }
 
-# Handles theme exports.
+# Prints the export lines for a theme's colours.
 theme_exports() {
   case "$1" in
     classic)
@@ -106,7 +106,7 @@ EOF_THEME
   esac
 }
 
-# Handles write theme file.
+# Writes a theme's exports to the theme file.
 write_theme_file() {
   local theme="$1"
   {
@@ -127,7 +127,7 @@ show_current() {
   fi
 }
 
-# Handles preview theme.
+# Shows sample output in a theme's colours without applying it.
 preview_theme() {
   local theme="$1"
 
@@ -173,7 +173,7 @@ preview_theme() {
   )
 }
 
-# Handles apply theme.
+# Writes the theme file and, when available, syncs the zsh prompt theme.
 apply_theme() {
   local theme="$1"
 
@@ -195,7 +195,8 @@ apply_theme() {
   echo "  ~/macos-scripts/ui/dashboards/mq-dashboard.sh"
 }
 
-# Handles reset theme.
+# Removes the theme file so the UI uses its default colours, and resets the
+# paired theme.
 reset_theme() {
   local mine theirs
   mine=""

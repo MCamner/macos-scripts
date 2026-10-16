@@ -41,7 +41,7 @@ open_themes_menu() {
 # Pauses until Enter is pressed.
 pause_enter() { return 0; }
 
-# Coordinates assert call behavior.
+# Fails unless dispatching the command makes the expected calls.
 assert_call() {
   local expected="$1"
   shift
@@ -101,7 +101,7 @@ theme_cmd() {
   return "${MQ_TEST_THEME_STATUS:-0}"
 }
 
-# Coordinates assert status behavior.
+# Fails unless dispatching the command exits with the expected status.
 assert_status() {
   local expected="$1"
   shift

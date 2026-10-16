@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MCamner/macos-scripts/schemas/mq.doctor-status.v1.json",
+  "title": "mq.doctor-status.v1",
+  "description": "Output of `mqlaunch doctor --json`: the dependency and environment checks macos-scripts runs, with a summary and the next manual step. Read by mq-hal (brief, doctor summary, fix planner). Closed: a new key or status value is a contract change, not a silent addition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "project", "version", "status", "checks", "summary", "next"],
+  "properties": {
+    "schema": {
+      "const": "mq.doctor-status.v1"
+    },
+    "project": {
+      "const": "macos-scripts"
+    },
+    "version": {
+      "description": "Contents of VERSION, or `unknown` when it cannot be read.",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "description": "Worst check status: `fail` if any check failed, else `warn` if any warned, else `ok`.",
+      "enum": ["ok", "warn", "fail"]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["ok", "warn", "fail"]
+          },
+          "detail": {
+            "description": "What was observed, for a check that did not pass.",
+            "type": "string"
+          },
+          "hint": {
+            "description": "A one-line manual fix, when a safe one is known. Never executed by doctor.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "warn", "fail"],
+      "properties": {
+        "ok": { "type": "integer", "minimum": 0 },
+        "warn": { "type": "integer", "minimum": 0 },
+        "fail": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "next": {
+      "description": "The next manual step, or null when there is none.",
+      "type": ["string", "null"]
+    }
+  }
+}

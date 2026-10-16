@@ -2,14 +2,15 @@
 # Health check for the mqobsidian consumer chain. Read-only — NEVER opens
 # anything. Depends on resolve.sh, manifest.sh, errors.sh.
 
-# Coordinates doc ok behavior.
+# Prints a green [OK] line.
 _doc_ok()      { printf '\033[0;32m[OK]\033[0m %s\n' "$*"; }
-# Coordinates doc missing behavior.
+# Prints a red [MISSING] line.
 _doc_missing() { printf '\033[0;31m[MISSING]\033[0m %s\n' "$*"; }
-# Coordinates doc invalid behavior.
+# Prints a yellow [INVALID] line.
 _doc_invalid() { printf '\033[0;33m[INVALID]\033[0m %s\n' "$*"; }
 
-# Coordinates doctor mqobsidian root behavior.
+# Reports where the mqobsidian root resolved from and whether it exists and
+# looks valid.
 doctor_mqobsidian_root() {
   local dir
   dir="$(resolve_mqobsidian_dir)"
@@ -30,7 +31,7 @@ doctor_mqobsidian_root() {
   fi
 }
 
-# Coordinates doctor mqobsidian manifest behavior.
+# Fails unless the view manifest exists and is valid JSON.
 doctor_mqobsidian_manifest() {
   local mf
   mf="$(get_mqobsidian_manifest_path)"
@@ -45,7 +46,8 @@ doctor_mqobsidian_manifest() {
   _doc_ok "manifest found: $mf"
 }
 
-# Coordinates doctor mqobsidian views behavior.
+# Reports, per manifest view, whether its folder or file exists in the vault;
+# non-zero if any is missing.
 doctor_mqobsidian_views() {
   # Both renames are zsh survival, not style: $path is tied to $PATH, and
   # $status is read-only. This line used to declare locals for both, so the
@@ -66,7 +68,7 @@ doctor_mqobsidian_views() {
   return $rc
 }
 
-# Coordinates doctor mqobsidian open command behavior.
+# Fails unless the opener command (MQOBS_OPENER, default open) is on PATH.
 doctor_mqobsidian_open_command() {
   if command -v "${MQOBS_OPENER:-open}" >/dev/null 2>&1; then
     _doc_ok "opener available: ${MQOBS_OPENER:-open}"

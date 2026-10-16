@@ -51,7 +51,7 @@ done
 git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
   || { echo "not a git repository: $REPO" >&2; exit 2; }
 
-# Coordinates git behavior.
+# Runs git against the repository under review.
 git() { command git -C "$REPO" "$@"; }
 
 for ref in "$BASE" "$BRANCH"; do

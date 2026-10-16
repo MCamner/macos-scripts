@@ -26,39 +26,39 @@ set_terminal_title() {
   print -Pn "\e]0;${APP_TITLE}\a"
 }
 
-# Handles line.
+# Prints a blue double rule.
 line() {
   echo "${C_BLUE}======================================================================${C_RESET}"
 }
 
-# Handles small line.
+# Prints a dim rule.
 small_line() {
   echo "${C_DIM}----------------------------------------------------------------------${C_RESET}"
 }
 
-# Handles clear screen.
+# Clears the screen.
 clear_screen() {
   clear
 }
 
-# Handles pause enter.
+# Waits for Enter.
 pause_enter() {
   read -r "?Press Enter to continue..."
 }
 
-# Handles pause brief.
+# Waits REFRESH_DELAY seconds.
 pause_brief() {
   sleep "$REFRESH_DELAY"
 }
 
-# Handles bring terminal front.
+# Brings Terminal to the front.
 bring_terminal_front() {
   osascript >/dev/null 2>&1 <<'APPLESCRIPT'
 tell application "Terminal" to activate
 APPLESCRIPT
 }
 
-# Handles safe run ai.
+# Runs ai-mode.sh in a mode, or reports that it is missing.
 safe_run_ai() {
   local mode="$1"
   if [ -x "$AI_SCRIPT" ]; then
@@ -155,7 +155,7 @@ show_prompt_files() {
   pause_enter
 }
 
-# Handles health check.
+# Checks that ai-mode.sh is executable and that pbcopy and open are available.
 health_check() {
   clear_screen
   line
@@ -207,7 +207,7 @@ print_dashboard() {
   echo
 }
 
-# Handles main loop.
+# Shows the dashboard and runs choices until the user leaves.
 main_loop() {
   while true; do
     print_dashboard

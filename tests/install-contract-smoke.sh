@@ -41,7 +41,7 @@ done)
 echo "[2/6] a dry run changes nothing"
 tmp_bin="$(mktemp -d)"
 tmp_state="$(mktemp -d)"
-# Coordinates cleanup behavior.
+# Removes the temporary bin and state directories.
 cleanup() { rm -rf "$tmp_bin" "$tmp_state"; }
 trap cleanup EXIT
 

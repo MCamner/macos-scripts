@@ -38,7 +38,7 @@ STUB
 chmod +x "$TMPDIR_TEST/release-check.sh" \
   "$TMPDIR_TEST/terminal/release/mq-release-check.sh"
 
-# Coordinates dispatch behavior.
+# Dispatches a mqlaunch command against the stub tree in a subshell.
 dispatch() {
   (
     export MACOS_SCRIPTS_HOME="$ROOT"

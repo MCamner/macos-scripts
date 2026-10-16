@@ -21,7 +21,7 @@ git -C "$TMP/repo" add file.txt
 git -C "$TMP/repo" commit -q -m initial
 git -C "$TMP/repo" push -q -u origin main
 
-# Coordinates prepare pr branch behavior.
+# Commits a change on main and moves it to a new mq/test branch.
 prepare_pr_branch() {
   git -C "$TMP/repo" switch -q main
   printf 'change-%s\n' "$1" > "$TMP/repo/file.txt"
@@ -29,7 +29,7 @@ prepare_pr_branch() {
   git -C "$TMP/repo" switch -q -C "mq/test-$1"
 }
 
-# Coordinates assert restored behavior.
+# Fails unless the repo is back on main, in sync with origin/main, and clean.
 assert_restored() {
   [[ "$(git -C "$TMP/repo" branch --show-current)" == main ]]
   [[ "$(git -C "$TMP/repo" rev-parse main)" == "$(git -C "$TMP/repo" rev-parse origin/main)" ]]

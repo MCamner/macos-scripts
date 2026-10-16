@@ -94,7 +94,7 @@ _mq_ui_self="${BASH_SOURCE[0]-}"
 source "${_mq_ui_self%/*}/terminal-width.sh"
 unset _mq_ui_self
 
-# Handles surface visible len.
+# Prints the visible length of the text, ignoring ANSI escapes.
 surface_visible_len() {
   local esc stripped
   esc="$(printf '\033')"
@@ -102,7 +102,7 @@ surface_visible_len() {
   printf '%d' "${#stripped}"
 }
 
-# Handles surface pad.
+# Pads text with spaces to a visible width.
 surface_pad() {
   local text="$1"
   local width="$2"
@@ -113,7 +113,7 @@ surface_pad() {
   printf "%s%*s" "$text" "$pad" ""
 }
 
-# Handles surface top.
+# Draws the top border of a surface box with a title.
 surface_top() {
   local title="$1"
   local width="$2"
@@ -123,14 +123,14 @@ surface_top() {
   printf "%b┌─ %s %s┐%b\n" "$color" "$title" "$(repeat_char "$fill" "─")" "$C_RESET"
 }
 
-# Handles surface bottom.
+# Draws the bottom border of a surface box.
 surface_bottom() {
   local width="$1"
   local color="$2"
   printf "%b└%s┘%b\n" "$color" "$(repeat_char $(( width - 2 )) "─")" "$C_RESET"
 }
 
-# Handles surface row.
+# Draws one surface row of text.
 surface_row() {
   local text="$1"
   local width="$2"
@@ -139,7 +139,7 @@ surface_row() {
   printf "%b│ %s │%b\n" "$color" "$(surface_pad "$text" "$inner")" "$C_RESET"
 }
 
-# Handles surface split row.
+# Draws one surface row with two half-width columns.
 surface_split_row() {
   local left="$1"
   local right="$2"
@@ -348,7 +348,8 @@ surface_panel_color() {
   printf '%s' "${C_PANEL:-}"
 }
 
-# Handles surface panel header.
+# Draws a panel's top border and, without the dashboard header, a
+# host/user/mode/git row.
 surface_panel_header() {
   local title="$1"
   local mode="${2:-$1}"
@@ -361,6 +362,8 @@ surface_panel_header() {
   git_state="$(surface_git_state)"
 
   surface_top "$title" "$width" "$color"
+  # The dashboard header above already shows host, user and git state.
+  [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]] && return 0
   surface_row "Host: $host   User: $user   Mode: $mode   Git: $git_state" "$width" "$color"
   surface_row "" "$width" "$color"
 }
@@ -382,7 +385,7 @@ repeat_char() {
   printf '%s' "$out"
 }
 
-# Handles border.
+# Prints a dashed rule as wide as the menu box.
 border() {
   printf '%s\n' "$(repeat_char "$BOX_INNER" "-")"
 }
@@ -401,7 +404,7 @@ row() {
   printf "%-*.*s\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
-# Handles row bold.
+# Prints a bold row, plain when plain output is wanted.
 row_bold() {
   local text="$1"
   if mq_wants_plain_output; then
@@ -411,7 +414,7 @@ row_bold() {
   printf "${C_BOLD}%-*.*s${C_RESET}\n" "$BOX_INNER" "$BOX_INNER" "$text"
 }
 
-# Handles row menu title.
+# Prints a bold menu title on a terminal, a plain row otherwise.
 row_menu_title() {
   local text="$1"
   if [[ -t 1 ]]; then
@@ -421,14 +424,14 @@ row_menu_title() {
   fi
 }
 
-# Handles row2.
+# Prints a row with two 40-column cells.
 row2() {
   local c1="$1"
   local c2="$2"
   row "$(printf '%-40s %-40s' "$c1" "$c2")"
 }
 
-# Handles row3.
+# Prints a row with three 26-column cells.
 row3() {
   local c1="$1"
   local c2="$2"
@@ -436,19 +439,19 @@ row3() {
   row "$(printf '%-26s %-26s %-26s' "$c1" "$c2" "$c3")"
 }
 
-# Handles empty row.
+# Prints a blank row.
 empty_row() {
   printf '\n'
 }
 
-# Handles header dual row.
+# Prints a left and a right-aligned value on one line.
 header_dual_row() {
   local left="$1"
   local right="$2"
   printf "%-54s %33s\n" "$left" "$right"
 }
 
-# Handles pause enter.
+# Waits for Enter, except when output is not interactive or MQ_NO_TUI is set.
 pause_enter() {
   if [[ -n "${MQ_NO_TUI:-}" || ! -t 0 || ! -t 1 ]]; then
     return 0
@@ -458,7 +461,7 @@ pause_enter() {
   read -r _
 }
 
-# Handles read prompt.
+# Reads a line into REPLY, with line editing under zsh on a terminal.
 read_prompt() {
   local color_prompt="$1"
   local plain_prompt="${2:-$1}"
@@ -493,7 +496,8 @@ mq_wants_plain_output() {
   [[ ! -t 1 ]]
 }
 
-# Handles read menu choice.
+# Draws the separator prompt and reads the menu choice into REPLY; fails without
+# a terminal.
 read_menu_choice() {
   local label="${2:-mqlaunch}"
   local sep_width sep sep_color
@@ -539,7 +543,7 @@ clear_screen() {
   set_terminal_title
 }
 
-# Handles short host.
+# Prints the short host name.
 short_host() {
   hostname -s 2>/dev/null || hostname
 }
@@ -576,10 +580,11 @@ mq_dashboard_cache_invalidate() {
 # working directory because the dashboard's git status depends on it.
 print_dashboard_header() {
   local dashboard="$1"
+  local layout="${2:-full}"
   local ttl now key force_color
   ttl="${MQ_DASHBOARD_CACHE_TTL:-5}"
   now="$(date +%s)"
-  key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}"
+  key="${APP_TITLE}|${APP_SUBTITLE}|${PWD}|${layout}"
   force_color=0
   if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
     force_color=1
@@ -593,10 +598,51 @@ print_dashboard_header() {
     return
   fi
 
-  MQ_DASHBOARD_CACHE_OUTPUT="$(MQ_DASHBOARD_FORCE_COLOR="$force_color" bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
+  MQ_DASHBOARD_CACHE_OUTPUT="$(MQ_DASHBOARD_FORCE_COLOR="$force_color" MQ_DASHBOARD_LAYOUT="$layout" bash "$dashboard" "$APP_TITLE" "$APP_SUBTITLE" "ONLINE")"
   MQ_DASHBOARD_CACHE_KEY="$key"
   MQ_DASHBOARD_CACHE_TS="$now"
   printf '%s\n' "$MQ_DASHBOARD_CACHE_OUTPUT"
+}
+
+# Prints the terminal height, or 0 when it cannot be read. MQ_TERM_LINES
+# overrides it, for tests and for terminals that misreport.
+mq_terminal_lines() {
+  local lines="${MQ_TERM_LINES:-}"
+  [[ -n "$lines" ]] || lines="$(tput lines 2>/dev/null || true)"
+  [[ "$lines" =~ ^[0-9]+$ ]] || lines=0
+  printf '%s' "$lines"
+}
+
+# Answers which dashboard header to draw: "full" or "compact".
+#
+# The full header is 38 lines. Drawn on every redraw it pushed the menu off a
+# normal terminal, so it is shown once — on the first draw, when the window is
+# tall enough to hold it and a menu — and again only on request (f in the main
+# menu). An unknown height counts as tall: that keeps the old behaviour where
+# nothing can be measured.
+mq_header_layout() {
+  local lines
+  if [[ "${MQ_FULL_HEADER_REQUEST:-0}" == "1" ]]; then
+    printf 'full'
+    return
+  fi
+  if [[ "${MQ_HEADER_FULL_SHOWN:-0}" == "1" ]]; then
+    printf 'compact'
+    return
+  fi
+  lines="$(mq_terminal_lines)"
+  if (( lines == 0 || lines >= ${MQ_FULL_HEADER_MIN_LINES:-45} )); then
+    printf 'full'
+  else
+    printf 'compact'
+  fi
+}
+
+# Records that the first header has been drawn. Exported so menus that run as
+# child processes (workflows, tools) do not draw the full header again.
+mq_header_mark_shown() {
+  export MQ_HEADER_FULL_SHOWN=1
+  MQ_FULL_HEADER_REQUEST=0
 }
 
 # Prints header.
@@ -614,7 +660,10 @@ print_header() {
   if [[ "${MQ_USE_DASHBOARD_HEADER:-0}" == "1" ]]; then
     dashboard="${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/ui/ascii/mqlaunch-dashboard-v7.1.sh"
     if [[ -f "$dashboard" ]]; then
-      print_dashboard_header "$dashboard"
+      local layout
+      layout="$(mq_header_layout)"
+      print_dashboard_header "$dashboard" "$layout"
+      mq_header_mark_shown
       printf '\n'
       return
     fi
@@ -679,22 +728,22 @@ mq_debug() {
   return 0
 }
 
-# Handles ui ok.
+# Prints a line in the OK colour.
 ui_ok() {
   printf "%b%s%b\n" "$C_OK" "$1" "$C_RESET"
 }
 
-# Handles ui warn.
+# Prints a line in the warning colour.
 ui_warn() {
   printf "%b%s%b\n" "$C_WARN" "$1" "$C_RESET"
 }
 
-# Handles ui err.
+# Prints a line in the error colour to stderr.
 ui_err() {
   printf "%b%s%b\n" "$C_ERR" "$1" "$C_RESET" >&2
 }
 
-# Handles ui info.
+# Prints a line in the info colour.
 ui_info() {
   printf "%b%s%b\n" "$C_INFO" "$1" "$C_RESET"
 }

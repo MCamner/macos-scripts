@@ -153,7 +153,8 @@ require_release_script() {
   return 1
 }
 
-# Coordinates init release files behavior.
+# Creates the missing release.sh, VERSION and CHANGELOG.md in the release repo
+# after confirmation.
 init_release_files() {
   local version today confirm
 
@@ -569,7 +570,8 @@ generate_changelog_section() {
   pause_enter
 }
 
-# Coordinates auto release behavior.
+# Previews and, after confirmation, runs the full release: tree check,
+# changelog, dry run, release and GitHub release.
 auto_release() {
   local version confirm dry_status
 

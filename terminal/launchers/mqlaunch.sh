@@ -116,6 +116,18 @@ UI_LIB="$BASE_DIR/ui/terminal-ui/mq-ui.sh"
 # uncached, per-screen header while investigating.
 MQ_USE_DASHBOARD_HEADER=1
 
+# Figure colours: picked once per start, so they hold across menu redraws.
+# MQ_FIG_COLORS="82 226" pins two 256-colour numbers; "fixed" keeps green/yellow.
+if [[ -z "${MQ_FIG_COLORS:-}" ]]; then
+  _mq_fig_palette="46 82 118 154 190 226 220 214 208 203 198 201 165 129 93 51 45 39 87 123 159 213"
+  _mq_fig_n=$(( $(wc -w <<<"$_mq_fig_palette") ))
+  _mq_fig_a=$(( RANDOM % _mq_fig_n + 1 ))
+  _mq_fig_b=$(( (_mq_fig_a + RANDOM % (_mq_fig_n - 1)) % _mq_fig_n + 1 ))
+  MQ_FIG_COLORS="$(cut -d' ' -f"$_mq_fig_a" <<<"$_mq_fig_palette") $(cut -d' ' -f"$_mq_fig_b" <<<"$_mq_fig_palette")"
+  unset _mq_fig_palette _mq_fig_n _mq_fig_a _mq_fig_b
+fi
+export MQ_FIG_COLORS
+
 TERMINAL_GUIDE_HTML="$BASE_DIR/docs/mac-terminal-guide.html"
 TERMINAL_GUIDE_URL="https://mcamner.github.io/macos-scripts/"
 
