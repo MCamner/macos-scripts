@@ -219,7 +219,7 @@ def draw(stdscr, selected: int, opened: bool, tab: int, data: dict, note: str) -
     put(0, max(2, width - 23), data.get("collected_at", "UNAVAILABLE")[-19:], muted)
     put(1, 1, "─" * (width - 2), cyan)
     section = SECTIONS[selected] if opened else "Home"
-    if section == "Home" and width >= 104 and height >= 34:
+    if section == "Home" and width >= 104 and height >= 38:
         stack = data.get("stack", {})
         repos = stack.get("repos", [])
         routing = data.get("routing", {}).get("task_classes", {}).get("docs-review", {})
@@ -251,7 +251,7 @@ def draw(stdscr, selected: int, opened: bool, tab: int, data: dict, note: str) -
              "Repair Planner: READ-ONLY",
              "No automatic writes or restarts"])
         actions = [f"{i+1 if i<9 else 0}:{name}" for i, name in enumerate(SECTIONS[1:])]
-        box(30, 1, min(height-34, 6), width-2, "QUICK ACTIONS  [1-9,0]", ["   ".join(actions[:5]), "   ".join(actions[5:])])
+        box(30, 1, min(height-33, 6), width-2, "QUICK ACTIONS  [1-9,0]", ["   ".join(actions[:5]), "   ".join(actions[5:])])
     else:
         navwidth = min(28, width // 3)
         box(3, 1, min(len(SECTIONS)+4,height-8), navwidth, "MODULES",
