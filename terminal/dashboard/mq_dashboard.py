@@ -151,35 +151,124 @@ def lines_for(section: str, tab: int, data: dict) -> list[str]:
             "", "Mouse support intentionally disabled. No mutating operations."]
 
 
+def init_palette() -> bool:
+    """Use terminal-native colors, with monochrome fallback."""
+    if not curses.has_colors() or os.environ.get("NO_COLOR"):
+        return False
+    curses.start_color()
+    try:
+        curses.use_default_colors()
+    except curses.error:
+        pass
+    for index, fg in ((1, curses.COLOR_CYAN), (2, curses.COLOR_GREEN),
+                      (3, curses.COLOR_YELLOW), (4, curses.COLOR_MAGENTA),
+                      (5, curses.COLOR_BLUE)):
+        curses.init_pair(index, fg, -1)
+    return True
+
+
+def status_style(value: str, colors: bool) -> int:
+    if not colors:
+        return curses.A_BOLD
+    upper = str(value).upper()
+    if upper in ("VERIFIED", "PASS", "RUNNING", "ELIGIBLE", "AUTHENTICATED"):
+        return curses.color_pair(2) | curses.A_BOLD
+    if upper in ("STALE", "UNVERIFIED", "REQUIRED", "AWAITING_OPERATOR_APPROVAL"):
+        return curses.color_pair(3) | curses.A_BOLD
+    return curses.color_pair(1)
+
+
 def draw(stdscr, selected: int, opened: bool, tab: int, data: dict, note: str) -> None:
+    """Responsive framed TUI: dashboard grid on wide terminals, single pane on narrow."""
     stdscr.erase()
     height, width = stdscr.getmaxyx()
-    if height < 14 or width < 65:
-        stdscr.addnstr(0, 0, "MQ Dashboard 2.0: resize terminal (65x14 minimum)", max(1, width-1))
+    if height < 18 or width < 65:
+        stdscr.addnstr(0, 0, "MQ Dashboard 2.0: resize terminal (65x18 minimum)", max(1, width - 1))
         stdscr.refresh()
         return
-    def row(y: int, x: int, value: str, attr: int = 0):
-        if y < height-1 and x < width-1:
-            stdscr.addnstr(y, x, value, max(1, width-x-1), attr)
-    row(0, 1, " MQ DASHBOARD 2.0  |  mqlaunch  |  keyboard only ", curses.A_BOLD)
-    row(1, 1, "-" * (width-2))
-    navwidth = min(27, width // 3)
-    row(3, 2, "MODULES", curses.A_BOLD)
-    for i, section in enumerate(SECTIONS):
-        row(5+i, 2, f"{i+1 if i<9 else 0:>2}  {section}", curses.A_REVERSE if i == selected else 0)
-    x = navwidth + 2
+    colors = init_palette()
+    cyan = curses.color_pair(1) if colors else curses.A_BOLD
+    muted = curses.A_DIM
+    highlight = curses.A_REVERSE | curses.A_BOLD
+
+    def put(y: int, x: int, value: str, style: int = 0) -> None:
+        if not 0 <= y < height - 1 or not 0 <= x < width - 1:
+            return
+        try:
+            stdscr.addnstr(y, x, str(value), max(1, width - x - 1), style)
+        except curses.error:
+            pass
+
+    def box(y: int, x: int, h: int, w: int, title: str, body: list[str]) -> None:
+        if h < 3 or w < 12:
+            return
+        right = min(width - 2, x + w - 1)
+        bottom = min(height - 4, y + h - 1)
+        inner = max(0, right - x - 1)
+        put(y, x, "┌" + "─" * inner + "┐", cyan)
+        for yy in range(y + 1, bottom):
+            put(yy, x, "│", cyan)
+            put(yy, right, "│", cyan)
+        put(bottom, x, "└" + "─" * inner + "┘", cyan)
+        put(y, x + 2, f" {title[:max(1,inner-4)]} ", cyan | curses.A_BOLD)
+        for n, line in enumerate(body[:max(0, bottom-y-1)]):
+            text = str(line)[:max(1, inner-3)]
+            put(y + 1 + n, x + 2, text, status_style(text.split()[-1], colors) if text.split() else 0)
+
+    put(0, 1, " MQ  DASHBOARD 2.0   //   CONTROL CENTER ", cyan | curses.A_BOLD)
+    put(0, max(2, width - 23), data.get("collected_at", "UNAVAILABLE")[-19:], muted)
+    put(1, 1, "─" * (width - 2), cyan)
     section = SECTIONS[selected] if opened else "Home"
-    row(3, x, section.upper(), curses.A_BOLD)
-    tabs = EVIDENCE_TABS if section == "Evidence & Learning" else REPAIR_TABS if section == "Repair Planner" else ()
-    if tabs:
-        row(4, x, "  ".join(f"[{t}]" if j == tab else t for j, t in enumerate(tabs)))
-    text = lines_for(section, tab, data)
-    for i, line in enumerate(text[:max(0, height-9)]):
-        row(6+i, x, str(line))
-    row(height-3, 1, "-" * (width-2))
-    row(height-2, 1, "↑↓ select  Enter open  ←→ tabs  Esc back  1-9 quick  R refresh  H help  Q quit")
+    if section == "Home" and width >= 104 and height >= 34:
+        stack = data.get("stack", {})
+        repos = stack.get("repos", [])
+        routing = data.get("routing", {}).get("task_classes", {}).get("docs-review", {})
+        actual = routing.get("actual", {})
+        first = 2
+        col = (width - 5) // 3
+        widths = [col, col, width - 4 - 2 * col]
+        xs = [1, 2 + col, 3 + 2 * col]
+        box(first, 1, 5, width-2, "STACK HEALTH",
+            [f"STACK: {stack.get('overall','UNAVAILABLE')}      GitHub: {data.get('github','UNAVAILABLE')}",
+             "MCP: " + ", ".join(f"{svc['name']} {svc['state']}" for svc in data.get("services", []))])
+        repo_lines = [f"{r.get('name','?'):<19} {r.get('verification',{}).get('status','UNAVAILABLE')}" for r in repos]
+        svc_lines = [f"{svc['name']}  :{svc['port']}  {svc['state']}" for svc in data.get("services", [])]
+        ai_lines = (data.get("models") or "UNAVAILABLE").splitlines()[:6]
+        box(8, xs[0], 12, widths[0], "REPOSITORIES", repo_lines or ["UNAVAILABLE"])
+        box(8, xs[1], 12, widths[1], "MCP SERVICES", svc_lines or ["UNAVAILABLE"])
+        box(8, xs[2], 12, widths[2], "AI MODELS", ai_lines)
+        box(21, xs[0], 9, widths[0], "EVIDENCE & LEARNING",
+            [f"Readiness: {routing.get('recommendation','UNAVAILABLE')}",
+             f"Applied: {actual.get('observations','UNAVAILABLE')} / 20",
+             f"Routes: {actual.get('candidate_routes','UNAVAILABLE')} / 2",
+             f"Window: {actual.get('window_days','UNAVAILABLE')} / 14 days",
+             "Approval: REQUIRED"])
+        box(21, xs[1], 9, widths[1], "RECENT EVALUATION",
+            [p.name for p in sorted((HOME/"mq-evidence"/"stack-status").glob("*.json"))[-5:]]
+            if (HOME/"mq-evidence"/"stack-status").exists() else ["UNAVAILABLE"])
+        box(21, xs[2], 9, widths[2], "GITHUB & REPAIR",
+            [f"GitHub: {data.get('github','UNAVAILABLE')}",
+             "Repair Planner: READ-ONLY",
+             "No automatic writes or restarts"])
+        actions = [f"{i+1 if i<9 else 0}:{name}" for i, name in enumerate(SECTIONS[1:])]
+        box(30, 1, min(height-34, 6), width-2, "QUICK ACTIONS  [1-9,0]", ["   ".join(actions[:5]), "   ".join(actions[5:])])
+    else:
+        navwidth = min(28, width // 3)
+        box(3, 1, min(len(SECTIONS)+4,height-8), navwidth, "MODULES",
+            [f"{i+1 if i<9 else 0:>2}  {s}" for i,s in enumerate(SECTIONS)])
+        for i in range(min(len(SECTIONS),height-9)):
+            if i == selected:
+                put(4+i, 3, f"{i+1 if i<9 else 0:>2}  {SECTIONS[i]}", highlight)
+        tabs = EVIDENCE_TABS if section == "Evidence & Learning" else REPAIR_TABS if section == "Repair Planner" else ()
+        x = navwidth + 2
+        body = lines_for(section, tab, data)
+        if tabs:
+            put(3, x, "  ".join(f"[{i+1}:{t}]" if i == tab else t for i,t in enumerate(tabs))[:width-x-2], cyan)
+        box(5, x, height-9, width-x-1, section.upper(), body)
+    put(height-3, 1, "─"*(width-2), cyan)
+    put(height-2, 1, "↑↓ Select  Enter Open  ←→ Tabs  Esc Back  1-9 Quick  R Refresh  H Help  Q Quit", muted)
     if note:
-        row(height-4, x, note[:width-x-2], curses.A_BOLD)
+        put(height-4, 3, note, cyan | curses.A_BOLD)
     stdscr.refresh()
 
 
