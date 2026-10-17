@@ -38,7 +38,9 @@ Without a TTY and without `--json` it exits 2 with a hint.
   scrollable column. No panel or function is removed; long values wrap.
 * Below 60x20 the dashboard asks for a larger window.
 
-Colours follow the terminal's 256-colour palette on a near-black background:
+Colours follow the terminal's 256-colour palette on the terminal's own
+background (the dashboard paints none); normal text uses the terminal's
+foreground colour:
 cyan frames and headings, blue selection, green PASS, yellow WARN/STALE,
 red FAIL, light blue informational states, grey secondary text.
 `NO_COLOR` gives a monochrome fallback.

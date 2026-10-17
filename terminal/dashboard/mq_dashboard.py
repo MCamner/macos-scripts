@@ -55,9 +55,14 @@ class Theme:
             return cls(False)
         curses.start_color()
         rich = curses.COLORS >= 256
-        bg = 233 if rich else curses.COLOR_BLACK
+        # The terminal's own background (-1): the dashboard paints no backdrop.
+        try:
+            curses.use_default_colors()
+            bg = -1
+        except curses.error:
+            bg = curses.COLOR_BLACK
         palette = {  # kind: (fg256, fg8, bg override, extra attr)
-            "normal": (252, curses.COLOR_WHITE, None, 0),
+            "normal": (-1, -1, None, 0),  # terminal foreground: readable on light and dark themes
             "pass": (41, curses.COLOR_GREEN, None, curses.A_BOLD),
             "warn": (220, curses.COLOR_YELLOW, None, curses.A_BOLD),
             "fail": (196, curses.COLOR_RED, None, curses.A_BOLD),
@@ -68,7 +73,7 @@ class Theme:
             "border": (37, curses.COLOR_CYAN, None, 0),
             "focus": (51, curses.COLOR_CYAN, None, curses.A_BOLD),
             "select": (231, curses.COLOR_WHITE, 25 if rich else curses.COLOR_BLUE, curses.A_BOLD),
-            "header": (51, curses.COLOR_CYAN, 235 if rich else curses.COLOR_BLACK, curses.A_BOLD),
+            "header": (51, curses.COLOR_CYAN, None, curses.A_BOLD),
         }
         theme = cls(True)
         theme.depth = curses.COLORS
