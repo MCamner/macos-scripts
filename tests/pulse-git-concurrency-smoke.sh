@@ -87,21 +87,39 @@ print("")
 PY
 }
 
+# Fastest of two timed `run_git` calls, in ms. The fastest run is the one least
+# disturbed by whatever else the machine is doing.
+fastest_run_git() {
+  local best="" started ended elapsed
+  for _ in 1 2; do
+    started="$(python3 -c 'import time; print(int(time.time()*1000))')"
+    run_git
+    ended="$(python3 -c 'import time; print(int(time.time()*1000))')"
+    elapsed=$((ended - started))
+    [[ -z "$best" || "$elapsed" -lt "$best" ]] && best="$elapsed"
+  done
+  echo "$best"
+}
+
 echo "[1/4] the two GitHub reads overlap rather than queue"
+# Measured against this machine's own overhead rather than a fixed wall time:
+# pulse.sh startup is ~300 ms on an idle Mac and several times that under load,
+# which pushed a correct concurrent run past an absolute 1700 ms threshold.
+make_gh 0 "$PRS" 0 "$RUNS"
+baseline="$(fastest_run_git)"
 make_gh 1 "$PRS" 1 "$RUNS"
-started="$(python3 -c 'import time; print(int(time.time()*1000))')"
-run_git
-ended="$(python3 -c 'import time; print(int(time.time()*1000))')"
-elapsed=$((ended - started))
+loaded="$(fastest_run_git)"
+added=$((loaded - baseline))
 [[ "$(item_field "Pull requests" status)" == "PASS" ]] \
   || fail "the pull request read did not succeed: $(item_field "Pull requests" summary)"
 [[ "$(item_field CI status)" == "PASS" ]] \
   || fail "the CI read did not succeed: $(item_field CI summary)"
-# Two 1s calls. Serial is >= 2000 ms; concurrent is a little over 1000 ms. 1700
-# is clear of both the noise and the wrong answer.
-[[ "$elapsed" -lt 1700 ]] \
-  || fail "the two reads took ${elapsed} ms — they are still serial"
-echo "  ok: two 1s reads in ${elapsed} ms"
+# Two 1s calls on top of the baseline. Serial adds >= 2000 ms, because the stub
+# sleeps are a hard floor; concurrent adds a little over 1000 ms. 1700 is clear
+# of both the noise and the wrong answer.
+[[ "$added" -lt 1700 ]] \
+  || fail "the two reads added ${added} ms over a ${baseline} ms baseline — they are still serial"
+echo "  ok: two 1s reads added ${added} ms over a ${baseline} ms baseline"
 
 echo "[2/4] a pull request read that burns its budget does not take CI with it"
 # The roadmap box, stated as a test. `gh pr list` never answers; the CI read is
