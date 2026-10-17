@@ -70,8 +70,8 @@ class Theme:
             "muted": (244, curses.COLOR_WHITE, None, 0 if rich else curses.A_DIM),
             "title": (81, curses.COLOR_CYAN, None, curses.A_BOLD),
             "accent": (39, curses.COLOR_BLUE, None, curses.A_BOLD),
-            "border": (37, curses.COLOR_CYAN, None, 0),
-            "focus": (51, curses.COLOR_CYAN, None, curses.A_BOLD),
+            "border": (208, curses.COLOR_YELLOW, None, 0),  # dark orange frames
+            "focus": (214, curses.COLOR_YELLOW, None, curses.A_BOLD),  # amber: focused frame
             "select": (231, curses.COLOR_WHITE, 25 if rich else curses.COLOR_BLUE, curses.A_BOLD),
             "header": (51, curses.COLOR_CYAN, None, curses.A_BOLD),
         }
