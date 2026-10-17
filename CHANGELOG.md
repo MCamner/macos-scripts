@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch dashboard` is now the MQ Stack Control Center: seven Stack Health
+  cards, a panel grid (full layout from 120x36, stacked compact layout down to
+  60x20) and eight sections with sub-tabs: Repositories, MCP Services,
+  AI Models, Evidence & Learning, Repair Planner, GitHub & Releases, Automation
+  and Help. Data comes from existing `mq-agent`, `mqlaunch doctor`/`auth`,
+  `launchctl`, Ollama HTTP and `gh` output, collected in parallel; missing data
+  shows UNAVAILABLE or UNVERIFIED, never PASS. Repair Planner derives issues
+  with analysis, a proposed command, risk and a verify step, and stops at
+  preview: commands are copied, never run. OpenAI test, evidence export and
+  clipboard copy each ask first. Still `/usr/bin/python3` and `curses` only.
+  Builds on the #281 MVP and supersedes the unmerged layout PR #282.
+  See `docs/mq-dashboard-2.md`.
+
+* CI and `release-check.sh` run `tests/test_mq_dashboard.py`; until now the
+  dashboard tests ran nowhere.
+
 * `mqlaunch hal compatibility` and HAL menu Intelligence → 4 delegate to
   `mq-hal compatibility`, which renders mq-agent's stack compatibility report.
   mqlaunch only routes: no compatibility logic, and mq-agent's exit code
