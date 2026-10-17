@@ -109,6 +109,11 @@ jobs:
       - name: Run B2 TUI tests
         run: python -m pytest mqlaunch/b2_tui/tests
 
+      # The dashboard ships for /usr/bin/python3 (3.9); the suite includes a
+      # 3.9 syntax guard because this job runs a newer Python.
+      - name: Run MQ Dashboard tests
+        run: python -m pytest tests/test_mq_dashboard.py
+
       # JSON this repo publishes to other MQ repos, validated against its
       # schema. Here rather than in the shell suite because it needs
       # jsonschema, and this job is the one with a pip-installable Python.

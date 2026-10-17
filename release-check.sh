@@ -80,6 +80,7 @@ run "check-gate-parity.py" python3 scripts/check-gate-parity.py
 
 say "--- Python tests ---"
 run "pytest b2_tui" python3 -m pytest mqlaunch/b2_tui/tests -q
+run "pytest dashboard" python3 -m pytest tests/test_mq_dashboard.py -q
 run "pytest contracts" python3 -m pytest tests/contracts -q
 
 say "--- mqlaunch smoke suite ---"
