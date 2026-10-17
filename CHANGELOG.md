@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-17
+
 ### Added
 
 * `mqlaunch dashboard` is now the MQ Stack Control Center: seven Stack Health

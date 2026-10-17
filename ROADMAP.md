@@ -1,24 +1,24 @@
 # Roadmap
 
-Current version: 2.2.0
+Current version: 2.3.0
 
 ## Current direction
 
 `macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-No next release is scoped. v2.2.0 closed the last question the earlier releases
-left open, and nothing has yet required another:
+No next release is scoped. v2.3.0 shipped the coherent package the earlier
+`Unreleased` items were waiting for:
 
 ```text
-Shipped:  v2.2.0  Pulse freshness and the cost of asking
-On main:  doctor --fix-plan, the HAL Intelligence menu — unreleased
+Shipped:  v2.3.0  MQ Stack Control Center (mqlaunch dashboard)
+Carried:  doctor --fix-plan, the HAL Intelligence menu, auth status/test
 Next:     unscoped — no version number is reserved
 ```
 
-The two items on `main` are recorded in the changelog under `Unreleased` and
-will be carried by whichever release comes next. They are not a reason to cut
-one, and neither is repairing the `v2.2.0` tag placement documented in the
-changelog: a release exists to deliver a coherent package, not to tidy history.
+v2.3.0 is a presentation layer: `mqlaunch dashboard` reads existing MQ
+contracts and adds no source of truth. The `v2.2.0` tag placement documented
+in the changelog is unchanged: a release exists to deliver a coherent package,
+not to tidy history.
 
 v1.0.1 established the release-readiness baseline: version, README badge, changelog, and the release gate agree, and the repo can be shipped from a known-good state. That work is done. v2.0.0 is a different problem — runtime authority and drift prevention — and it is about removing ambiguity rather than adding capability.
 
