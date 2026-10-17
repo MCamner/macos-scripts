@@ -66,7 +66,7 @@ ask() {
 
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 
-echo "[1/4] no key, Ollama running: the local model answers from the guide"
+echo "[1/5] no key, Ollama running: the local model answers from the guide"
 fake_curl answer
 out="$(ask "what process holds port 8080?")"
 grep -q "Use lsof -i :8080" <<<"$out" || fail "no Ollama answer: $out"
@@ -85,27 +85,32 @@ assert "<script>" not in p["prompt"], "HTML tags sent to the model"
 PY
 echo "  ok: answered locally, prompt holds only the matching guide lines"
 
-echo "[2/4] model and host follow MQ_HAL_GUIDE_OLLAMA_MODEL and OLLAMA_HOST"
+echo "[2/5] model and host follow MQ_HAL_GUIDE_OLLAMA_MODEL and OLLAMA_HOST"
 ask "port 8080" MQ_HAL_GUIDE_OLLAMA_MODEL=llama3.2 OLLAMA_HOST=10.0.0.5:9999 >/dev/null
 [[ "$(cat "$run_dir/curl.log")" == "http://10.0.0.5:9999/api/generate" ]] \
   || fail "OLLAMA_HOST ignored: $(cat "$run_dir/curl.log")"
 grep -q '"model":"llama3.2"' <(tr -d ' \n' <"$run_dir/payload.json") || fail "model override ignored"
 echo "  ok: overrides respected"
 
-echo "[3/4] no key, Ollama down: grep fallback as before"
+echo "[3/5] no key, Ollama down: grep fallback as before"
 fake_curl down
 out="$(ask "what process holds port 8080?")"
 grep -q "Local guide matches:" <<<"$out" || fail "no grep fallback: $out"
-grep -q "local Ollama did not answer" <<<"$out" || fail "fallback reason missing: $out"
+grep -q "Local Ollama did not answer" <<<"$out" || fail "fallback reason missing: $out"
 echo "  ok: falls back to local guide search"
 
-echo "[4/4] with a key, OpenAI answers and Ollama is not asked"
+echo "[4/5] a configured key does not implicitly select cloud"
 fake_curl answer
 out="$(ask "what process holds port 8080?" OPENAI_API_KEY=stub-key)"
+grep -q "Use lsof -i :8080" <<<"$out" || fail "local default bypassed: $out"
+[[ "$(cat "$run_dir/curl.log")" == "http://127.0.0.1:11434/api/generate" ]] || fail "implicit cloud call"
+echo "[5/5] explicit OpenAI selection works"
+fake_curl answer
+out="$(ask "what process holds port 8080?" OPENAI_API_KEY=stub-key MQ_HAL_GUIDE_PROVIDER=openai)"
 grep -q "OPENAI_ANSWER" <<<"$out" || fail "OpenAI path broken: $out"
 if grep -q "/api/generate" "$run_dir/curl.log"; then
   fail "asked Ollama although OpenAI is configured"
 fi
-echo "  ok: OpenAI stays first"
+echo "  ok: explicit OpenAI selection respected"
 
-echo "OK: HAL guide answers locally when OpenAI is not set up"
+echo "OK: HAL guide defaults to local; cloud requires explicit selection"

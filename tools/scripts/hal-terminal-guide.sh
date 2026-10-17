@@ -603,9 +603,10 @@ ask_vector_store() {
   local question="$1"
   local payload response text
 
-  if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  # Cloud requires MQ_HAL_GUIDE_PROVIDER=openai, even when a key is loaded.
+  if [[ "${MQ_HAL_GUIDE_PROVIDER:-ollama}" != "openai" ]]; then
     ask_ollama "$question" && return 0
-    printf 'OPENAI_API_KEY is not set and local Ollama did not answer. Falling back to local guide search.\n'
+    printf 'Local Ollama did not answer. Falling back to local guide search.\n'
     local_guide_search "$question"
     return 0
   fi
