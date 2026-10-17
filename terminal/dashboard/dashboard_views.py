@@ -28,6 +28,41 @@ SECTIONS = (
 )
 SECTION_NAMES = tuple(name for name, _ in SECTIONS)
 SHORT_NAMES = ("Home", "Repos", "MCP", "AI", "Evidence", "Repair", "GitHub", "Auto", "Help")
+# Quick actions in the reference layout's order. Each opens an existing
+# section/tab: Doctor, Memory and Security are views, not extra sections.
+QUICK_ACTIONS = (
+    ("1", "Doctor", "Check & diagnose", "Repair Planner", "Issues"),
+    ("2", "Repositories", "Status & manage", "Repositories", "Overview"),
+    ("3", "MCP Services", "View & control", "MCP Services", "Overview"),
+    ("4", "AI Models", "Models & settings", "AI Models", "Overview"),
+    ("5", "Evidence", "Learning & routing", "Evidence & Learning", "Overview"),
+    ("6", "Memory", "View & manage", "Evidence & Learning", "Memory"),
+    ("7", "GitHub", "PRs & releases", "GitHub & Releases", "Overview"),
+    ("8", "Security", "Scan & protect", "MCP Services", "Tool Surface"),
+    ("9", "Repair Planner", "Analyze & fix", "Repair Planner", "Overview"),
+    ("0", "Automation", "Schedules & history", "Automation", "Overview"),
+)
+
+
+def quick_target(key: str):
+    """(section index, tab index) for a quick-action key, or None."""
+    for k, _title, _sub, section, tab in QUICK_ACTIONS:
+        if k == key:
+            n = SECTION_NAMES.index(section)
+            return n, SECTIONS[n][1].index(tab)
+    return None
+
+
+def section_key(n: int) -> str:
+    """The key shown next to a section in the bar."""
+    if n == 0:
+        return "⌂"
+    if SECTION_NAMES[n] == "Help":
+        return "H"
+    for k, _title, _sub, section, tab in QUICK_ACTIONS:
+        if section == SECTION_NAMES[n] and SECTIONS[n][1].index(tab) == 0:
+            return k
+    return " "
 PERIODS = (("24h", 1), ("7d", 7), ("30d", 30), ("all", None))
 
 _KIND = {
@@ -333,79 +368,188 @@ def overall(data: dict) -> str:
 
 # --------------------------------------------------------------- home panels
 
-def home_panels(data: dict) -> list:
-    """(title, section index, lines) in grid order."""
+# Narrow (single-cell) symbols only: emoji and Nerd Font glyphs are two cells
+# wide or need a patched font, and either breaks column alignment.
+ICONS = {"Repositories": "▤", "GitHub CI": "⎇", "MCP Services": "◈", "Local AI": "◎", "OpenAI API": "◌",
+         "Security": "◆", "Compatibility": "⚙", "REPOSITORIES": "▤", "MCP SERVICES": "◈", "AI MODELS": "◎",
+         "EVIDENCE & LEARNING": "▲", "RECENT RESULTS": "◷", "GITHUB & RELEASES": "⎇", "STACK HEALTH": "♥",
+         "QUICK ACTIONS": "»"}
+_MARK = {"pass": "✓", "warn": "!", "fail": "✗", "info": "·", "muted": "–", "normal": "·"}
+
+
+def mark(status) -> tuple:
+    """✓ / ! / ✗ glyph coloured like the status it stands for."""
+    kind = kind_of(status)
+    return (_MARK.get(kind, "·"), kind)
+
+
+def dot(status) -> tuple:
+    return ("●", kind_of(status))
+
+
+def table(cols: list, rows: list, width: int) -> list:
+    return [header_row(cols, width)] + [format_row(cols, cells, width) for cells in rows]
+
+
+def release_state(declared: str, releases) -> str:
+    if releases is None:
+        return "UNAVAILABLE"
+    tag = releases[0]["tagName"] if releases else ""
+    return "UNRELEASED" if not tag else ("CURRENT" if tag.lstrip("v") == declared else "DRIFT")
+
+
+def local_iso(text: str) -> str:
+    """Local wall time without a zone (file mtimes, envelope `at`) made explicit,
+    so parse_time does not read it as UTC."""
+    try:
+        moment = datetime.fromisoformat(text.replace(" ", "T"))
+    except ValueError:
+        return ""
+    return (moment.astimezone() if moment.tzinfo is None else moment).isoformat()
+
+
+def recent_rows(data: dict) -> list:
+    """(time, task, result) of the newest measured runs, newest first."""
+    rows = []
+    snaps = get(data, "snapshots") or {}
+    for name, label in (("stack-status", "Stack Status"), ("routing-divergence", "Route Divergence")):
+        entries = snaps.get(name) or []
+        if entries:
+            rows.append((local_iso(entries[-1]["mtime"]), label, entries[-1]["status"] or "-"))
+    routing_env = data.get("routing") or {}
+    tc = ((get(data, "routing") or {}).get("task_classes") or {}).get("docs-review") or {}
+    if tc:
+        rows.append((local_iso(routing_env.get("at", "")), "Route Readiness", tc.get("recommendation", "-")))
+    report = get(data, "feedback_report")
+    if report:
+        rows.append((report.get("newest_recorded_at", ""), "Hybrid Retrieval",
+                     (report.get("comparison") or {}).get("reason") or report.get("health", "-")))
+    hist = (get(data, "route_history") or {}).get("entries") or []
+    if hist:
+        rows.append((hist[0].get("recorded_at", ""), f"Route {hist[0].get('selected_route')}",
+                     "PASS" if hist[0].get("schema_valid") else "FAIL"))
+    doctor_env = data.get("doctor") or {}
+    if doctor_env.get("ok"):
+        rows.append((local_iso(doctor_env.get("at", "")), "Doctor", str(doctor_env["data"].get("status", "-")).upper()))
+    epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    rows.sort(key=lambda r: parse_time(r[0]) or epoch, reverse=True)
+    return rows
+
+
+def home_panels(data: dict, width: int = 40) -> list:
+    """(title, section index, lines) in grid order; `width` is the inner width."""
     panels = []
     rs = repos(data)
-    lines = [L(S(f"{'Repository':<17}", "title"), S(f"{'Version':<9}", "title"), S(f"{'CI':<11}", "title"), S("Git", "title"))]
-    for r in rs:
-        lines.append(L(f"{r.get('name', '?'):<17}", S(f"{str(r.get('version') or '-'):<9}", "muted"),
-                       S(f"{ci_status(r):<11}", kind_of(ci_status(r))),
-                       St("DIRTY" if r.get("dirty") else "CLEAN")))
-    panels.append(("REPOSITORIES", 1, lines if rs else [missing(data, "stack")]))
+    if rs:
+        cols = [Col("NAME", 18), Col("VERSION", 8, 2), Col("CI", 3), Col("GIT", 6, 1)]
+        rows = []
+        for r in rs:
+            ci = ci_status(r)
+            git = "dirty" if r.get("dirty") else "clean"
+            rows.append([(f"● {r.get('name', '?')}", kind_of(worst([ci, "WARN" if r.get("dirty") else "PASS"]))),
+                         S(r.get("version") or "-", "muted"), mark(ci), (git, "warn" if r.get("dirty") else "pass")])
+        lines = table(cols, rows, width)
+    else:
+        lines = [missing(data, "stack")]
+    panels.append(("REPOSITORIES", 1, lines))
 
-    lines = []
-    for s in get(data, "services") or []:
-        lines.append(L(f"{s['name']:<17}", S(f":{s['port']:<6}", "muted"), S(s["state"], kind_of(s["state"]))))
-    tools = [f"{name} {srv.get('tools')}" for name, srv in mcp_servers(data).items() if srv.get("tools")]
-    if tools:
-        lines.append(L(S("Tools    ", "muted"), " · ".join(tools)))
-    contract = (mcp_servers(data).get("mq-mcp") or {}).get("contract", "")
-    head = re.search(r"validation\s+\S+\s+(\w+)", contract)
-    if head:
-        lines.append(L(S("Contract ", "muted"), St(head.group(1)), S("  see Compatibility", "muted")))
-    panels.append(("MCP SERVICES", 2, lines or [missing(data, "services")]))
+    services = get(data, "services")
+    if services:
+        cols = [Col("SERVICE", 20), Col("PORT", 6, 1), Col("STATUS", 10)]
+        lines = table(cols, [[(f"● {s['name']}", kind_of(s["state"])), S(str(s["port"]), "muted"),
+                              (f"● {s['state']}", kind_of(s["state"]))] for s in services], width)
+        mcp = next((s for s in services if s["name"] == "mq-mcp"), {})
+        started = re.search(r"(\d\d:\d\d):\d\d", mcp.get("started", ""))
+        contract = re.search(r"validation\s+\S+\s+(\w+)", (mcp_servers(data).get("mq-mcp") or {}).get("contract", ""))
+        compat = (get(data, "compatibility") or {}).get("status")
+        lines += [[S("─" * width, "border")],
+                  L(S(f"{'Last restart':<20}", "muted"), started.group(1) if started else "-"),
+                  L(S(f"{'Runtime contract':<20}", "muted"),
+                    *((mark(contract.group(1)), S(" "), St(contract.group(1))) if contract else (St("UNAVAILABLE"),))),
+                  L(S(f"{'Tool compatibility':<20}", "muted"),
+                    *((mark(compat), S(" "), St(str(compat).upper())) if compat else (St("UNAVAILABLE"),)))]
+    else:
+        lines = [missing(data, "services")]
+    panels.append(("MCP SERVICES", 2, lines))
 
     lo = get(data, "ollama")
-    lines = []
+    cols = [Col("MODEL", 22), Col("STATUS", 13), Col("BACKEND", 7, 1)]
     if lo:
         running = {m.get("name") for m in lo.get("running") or []}
-        lines.append(L(S("Ollama ", "muted"), St("RUNNING"), S(f"  v{lo.get('version')}  {len(lo.get('models') or [])} installed", "muted")))
-        for m in (lo.get("models") or [])[:5]:
+        rows = []
+        for m in lo.get("models") or []:
             name = m.get("name", "?")
-            lines.append(L(f"  {name[:26]:<27}", St("LOADED") if name in running else S("installed", "muted")))
+            state = "LOADED" if name in running else "INSTALLED"
+            rows.append([S(name.replace(":latest", "")), (f"● {state}", "pass" if state == "LOADED" else "info"), S("Ollama", "muted")])
+        lines = table(cols, rows[:3], width)
+        if len(rows) > 3:
+            lines.append(L(S(f"+{len(rows) - 3} more  (4 AI Models)", "muted")))
     else:
-        lines.append(missing(data, "ollama"))
+        lines = [missing(data, "ollama")]
     status, sub = openai_state(data)
-    lines.append(L(S("OpenAI ", "muted"), St(status), S(f"  {sub}", "muted")))
+    test = get(data, "openai_test") or {}
+    lines += [[S("─" * width, "border")],
+              format_row(cols, [S("OpenAI"), (f"● {status}", kind_of(status)), S("Cloud", "muted")], width),
+              L(S(f"{'API status':<22}", "muted"), St(str(test.get("status", "untested")).upper())),
+              L(S(f"{'Response time':<22}", "muted"),
+                S(f"{test['round_trip_ms']} ms" if test.get("round_trip_ms") else "– (test in AI > OpenAI)", "info"))]
     panels.append(("AI MODELS", 3, lines))
 
     routing = get(data, "routing") or {}
     tc = (routing.get("task_classes") or {}).get("docs-review") or {}
     actual = tc.get("actual") or {}
-    report = get(data, "feedback_report") or {}
-    cands = (get(data, "feedback_candidates") or {}).get("candidates") or []
+    th = routing.get("thresholds") or {}
     lines = []
     if routing:
-        lines += [L(S("Readiness   ", "muted"), St(tc.get("recommendation", "UNAVAILABLE"))),
-                  L(S("Applied     ", "muted"), f"{actual.get('observations', '-')} obs · {actual.get('window_days', '-')} days"),
-                  L(S("Auto route  ", "muted"), St("DISABLED" if not routing.get("automatic_routing_enabled") else "ENABLED"))]
+        rec = tc.get("recommendation", "UNAVAILABLE")
+        label = "ELIGIBLE" if tc.get("eligible") else rec
+        lines += [L(S(f"{'Routing readiness':<22}", "muted"), dot(label), S(" "), St(label), S("  "), mark("PASS" if tc.get("eligible") else "WARN")),
+                  L(S(f"{'Applied observations':<22}", "muted"), f"{actual.get('observations', '-')} / {th.get('minimum_observations', '-')}"),
+                  L(S(f"{'Route coverage':<22}", "muted"), f"{actual.get('candidate_routes', '-')} / {th.get('minimum_candidate_routes', '-')}"),
+                  L(S(f"{'Evidence window':<22}", "muted"), f"{actual.get('window_days', '-')} / {th.get('minimum_window_days', '-')} days"),
+                  L(S(f"{'Promotion approval':<22}", "muted"),
+                    *((dot("REQUIRED"), S(" "), St("REQUIRED")) if routing.get("operator_approval_required") else (S("-"),)))]
     else:
         lines.append(missing(data, "routing"))
-    if report:
-        lines.append(L(S("Feedback    ", "muted"), St(report.get("health", "-")),
-                       S(f"  {report.get('matched_records', '-')} runs", "muted")))
-        reason = (report.get("comparison") or {}).get("reason")
-        if reason:
-            lines.append(L(S("Comparison  ", "muted"), St(reason)))
-    lines.append(L(S("Candidates  ", "muted"), f"{len(cands)} proposed (approval required)"))
+    inbox = get(data, "inbox")
+    counts = memory_counts(get(data, "memory_review") or "")
+    if inbox is not None:
+        lines.append(L(S(f"{'Memory candidates':<22}", "muted"),
+                       f"{inbox.get('count', 0)} ({counts.get('candidate', 0)} candidate, {counts.get('held', 0)} held)"))
+    else:
+        lines.append(L(S(f"{'Memory candidates':<22}", "muted"), St("STALE" if (data.get("inbox") or {}).get("error") else "UNAVAILABLE")))
     panels.append(("EVIDENCE & LEARNING", 4, lines))
 
-    panels.append(("RECENT RESULTS", 7, recent_results(data)))
+    rows = recent_rows(data)
+    if rows:
+        cols = [Col("TIME", 6), Col("TASK", 19), Col("RESULT", 14)]
+        lines = table(cols, [[S(short_time(t)[-5:], "muted"), S(task), St(result)] for t, task, result in rows[:7]], width)
+        lines += [[], L(S("View full history ", "accent"), S("→ 0", "accent"))]
+    else:
+        lines = [missing(data, "snapshots")]
+    panels.append(("RECENT RESULTS", 7, lines))
 
-    lines = [L(S("gh auth ", "muted"), St((get(data, "gh_auth") or {}).get("status", "LOADING" if loading(data, "gh_auth") else "UNAVAILABLE")))]
     gh = get(data, "github")
     if gh:
-        open_prs = [(r["repo"], p) for r in gh["repos"] for p in (r.get("prs") or []) if p.get("state") == "OPEN"]
-        lines.append(L(S("Open PRs ", "muted"), str(len(open_prs))))
-        for repo, pr in open_prs[:3]:
-            lines.append(L(S(f"  {repo[:14]}#{pr['number']} ", "muted"), pr.get("title", "")[:40]))
-        latest = sorted(((rel.get("publishedAt", ""), r["repo"], rel.get("tagName")) for r in gh["repos"]
-                         for rel in (r.get("releases") or [])), reverse=True)[:3]
-        for when, repo, tag in latest:
-            lines.append(L(S(f"  {short_time(when)} ", "muted"), f"{repo} {tag}"))
+        by_name = {r.get("github_repo") or r.get("name"): r for r in rs}
+        cols = [Col("REPOSITORY", 17), Col("VERSION", 8, 2), Col("CI", 3), Col("RELEASE", 10, 1)]
+        rows = []
+        for r in gh["repos"]:
+            stack_repo = by_name.get(r["repo"]) or {}
+            declared = str(stack_repo.get("version") or "-")
+            state = release_state(declared, r.get("releases"))
+            rows.append([S(r["repo"]), S(declared, "muted"), mark(ci_status(stack_repo) if stack_repo else "UNAVAILABLE"),
+                         (state.lower(), kind_of({"CURRENT": "PASS"}.get(state, state)))])
+        lines = table(cols, rows[:5], width)
+        open_prs = [p for r in gh["repos"] for p in (r.get("prs") or []) if p.get("state") == "OPEN"]
+        failed = sum(1 for s in scope_rows(data) if s["status"] == "FAIL")
+        pending = sum(1 for p in open_prs if p.get("reviewDecision") == "REVIEW_REQUIRED")
+        lines += [[S("─" * width, "border")],
+                  L(S(f"{'Open pull requests':<20}", "muted"), S(str(len(open_prs)), "warn" if open_prs else "pass")),
+                  L(S(f"{'Failed checks':<20}", "muted"), S(str(failed), "fail" if failed else "pass")),
+                  L(S(f"{'Pending reviews':<20}", "muted"), S(str(pending), "warn" if pending else "pass"))]
     else:
-        lines.append(missing(data, "github"))
+        lines = [missing(data, "github")]
     panels.append(("GITHUB & RELEASES", 6, lines))
     return panels
 
@@ -1290,7 +1434,8 @@ def _auto_failures(data, ui):
 
 KEYS = (("↑ ↓", "previous / next row, or scroll"), ("← →", "previous / next tab (Home: move panel focus)"),
         ("Enter", "open panel / run the row's action (always asks first)"), ("Esc / Backspace", "back one level"),
-        ("Tab / Shift-Tab", "switch panel focus"), ("1–8", "jump to section"), ("0", "Home"), ("9", "Evidence > Export"),
+        ("Tab / Shift-Tab", "switch panel focus"), ("1–9, 0", "quick actions, as numbered on Home"),
+        ("Esc on a section", "back to Home"),
         ("R", "refresh all sources"), ("H", "help"), ("M", "open mongoTerminal, return on exit"),
         ("/", "search / filter rows (Esc clears)"), ("P", "cycle History period"), ("Q", "quit"))
 

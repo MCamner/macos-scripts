@@ -300,8 +300,26 @@ def collect_snapshots() -> dict:
 
 
 def collect_host() -> dict:
+    """Identity for the header panel. Shown on screen only; never exported."""
+    boot = None
+    ok, out = run_readonly(["sysctl", "-n", "kern.boottime"], timeout=3)
+    match = re.search(r"sec = (\d+)", out) if ok else None
+    if match:
+        boot = int(match.group(1))
+    ip = ""
+    ok, iface = run_readonly(["route", "-n", "get", "default"], timeout=3)
+    found = re.search(r"interface:\s*(\S+)", iface) if ok else None
+    if found:
+        ip_ok, ip_out = run_readonly(["ipconfig", "getifaddr", found.group(1)], timeout=3)
+        ip = ip_out if ip_ok else ""
+    try:
+        version = (REPO_ROOT / "VERSION").read_text().strip()
+    except OSError:
+        version = ""
     return {"host": socket.gethostname().split(".")[0], "macos": platform.mac_ver()[0] or platform.system(),
-            "python": platform.python_version()}
+            "python": platform.python_version(), "user": os.environ.get("USER", ""),
+            "repo": "~/" + REPO_ROOT.name if REPO_ROOT.parent == HOME else str(REPO_ROOT),
+            "ip": ip, "boot_epoch": boot, "version": version}
 
 
 def github_owner() -> str:
@@ -319,7 +337,7 @@ def collect_github(repos: list[str]) -> dict:
     def one(repo: str) -> dict:
         slug = f"{owner}/{repo}"
         pr_ok, prs = run_readonly(["gh", "pr", "list", "--repo", slug, "--state", "all", "--limit", "8",
-                                   "--json", "number,title,state,isDraft,updatedAt,headRefName"], timeout=20)
+                                   "--json", "number,title,state,isDraft,updatedAt,headRefName,reviewDecision"], timeout=20)
         rel_ok, rels = run_readonly(["gh", "release", "list", "--repo", slug, "--limit", "5",
                                      "--json", "tagName,publishedAt,isLatest,isDraft,isPrerelease"], timeout=20)
         return {"repo": repo,
@@ -364,7 +382,7 @@ def source_table() -> dict:
         "gh_auth": ("gh auth status", collect_gh_auth),
         "doctor": ("mqlaunch doctor --fix-plan --json", lambda: script_json("tools/scripts/doctor.sh", "--fix-plan", "--json")),
         "snapshots": ("~/mq-evidence/{stack-status,routing-divergence}/*.json", collect_snapshots),
-        "host": ("hostname + macOS version", collect_host),
+        "host": ("hostname, macOS, user, uptime, local IP, VERSION (screen only)", collect_host),
         "stack": ("mq-agent stack status --json", lambda: agent_json("stack", "status", "--json", timeout=45)),
         "provenance": ("mq-agent stack provenance --json", lambda: agent_json("stack", "provenance", "--json", timeout=30)),
         "compatibility": ("mq-agent stack compatibility --json", lambda: agent_json("stack", "compatibility", "--json")),

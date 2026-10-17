@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -26,8 +27,12 @@ from dashboard_views import L, S  # noqa: E402
 
 MIN_W, MIN_H = 60, 20
 FULL_W, FULL_H = 120, 36
-QUICK = ((1, "Repositories"), (2, "MCP"), (3, "AI Models"), (4, "Evidence"), (5, "Repair"),
-         (6, "GitHub"), (7, "Automation"), (8, "Help"), (9, "Export"))
+RICH_H = 46  # tall enough for the logo header and quick-action tiles
+QUICK = views.QUICK_ACTIONS
+LOGO = ("█▄   ▄█  ▄▀▀▀▄",
+        "██▄ ▄██  █   █",
+        "█ ▀█▀ █  █ ▄ █",
+        "█     █  ▀▄▄▀▄")
 
 
 class Theme:
@@ -38,6 +43,7 @@ class Theme:
 
     def __init__(self, colors: bool = False):
         self.colors = colors
+        self.depth = 0  # colours the terminal reports; 0 = monochrome
         self.attrs = {"normal": 0, "pass": curses.A_BOLD, "warn": curses.A_BOLD,
                       "fail": curses.A_BOLD | curses.A_UNDERLINE, "info": 0, "muted": curses.A_DIM,
                       "title": curses.A_BOLD, "accent": curses.A_BOLD, "border": 0,
@@ -65,6 +71,7 @@ class Theme:
             "header": (51, curses.COLOR_CYAN, 235 if rich else curses.COLOR_BLACK, curses.A_BOLD),
         }
         theme = cls(True)
+        theme.depth = curses.COLORS
         for n, kind in enumerate(cls.KINDS, start=1):
             fg256, fg8, bg_override, extra = palette[kind]
             curses.init_pair(n, fg256 if rich else fg8, bg_override if bg_override is not None else bg)
@@ -159,14 +166,15 @@ def draw(scr, theme: Theme, data: dict, st: State) -> None:
         c.put(1, 0, "Resize the window, or Q to quit.", "muted")
         scr.refresh()
         return
-    draw_header(c, data, st)
+    rich = st.level == "home" and c.w >= FULL_W and c.h >= RICH_H
+    top = draw_rich_header(c, data, st) if rich else draw_header(c, data, st)
     try:
         if st.level == "home":
             st.home_compact = not (c.w >= FULL_W and c.h >= FULL_H)
             if st.home_compact:
                 draw_home_compact(c, data, st)
             else:
-                draw_home_full(c, data, st)
+                draw_home_full(c, data, st, top, rich)
         else:
             draw_section(c, data, st)
     except Exception as exc:  # unexpected source shape: report it, keep the dashboard alive
@@ -192,13 +200,67 @@ def draw_header(c: Canvas, data: dict, st: State) -> None:
     centre_x = max(40, (c.w - len(centre)) // 2)
     if centre and centre_x + len(centre) < right_x - 1:
         c.put(0, centre_x, centre, "header")
-    # section bar: full names when they fit, short names otherwise
+    draw_section_bar(c, 1, st)
+    return 2
+
+
+def draw_section_bar(c: Canvas, y: int, st: State) -> None:
+    """Sections with the key that opens them: full names when they fit."""
     names = views.SECTION_NAMES if c.w >= 140 else views.SHORT_NAMES
     gap = 1 if c.w >= 90 else 0
     x = 1
     for n, name in enumerate(names):
         active = (st.level == "home" and n == 0) or (st.level == "section" and n == st.section)
-        x = c.put(1, x, f" {n} {name} ", "select" if active else "muted") + gap
+        x = c.put(y, x, f" {views.section_key(n)} {name} ", "select" if active else "muted") + gap
+
+
+def uptime_text(boot_epoch) -> str:
+    if not boot_epoch:
+        return "-"
+    minutes = max(0, int(time.time() - boot_epoch) // 60)
+    days, rest = divmod(minutes, 1440)
+    return (f"{days}d " if days else "") + f"{rest // 60}h {rest % 60:02d}m"
+
+
+def draw_rich_header(c: Canvas, data: dict, st: State) -> int:
+    """Logo, identity and system panels (reference layout); returns the next free row."""
+    host = views.get(data, "host") or {}
+    c.box(0, 1, 7, c.w - 2, "")
+    right_w, mid_w = 30, 32
+    left_w = c.w - 4 - right_w - mid_w
+    for n, row in enumerate(LOGO):
+        c.put(1 + n, 4, row, "focus")
+    tx = 4 + len(LOGO[0]) + 3
+    x = c.put(1, tx, "DASHBOARD ", "title", curses.A_BOLD)
+    c.put(1, x, "2.0", "accent")
+    c.put(2, tx, "MQ CONTROL CENTER", "info")
+    c.put(4, tx, "OBSERVE · MANAGE · ANALYZE · IMPROVE", "muted", limit=max(0, left_w - tx))
+    mx = 2 + left_w
+    for yy in range(1, 6):
+        c.put(yy, mx, "│", "border")
+    ident = ((f"{host.get('host', '-')}", f"(macOS {host.get('macos', '-')})"), (host.get("user", "-"), ""),
+             (host.get("repo", "-"), ""), (host.get("ip") or "-", ""))
+    for n, (glyph, (main, extra)) in enumerate(zip(("◆", "●", "▤", "⇄"), ident)):
+        x = c.put(1 + n, mx + 2, glyph + "  ", "info")
+        x = c.put(1 + n, x, main, "normal", limit=mid_w - 6)
+        c.put(1 + n, x + 1, extra, "muted", limit=max(0, mx + mid_w - x - 2))
+    rx = mx + mid_w
+    for yy in range(1, 6):
+        c.put(yy, rx, "│", "border")
+    status = views.overall(data)
+    x = c.put(1, rx + 2, "● ", views.kind_of(status))
+    c.put(1, x, f"STACK {status}", views.kind_of(status) if views.kind_of(status) != "normal" else "title", curses.A_BOLD)
+    depth = getattr(c.t, "depth", 0)
+    pending = len(data.get("_pending", ()))
+    facts = (("Uptime", uptime_text(host.get("boot_epoch"))),
+             ("Last check", f"LOADING {pending}" if pending else data.get("_collected_at", "")[11:16] or "-"),
+             ("Terminal", f"{depth} colors" if depth else "monochrome"),
+             ("macos-scripts", f"v{host['version']}" if host.get("version") else "-"))
+    for n, (label, value) in enumerate(facts):
+        c.put(2 + n, rx + 2, label, "muted")
+        c.put(2 + n, c.w - 3 - len(value), value, "normal")
+    draw_section_bar(c, 7, st)
+    return 8
 
 
 def draw_footer(c: Canvas, data: dict, st: State) -> None:
@@ -214,7 +276,7 @@ def draw_footer(c: Canvas, data: dict, st: State) -> None:
         return
     # Most essential first: narrow terminals drop hints from the right (all keys stay in Help).
     hints = (("↑↓", "Select"), ("←→", "Tab"), ("Enter", "Open"), ("Esc", "Back"), ("Q", "Quit"), ("H", "Help"),
-             ("Tab", "Panel"), ("R", "Refresh"), ("/", "Search"), ("1-9", "Quick"), ("M", "mongo"))
+             ("Tab", "Panel"), ("R", "Refresh"), ("/", "Search"), ("0-9", "Quick"), ("M", "mongo"))
     x = 1
     for key, label in hints:
         if x + len(key) + len(label) + 3 >= c.w - 1:
@@ -230,15 +292,20 @@ def draw_footer(c: Canvas, data: dict, st: State) -> None:
 def draw_cards(c: Canvas, y: int, data: dict) -> int:
     cards = views.health_cards(data)
     width = (c.w - 2) // len(cards)
-    short = {"Repositories": "REPOS", "MCP Services": "MCP", "OpenAI API": "OPENAI", "Compatibility": "COMPAT"}
+    short = {"Repositories": "Repos", "MCP Services": "MCP", "OpenAI API": "OpenAI", "Compatibility": "Compat"}
     for n, (title, value, status, sub) in enumerate(cards):
         x = 1 + n * width
-        label = title.upper() if len(title) + 6 <= width - 1 else short.get(title, title.upper())
-        c.box(y, x, 5, width - 1, label)
+        if n == len(cards) - 1:  # last card absorbs the rounding remainder
+            width = c.w - 1 - x
+        c.box(y, x, 5, width - 1)
+        label = title if len(title) + 6 <= width - 1 else short.get(title, title)
+        tx = c.put(y + 1, x + 2, views.ICONS.get(title, "·") + " ", "info")
+        c.put(y + 1, tx, label, "title", limit=width - 6)
         kind = views.kind_of(status)
-        c.put(y + 1, x + 2, value, kind if kind != "normal" else "title", curses.A_BOLD, limit=width - 4)
-        c.put(y + 2, x + 2, "● " + status, kind, limit=width - 4)
-        c.put(y + 3, x + 2, sub, "muted", limit=width - 4)
+        c.put(y + 2, x + 2, value, kind if kind != "normal" else "title", curses.A_BOLD, limit=width - 4)
+        glyph, _ = views.mark(status)
+        line = f"{glyph} {status}" + (f" · {sub}" if len(status) + len(sub) + 5 <= width - 4 else "")
+        c.put(y + 3, x + 2, line, kind, limit=width - 4)
     return y + 5
 
 
@@ -275,33 +342,59 @@ def draw_lines_box(c: Canvas, y: int, x: int, h: int, w: int, title: str, lines:
 
 
 def quick_lines(st: State, focused: bool, width: int) -> list:
-    line = []
-    for n, (key, name) in enumerate(QUICK):
+    """Quick actions packed into as many lines as the width needs; none is cut."""
+    items = []
+    for n, (key, name, _sub, _section, _tab) in enumerate(QUICK):
         selected = focused and n == st.quick
-        line += [S(f" {key} ", "select" if selected else "accent"), S(f"{name}  ", "select" if selected else "normal")]
-    extra = [S(" R ", "accent"), S("Refresh  "), S(" M ", "accent"), S("mongoTerminal  "), S(" / ", "accent"),
-             S("Search  "), S(" Q ", "accent"), S("Quit")]
-    if views.text_of(line) and len(views.text_of(line)) + len(views.text_of(extra)) < width:
-        return [line + extra]
-    return [line, extra]
+        items.append([S(f" {key} ", "select" if selected else "accent"), S(f"{name}  ", "select" if selected else "normal")])
+    items += [[S(" R ", "accent"), S("Refresh  ")], [S(" M ", "accent"), S("mongoTerminal  ")],
+              [S(" / ", "accent"), S("Search  ")], [S(" Q ", "accent"), S("Quit")]]
+    lines, current = [], []
+    for item in items:
+        if current and len(views.text_of(current + item)) > width:
+            lines.append(current)
+            current = []
+        current = current + item
+    return lines + [current]
 
 
-def draw_home_full(c: Canvas, data: dict, st: State) -> None:
-    y = draw_cards(c, 2, data)
-    panels = views.home_panels(data)
-    quick_h = 4
+def draw_quick_tiles(c: Canvas, y: int, h: int, st: State, focused: bool) -> None:
+    """Two rows of five numbered tiles inside the QUICK ACTIONS box."""
+    c.box(y, 1, h, c.w - 2, f"{views.ICONS['QUICK ACTIONS']} QUICK ACTIONS", focused)
+    per_row = 5
+    tile_w = (c.w - 6) // per_row
+    for n, (key, title, sub, _section, _tab) in enumerate(QUICK):
+        row, i = divmod(n, per_row)
+        tx, ty = 3 + i * tile_w, y + 1 + row * 4
+        selected = focused and n == st.quick
+        w = (c.w - 3 - tx) if i == per_row - 1 else tile_w - 1
+        c.box(ty, tx, 4, w, "", selected)
+        c.put(ty + 1, tx + 2, f" {key} ", "select" if selected else "accent")
+        c.put(ty + 1, tx + 6, title, "select" if selected else "title", limit=tile_w - 9)
+        c.put(ty + 2, tx + 6, sub, "muted", limit=tile_w - 9)
+
+
+def draw_home_full(c: Canvas, data: dict, st: State, top: int = 2, rich: bool = False) -> None:
+    y = draw_cards(c, top, data)
+    quick = quick_lines(st, st.home_focus == 6, c.w - 6)
+    quick_h = 10 if rich else len(quick) + 2
     avail = c.h - 2 - y - quick_h
     top_h = max(6, avail // 2)
     bottom_h = avail - top_h
     col = (c.w - 2) // 3
+    panels = views.home_panels(data, col - 4)
     for n, (title, _target, lines) in enumerate(panels):
         row, i = divmod(n, 3)
         py = y if row == 0 else y + top_h
         ph = top_h if row == 0 else bottom_h
         pw = col if i < 2 else c.w - 2 - 2 * col
-        draw_lines_box(c, py, 1 + i * col, ph, pw, title, lines, st.home_focus == n, right=f"{_target}", wrap=True)
+        label = f"{views.ICONS.get(title, '')} {title}".strip()
+        draw_lines_box(c, py, 1 + i * col, ph, pw, label, lines, st.home_focus == n, wrap=True)
     focused = st.home_focus == len(panels)
-    draw_lines_box(c, c.h - 2 - quick_h, 1, quick_h, c.w - 2, "QUICK ACTIONS", quick_lines(st, focused, c.w - 6), focused)
+    if rich:
+        draw_quick_tiles(c, c.h - 2 - quick_h, quick_h, st, focused)
+    else:
+        draw_lines_box(c, c.h - 2 - quick_h, 1, quick_h, c.w - 2, "QUICK ACTIONS", quick, focused)
 
 
 def home_compact_lines(data: dict, st: State, width: int) -> tuple[list, list]:
@@ -315,7 +408,7 @@ def home_compact_lines(data: dict, st: State, width: int) -> tuple[list, list]:
         for title, value, status, _ in cards[i:i + per_row]:
             row += [S(f"{title[:13]:<14}", "muted"), S(f"{value[:9]:<10}"), S(f"{status[:10]:<11}", views.kind_of(status))]
         lines.append(row)
-    for n, (title, target, body) in enumerate(views.home_panels(data)):
+    for n, (title, target, body) in enumerate(views.home_panels(data, width - 2)):
         starts.append(len(lines))
         focused = st.home_focus == n
         lines += [[], L(S(f" {title} ", "select" if focused else "title"), S(f"  Enter → {target}", "muted") if focused else S(""))]
@@ -542,14 +635,12 @@ def handle_key(key: int, st: State, data: dict, collector, scr=None) -> bool:
     if ch == "p":
         st.period = (st.period + 1) % len(views.PERIODS)
         return True
-    if ch == "0":
+    target = views.quick_target(ch) if ch else None
+    if target:
+        open_section(st, *target)
+        return True
+    if key == curses.KEY_HOME:
         st.level = "home"
-        return True
-    if "1" <= ch <= "8":
-        open_section(st, int(ch))
-        return True
-    if ch == "9":
-        open_section(st, 4, views.SECTIONS[4][1].index("Export"))
         return True
     if st.level == "home":
         return home_key(key, st)
@@ -583,11 +674,7 @@ def home_key(key: int, st: State) -> bool:
             st.home_focus -= 3
     elif key in (10, 13, curses.KEY_ENTER):
         if st.home_focus == panels:
-            target = QUICK[st.quick][0]
-            if target == 9:
-                open_section(st, 4, views.SECTIONS[4][1].index("Export"))
-            else:
-                open_section(st, target)
+            open_section(st, *views.quick_target(QUICK[st.quick][0]))
         else:
             targets = [t for _, t, _ in views.home_panels({})]
             open_section(st, targets[st.home_focus])
