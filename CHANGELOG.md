@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-17
+
 ### Changed
 
 * `mqlaunch dashboard` Home now follows the reference layout from 120x46: an
