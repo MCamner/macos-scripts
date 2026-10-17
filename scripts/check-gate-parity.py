@@ -65,6 +65,7 @@ STEPS: dict[str, object] = {
     "mqlaunch smoke suite": "test-all.sh",
     "markdownlint all .md (no auto-fix)": "markdownlint",
     "Run B2 TUI tests": "pytest b2_tui",
+    "Run MQ Dashboard tests": "pytest dashboard",
     "Run contract tests": "pytest contracts",
     "Local gate and CI check the same things": "check-gate-parity.py",
     "ShellCheck (warning severity, enforced)": CiOnly(
