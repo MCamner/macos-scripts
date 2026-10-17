@@ -26,10 +26,14 @@ Without a TTY and without `--json` it exits 2 with a hint.
 
 ## Layout
 
-* **Full** (120x36 or larger): header with host, macOS and overall stack status;
-  seven Stack Health cards; a 3x2 grid of Repositories, MCP Services, AI Models,
-  Evidence & Learning, Recent Results and GitHub & Releases; Quick Actions;
-  key footer.
+* **Full with header** (120x46 or larger), the reference layout: an MQ logo
+  header with host, user, repository path and local IP, plus stack status,
+  uptime, last check, colour depth and the macos-scripts version; seven Stack
+  Health cards; a 3x2 panel grid (Repositories, MCP Services, AI Models,
+  Evidence & Learning, Recent Results, GitHub & Releases) with column tables;
+  ten numbered Quick Action tiles; key footer.
+* **Full** (120x36 up to 45 rows): the same cards and panels under a one-line
+  header, with Quick Actions as wrapped text lines.
 * **Compact** (60x20 up to full size): the same cards and panels stacked in one
   scrollable column. No panel or function is removed; long values wrap.
 * Below 60x20 the dashboard asks for a larger window.
@@ -38,6 +42,15 @@ Colours follow the terminal's 256-colour palette on a near-black background:
 cyan frames and headings, blue selection, green PASS, yellow WARN/STALE,
 red FAIL, light blue informational states, grey secondary text.
 `NO_COLOR` gives a monochrome fallback.
+
+Icons are single-cell Unicode symbols (▤ ⎇ ◈ ◎ ◆ ⚙ ✓ ✗ ●), which render in
+ordinary monospace fonts such as JetBrains Mono or SF Mono. Emoji and Nerd
+Font glyphs are deliberately not used: they are two cells wide or need a
+patched font, and either breaks column alignment. A test holds every glyph
+to single width.
+
+The IP and user shown in the header are read for the screen only. Evidence
+exports leave the whole `host` source out.
 
 ## Keys
 
@@ -48,7 +61,8 @@ red FAIL, light blue informational states, grey secondary text.
 | Enter | open the focused panel, or run the row's action (always asks first) |
 | Esc / Backspace | back one level (filter → details → section → Home) |
 | Tab / Shift-Tab | switch focus between panels, or between table and details |
-| 1–8 | jump to a section; 0 Home; 9 Evidence > Export |
+| 1–9, 0 | quick actions as numbered on Home: 1 Doctor, 2 Repositories, 3 MCP Services, 4 AI Models, 5 Evidence, 6 Memory, 7 GitHub, 8 Security, 9 Repair Planner, 0 Automation |
+| Home | back to Home from anywhere |
 | R | refresh every source |
 | / | Home: open the first matching section; section: filter rows |
 | P | cycle the History period (24h, 7d, 30d, all) |

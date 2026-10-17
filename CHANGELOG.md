@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* `mqlaunch dashboard` Home now follows the reference layout from 120x46: an
+  MQ logo header with host, user, repository, local IP, stack status, uptime,
+  last check, colour depth and version; Stack Health cards with icons and
+  ✓/!/✗ marks; column tables in every panel (MCP restart, runtime contract
+  and tool compatibility; model backend; release state, failed checks and
+  pending reviews); Recent Results as a time/task/result table; ten Quick
+  Action tiles. Icons are single-cell Unicode only.
+* Quick-action keys follow the reference numbering: 1 Doctor, 2 Repositories,
+  3 MCP Services, 4 AI Models, 5 Evidence, 6 Memory, 7 GitHub, 8 Security,
+  9 Repair Planner, 0 Automation. Home is Esc or the Home key; Evidence >
+  Export is a tab (it was 9).
+
+### Fixed
+
+* Dashboard Recent Results read local timestamps as UTC and showed them
+  shifted by the UTC offset (a 20:00 snapshot showed 22:00 in Stockholm).
+* Quick Actions were cut off at widths between 120 and about 160 columns.
+
 ## [2.3.0] - 2026-10-17
 
 ### Added

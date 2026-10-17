@@ -147,6 +147,58 @@ class FakeCollector:
         return fixture()
 
 
+class RecentResults(unittest.TestCase):
+    def setUp(self):
+        # CI runs in UTC, where the bug is invisible; pin a zone with an offset.
+        import os
+        import time
+        self._tz = os.environ.get("TZ")
+        os.environ["TZ"] = "Europe/Stockholm"
+        time.tzset()
+
+    def tearDown(self):
+        import os
+        import time
+        if self._tz is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = self._tz
+        time.tzset()
+
+    def test_local_timestamps_are_not_shifted(self):
+        # Snapshot mtimes and envelope "at" stamps are local wall time without a
+        # zone; reading them as UTC moved every row by the UTC offset.
+        data = {"snapshots": env({"stack-status": [{"file": "a.json", "status": "PASS", "mtime": "2026-10-16T20:00"}]}),
+                "_pending": []}
+        when, task, _ = views.recent_rows(data)[0]
+        self.assertEqual(task, "Stack Status")
+        self.assertEqual(views.short_time(when), "10-16 20:00")
+
+
+class QuickActions(unittest.TestCase):
+    def test_reference_numbering(self):
+        expected = {"1": ("Repair Planner", "Issues"), "2": ("Repositories", "Overview"),
+                    "3": ("MCP Services", "Overview"), "4": ("AI Models", "Overview"),
+                    "5": ("Evidence & Learning", "Overview"), "6": ("Evidence & Learning", "Memory"),
+                    "7": ("GitHub & Releases", "Overview"), "8": ("MCP Services", "Tool Surface"),
+                    "9": ("Repair Planner", "Overview"), "0": ("Automation", "Overview")}
+        for key, (section, tab) in expected.items():
+            n, t = views.quick_target(key)
+            self.assertEqual((views.SECTION_NAMES[n], views.SECTIONS[n][1][t]), (section, tab), key)
+
+    def test_section_bar_keys_open_their_section(self):
+        for n, name in enumerate(views.SECTION_NAMES):
+            key = views.section_key(n)
+            if key.isdigit():
+                self.assertEqual(views.quick_target(key), (n, 0), name)
+
+    def test_icons_are_single_cell(self):
+        import unicodedata
+        glyphs = "".join(views.ICONS.values()) + "".join(views._MARK.values()) + "●⌂◆▤⇄" + "".join(dashboard.LOGO)
+        for ch in set(glyphs) - {" "}:
+            self.assertNotIn(unicodedata.east_asian_width(ch), ("W", "F"), repr(ch))
+
+
 class Python39Compatibility(unittest.TestCase):
     def test_dashboard_parses_as_python_39(self):
         # /usr/bin/python3 on macOS is 3.9; CI runs a newer Python.
@@ -371,9 +423,29 @@ class Rendering(unittest.TestCase):
 
     def test_full_home_has_cards_and_panels(self):
         text = self.render(160, 48, dashboard.State())
-        for label in ("REPOSITORIES", "GITHUB CI", "MCP SERVICES", "LOCAL AI", "OPENAI API", "SECURITY",
-                      "COMPATIBILITY", "EVIDENCE & LEARNING", "RECENT RESULTS", "GITHUB & RELEASES", "QUICK ACTIONS"):
+        for label in ("DASHBOARD 2.0", "MQ CONTROL CENTER", "Repositories", "GitHub CI", "MCP Services",
+                      "Local AI", "OpenAI API", "Security", "Compatibility", "REPOSITORIES", "MCP SERVICES",
+                      "AI MODELS", "EVIDENCE & LEARNING", "RECENT RESULTS", "GITHUB & RELEASES", "QUICK ACTIONS",
+                      "Doctor", "Check & diagnose", "Automation"):
             self.assertIn(label, text)
+
+    def test_rich_header_only_when_tall_enough(self):
+        self.assertIn("MQ CONTROL CENTER", self.render(160, 48, dashboard.State()))
+        short = self.render(130, 40, dashboard.State())
+        self.assertNotIn("MQ CONTROL CENTER", short)
+        self.assertIn("QUICK ACTIONS", short)
+
+    def test_no_quick_action_is_cut_at_any_full_width(self):
+        for w in (120, 130, 150):
+            text = self.render(w, 40, dashboard.State())
+            for key, title, *_ in views.QUICK_ACTIONS:
+                self.assertIn(f" {key} {title}", text, (w, title))
+
+    def test_missing_host_data_shows_dashes_not_values(self):
+        data = fixture()
+        screen = FakeScreen(160, 48)
+        dashboard.draw(screen, dashboard.Theme(False), data, dashboard.State())
+        self.assertIn("monochrome", screen.text())
 
     def test_compact_home_keeps_every_panel(self):
         st = dashboard.State()
@@ -409,7 +481,7 @@ class Keys(unittest.TestCase):
         return result
 
     def test_number_tab_escape_and_quit(self):
-        self.press("3")
+        self.press("4")
         self.assertEqual((self.st.level, self.st.section), ("section", 3))
         self.press(curses.KEY_RIGHT, curses.KEY_RIGHT)
         self.assertEqual(self.st.tab, 2)
@@ -423,14 +495,14 @@ class Keys(unittest.TestCase):
         self.press(curses.KEY_DOWN)
         self.assertEqual(self.st.home_focus, 6)
         self.press(curses.KEY_RIGHT, 10)
-        self.assertEqual(self.st.section, views.SECTION_NAMES.index("MCP Services"))
+        self.assertEqual(self.st.section, views.SECTION_NAMES.index("Repositories"))
 
     def test_search_from_home_opens_section(self):
         self.press("/", *"repair", 10)
         self.assertEqual(self.st.section, views.SECTION_NAMES.index("Repair Planner"))
 
     def test_search_filters_rows_and_escape_clears(self):
-        self.press("1", "/", *"obsidian", 10)
+        self.press("2", "/", *"obsidian", 10)
         view = dashboard.current_view(self.data, self.st)
         self.assertEqual(len(dashboard.filtered_rows(view, self.st.search)), 1)
         self.press(27)
@@ -438,7 +510,7 @@ class Keys(unittest.TestCase):
         self.assertEqual(self.st.level, "section")
 
     def test_export_requires_confirmation(self):
-        self.press("9", 10)
+        self.press("5", *[curses.KEY_RIGHT] * 5, 10)
         self.assertIsNotNone(self.st.confirm)
         self.press("n")
         self.assertEqual(self.c.actions, [])
@@ -446,7 +518,7 @@ class Keys(unittest.TestCase):
         self.assertEqual(self.c.actions, ["export"])
 
     def test_openai_test_requires_confirmation(self):
-        self.press("3", curses.KEY_RIGHT, curses.KEY_RIGHT, curses.KEY_RIGHT, 10)
+        self.press("4", curses.KEY_RIGHT, curses.KEY_RIGHT, curses.KEY_RIGHT, 10)
         self.assertIn("OpenAI", self.st.confirm["prompt"])
         self.press("y")
         self.assertEqual(self.c.actions, ["openai_test"])
