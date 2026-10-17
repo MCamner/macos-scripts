@@ -501,7 +501,7 @@ does, since `jq` supplies the exit code there.
 
 The `LOCAL AI` checks cover what `hal`, `ollama-review` and mq-agent's semantic
 memory need: `ollama` (installed), `ollama-server` (`/api/tags` answers at
-`OLLAMA_HOST` within 2 s), `ollama-model` (`qwen3:4b-instruct`) and
+`OLLAMA_HOST` within 2 s), `ollama-model` (`qwen3.5:9b`) and
 `ollama-embed` (`nomic-embed-text`). Each runs only when the one before passed.
 doctor asks the HTTP API and never runs `ollama` itself, because `ollama list`
 starts the server when it is down.
@@ -845,8 +845,8 @@ mqlaunch apps "how do I rename a branch"   # ask it a question
 ```
 
 `mqlaunch apps` answers questions with OpenAI file search over the terminal
-guide. Without `OPENAI_API_KEY` it asks a local Ollama model instead
-(`qwen3:4b-instruct`, or `MQ_HAL_GUIDE_OLLAMA_MODEL`, at `OLLAMA_HOST`) with
+guide. By default it asks a local Ollama model
+(`qwen3.5:9b`, or `MQ_HAL_GUIDE_OLLAMA_MODEL`, at `OLLAMA_HOST`) with
 the guide lines that match the question. If Ollama is not running or lacks the
 model, it falls back to a plain search of the guide.
 
@@ -1166,8 +1166,8 @@ selected `mqlaunch` subcommands.
 | `hal raw "prompt"` | Show raw JSON intent from model |
 | `hal cd <repo>` | Print repo path (use with `mqhcd`) |
 
-Requirements: `~/mq-hal/bin/mq-hal`, Ollama running, `qwen3:4b-instruct` pulled.
-Override model: `OLLAMA_MODEL=qwen3:4b mqlaunch hal "..."`.
+Requirements: `~/mq-hal/bin/mq-hal`, Ollama running, `qwen3.5:9b` pulled.
+Override model: `OLLAMA_MODEL=<model> mqlaunch hal "..."`.
 
 ### HAL Doctor Summary
 

@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* Default local Ollama chat model changed from `qwen3:4b-instruct` to
+  `qwen3.5:9b` in doctor, HAL guide, HAL bridge and document review.
+
+### Fixed
+
+* HAL guide no longer selects OpenAI automatically when `OPENAI_API_KEY`
+  exists. Cloud usage now requires `MQ_HAL_GUIDE_PROVIDER=openai`.
+
 ## [2.4.0] - 2026-10-17
 
 ### Changed

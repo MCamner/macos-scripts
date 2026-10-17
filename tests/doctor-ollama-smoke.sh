@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # `mqlaunch hal` and `mqlaunch ollama-review` need a running Ollama with
-# qwen3:4b-instruct, and mq-agent's semantic memory needs nomic-embed-text.
+# qwen3.5:9b, and mq-agent's semantic memory needs nomic-embed-text.
 # doctor is where an operator learns that before one of them fails mid-run.
 #
 # Each world is a PATH with stubs, as in doctor-status-contract-smoke.sh. The
@@ -92,7 +92,7 @@ ollama-server=warn|open -a Ollama"
 
 echo "[3/6] running with both models: all four pass"
 w="$run_dir/ready"; build_world "$w" yes
-fake_api "$w" 0 "qwen3:4b-instruct" "nomic-embed-text:latest" "llama3.2:latest"
+fake_api "$w" 0 "qwen3.5:9b" "nomic-embed-text:latest" "llama3.2:latest"
 expect "ready" "$(doctor_checks "$w")" \
   "ollama=ok|
 ollama-server=ok|
@@ -100,21 +100,21 @@ ollama-model=ok|
 ollama-embed=ok|"
 
 echo "[4/6] a missing model is named with the pull that fixes it"
-w="$run_dir/no-embed"; build_world "$w" yes; fake_api "$w" 0 "qwen3:4b-instruct"
+w="$run_dir/no-embed"; build_world "$w" yes; fake_api "$w" 0 "qwen3.5:9b"
 expect "embed model missing" "$(doctor_checks "$w")" \
   "ollama=ok|
 ollama-server=ok|
 ollama-model=ok|
 ollama-embed=warn|ollama pull nomic-embed-text"
-# A prefix is not the model: qwen3:4b is a different pull from qwen3:4b-instruct.
+# A prefix is not the model: qwen3:4b is a different pull from qwen3.5:9b.
 w="$run_dir/near-miss"; build_world "$w" yes
 fake_api "$w" 0 "qwen3:4b" "nomic-embed-text:latest"
 expect "near-miss name is not accepted" "$(doctor_checks "$w" | grep model)" \
-  "ollama-model=warn|ollama pull qwen3:4b-instruct"
+  "ollama-model=warn|ollama pull qwen3.5:9b"
 
 echo "[5/6] the API is asked at OLLAMA_HOST, as Ollama itself resolves it"
 w="$run_dir/host"; build_world "$w" yes
-fake_api "$w" 0 "qwen3:4b-instruct" "nomic-embed-text:latest"
+fake_api "$w" 0 "qwen3.5:9b" "nomic-embed-text:latest"
 doctor_checks "$w" >/dev/null
 expect "default host" "$(cat "$w/curl.log")" "http://127.0.0.1:11434/api/tags"
 rm -f "$w/curl.log"

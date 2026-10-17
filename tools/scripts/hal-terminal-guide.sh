@@ -8,7 +8,7 @@ GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 source "$BASE_DIR/tools/cli/mq-vector-store.sh"
 VECTOR_STORE_ID="$(mq_vector_store_id MQ_TERMINAL_GUIDE_VECTOR_STORE_ID)"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
-OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3:4b-instruct}"
+OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3.5:9b}"
 HAL_NAV_PENDING=0
 
 # Prints the terminal width, clamped to 64-80 columns.
@@ -603,9 +603,10 @@ ask_vector_store() {
   local question="$1"
   local payload response text
 
-  if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  # Cloud requires MQ_HAL_GUIDE_PROVIDER=openai, even when a key is loaded.
+  if [[ "${MQ_HAL_GUIDE_PROVIDER:-ollama}" != "openai" ]]; then
     ask_ollama "$question" && return 0
-    printf 'OPENAI_API_KEY is not set and local Ollama did not answer. Falling back to local guide search.\n'
+    printf 'Local Ollama did not answer. Falling back to local guide search.\n'
     local_guide_search "$question"
     return 0
   fi

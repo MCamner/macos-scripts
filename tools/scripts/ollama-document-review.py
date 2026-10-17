@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-DEFAULT_MODEL = os.getenv("MQ_OLLAMA_REVIEW_MODEL", "qwen3:4b-instruct")
+DEFAULT_MODEL = os.getenv("MQ_OLLAMA_REVIEW_MODEL", "qwen3.5:9b")
 DEFAULT_MAX_FILES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_FILES", "8"))
 DEFAULT_MAX_BYTES = int(os.getenv("MQ_OLLAMA_REVIEW_MAX_BYTES", "45000"))
 # Keep the model loaded between runs; Ollama's own default is 5m.

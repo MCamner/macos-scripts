@@ -57,7 +57,7 @@ FIX_ORDER=(mqlaunch git python3 jq fzf gh uv node gitleaks
 
 # The models the local AI commands need: `hal` and `ollama-review` default to
 # the chat model, mq-agent's semantic memory embeds with the other.
-OLLAMA_CHAT_MODEL="qwen3:4b-instruct"
+OLLAMA_CHAT_MODEL="qwen3.5:9b"
 OLLAMA_EMBED_MODEL="nomic-embed-text"
 
 # What to do on a machine where every check passes.
