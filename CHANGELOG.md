@@ -20,6 +20,9 @@ All notable changes to this project will be documented in this file.
   9 Repair Planner, 0 Automation. Home is Esc or the Home key; Evidence >
   Export is a tab (it was 9).
 
+* `mqlaunch dashboard` no longer paints a near-black background: it uses the
+  terminal's own background and foreground, so it follows the terminal theme.
+
 ### Fixed
 
 * Dashboard Recent Results read local timestamps as UTC and showed them
