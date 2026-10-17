@@ -23,6 +23,9 @@ All notable changes to this project will be documented in this file.
 * `mqlaunch dashboard` no longer paints a near-black background: it uses the
   terminal's own background and foreground, so it follows the terminal theme.
 
+* Dashboard frames are dark orange (256-colour 208), amber when focused, so
+  they stand out on the terminal's own background.
+
 ### Fixed
 
 * Dashboard Recent Results read local timestamps as UTC and showed them

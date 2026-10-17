@@ -41,7 +41,7 @@ Without a TTY and without `--json` it exits 2 with a hint.
 Colours follow the terminal's 256-colour palette on the terminal's own
 background (the dashboard paints none); normal text uses the terminal's
 foreground colour:
-cyan frames and headings, blue selection, green PASS, yellow WARN/STALE,
+dark orange frames (amber when focused), cyan headings, blue selection, green PASS, yellow WARN/STALE,
 red FAIL, light blue informational states, grey secondary text.
 `NO_COLOR` gives a monochrome fallback.
 
