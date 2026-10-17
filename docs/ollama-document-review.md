@@ -13,7 +13,7 @@ Or run directly:
 
 ```bash
 mqlaunch ollama-review tools/scripts/document-functions.sh
-mqlaunch ollama-review terminal/menus/ --model qwen3:4b-instruct
+mqlaunch ollama-review terminal/menus/ --model qwen3.5:9b
 tools/scripts/ollama-document-review.py tools/scripts/document-functions.sh
 ```
 
@@ -29,7 +29,7 @@ tools/scripts/ollama-document-review.py tools/scripts/document-functions.sh
 ## Default model
 
 ```bash
-qwen3:4b-instruct
+qwen3.5:9b
 ```
 
 Override with:
