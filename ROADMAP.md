@@ -1,21 +1,21 @@
 # Roadmap
 
-Current version: 2.3.0
+Current version: 2.4.0
 
 ## Current direction
 
 `macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-No next release is scoped. v2.3.0 shipped the coherent package the earlier
-`Unreleased` items were waiting for:
+No next release is scoped. v2.4.0 finished the dashboard's Home view against
+the reference layout:
 
 ```text
-Shipped:  v2.3.0  MQ Stack Control Center (mqlaunch dashboard)
-Carried:  doctor --fix-plan, the HAL Intelligence menu, auth status/test
+Shipped:  v2.4.0  Dashboard reference layout, terminal background, orange frames
+Before:   v2.3.0  MQ Stack Control Center (mqlaunch dashboard)
 Next:     unscoped — no version number is reserved
 ```
 
-v2.3.0 is a presentation layer: `mqlaunch dashboard` reads existing MQ
+The dashboard is a presentation layer: `mqlaunch dashboard` reads existing MQ
 contracts and adds no source of truth. The `v2.2.0` tag placement documented
 in the changelog is unchanged: a release exists to deliver a coherent package,
 not to tidy history.
