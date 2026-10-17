@@ -70,14 +70,14 @@ echo "[1/4] no key, Ollama running: the local model answers from the guide"
 fake_curl answer
 out="$(ask "what process holds port 8080?")"
 grep -q "Use lsof -i :8080" <<<"$out" || fail "no Ollama answer: $out"
-grep -q "qwen3:4b-instruct" <<<"$out" || fail "answer does not name the local model: $out"
+grep -q "qwen3.5:9b" <<<"$out" || fail "answer does not name the local model: $out"
 [[ "$(cat "$run_dir/curl.log")" == "http://127.0.0.1:11434/api/generate" ]] \
   || fail "unexpected calls: $(cat "$run_dir/curl.log")"
 python3 - "$run_dir/payload.json" <<'PY'
 import json
 import sys
 p = json.load(open(sys.argv[1], encoding="utf-8"))
-assert p["model"] == "qwen3:4b-instruct", p
+assert p["model"] == "qwen3.5:9b", p
 assert p["stream"] is False, p
 assert "lsof -i :8080" in p["prompt"], "matching guide line missing from prompt"
 assert "ditto" not in p["prompt"], "unrelated guide line sent to the model"

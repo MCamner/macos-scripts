@@ -50,7 +50,7 @@ Usage:
 Requirements:
   ~/mq-hal/bin/mq-hal
   Ollama running locally for AI-backed commands
-  qwen3:4b-instruct pulled, or OLLAMA_MODEL set
+  qwen3.5:9b pulled, or OLLAMA_MODEL set
 USAGE
 }
 

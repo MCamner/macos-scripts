@@ -33,7 +33,7 @@ provide_ollama() {
   local dir="$1"
   printf '#!/usr/bin/env bash\nexit 0\n' >"$dir/ollama"
   printf '#!/usr/bin/env bash\nprintf %s\n' \
-    "'{\"models\":[{\"name\":\"qwen3:4b-instruct\"},{\"name\":\"nomic-embed-text:latest\"}]}'" \
+    "'{\"models\":[{\"name\":\"qwen3.5:9b\"},{\"name\":\"nomic-embed-text:latest\"}]}'" \
     >"$dir/curl"
   chmod +x "$dir/ollama" "$dir/curl"
 }

@@ -8,7 +8,7 @@ GUIDE_FALLBACK="$BASE_DIR/tools/mac-terminal-guide/mac-terminal-guide.html"
 source "$BASE_DIR/tools/cli/mq-vector-store.sh"
 VECTOR_STORE_ID="$(mq_vector_store_id MQ_TERMINAL_GUIDE_VECTOR_STORE_ID)"
 REPO_URL="${MQ_REPO_URL:-https://github.com/MCamner/macos-scripts}"
-OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3:4b-instruct}"
+OLLAMA_GUIDE_MODEL="${MQ_HAL_GUIDE_OLLAMA_MODEL:-qwen3.5:9b}"
 HAL_NAV_PENDING=0
 
 # Prints the terminal width, clamped to 64-80 columns.
