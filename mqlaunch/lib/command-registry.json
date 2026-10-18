@@ -1922,6 +1922,23 @@
       "delegates_to": null,
       "operator_surface": true,
       "local_role": "terminal-ux"
+    },
+    {
+      "name": "verify-changes",
+      "aliases": [],
+      "namespace": "agent",
+      "summary": "Verify changed files with repo-owned checks",
+      "owner": "mq-agent",
+      "safety": "delegating",
+      "output_modes": [
+        "human",
+        "json"
+      ],
+      "json": true,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": "mq-agent verify-changes",
+      "operator_surface": true
     }
   ]
 }

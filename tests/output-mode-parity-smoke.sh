@@ -95,7 +95,10 @@ EXERCISED=(
 # this file. `--input FILE` would avoid that, but a fixture path listed here
 # would make this gate the owner of a document shape it does not define. The
 # named test drives `--json` against a stub pulse.sh instead.
+# verify-changes executes repo-configured tests, potentially this suite itself.
+# Its named test checks the JSON/exit/argument boundary using a stub delegate.
 COVERED_ELSEWHERE=(
+  "verify-changes	tests/verify-changes-smoke.sh"
   "auth status	tests/auth-status-smoke.sh"
   "auth test	tests/auth-status-smoke.sh"
   "release-check	tests/release-check-contract-smoke.sh"
