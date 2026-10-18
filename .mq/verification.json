@@ -2,21 +2,6 @@
   "schema": "mq.verification-config.v1",
   "checks": [
     {
-      "id": "doctor-auth",
-      "runner": "bash",
-      "targets": [
-        "tests/doctor-auth-smoke.sh"
-      ],
-      "paths": [
-        "tools/scripts/doctor.sh",
-        "tools/scripts/auth.sh",
-        "tests/doctor-*.sh",
-        "tests/auth-status-smoke.sh",
-        "tests/contracts/test_doctor_status.py"
-      ],
-      "timeout_seconds": 120
-    },
-    {
       "id": "doctor-status",
       "runner": "bash",
       "targets": [
@@ -131,6 +116,20 @@
         "tests/output-mode-parity-smoke.sh",
         "tests/verify-changes-smoke.sh",
         "mqlaunch/lib/command-registry.json"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "test-inventory",
+      "runner": "bash",
+      "targets": [
+        "tests/test-inventory-smoke.sh"
+      ],
+      "paths": [
+        "tests/*.sh",
+        "tests/manifest.tsv",
+        "tools/scripts/test-all.sh",
+        ".mq/verification.json"
       ],
       "timeout_seconds": 120
     }
