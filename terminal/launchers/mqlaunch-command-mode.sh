@@ -493,6 +493,18 @@ dispatch_cli_command() {
       return "$command_status"
       ;;
 
+    verify-changes)
+      shift
+      if declare -f run_agent_command >/dev/null; then
+        run_agent_command verify-changes --repo "$PWD" "$@"
+        command_status=$?
+      else
+        echo "ERROR: mq-agent bridge not loaded" >&2
+        return 1
+      fi
+      return "$command_status"
+      ;;
+
     stack|/stack)
       shift
       if declare -f run_agent_command >/dev/null; then
