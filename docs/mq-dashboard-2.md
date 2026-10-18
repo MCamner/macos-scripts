@@ -69,6 +69,7 @@ exports leave the whole `host` source out.
 | / | Home: open the first matching section; section: filter rows |
 | P | cycle the History period (24h, 7d, 30d, all) |
 | M | open `mongoTerminal`; the dashboard resumes when it exits |
+| L | open the `mqlaunch` menu; the dashboard resumes when it exits |
 | H | help |
 | Q | quit |
 

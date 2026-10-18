@@ -1437,6 +1437,7 @@ KEYS = (("↑ ↓", "previous / next row, or scroll"), ("← →", "previous / n
         ("Tab / Shift-Tab", "switch panel focus"), ("1–9, 0", "quick actions, as numbered on Home"),
         ("Esc on a section", "back to Home"),
         ("R", "refresh all sources"), ("H", "help"), ("M", "open mongoTerminal, return on exit"),
+        ("L", "open the mqlaunch menu, return on exit"),
         ("/", "search / filter rows (Esc clears)"), ("P", "cycle History period"), ("Q", "quit"))
 
 
@@ -1472,7 +1473,7 @@ def _help_safety(data, ui):
         "· No restarts, installs, promotions or repairs are executed by the dashboard.",
         "· API keys are never read or shown; log lines are redacted.",
         "· Missing data shows UNAVAILABLE, never PASS.",
-        "· Existing mqlaunch and mongoTerminal are unchanged; M opens mongoTerminal.")])
+        "· Existing mqlaunch and mongoTerminal are unchanged; M opens mongoTerminal, L mqlaunch.")])
 
 
 _BUILDERS = {

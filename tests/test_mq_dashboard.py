@@ -489,6 +489,19 @@ class Keys(unittest.TestCase):
         self.assertEqual(self.st.level, "home")
         self.assertFalse(self.press("q"))
 
+    def test_m_and_l_open_mongo_and_mqlaunch(self):
+        calls = []
+        original = dashboard.open_program
+        dashboard.open_program = lambda scr, name, path: calls.append((name, path)) or f"Back from {name}"
+        try:
+            dashboard.handle_key(ord("m"), self.st, self.data, self.c, scr=object())
+            dashboard.handle_key(ord("L"), self.st, self.data, self.c, scr=object())
+        finally:
+            dashboard.open_program = original
+        self.assertEqual([name for name, _ in calls], ["mongoTerminal", "mqlaunch"])
+        self.assertEqual(calls[1][1], str(sources.REPO_ROOT / "bin" / "mqlaunch"))
+        self.assertEqual(self.st.note, "Back from mqlaunch")
+
     def test_home_grid_navigation_and_enter(self):
         self.press(curses.KEY_DOWN)
         self.assertEqual(self.st.home_focus, 3)
