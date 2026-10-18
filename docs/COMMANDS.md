@@ -1245,3 +1245,18 @@ mq b2 roadmap-drift                         # show unchecked roadmap items vs VE
 ```
 
 See [docs/B2_TUI.md](B2_TUI.md) for full reference.
+
+## Verify changes
+
+```bash
+mqlaunch verify-changes --plan
+mqlaunch verify-changes
+mqlaunch verify-changes --check-receipt
+mqlaunch verify-changes --base origin/main --json
+```
+
+Delegates to `mq-agent verify-changes`, preserving the caller's repository.
+The repo owns `.mq/verification.json`; only explicit local check runners execute.
+Unmatched files give `INCOMPLETE`, test failures give `FAIL`, and changed source
+invalidates the worktree-local receipt (`STALE`). No model or release approval
+is involved. Default base is `HEAD`; use an explicit base for committed changes.

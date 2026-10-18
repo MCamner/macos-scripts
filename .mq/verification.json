@@ -1,0 +1,125 @@
+{
+  "schema": "mq.verification-config.v1",
+  "checks": [
+    {
+      "id": "doctor-auth",
+      "runner": "bash",
+      "targets": [
+        "tests/doctor-auth-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "doctor-status",
+      "runner": "bash",
+      "targets": [
+        "tests/doctor-status-contract-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "doctor-fix-plan",
+      "runner": "bash",
+      "targets": [
+        "tests/doctor-fix-plan-json-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "doctor-ollama",
+      "runner": "bash",
+      "targets": [
+        "tests/doctor-ollama-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "doctor-credentials",
+      "runner": "bash",
+      "targets": [
+        "tests/auth-status-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "command-registry",
+      "runner": "python",
+      "targets": [
+        "tools/scripts/validate-command-registry.py"
+      ],
+      "paths": [
+        "terminal/launchers/mqlaunch-command-mode.sh",
+        "mqlaunch/lib/command-registry.json",
+        "tests/verify-changes-smoke.sh",
+        ".mq/verification.json",
+        "terminal/menus/mq-help-menu.sh"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "verify-changes-routing",
+      "runner": "bash",
+      "targets": [
+        "tests/verify-changes-smoke.sh"
+      ],
+      "paths": [
+        "terminal/launchers/mqlaunch-command-mode.sh",
+        "tests/verify-changes-smoke.sh",
+        ".mq/verification.json",
+        "tools/scripts/test-all.sh"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "stack-boundary",
+      "runner": "bash",
+      "targets": [
+        "tests/mq-stack-contract-smoke.sh"
+      ],
+      "paths": [
+        "terminal/launchers/mqlaunch-command-mode.sh",
+        "mqlaunch/lib/command-registry.json",
+        "docs/COMMANDS.md",
+        "README.md",
+        ".mq/verification.json",
+        "terminal/menus/mq-help-menu.sh"
+      ],
+      "timeout_seconds": 120
+    }
+  ]
+}
