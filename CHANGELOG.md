@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch dashboard`: L opens the mqlaunch menu, like M opens
+  `mongoTerminal`; the dashboard resumes when the menu exits.
+
 ### Changed
 
 * Default local Ollama chat model changed from `qwen3:4b-instruct` to

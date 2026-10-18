@@ -281,7 +281,7 @@ def draw_footer(c: Canvas, data: dict, st: State) -> None:
         return
     # Most essential first: narrow terminals drop hints from the right (all keys stay in Help).
     hints = (("↑↓", "Select"), ("←→", "Tab"), ("Enter", "Open"), ("Esc", "Back"), ("Q", "Quit"), ("H", "Help"),
-             ("Tab", "Panel"), ("R", "Refresh"), ("/", "Search"), ("0-9", "Quick"), ("M", "mongo"))
+             ("Tab", "Panel"), ("R", "Refresh"), ("/", "Search"), ("0-9", "Quick"), ("M", "mongo"), ("L", "mqlaunch"))
     x = 1
     for key, label in hints:
         if x + len(key) + len(label) + 3 >= c.w - 1:
@@ -353,6 +353,7 @@ def quick_lines(st: State, focused: bool, width: int) -> list:
         selected = focused and n == st.quick
         items.append([S(f" {key} ", "select" if selected else "accent"), S(f"{name}  ", "select" if selected else "normal")])
     items += [[S(" R ", "accent"), S("Refresh  ")], [S(" M ", "accent"), S("mongoTerminal  ")],
+              [S(" L ", "accent"), S("mqlaunch  ")],
               [S(" / ", "accent"), S("Search  ")], [S(" Q ", "accent"), S("Quit")]]
     lines, current = [], []
     for item in items:
@@ -578,10 +579,10 @@ def resolve_action_note(st: State, data: dict) -> None:
         st.note = f"OpenAI test: {str(result['data'].get('status', '?')).upper()}"
 
 
-def open_mongo(scr) -> str:
-    path = shutil.which("mongoTerminal") or str(Path.home() / "bin" / "mongoTerminal")
+def open_program(scr, name: str, path: str) -> str:
+    """Hand the terminal to an interactive program; the dashboard resumes when it exits."""
     if not os.access(path, os.X_OK):
-        return "mongoTerminal not found"
+        return f"{name} not found"
     curses.def_prog_mode()
     curses.endwin()
     try:
@@ -589,7 +590,7 @@ def open_mongo(scr) -> str:
     finally:
         curses.reset_prog_mode()
         scr.clear()
-    return "Back from mongoTerminal"
+    return f"Back from {name}"
 
 
 def handle_key(key: int, st: State, data: dict, collector, scr=None) -> bool:
@@ -632,7 +633,11 @@ def handle_key(key: int, st: State, data: dict, collector, scr=None) -> bool:
         open_section(st, 8)
         return True
     if ch == "m" and scr is not None:
-        st.note = open_mongo(scr)
+        st.note = open_program(scr, "mongoTerminal",
+                               shutil.which("mongoTerminal") or str(Path.home() / "bin" / "mongoTerminal"))
+        return True
+    if ch == "l" and scr is not None:
+        st.note = open_program(scr, "mqlaunch", str(sources.REPO_ROOT / "bin" / "mqlaunch"))
         return True
     if ch == "/":
         st.search_input = ""
