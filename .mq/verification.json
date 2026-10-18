@@ -120,6 +120,19 @@
         "terminal/menus/mq-help-menu.sh"
       ],
       "timeout_seconds": 120
+    },
+    {
+      "id": "output-mode-contract",
+      "runner": "bash",
+      "targets": [
+        "tests/output-mode-parity-smoke.sh"
+      ],
+      "paths": [
+        "tests/output-mode-parity-smoke.sh",
+        "tests/verify-changes-smoke.sh",
+        "mqlaunch/lib/command-registry.json"
+      ],
+      "timeout_seconds": 120
     }
   ]
 }
