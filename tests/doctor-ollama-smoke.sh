@@ -57,7 +57,7 @@ EOF
 doctor_checks() {
   # doctor_checks <dir> [VAR=value]...
   local dir="$1"; shift
-  env -i HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$dir" "$@" \
+  env -i MQ_SECURITY_BIN=/nonexistent HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$dir" "$@" \
     bash "$DOCTOR" --json >"$dir/out.json" 2>"$dir/out.err" || true
   python3 - "$dir/out.json" <<'PY'
 import json

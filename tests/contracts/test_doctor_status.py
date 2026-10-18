@@ -44,7 +44,7 @@ def _world(tmp_path: Path, provided: tuple[str, ...]) -> Path:
 
 
 def _doctor_json(bin_dir: Path, with_key: bool) -> dict:
-    env = {"HOME": os.environ.get("HOME", "/tmp"), "MACOS_SCRIPTS_HOME": str(ROOT), "PATH": str(bin_dir)}
+    env = {"HOME": os.environ.get("HOME", "/tmp"), "MACOS_SCRIPTS_HOME": str(ROOT), "PATH": str(bin_dir), "MQ_SECURITY_BIN": "/nonexistent"}
     if with_key:
         env["OPENAI_API_KEY"] = "stub-key"
     result = subprocess.run(["bash", str(DOCTOR), "--json"], env=env, capture_output=True, text=True)
@@ -83,3 +83,11 @@ def test_degraded_run_exercises_detail_and_hint(tmp_path, validator):
     assert any("detail" in c for c in doc["checks"])
     assert any("hint" in c for c in doc["checks"])
     assert doc["status"] != "ok"
+
+
+def test_doctor_credential_sources_across_output_modes():
+    result = subprocess.run(
+        ["bash", str(ROOT / "tests" / "doctor-auth-smoke.sh")],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

@@ -99,7 +99,7 @@ echo "  ok: ${#CHECKED[@]} checked tools, present in one world and absent in the
 doctor_run() {
   # doctor_run <world-bin> <key|nokey> <out-prefix> [args...]
   local bin="$1" key="$2" prefix="$3"; shift 3
-  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin")
+  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin" MQ_SECURITY_BIN=/nonexistent)
   [[ "$key" == "key" ]] && env_args+=(OPENAI_API_KEY="stub-key-for-this-test")
   set +e
   env -i "${env_args[@]}" bash "$DOCTOR" "$@" \
