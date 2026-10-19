@@ -2,6 +2,22 @@
   "schema": "mq.verification-config.v1",
   "checks": [
     {
+      "id": "doctor-auth",
+      "runner": "bash",
+      "targets": [
+        "tests/doctor-auth-smoke.sh"
+      ],
+      "paths": [
+        "tools/scripts/doctor.sh",
+        "tools/scripts/auth.sh",
+        "tests/doctor-*.sh",
+        "tests/auth-status-smoke.sh",
+        "tests/contracts/test_doctor_status.py",
+        ".mq/verification.json"
+      ],
+      "timeout_seconds": 120
+    },
+    {
       "id": "doctor-status",
       "runner": "bash",
       "targets": [
