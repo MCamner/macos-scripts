@@ -208,6 +208,7 @@ def call_ollama(
         "system": SYSTEM_PROMPT,
         "prompt": prompt,
         "stream": False,
+        "think": False,
         "keep_alive": keep_alive,
         "options": {"temperature": 0.2},
     }

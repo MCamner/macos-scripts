@@ -80,6 +80,8 @@ with patch.object(module.urllib.request, "urlopen", return_value=Response()) as 
     payload = json.loads(request.data)
     assert payload["model"] == "test-model"
     assert payload["stream"] is False
+    # qwen3.5 thinks by default; the review does not need it.
+    assert payload.get("think") is False, payload
     assert payload["keep_alive"] == module.DEFAULT_KEEP_ALIVE
 PY
 

@@ -574,6 +574,7 @@ ask_ollama() {
     '{
       model: $model,
       stream: false,
+      think: false,
       keep_alive: "30m",
       prompt: (
         "You are HAL Terminal Guide for mqlaunch. Answer from these lines of the mac terminal guide. " +
