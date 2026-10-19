@@ -79,6 +79,9 @@ import sys
 p = json.load(open(sys.argv[1], encoding="utf-8"))
 assert p["model"] == "qwen3.5:9b", p
 assert p["stream"] is False, p
+# qwen3.5 thinks by default; a guide answer does not need it and took tens of
+# seconds against the 120 s curl limit.
+assert p.get("think") is False, p
 assert "lsof -i :8080" in p["prompt"], "matching guide line missing from prompt"
 assert "ditto" not in p["prompt"], "unrelated guide line sent to the model"
 assert "<script>" not in p["prompt"], "HTML tags sent to the model"

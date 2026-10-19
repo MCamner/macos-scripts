@@ -23,6 +23,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* HAL guide and `ollama-document-review.py` send `think: false` to Ollama.
+  qwen3.5 thinks by default, which `qwen3:4b-instruct` did not: a local guide
+  answer took 78 s against the 120 s curl limit, now 7 s.
 * HAL guide no longer selects OpenAI automatically when `OPENAI_API_KEY`
   exists. Cloud usage now requires `MQ_HAL_GUIDE_PROVIDER=openai`.
 * `release.sh` found the wiki generator only when run as `./release.sh`; under
