@@ -40,7 +40,7 @@ provide_ollama() {
 
 doctor_run() {
   local bin="$1" key="$2" out="$3"; shift 3
-  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin")
+  local -a env_args=(HOME="$HOME" MACOS_SCRIPTS_HOME="$ROOT" PATH="$bin" MQ_SECURITY_BIN=/nonexistent)
   [[ "$key" == "key" ]] && env_args+=(OPENAI_API_KEY="stub-key")
   set +e
   env -i "${env_args[@]}" bash "$DOCTOR" "$@" >"$out" 2>"$out.err"

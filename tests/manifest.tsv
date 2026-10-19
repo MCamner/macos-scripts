@@ -133,3 +133,4 @@ vector-store-identity-smoke.sh	active	Canonical store contract: no consumer may 
 compact-header-smoke.sh	active	-
 fig-colors-smoke.sh	active	figure colours: launcher pick reaches the compact header; fixed opts out
 verify-changes-smoke.sh	active	Repo forwarding, delegate exit code and JSON contract
+doctor-auth-smoke.sh	active	Doctor credential sources and conflicts across all output modes

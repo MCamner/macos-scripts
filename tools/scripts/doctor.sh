@@ -212,6 +212,32 @@ run_ollama_checks() {
   done
 }
 
+# Reuse auth's local credential lookup; only its secret-free JSON is captured.
+# Environment-only credentials remain supported, while conflicting credentials
+# need attention. Keep the legacy check name for doctor contract consumers.
+run_openai_check() {
+  local mode="$1" auth_json auth_rc=0 st="warn" detail="credential unavailable"
+  auth_json="$(bash "$BASE_DIR/tools/scripts/auth.sh" status --json 2>/dev/null)" || auth_rc=$?
+  if [[ $auth_rc -le 1 && "$auth_json" == *'"schema":"mq.auth-status.v1"'* ]]; then
+    if [[ "$auth_json" == *'"consistency":"different"'* ]]; then
+      detail="environment and Keychain differ"
+    elif [[ "$auth_json" == *'"effective_source":"environment"'* ]]; then
+      st="ok"
+      detail="source=environment"
+    elif [[ "$auth_json" == *'"effective_source":"keychain"'* ]]; then
+      st="ok"
+      detail="source=keychain"
+    fi
+  fi
+  if [[ "$mode" == "json" ]]; then
+    _jc "OPENAI_API_KEY" "$st" "$detail"
+  elif [[ "$st" == "ok" ]]; then
+    check_ok "OpenAI credential available ($detail)"
+  else
+    check_warn "OPENAI_API_KEY" "OpenAI credential needs attention ($detail)"
+  fi
+}
+
 # Runs JSON report mode.
 run_json_mode() {
   local version
@@ -225,11 +251,7 @@ run_json_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    _jc "OPENAI_API_KEY" "ok"
-  else
-    _jc "OPENAI_API_KEY" "warn" "missing"
-  fi
+  run_openai_check json
 
   run_ollama_checks json
 
@@ -263,11 +285,7 @@ run_fix_plan_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    _jc "OPENAI_API_KEY" "ok"
-  else
-    _jc "OPENAI_API_KEY" "warn" "missing"
-  fi
+  run_openai_check json
 
   run_ollama_checks json
 
@@ -328,11 +346,7 @@ run_fix_plan_json_mode() {
     fi
   done
 
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    _jc "OPENAI_API_KEY" "ok"
-  else
-    _jc "OPENAI_API_KEY" "warn" "missing"
-  fi
+  run_openai_check json
 
   run_ollama_checks json
 
@@ -393,11 +407,7 @@ run_normal_mode() {
   done
 
   section "ENV"
-  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-    check_ok "OPENAI_API_KEY set"
-  else
-    check_warn "OPENAI_API_KEY" "OPENAI_API_KEY missing"
-  fi
+  run_openai_check human
 
   section "LOCAL AI"
   run_ollama_checks human
