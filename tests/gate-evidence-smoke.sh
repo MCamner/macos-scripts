@@ -78,7 +78,7 @@ echo "  ok: exit 3 rather than a silent skip"
 
 echo "[3/4] the linter still passes, and reports how much it read"
 set +e
-MACOS_SCRIPTS_HOME="$ROOT" bash "$LINT" >"$TMP/out3" 2>&1
+(cd "$TMP" && MACOS_SCRIPTS_HOME="$ROOT" bash "$LINT") >"$TMP/out3" 2>&1
 rc=$?
 set -e
 [[ "$rc" -eq 0 ]] || fail "the real tree failed to lint: $(tail -3 "$TMP/out3")"
@@ -104,7 +104,7 @@ mkdir -p "$TMP/emptytree/bin"
 cp "$SWEEP" "$TMP/emptytree/bin/sweep"
 chmod +x "$TMP/emptytree/bin/sweep"
 set +e
-"$TMP/emptytree/bin/sweep" >"$TMP/out4" 2>&1
+/bin/bash "$TMP/emptytree/bin/sweep" >"$TMP/out4" 2>&1
 rc=$?
 set -e
 [[ "$rc" -ne 0 ]] \
@@ -113,6 +113,12 @@ grep -q 'found no .sh files to check' "$TMP/out4" \
   || fail "the syntax sweep failed on an empty tree without saying why: $(cat "$TMP/out4")"
 grep -q 'All \${#files\[@\]} .sh files' "$SWEEP" \
   || fail "the syntax sweep no longer reports how many files it checked"
-echo "  ok: empty enumeration fails for real, and the success line carries the count"
+# macOS ships Bash 3.2; also prove the non-empty NUL-delimited path works.
+printf '#!/usr/bin/env bash\necho ok\n' > "$TMP/emptytree/file with spaces.sh"
+/bin/bash "$TMP/emptytree/bin/sweep" >"$TMP/out5" 2>&1 \
+  || fail "macOS Bash syntax sweep failed: $(cat "$TMP/out5")"
+grep -q 'All 1 .sh files' "$TMP/out5" \
+  || fail "macOS Bash sweep did not check the spaced filename"
+echo "  ok: empty and non-empty trees work under macOS Bash, including spaced paths"
 
 echo "OK: gate evidence smoke test passed"

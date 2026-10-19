@@ -67,5 +67,7 @@ fi
 #
 # zsh scripts are filtered out above because ShellCheck cannot parse zsh, not
 # because they are exempt from scrutiny; they are covered by `zsh -n`.
-shellcheck -S warning "${bash_scripts[@]}"
+# ShellCheck resolves dynamically sourced repo libraries relative to its cwd.
+# Keep the result identical when selftest is launched from another directory.
+(cd "$PROJECT_ROOT" && shellcheck -S warning "${bash_scripts[@]}")
 echo "[PASS] Shell lint passed at warning severity (${#bash_scripts[@]} files)"
