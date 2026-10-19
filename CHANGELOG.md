@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 
 * `mqlaunch dashboard`: L opens the mqlaunch menu, like M opens
   `mongoTerminal`; the dashboard resumes when the menu exits.
+* `release.sh --publish-wiki <version>`: post-merge step for `pull_request`
+  mode. Requires tag `v<version>` and a matching `VERSION`, then regenerates
+  and pushes the wiki Command-Reference, and fails if the wiki was not
+  updated. The post-merge instructions now name it. The wiki step used to run
+  only in `direct` mode, so 2.0.1 through 2.4.0 shipped without a wiki update.
 
 ### Changed
 
@@ -20,6 +25,12 @@ All notable changes to this project will be documented in this file.
 
 * HAL guide no longer selects OpenAI automatically when `OPENAI_API_KEY`
   exists. Cloud usage now requires `MQ_HAL_GUIDE_PROVIDER=openai`.
+* `release.sh` found the wiki generator only when run as `./release.sh`; under
+  `bash release.sh` the path resolved to `release.sh/tools/...`.
+* Wiki Command-Reference: `mq-dev-menu` is described by its panel label
+  (`Dev`) instead of nothing, and files that print several different usage
+  lines (`mqlaunch-command-mode`, `mq-ai-prompts`) get no description instead
+  of whichever came first.
 
 ## [2.4.0] - 2026-10-17
 
