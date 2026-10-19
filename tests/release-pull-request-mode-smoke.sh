@@ -89,7 +89,7 @@ run_release() {
   )
 }
 
-echo "[1/5] the direct-push line exists only inside push_release()"
+echo "[1/6] the direct-push line exists only inside push_release()"
 # `direct` stays a supported mode, so the string is allowed to exist — but only
 # in the one function the direct path calls. A copy of it anywhere else is the
 # regression this catches.
@@ -102,7 +102,7 @@ in_function="$(awk '/^push_release\(\) \{/{f=1} f&&/push origin main/{c++} f&&/^
 grep -Fq 'release_mode' "$RELEASE" \
   || fail "release.sh never reads release_mode from the contract"
 
-echo "[2/5] pull_request mode pushes a release branch and never touches main"
+echo "[2/6] pull_request mode pushes a release branch and never touches main"
 make_case pr pull_request
 GH_LOG="$WORK/pr/gh.log"
 : > "$GH_LOG"
@@ -139,8 +139,10 @@ pushed_contract="$(git -C "$PR_ORIGIN" show refs/heads/release/v9.9.9:.mq/repo-c
   || fail "pushed branch carries contract version '$pushed_contract', expected 9.9.9"
 grep -q 'pr create' "$GH_LOG" \
   || fail "gh pr create was never invoked"
+grep -Fq -- '--publish-wiki 9.9.9' "$WORK/pr/out.log" \
+  || fail "post-merge steps do not name the wiki step"
 
-echo "[3/5] dry-run leaves no branch, no commit, and a clean tree"
+echo "[3/6] dry-run leaves no branch, no commit, and a clean tree"
 make_case dry pull_request
 GH_LOG="$WORK/dry/gh.log"
 : > "$GH_LOG"
@@ -167,7 +169,7 @@ run_release "$DRY_REPO" --dry-run 9.9.9 > "$WORK/dry/out.log" 2>&1 || {
 [[ -z "$(cat "$GH_LOG")" ]] \
   || fail "dry-run invoked gh: $(cat "$GH_LOG")"
 
-echo "[4/5] direct mode still releases the old way when the contract asks for it"
+echo "[4/6] direct mode still releases the old way when the contract asks for it"
 make_case direct direct
 GH_LOG="$WORK/direct/gh.log"
 : > "$GH_LOG"
@@ -187,7 +189,7 @@ git -C "$DIRECT_ORIGIN" rev-parse --verify -q refs/tags/v9.9.9 >/dev/null \
 [[ -z "$(git -C "$DIRECT_ORIGIN" for-each-ref refs/heads/release/)" ]] \
   || fail "direct mode pushed a release branch"
 
-echo "[5/5] a failed gate rewinds the branch, the bump, and the checkout"
+echo "[5/6] a failed gate rewinds the branch, the bump, and the checkout"
 # The gates `exit` rather than failing a command, and bash does not run an ERR
 # trap for that — so the rollback the usage text promises never fired, and the
 # checkout would now be stranded on the release branch as well. 8.8.8 has no
@@ -215,5 +217,79 @@ set -e
 [[ "$(git -C "$GATE_ORIGIN" rev-parse refs/heads/main)" == "$gate_main_before" ]] \
   || fail "failed gate moved origin main"
 
+echo "[6/6] --publish-wiki refuses an untagged version, then publishes after the tag"
+# In pull_request mode the wiki step used to live only in the direct path, so
+# every PR release left the published Command-Reference behind the code: 2.0.1
+# to 2.4.0 shipped without one wiki commit. The post-merge step is its own
+# command, gated on the tag the operator creates by hand.
+make_case wiki pull_request
+WIKI_REPO="$WORK/wiki/repo"
+WIKI_REMOTE="$WORK/wiki/wiki.git"
+mkdir -p "$WIKI_REPO/tools/scripts"
+cat > "$WIKI_REPO/tools/scripts/generate-wiki-command-ref.sh" <<'STUB'
+#!/usr/bin/env bash
+mkdir -p "$HOME/macos-scripts.wiki"
+printf '# Command Reference\n\nstub for %s\n' "$(cat VERSION)" > "$HOME/macos-scripts.wiki/Command-Reference.md"
+STUB
+chmod +x "$WIKI_REPO/tools/scripts/generate-wiki-command-ref.sh"
+git -C "$WIKI_REPO" add -A
+git -C "$WIKI_REPO" commit --quiet -m "add generator stub"
+
+git init --quiet --bare "$WIKI_REMOTE"
+git -C "$WIKI_REMOTE" symbolic-ref HEAD refs/heads/master
+seed="$WORK/wiki/seed"
+git init --quiet "$seed"
+git -C "$seed" symbolic-ref HEAD refs/heads/master
+printf 'old\n' > "$seed/Command-Reference.md"
+git -C "$seed" add -A
+git -C "$seed" -c user.email=smoke@example.invalid -c user.name=Smoke commit --quiet -m seed
+git -C "$seed" push --quiet "$WIKI_REMOTE" master
+wiki_before="$(git -C "$WIKI_REMOTE" rev-parse refs/heads/master)"
+
+run_wiki() {
+  (
+    cd "$WIKI_REPO"
+    HOME="$WORK/wiki/home" MQ_WIKI_REMOTE="$WIKI_REMOTE" \
+      GIT_AUTHOR_NAME=Smoke GIT_AUTHOR_EMAIL=smoke@example.invalid \
+      GIT_COMMITTER_NAME=Smoke GIT_COMMITTER_EMAIL=smoke@example.invalid \
+      bash release.sh --publish-wiki "$@"
+  )
+}
+
+set +e
+run_wiki 1.0.0 > "$WORK/wiki/untagged.log" 2>&1
+untagged_status=$?
+set -e
+[[ "$untagged_status" -ne 0 ]] \
+  || fail "--publish-wiki accepted 1.0.0 before tag v1.0.0 existed"
+grep -Fq 'Tag v1.0.0 does not exist' "$WORK/wiki/untagged.log" \
+  || fail "untagged refusal gave the wrong reason: $(cat "$WORK/wiki/untagged.log")"
+[[ "$(git -C "$WIKI_REMOTE" rev-parse refs/heads/master)" == "$wiki_before" ]] \
+  || fail "--publish-wiki pushed the wiki for an untagged version"
+
+# The tag exists here, so only the VERSION mismatch can stop it.
+git -C "$WIKI_REPO" tag -a v2.0.0 -m v2.0.0
+set +e
+run_wiki 2.0.0 > "$WORK/wiki/mismatch.log" 2>&1
+mismatch_status=$?
+set -e
+[[ "$mismatch_status" -ne 0 ]] \
+  || fail "--publish-wiki accepted 2.0.0 while VERSION says 1.0.0"
+grep -Fq 'says 1.0.0, not 2.0.0' "$WORK/wiki/mismatch.log" \
+  || fail "mismatch refusal gave the wrong reason: $(cat "$WORK/wiki/mismatch.log")"
+
+git -C "$WIKI_REPO" tag -d v2.0.0 >/dev/null
+git -C "$WIKI_REPO" tag -a v1.0.0 -m v1.0.0
+run_wiki 1.0.0 > "$WORK/wiki/tagged.log" 2>&1 || {
+  cat "$WORK/wiki/tagged.log" >&2
+  fail "--publish-wiki 1.0.0 exited non-zero with the tag in place"
+}
+[[ "$(git -C "$WIKI_REMOTE" log -1 --format=%s refs/heads/master)" == "Update Command-Reference for v1.0.0" ]] \
+  || fail "wiki remote is missing the v1.0.0 commit: $(git -C "$WIKI_REMOTE" log -1 --format=%s refs/heads/master)"
+git -C "$WIKI_REMOTE" show refs/heads/master:Command-Reference.md | grep -Fq 'stub for 1.0.0' \
+  || fail "wiki remote does not carry the regenerated page"
+[[ -z "$(git -C "$WIKI_REPO" status --porcelain)" ]] \
+  || fail "--publish-wiki left the working tree dirty"
+
 bash -n "$0"
-echo "OK: pull_request mode never pushes main; direct mode still works"
+echo "OK: pull_request mode never pushes main; direct mode still works; the wiki publishes after the tag"

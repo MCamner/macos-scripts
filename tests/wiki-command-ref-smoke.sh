@@ -89,6 +89,32 @@ for fixture in sep1 sep2 sep3 sep4; do
     || fail "$fixture.sh should yield no description, got '$got'"
 done
 
+echo "[2c/3] a variable title falls back to the panel label, and ambiguous usage yields nothing"
+# mq-dev-menu draws every panel through one panel-header call whose title is a
+# variable and whose second argument is the literal label "Dev".
+# The header rule took that first match, refused the variable, and gave up —
+# so the Dev menu lost its description. The literal second argument is the
+# panel label, and it names the menu.
+#
+# The call is assembled from a variable for the same reason as the banner in
+# [2b/3]: a literal one would become this file's own description.
+fn="surface_panel_header"
+printf '%s "$title" "Dev" "$width" "$panel_color"\n' "$fn" > "$WORK/panel1.sh"
+[[ "$(extract_meta "$WORK/panel1.sh")" == "Dev" ]] \
+  || fail "panel label fallback was not used: '$(extract_meta "$WORK/panel1.sh")'"
+
+# mqlaunch-command-mode prints help for every namespace. The usage rule took
+# whichever came first, so the page described the whole dispatcher as
+# "Usage: mqlaunch auth <command> [args]". Several different usage lines mean
+# no single one describes the file.
+printf 'Usage: mqlaunch auth <command> [args]\n\nUsage: mqlaunch agent <command> [args]\n' > "$WORK/usage-many.sh"
+got="$(extract_meta "$WORK/usage-many.sh")"
+[[ -z "$got" ]] || fail "ambiguous usage lines should yield no description, got '$got'"
+
+printf 'Usage:\n  mqlaunch ask <question>\n' > "$WORK/usage-one.sh"
+[[ "$(extract_meta "$WORK/usage-one.sh")" == "mqlaunch ask <question>" ]] \
+  || fail "a single usage line was lost: '$(extract_meta "$WORK/usage-one.sh")'"
+
 echo "[3/3] a full run over the real tree emits no variable in any description"
 # HOME is redirected so the generator writes into the sandbox instead of the
 # operator's actual wiki checkout; BASE_DIR still points at this repo, so the

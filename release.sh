@@ -5,6 +5,7 @@ set -euo pipefail
 DRY_RUN=false
 GITHUB_RELEASE=false
 INIT_CHANGELOG=false
+PUBLISH_WIKI=false
 VERSION=""
 
 VERSION_FILE="VERSION"
@@ -25,12 +26,14 @@ show_usage() {
   cat <<'USAGE'
 Usage:
   ./release.sh [--dry-run] [--github-release] [--init-changelog] <version>
+  ./release.sh --publish-wiki <version>
 
 Examples:
   ./release.sh 0.1.2
   ./release.sh --dry-run 0.1.2
   ./release.sh --github-release 0.1.2
   ./release.sh --init-changelog 0.1.2
+  ./release.sh --publish-wiki 0.1.2
 
 Release mode:
   "release_mode" in .mq/repo-contract.json decides how the release lands.
@@ -71,6 +74,10 @@ Special mode:
   --init-changelog
     Creates a changelog template for the requested version at the top of
     CHANGELOG.md, then exits without commit/tag/push.
+  --publish-wiki
+    Post-merge step for pull_request mode. Requires tag v<version> and a
+    matching VERSION, then regenerates and pushes the wiki Command-Reference.
+    Fails if the wiki cannot be updated.
 
 Safety:
   - --dry-run performs local checks and file updates, shows the diff,
@@ -391,21 +398,31 @@ Release branch pushed. The tag is not automated — after the PR is merged:
   git tag -a v${version} -m "v${version}"
   git push origin v${version}
 
-The wiki Command-Reference and any GitHub Release belong after that tag, not
-before it: until the merge lands, ${BASE_BRANCH} does not carry ${version}.
+Then publish the wiki Command-Reference from the tagged ${BASE_BRANCH}:
+
+  ./release.sh --publish-wiki ${version}
+
+The wiki and any GitHub Release belong after that tag, not before it: until
+the merge lands, ${BASE_BRANCH} does not carry ${version}.
 EOF_STEPS
 }
 
-# Regenerates Command-Reference.md and pushes to the GitHub Wiki.
+# Regenerates Command-Reference.md and pushes to the GitHub Wiki. Returns
+# non-zero when the wiki was not updated; callers decide whether that is fatal.
 update_wiki_command_ref() {
   local version="$1"
-  local generator="${BASH_SOURCE[0]%/*}/tools/scripts/generate-wiki-command-ref.sh"
+  # dirname, not ${BASH_SOURCE[0]%/*}: under `bash release.sh` the source path
+  # has no slash, and the suffix strip left "release.sh/tools/...".
+  local generator
+  generator="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/tools/scripts/generate-wiki-command-ref.sh"
+  local remote="${MQ_WIKI_REMOTE:-git@github.com:MCamner/macos-scripts.wiki.git}"
   local wiki_tmp
   wiki_tmp="$(mktemp -d)"
 
   if [[ ! -x "$generator" ]]; then
     printf '[wiki] generator not found, skipping wiki update\n'
-    return 0
+    rm -rf "$wiki_tmp"
+    return 1
   fi
 
   log_step "Updating wiki Command-Reference"
@@ -413,20 +430,20 @@ update_wiki_command_ref() {
   if ! "$generator" >/dev/null 2>&1; then
     printf '[wiki] generator failed, skipping wiki push\n'
     rm -rf "$wiki_tmp"
-    return 0
+    return 1
   fi
 
   local generated="$HOME/macos-scripts.wiki/Command-Reference.md"
   if [[ ! -f "$generated" ]]; then
     printf '[wiki] Command-Reference.md not found after generation, skipping wiki push\n'
     rm -rf "$wiki_tmp"
-    return 0
+    return 1
   fi
 
-  if ! git clone --quiet git@github.com:MCamner/macos-scripts.wiki.git "$wiki_tmp" 2>/dev/null; then
+  if ! git clone --quiet "$remote" "$wiki_tmp" 2>/dev/null; then
     printf '[wiki] could not clone wiki repo, skipping wiki push\n'
     rm -rf "$wiki_tmp"
-    return 0
+    return 1
   fi
 
   cp "$generated" "$wiki_tmp/Command-Reference.md"
@@ -436,7 +453,12 @@ update_wiki_command_ref() {
     printf '[wiki] Command-Reference unchanged, no push needed\n'
   else
     git commit -m "Update Command-Reference for v${version}"
-    git push --quiet
+    if ! git push --quiet; then
+      printf '[wiki] push failed\n'
+      cd - >/dev/null
+      rm -rf "$wiki_tmp"
+      return 1
+    fi
     printf '[wiki] Command-Reference pushed\n'
   fi
   cd - >/dev/null
@@ -470,6 +492,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --init-changelog)
       INIT_CHANGELOG=true
+      shift
+      ;;
+    --publish-wiki)
+      PUBLISH_WIKI=true
       shift
       ;;
     -h|--help)
@@ -506,6 +532,23 @@ require_file "${CONTRACT_FILE}"
 
 if [[ "${INIT_CHANGELOG}" == true ]]; then
   init_changelog_section "${VERSION}"
+  exit 0
+fi
+
+if [[ "${PUBLISH_WIKI}" == true ]]; then
+  require_clean_tree
+  if ! git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+    error "Tag v${VERSION} does not exist. Tag the merge commit first."
+    exit 1
+  fi
+  if [[ "$(head -n1 "${VERSION_FILE}")" != "${VERSION}" ]]; then
+    error "${VERSION_FILE} says $(head -n1 "${VERSION_FILE}"), not ${VERSION}."
+    exit 1
+  fi
+  update_wiki_command_ref "${VERSION}" || {
+    error "Wiki Command-Reference was not updated."
+    exit 1
+  }
   exit 0
 fi
 
@@ -589,7 +632,7 @@ create_release_commit_and_tag "${VERSION}"
 log_step "Pushing main and tag"
 push_release "${VERSION}"
 
-update_wiki_command_ref "${VERSION}"
+update_wiki_command_ref "${VERSION}" || printf '[wiki] not updated (warn-only in direct mode)\n'
 
 if [[ "${GITHUB_RELEASE}" == true ]]; then
   log_step "Creating GitHub release"

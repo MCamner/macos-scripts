@@ -41,6 +41,13 @@ extract_meta() {
     | sed -E 's/.*header "([^"]+)".*/\1/' | xargs || true)
   accept_title "$title" && { printf '%s' "$title"; return; }
 
+  # 2b. Panel label. A menu that draws every panel through
+  # `surface_panel_header "$title" "Dev"` has no literal title, but the second
+  # argument names the menu.
+  title=$(grep -m1 -E 'surface_panel_header "\$[^"]*" "[^"$]+"' "$file" 2>/dev/null \
+    | sed -E 's/.*surface_panel_header "\$[^"]*" "([^"$]+)".*/\1/' | xargs || true)
+  accept_title "$title" && { printf '%s' "$title"; return; }
+
   # 3. Banner line (-- SOMETHING --), as printed by printf/echo in the script's
   # own header art. Despite the old wording these are not comments.
   #
@@ -54,10 +61,15 @@ extract_meta() {
     | sed -E 's/.*-- ([A-Z][^-]+) --.*/\1/' | tr -d '"' | xargs || true)
   accept_title "$title" && { printf '%s' "$title"; return; }
 
-  # 4. Usage line (command verb only, not full echo)
-  title=$(grep -A1 'Usage:' "$file" 2>/dev/null \
-    | grep -m1 'mqlaunch\|mq ' \
-    | sed -E 's/^[[:space:]]*//' | xargs || true)
+  # 4. Usage line (command verb only, not full echo). A file that prints
+  # several different usage lines — a dispatcher with per-namespace help — has
+  # no single one that describes it, so none is picked.
+  local usage_lines
+  usage_lines=$(grep -A1 'Usage:' "$file" 2>/dev/null \
+    | grep 'mqlaunch\|mq ' \
+    | sed -E 's/^[[:space:]]*//' | sort -u || true)
+  [[ $(printf '%s' "$usage_lines" | grep -c '' || true) -le 1 ]] || { printf ''; return; }
+  title=$(printf '%s' "$usage_lines" | xargs || true)
   accept_title "$title" && [[ "$title" != echo* ]] && { printf '%s' "$title"; return; }
 
   printf ''
