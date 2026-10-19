@@ -18,7 +18,11 @@
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 
-mapfile -d '' -t files < <(
+# read -d works with the macOS system Bash; mapfile requires newer Bash.
+files=()
+while IFS= read -r -d '' file; do
+  files+=("$file")
+done < <(
   find . \
     -name "*.sh" \
     -not -path "./.git/*" \
