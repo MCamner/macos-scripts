@@ -279,6 +279,22 @@ grep -Fq 'says 1.0.0, not 2.0.0' "$WORK/wiki/mismatch.log" \
   || fail "mismatch refusal gave the wrong reason: $(cat "$WORK/wiki/mismatch.log")"
 
 git -C "$WIKI_REPO" tag -d v2.0.0 >/dev/null
+
+# The tag exists but sits on an older commit: the repo-signal 1.8.0 attempt,
+# where the bump was skipped and the previous release's tag let it through.
+git -C "$WIKI_REPO" tag -a v1.0.0 -m v1.0.0 HEAD~1
+set +e
+run_wiki 1.0.0 > "$WORK/wiki/stale.log" 2>&1
+stale_status=$?
+set -e
+[[ "$stale_status" -ne 0 ]] \
+  || fail "--publish-wiki accepted 1.0.0 while v1.0.0 is not HEAD"
+grep -Fq 'HEAD is not v1.0.0' "$WORK/wiki/stale.log" \
+  || fail "stale-tag refusal gave the wrong reason: $(cat "$WORK/wiki/stale.log")"
+[[ "$(git -C "$WIKI_REMOTE" rev-parse refs/heads/master)" == "$wiki_before" ]] \
+  || fail "--publish-wiki pushed the wiki from a commit that is not the tag"
+
+git -C "$WIKI_REPO" tag -d v1.0.0 >/dev/null
 git -C "$WIKI_REPO" tag -a v1.0.0 -m v1.0.0
 run_wiki 1.0.0 > "$WORK/wiki/tagged.log" 2>&1 || {
   cat "$WORK/wiki/tagged.log" >&2

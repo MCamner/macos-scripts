@@ -75,8 +75,9 @@ Special mode:
     Creates a changelog template for the requested version at the top of
     CHANGELOG.md, then exits without commit/tag/push.
   --publish-wiki
-    Post-merge step for pull_request mode. Requires tag v<version> and a
-    matching VERSION, then regenerates and pushes the wiki Command-Reference.
+    Post-merge step for pull_request mode. Requires tag v<version> on HEAD
+    and a matching VERSION, then regenerates and pushes the wiki
+    Command-Reference.
     Fails if the wiki cannot be updated.
 
 Safety:
@@ -543,6 +544,12 @@ if [[ "${PUBLISH_WIKI}" == true ]]; then
   fi
   if [[ "$(head -n1 "${VERSION_FILE}")" != "${VERSION}" ]]; then
     error "${VERSION_FILE} says $(head -n1 "${VERSION_FILE}"), not ${VERSION}."
+    exit 1
+  fi
+  # The tag existing is not enough: published from a later commit, the page
+  # would describe code the tag does not contain.
+  if [[ "$(git rev-parse "v${VERSION}^{commit}")" != "$(git rev-parse HEAD)" ]]; then
+    error "HEAD is not v${VERSION}. Publish from the tagged commit."
     exit 1
   fi
   update_wiki_command_ref "${VERSION}" || {
