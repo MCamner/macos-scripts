@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-20
+
 ### Added
 
 * `mqlaunch dashboard`: L opens the mqlaunch menu, like M opens
@@ -15,6 +17,9 @@ All notable changes to this project will be documented in this file.
   and pushes the wiki Command-Reference, and fails if the wiki was not
   updated. The post-merge instructions now name it. The wiki step used to run
   only in `direct` mode, so 2.0.1 through 2.4.0 shipped without a wiki update.
+* `mqlaunch verify-changes`: thin delegate to mq-agent's changed-file
+  verification. Keeps the caller's repository, argument boundaries and the
+  backend exit code. Requires an mq-agent runtime that includes the command.
 
 ### Changed
 
@@ -28,6 +33,11 @@ All notable changes to this project will be documented in this file.
   answer took 78 s against the 120 s curl limit, now 7 s.
 * HAL guide no longer selects OpenAI automatically when `OPENAI_API_KEY`
   exists. Cloud usage now requires `MQ_HAL_GUIDE_PROVIDER=openai`.
+* `doctor` accepts an OpenAI key stored in Keychain (the `mqlaunch auth` path)
+  instead of reporting it missing, and warns when environment and Keychain
+  differ. The check name `OPENAI_API_KEY` is unchanged for contract consumers.
+* Shell gates run from any directory: ShellCheck runs from the project root,
+  and `mapfile` is replaced for macOS Bash 3.2.
 * `release.sh` found the wiki generator only when run as `./release.sh`; under
   `bash release.sh` the path resolved to `release.sh/tools/...`.
 * Wiki Command-Reference: `mq-dev-menu` is described by its panel label
