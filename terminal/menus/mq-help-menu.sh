@@ -78,6 +78,7 @@ POPULAR FLOWS
 
 CORE
   mqlaunch about          Status dashboard for the launcher and the repo
+  mqlaunch dashboard      Keyboard-driven MQ Stack Control Center (terminal UI)
   mqlaunch demo           Run the guided demo
   mqlaunch help           Help, the command index, and namespace help
   mqlaunch notes          Show the changelog

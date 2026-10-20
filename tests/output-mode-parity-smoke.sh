@@ -97,7 +97,11 @@ EXERCISED=(
 # named test drives `--json` against a stub pulse.sh instead.
 # verify-changes executes repo-configured tests, potentially this suite itself.
 # Its named test checks the JSON/exit/argument boundary using a stub delegate.
+# `mqlaunch dashboard --json` collects every source once — mq-agent, gh,
+# doctor, launchctl and Ollama — so its named test runs the --json path against
+# a stubbed collector.
 COVERED_ELSEWHERE=(
+  "dashboard	tests/test_mq_dashboard.py"
   "verify-changes	tests/verify-changes-smoke.sh"
   "auth status	tests/auth-status-smoke.sh"
   "auth test	tests/auth-status-smoke.sh"

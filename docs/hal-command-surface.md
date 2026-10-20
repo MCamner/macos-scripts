@@ -53,6 +53,7 @@ mqlaunch hal doctor
 mqlaunch hal timeline
 mqlaunch hal timeline --details
 mqlaunch hal changes
+mqlaunch hal actions
 ```
 
 ### Plan
@@ -103,6 +104,7 @@ mqlaunch hal "visa git status"
 | `mqlaunch hal fix-doctor` | `mq-hal fix-doctor` | planning | Safe manual fix plan |
 | `mqlaunch hal timeline` | `mq-hal timeline` | read-only | Local HAL memory timeline |
 | `mqlaunch hal changes` | `mq-hal changes` | snapshot-write | New, resolved, persisting, unverified since last check |
+| `mqlaunch hal actions` | `mq-hal actions` | read-only | Ledger of commands mq-hal ran, cancelled or refused |
 | `mqlaunch hal session` | `mq-hal session` | read-only | Local HAL session memory |
 | `mqlaunch hal last` | `mq-hal last` | read-only | Latest memory item |
 | `mqlaunch hal remember "note"` | `mq-hal remember "note"` | memory-write | Saves local note |

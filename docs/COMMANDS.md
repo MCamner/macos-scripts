@@ -104,9 +104,14 @@ mqlaunch                    # open interactive menu
 mqlaunch help               # command index (terminal)
 mqlaunch commands           # same as help
 mqlaunch demo               # guided interactive demo
+mqlaunch dashboard          # MQ Stack Control Center (keyboard terminal UI)
+mqlaunch dashboard --json   # collect every dashboard source once, print JSON
+mqlaunch repl               # interactive mqlaunch prompt (also: prompt, shell)
 mqlaunch palette            # fuzzy command search (fzf)
 mqlaunch mqlaunch git       # self-referential prefix; re-dispatches the rest
 ```
+
+The dashboard is described in [docs/mq-dashboard-2.md](mq-dashboard-2.md).
 
 The `mqlaunch mqlaunch …` form exists so a pasted line that already carries the
 program name still runs.

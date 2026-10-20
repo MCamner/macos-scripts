@@ -40,6 +40,7 @@ Usage:
   mqlaunch hal timeline                # session timeline
   mqlaunch hal timeline --details      # session timeline with details
   mqlaunch hal changes                 # new/resolved/persisting since last check
+  mqlaunch hal actions                 # what mq-hal ran, cancelled or refused
   mqlaunch hal session                 # session memory
   mqlaunch hal last                    # latest memory item
   mqlaunch hal remember "note"         # save memory note
@@ -167,6 +168,11 @@ mq_hal_main() {
     changes)
       shift || true
       "$MQ_HAL_BIN" changes "$@"
+      ;;
+
+    actions)
+      shift || true
+      "$MQ_HAL_BIN" actions "$@"
       ;;
 
     memory-path|session-path)

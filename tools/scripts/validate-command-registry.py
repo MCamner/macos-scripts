@@ -19,6 +19,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 REGISTRY = ROOT / "mqlaunch" / "lib" / "command-registry.json"
 DISPATCH = ROOT / "terminal" / "launchers" / "mqlaunch-command-mode.sh"
+# Words handled before dispatch_cli_command() runs: the entry wrapper and the
+# main launcher each open one case on the first argument. They dispatch just as
+# much as the authoritative case does, so the registry must list them too.
+INTERCEPTS = [
+    (ROOT / "bin" / "mqlaunch", 'case "$1" in'),
+    (ROOT / "terminal" / "launchers" / "mqlaunch.sh", 'case "${1:l}" in'),
+]
 
 SCHEMA = "mq-command-registry.v1"
 
@@ -203,6 +210,36 @@ def parse_dispatch() -> tuple[list[tuple[int, str]], dict[str, dict]]:
         }
 
     return groups[main_id], subcases
+
+
+def parse_intercepts() -> dict[str, str]:
+    """Return each intercepted word mapped to the file:line that handles it."""
+    found: dict[str, str] = {}
+    for path, header in INTERCEPTS:
+        lines = path.read_text().splitlines()
+        starts = [i for i, l in enumerate(lines) if l.strip() == header]
+        if len(starts) != 1:
+            fail(f"expected exactly one `{header}` in {path.relative_to(ROOT)}, "
+                 f"found {len(starts)}")
+        depth = 0
+        for i in range(starts[0], len(lines)):
+            line = lines[i]
+            if re.match(r"^\s*case\s+", line):
+                depth += 1
+                continue
+            if re.match(r"^\s*esac\b", line):
+                depth -= 1
+                if depth == 0:
+                    break
+                continue
+            m = BRANCH.match(line) if depth == 1 else None
+            if not m:
+                continue
+            for token in m.group(1).split("|"):
+                token = token.strip('"')
+                if token and token != "*":
+                    found.setdefault(token, f"{path.relative_to(ROOT)}:{i + 1}")
+    return found
 
 
 def _branch_rejects(lines: list[str], branch_line: int) -> bool:
@@ -762,11 +799,14 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 dispatch_names[token] = line
 
+    intercepts = parse_intercepts()
     missing = sorted(set(dispatch_names) - set(seen_names))
-    extra = sorted(set(seen_names) - set(dispatch_names))
+    extra = sorted(set(seen_names) - set(dispatch_names) - set(intercepts))
 
     for token in missing:
         err(f"dispatch handles {token!r} (line {dispatch_names[token]}) but the registry does not list it")
+    for token in sorted(set(intercepts) - set(seen_names)):
+        err(f"{intercepts[token]} intercepts {token!r} before dispatch but the registry does not list it")
     for token in extra:
         err(f"registry lists {token!r} but dispatch does not handle it")
 
