@@ -229,7 +229,9 @@ mkdir -p "$WIKI_REPO/tools/scripts"
 cat > "$WIKI_REPO/tools/scripts/generate-wiki-command-ref.sh" <<'STUB'
 #!/usr/bin/env bash
 mkdir -p "$HOME/macos-scripts.wiki"
-printf '# Command Reference\n\nstub for %s\n' "$(cat VERSION)" > "$HOME/macos-scripts.wiki/Command-Reference.md"
+# Reads the tree the way the real generator does: MACOS_SCRIPTS_HOME, else
+# ~/macos-scripts. Reading ./VERSION hid that release.sh never said which tree.
+printf '# Command Reference\n\nstub for %s\n' "$(cat "${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}/VERSION" 2>/dev/null)" > "$HOME/macos-scripts.wiki/Command-Reference.md"
 STUB
 chmod +x "$WIKI_REPO/tools/scripts/generate-wiki-command-ref.sh"
 git -C "$WIKI_REPO" add -A

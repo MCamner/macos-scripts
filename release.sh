@@ -414,8 +414,9 @@ update_wiki_command_ref() {
   local version="$1"
   # dirname, not ${BASH_SOURCE[0]%/*}: under `bash release.sh` the source path
   # has no slash, and the suffix strip left "release.sh/tools/...".
-  local generator
-  generator="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/tools/scripts/generate-wiki-command-ref.sh"
+  local root generator
+  root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  generator="${root}/tools/scripts/generate-wiki-command-ref.sh"
   local remote="${MQ_WIKI_REMOTE:-git@github.com:MCamner/macos-scripts.wiki.git}"
   local wiki_tmp
   wiki_tmp="$(mktemp -d)"
@@ -428,7 +429,9 @@ update_wiki_command_ref() {
 
   log_step "Updating wiki Command-Reference"
 
-  if ! "$generator" >/dev/null 2>&1; then
+  # The generator otherwise scans $HOME/macos-scripts, which may be another
+  # branch than the tagged tree this script runs from.
+  if ! MACOS_SCRIPTS_HOME="$root" "$generator" >/dev/null 2>&1; then
     printf '[wiki] generator failed, skipping wiki push\n'
     rm -rf "$wiki_tmp"
     return 1
