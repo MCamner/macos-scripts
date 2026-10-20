@@ -1413,6 +1413,44 @@
       "local_role": "terminal-ux"
     },
     {
+      "name": "dashboard",
+      "aliases": [],
+      "namespace": "core",
+      "summary": "Keyboard-driven MQ Stack Control Center (terminal UI)",
+      "owner": "macos-scripts",
+      "safety": "read-only",
+      "output_modes": [
+        "interactive",
+        "json"
+      ],
+      "json": true,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": true,
+      "local_role": "terminal-ux"
+    },
+    {
+      "name": "repl",
+      "aliases": [
+        "prompt",
+        "shell"
+      ],
+      "namespace": "core",
+      "summary": "Interactive mqlaunch prompt that runs commands in a loop",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "interactive"
+      ],
+      "json": false,
+      "interactive": true,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": false,
+      "local_role": "terminal-ux"
+    },
+    {
       "name": "index",
       "aliases": [
         "commands"

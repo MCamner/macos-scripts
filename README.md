@@ -128,6 +128,7 @@ the workflow:
 
 ```bash
 mqlaunch                         # browse menus
+mqlaunch dashboard               # MQ Stack Control Center (keyboard terminal UI)
 mqlaunch palette                 # fuzzy command search
 mqlaunch pulse                   # operator cockpit: six areas in one view
 mqlaunch pulse attention         # only what needs attention
@@ -199,6 +200,8 @@ One command → structured workflows → repeatable execution
 
 ```bash
 mqlaunch                         # interactive menu
+mqlaunch dashboard               # MQ Stack Control Center (keyboard terminal UI)
+mqlaunch dashboard --json        # dashboard sources collected once as JSON
 mqlaunch perf                    # performance overview
 mqlaunch system check            # system health
 mqlaunch dev                     # dev workflows
@@ -214,8 +217,10 @@ mqlaunch architecture            # show mq-mcp architecture memory
 mqlaunch repo-health             # repo-signal + mq-mcp contract health
 mqlaunch stack status            # canonical stack truth status via mq-agent
 mqlaunch route inspect "task"    # explain the recommended model route
-mqlaunch hal route readiness   # present learned-routing readiness via mq-hal
-mqlaunch hal route divergence  # present current-era divergence via mq-hal
+mqlaunch hal route readiness     # learned-routing readiness via mq-hal
+mqlaunch hal route divergence    # current-era route divergence via mq-hal
+mqlaunch hal compatibility       # stack compatibility report via mq-hal
+mqlaunch hal provenance          # which code the stack runs, via mq-hal
 mqlaunch mcp-status              # mq-mcp status and tool count
 mqlaunch hal                     # open HAL menu
 mqlaunch hal "your request"      # local Ollama-powered safe command router
@@ -227,6 +232,10 @@ mqlaunch hal session             # show local HAL session memory
 mqlaunch hal last                # show latest HAL memory item
 mqlaunch hal remember "note"     # save a local HAL note
 mqlaunch hal timeline            # show HAL session memory as compact timeline
+mqlaunch hal changes             # new/resolved/persisting since last HAL check
+mqlaunch hal actions             # what mq-hal ran, cancelled or refused
+mqlaunch hal code-plan --provider openai --repo NAME "goal"
+                                 # cloud plan: sends the goal to the named provider
 mqlaunch hal context             # show mqobsidian context-pack status
 mqlaunch obsidian status         # read-only mqobsidian consumer status
 mqlaunch obsidian inbox          # read-only memory inbox listing
@@ -263,6 +272,8 @@ HAL gallery: [docs/hal-gallery.md](docs/hal-gallery.md)
 HAL overview page: [docs/hal.html](docs/hal.html)
 
 HAL menu screenshot: [docs/screenshots/hal-menu.png](docs/screenshots/hal-menu.png)
+
+Dashboard reference: [docs/mq-dashboard-2.md](docs/mq-dashboard-2.md)
 
 ## 🧠 B2 Atlas Prompt OS
 
@@ -525,12 +536,8 @@ Current focus is documented in [ROADMAP.md](ROADMAP.md). The main boundary is:
 mqlaunch shows menu → delegates → mq-agent orchestrates → mq-mcp executes
 ```
 
-Near-term priorities:
-
-* release gate integration
-* plugin-style extensions
-* remote execution support
-* improved onboarding
+v2.5.0 is the current version. No next release is scoped and no version
+number is reserved; see [ROADMAP.md](ROADMAP.md#current-direction).
 
 ---
 

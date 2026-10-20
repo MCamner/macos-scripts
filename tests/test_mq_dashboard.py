@@ -643,6 +643,31 @@ class EntryPoint(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--json", result.stderr)
 
+    def test_json_mode_prints_sources_and_derived_summary(self):
+        # Covers `mqlaunch dashboard --json` for tests/output-mode-parity-smoke.sh:
+        # the real sources reach mq-agent, gh and doctor, so collection is stubbed.
+        import io
+        from contextlib import redirect_stdout
+        from unittest import mock
+
+        class FakeCollector:
+            def start(self):
+                pass
+
+            def wait(self):
+                return {**fixture(), "_pending": ["github"]}
+
+        out = io.StringIO()
+        with mock.patch.object(dashboard.sources, "Collector", FakeCollector), \
+                mock.patch.object(sys, "argv", ["mq_dashboard.py", "--json"]), redirect_stdout(out):
+            code = dashboard.main()
+        self.assertEqual(code, 0)
+        doc = json.loads(out.getvalue())
+        self.assertIn("stack", doc)
+        self.assertFalse(doc["github"]["ok"])
+        self.assertIn("overall", doc["derived"])
+        self.assertFalse([key for key in doc if key.startswith("_")])
+
 
 if __name__ == "__main__":
     unittest.main()

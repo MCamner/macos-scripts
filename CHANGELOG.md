@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch hal actions` passes its flags to `mq-hal actions`, the ledger of
+  what mq-hal ran, cancelled or refused. Without its own case the bridge
+  joined `actions --last 5` into one free-text prompt for the router.
+
+### Fixed
+
+* The command registry lists `dashboard` and `repl` (`prompt`, `shell`).
+  Both are handled by `bin/mqlaunch` or `mqlaunch.sh` before
+  `dispatch_cli_command()`, which the registry validator did not read, so
+  neither was in the registry, help or `docs/COMMANDS.md`. The validator now
+  also reads those two entry cases.
+* README: `mqlaunch dashboard` is documented; the HAL list adds
+  `compatibility`, `provenance`, `changes`, `actions` and `code-plan`; the
+  stale "Near-term priorities" list is replaced by ROADMAP's current
+  direction.
+
 ## [2.5.0] - 2026-10-20
 
 ### Added
