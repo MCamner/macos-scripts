@@ -40,6 +40,9 @@ All notable changes to this project will be documented in this file.
   and `mapfile` is replaced for macOS Bash 3.2.
 * `release.sh` found the wiki generator only when run as `./release.sh`; under
   `bash release.sh` the path resolved to `release.sh/tools/...`.
+* `release.sh --publish-wiki` runs the generator against the tree it is run
+  from. Without `MACOS_SCRIPTS_HOME` the generator scanned `~/macos-scripts`,
+  which may be checked out on another branch than the tag.
 * Wiki Command-Reference: `mq-dev-menu` is described by its panel label
   (`Dev`) instead of nothing, and files that print several different usage
   lines (`mqlaunch-command-mode`, `mq-ai-prompts`) get no description instead
