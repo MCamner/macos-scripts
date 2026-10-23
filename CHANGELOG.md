@@ -20,6 +20,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+* Pulse shows a deliberately unselected cloud-memory probe as `SKIPPED`,
+  rather than warning that the semantic store is degraded. Requires mq-agent
+  with the explicit `skipped` status; real degraded states still warn.
+
 * Pulse `MEMORY` runs its three mq-agent reads concurrently and reports them
   in list order, each with its own duration. The area went from 1.8 s to
   0.95 s; it had grown by one mq-agent start (~430 ms) with the review queue.

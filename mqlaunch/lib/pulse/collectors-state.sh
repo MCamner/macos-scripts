@@ -113,9 +113,11 @@ state = doc.get("status")
 store = doc.get("vector_store_id") or ""
 # The owner publishes the word. Anything other than the one word it uses for
 # working is reported as it came, not translated into a verdict here.
-status = "PASS" if state == "ready" else ("UNAVAILABLE" if not state else "WARN")
+status = {"ready": "PASS", "skipped": "SKIPPED"}.get(state, "UNAVAILABLE" if not state else "WARN")
 summary = f"semantic store {state}" if state else "semantic store state not reported"
-if not doc.get("repo_signal_available", True):
+if state == "skipped":
+    summary = "cloud check skipped (local provider)"
+if state != "skipped" and not doc.get("repo_signal_available", True):
     summary += ", repo-signal unavailable"
     if status == "PASS":
         status = "WARN"
@@ -140,7 +142,7 @@ print(store)
       # is already exposed. It is evidence rather than summary: an operator
       # scanning the screen wants the state, not a 32-character id.
       [[ -n "$store" ]] && extra+=(evidence="vector store $store")
-      [[ "$mem_status" != "PASS" ]] && extra+=(next_command="mqlaunch srm inspect")
+      [[ "$mem_status" != "PASS" && "$mem_status" != "SKIPPED" ]] && extra+=(next_command="mqlaunch srm inspect")
       pulse_item_add memory memory "$mem_status" "Semantic memory" "$summary" "${extra[@]}"
     fi
   fi
