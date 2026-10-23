@@ -325,6 +325,46 @@ class RepairPlanner(unittest.TestCase):
         self.assertEqual(action["kind"], "copy")
 
 
+REVIEW_STATUS = {"ok": True, "vault": "v", "rc": 0, "error": "", "status": {
+    "schema": "mqobsidian.memory-status.v1",
+    "observations": {"total": 21, "valid": 21, "invalid": 0}, "memories": 9,
+    "tiers": {"observed": 5, "candidate": 3, "promoted": 1, "deprecated": 0},
+    "held": {"total": 2, "conflicting": 0, "risky": 0, "superseding": 1, "promotion-review": 1},
+    "quarantined": 0, "tier_changes": 0}}
+
+
+class MemoryReview(unittest.TestCase):
+    """The review queue is read from mq-agent's JSON, never from its screen."""
+
+    def test_source_asks_for_json(self):
+        self.assertIn("--json", sources.source_table()["memory_review"][0])
+
+    def test_counts_come_from_the_schema(self):
+        counts = views.memory_counts(REVIEW_STATUS)
+        self.assertEqual((counts["observations"], counts["candidate"], counts["promoted"], counts["held"]),
+                         (21, 3, 1, 2))
+
+    def test_unknown_schema_gives_no_numbers(self):
+        doc = {"ok": True, "status": {"schema": "mqobsidian.memory-status.v2", "held": {"total": 5}}}
+        self.assertEqual(views.memory_counts(doc), {})
+        self.assertEqual(views.memory_counts(None), {})
+
+    def test_views_show_the_counts(self):
+        data = fixture()
+        data["memory_review"] = env(REVIEW_STATUS)
+        overview = "\n".join(views.text_of(line) for line in views.build_view(4, 0, data).lines)
+        self.assertRegex(overview, r"Held for review\s+2")
+        memory = "\n".join(views.text_of(line) for line in views.build_view(4, 3, data).lines)
+        self.assertRegex(memory, r"Held for review\s+2")
+        self.assertIn("superseding 1, promotion-review 1", memory)
+
+    def test_unknown_schema_is_unavailable_in_the_memory_tab(self):
+        data = fixture()
+        data["memory_review"] = env({"ok": True, "status": {"schema": "mqobsidian.memory-status.v2"}})
+        memory = "\n".join(views.text_of(line) for line in views.build_view(4, 3, data).lines)
+        self.assertIn("schema not understood: mqobsidian.memory-status.v2", memory)
+
+
 class Sources(unittest.TestCase):
     def test_redaction_masks_credentials(self):
         # Built at runtime so no credential-shaped literal sits in the repo.

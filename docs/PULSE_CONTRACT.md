@@ -139,7 +139,7 @@ the state, never the prose.
 | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
 | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
 | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
-| `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent`, `mqobsidian` |
+| `MEMORY` | `mq-agent memory status --json`, `mq-agent memory review-status --json`, `mq-agent stack cockpit --json` | `mq-agent`, `mqobsidian` |
 | `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
 | `QUALITY` | the repo's own gates, run one by one | `macos-scripts` |
 
@@ -166,13 +166,14 @@ a signal rather than reporting one — the exact thing this contract forbids. A
 failing gate names itself, and a gate that is not installed reports
 `UNAVAILABLE`, because a check that is not there is not a check that passed.
 
-### What is deliberately missing
+### The review queue
 
-The held/review queue is not in `MEMORY`. `mq-agent memory review-status` exists
-and is read-only, but prints only for a human — reading it would make mq-agent's
-screen layout a contract this repo depends on. Closing that gap needs a
-machine-readable mode in mq-agent, and until then the queue is absent rather
-than approximated.
+`MEMORY` reads the held/review queues from `mq-agent memory review-status
+--json`, which forwards mqobsidian's `mqobsidian.memory-status.v1` document. An
+empty queue is `PASS`, held memories are `WARN` with the count per queue, and a
+failing delegate or a schema this repo does not know is `UNAVAILABLE`. The
+human screen is never parsed; before `--json` existed the queue was left out
+instead.
 
 Absence is the honest signal. A collector that reports nothing and a subject
 that is healthy must never look the same.
@@ -223,6 +224,12 @@ lane on purpose: `stack` and `memory` both shell into mq-agent through the same
 `uv` project, so they stay sequential with respect to each other while running
 alongside everything else. That is the whole of the serial rule, and it is a
 constraint on those two rather than on all six.
+
+Inside its lane, `memory` launches its three mq-agent reads together and emits
+them in list order. mq-agent spends ~430 ms starting before it does any work, so
+serially the area paid that three times (1.8 s measured, 0.95 s concurrent).
+Concurrent `uv run` against the same, already synced project was checked first;
+`tests/pulse-state-collectors-smoke.sh` holds the overlap and the order.
 
 Order is never completion order. A panel that reshuffled because a network call
 was fast would make two runs of the same command unreadable against each other,

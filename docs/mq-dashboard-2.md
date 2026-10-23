@@ -82,7 +82,7 @@ Mouse input is disabled.
 | Repositories | Overview, Provenance | `mq-agent stack status --json`, `mq-agent stack provenance --json` |
 | MCP Services | Overview, Services, Logs, Tool Surface, Compatibility, Diagnostics | `launchctl print`, `lsof`, `ps`, LaunchAgent plists, `mq-agent mcp status --json`, service log tails |
 | AI Models | Overview, Ollama Models, Running Models, OpenAI, Routing, Diagnostics | Ollama HTTP API (`/api/version`, `/api/tags`, `/api/ps`), `mq-agent models current --json`, `mqlaunch auth status --json`, `sysctl`, `vm_stat` |
-| Evidence & Learning | Overview, Routing, Hybrid Retrieval, Memory, History, Export | `mq-agent route readiness/divergence/history --json`, `mq-agent feedback report/candidates --json`, `mq-agent memory review-status`, `mq-agent obsidian inbox list --json` |
+| Evidence & Learning | Overview, Routing, Hybrid Retrieval, Memory, History, Export | `mq-agent route readiness/divergence/history --json`, `mq-agent feedback report/candidates --json`, `mq-agent memory review-status --json`, `mq-agent obsidian inbox list --json` |
 | Repair Planner | Overview, Issues, Analysis, Fix Plan, History, Settings | derived from every source above plus `mqlaunch doctor --fix-plan --json` and `mq-agent stack compatibility --json` |
 | GitHub & Releases | Overview, Pull Requests, CI Checks, Releases, Compatibility, History | `gh pr list`, `gh release list`, stack verification scopes, `mq-agent stack compatibility --json` |
 | Automation | Overview, Jobs, History, Failures | `~/Library/LaunchAgents/se.mq.*.plist`, `launchctl print`, `~/mq-evidence/` snapshots and error log |
@@ -167,5 +167,6 @@ and `MQ_AGENT_BIN` override where `mq-agent` is found.
   UNAVAILABLE.
 * OpenAI integrations have no registry source and show UNAVAILABLE.
 * Repair history has no evidence log yet; the tab lists evidence exports.
-* `mq-agent memory review-status` has no JSON mode, so the Memory tab shows its
-  text output and parses only the tier counts for the overview.
+* The Memory tab and the overview read `mq-agent memory review-status --json`
+  (`mqobsidian.memory-status.v1`, mq-agent #431). Any other schema shows
+  UNAVAILABLE; an mq-agent without `--json` shows the source as unavailable.

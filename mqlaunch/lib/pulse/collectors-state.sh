@@ -8,7 +8,7 @@
 #
 # The rule is the same one, and it is the whole design: a collector reports what
 # its owner actually knows. It never fills a gap with a conclusion of its own.
-# That is why the review queue is missing from MEMORY rather than parsed out of
+# That is why the review queue is read from its JSON rather than parsed out of
 # a screen, and why QUALITY runs the real gates rather than counting green
 # tests — "some checks passed" is a verdict this repo would be inventing.
 
@@ -32,36 +32,73 @@ pulse_agent_json() {
     uv --project "$agent_home" run mq-agent "$@" 2>/dev/null
 }
 
+# Runs one mq-agent read in the background and writes what happened to a file,
+# in the same three-part format as pulse_gh_probe, so pulse_gh_probe_read turns
+# it back into a status, a duration and a body. Like the other probes it runs in
+# a subshell and must not touch PULSE_ITEMS.
+pulse_agent_probe() {
+  local out="$1"
+  shift
+
+  local started ended output read_status=0
+  started="$(pulse_now_ms)"
+  output="$(pulse_agent_json "$@")" || read_status=$?
+  ended="$(pulse_now_ms)"
+
+  {
+    printf '%s\n' "$read_status"
+    printf '%s\n' "$((ended - started))"
+    printf '%s' "$output"
+  } > "$out"
+}
+
 # MEMORY — what mq-agent reports about semantic memory and stack truth.
 #
-# Two readings, both published by their owner as JSON:
+# Three readings, each published by its owner as JSON:
 #
-#   mq-agent memory status --json   semantic store, vector store, repo-signal
-#   mq-agent stack cockpit --json   brain_export.status — stack-truth freshness
+#   mq-agent memory status --json          semantic store, vector store, repo-signal
+#   mq-agent memory review-status --json   held/review queues (mqobsidian.memory-status.v1)
+#   mq-agent stack cockpit --json          brain_export.status — stack-truth freshness
 #
-# The held/review queue is deliberately absent. `mq-agent memory review-status`
-# exists and is read-only, but prints only for a human; reading it would make
-# mq-agent's screen layout a contract this repo depends on, which is the same
-# mistake as parsing `repos status` instead of adding `--json` to it. The gap is
-# recorded in ROADMAP.md against the box, not papered over with a guess.
+# The review queue is read only through `--json`. Before it existed the queue was
+# left out rather than parsed off the human screen, which would have made that
+# layout a contract this repo depends on.
+#
+# The three reads run concurrently and are emitted in list order. Each is its
+# own mq-agent process, and mq-agent spends ~430 ms starting before it does any
+# work, so serially the area paid that three times. Concurrent `uv run` against
+# the same, already synced project was checked before this changed: uv locks the
+# environment while it syncs. The stack collector still runs before this one, in
+# the same lane.
 pulse_collect_memory() {
-  local started ended
-  started="$(pulse_now_ms)"
+  local agent_work
+  agent_work="$(mktemp -d)"
+  pulse_agent_probe "$agent_work/memory" memory status "$BASE_DIR" --json &
+  pulse_agent_probe "$agent_work/review" memory review-status --json &
+  pulse_agent_probe "$agent_work/truth" stack cockpit --json &
+  # The probes report through their files, as in the Git collector.
+  wait 2>/dev/null || true
 
-  local document read_status=0
+  local document read_status memory_ms review review_status review_ms
+  local cockpit truth_status truth_ms
+  pulse_gh_probe_read "$agent_work/memory"
+  document="$PULSE_GH_BODY" read_status="$PULSE_GH_STATUS" memory_ms="$PULSE_GH_MS"
+  pulse_gh_probe_read "$agent_work/review"
+  review="$PULSE_GH_BODY" review_status="$PULSE_GH_STATUS" review_ms="$PULSE_GH_MS"
+  pulse_gh_probe_read "$agent_work/truth"
+  cockpit="$PULSE_GH_BODY" truth_status="$PULSE_GH_STATUS" truth_ms="$PULSE_GH_MS"
+  rm -rf "$agent_work"
+
   # The status is captured rather than swallowed by `if !`, so that a spent
   # budget can be named as one. mq-agent that is not installed returns 1 and
   # keeps the fallback wording.
-  document="$(pulse_agent_json memory status "$BASE_DIR" --json)" || read_status=$?
   if [[ $read_status -ne 0 || -z "$document" ]]; then
-    ended="$(pulse_now_ms)"
     pulse_item_add memory memory UNAVAILABLE "Semantic memory" \
       "$(pulse_gap_reason "$read_status" "mq-agent did not report memory status" \
          "$PULSE_STACK_TIMEOUT")" \
       next_command="mqlaunch srm inspect" \
-      duration_ms="$((ended - started))"
+      duration_ms="$memory_ms"
   else
-    ended="$(pulse_now_ms)"
     local parsed
     parsed="$(printf '%s' "$document" | python3 -c '
 import json, sys
@@ -90,7 +127,7 @@ print(store)
       pulse_item_add memory memory UNAVAILABLE "Semantic memory" \
         "memory status output was not readable" \
         next_command="mqlaunch srm inspect" \
-        duration_ms="$((ended - started))"
+        duration_ms="$memory_ms"
     else
       local mem_status summary store
       {
@@ -98,7 +135,7 @@ print(store)
         read -r summary || true
         read -r store || true
       } <<< "$parsed"
-      local -a extra=(duration_ms="$((ended - started))")
+      local -a extra=(duration_ms="$memory_ms")
       # The vector store id is the source, which the roadmap asks for where it
       # is already exposed. It is evidence rather than summary: an operator
       # scanning the screen wants the state, not a 32-character id.
@@ -108,20 +145,17 @@ print(store)
     fi
   fi
 
+  pulse_collect_review_queue "$review" "$review_status" "$review_ms"
+
   # Stack truth freshness, from the cockpit's brain_export block.
-  started="$(pulse_now_ms)"
-  local cockpit truth_status=0
-  cockpit="$(pulse_agent_json stack cockpit --json)" || truth_status=$?
   if [[ $truth_status -ne 0 || -z "$cockpit" ]]; then
-    ended="$(pulse_now_ms)"
     pulse_item_add memory memory UNAVAILABLE "Stack truth" \
       "$(pulse_gap_reason "$truth_status" "mq-agent did not report stack-truth freshness" \
          "$PULSE_STACK_TIMEOUT")" \
       next_command="mqlaunch stack cockpit" \
-      duration_ms="$((ended - started))"
+      duration_ms="$truth_ms"
     return 0
   fi
-  ended="$(pulse_now_ms)"
 
   local truth
   truth="$(printf '%s' "$cockpit" | python3 -c '
@@ -155,19 +189,86 @@ print(f"stack truth {state}{suffix}")
     pulse_item_add memory memory UNAVAILABLE "Stack truth" \
       "cockpit output was not readable" \
       next_command="mqlaunch stack cockpit" \
-      duration_ms="$((ended - started))"
+      duration_ms="$truth_ms"
     return 0
   fi
 
-  local truth_status truth_summary
+  local truth_summary
   {
     read -r truth_status || true
     read -r truth_summary || true
   } <<< "$truth"
 
-  local -a truth_extra=(duration_ms="$((ended - started))")
+  local -a truth_extra=(duration_ms="$truth_ms")
   [[ "$truth_status" != "PASS" ]] && truth_extra+=(next_command="mqlaunch obsidian status")
   pulse_item_add memory memory "$truth_status" "Stack truth" "$truth_summary" "${truth_extra[@]}"
+}
+
+# The held/review queues, as mqobsidian counts them and mq-agent forwards them.
+#
+# mq-agent exits 1 when mqobsidian fails but still prints one JSON document, so
+# the output is read whatever the exit status; only an empty answer is a gap by
+# status. The delegate's error text is not shown: it can name a local path.
+#
+# Takes the probe's body, exit status and duration; pulse_collect_memory runs
+# the read alongside the other two.
+pulse_collect_review_queue() {
+  local document="$1" read_status="$2" duration="$3"
+  if [[ -z "$document" ]]; then
+    pulse_item_add memory memory UNAVAILABLE "Review queue" \
+      "$(pulse_gap_reason "$read_status" "mq-agent did not report the review queue" \
+         "$PULSE_STACK_TIMEOUT")" \
+      next_command="mqlaunch memory review-status" \
+      duration_ms="$duration"
+    return 0
+  fi
+
+  local parsed
+  parsed="$(printf '%s' "$document" | python3 -c '
+import json, sys
+
+try:
+    doc = json.load(sys.stdin)
+except json.JSONDecodeError:
+    print("UNAVAILABLE")
+    print("review-status output was not readable")
+    raise SystemExit(0)
+
+status = doc.get("status") if isinstance(doc, dict) else None
+if not isinstance(status, dict) or not doc.get("ok"):
+    print("UNAVAILABLE")
+    print("mqobsidian did not report the review queue")
+    raise SystemExit(0)
+schema = status.get("schema")
+if schema != "mqobsidian.memory-status.v1":
+    print("UNAVAILABLE")
+    print(f"review queue schema not understood: {schema}")
+    raise SystemExit(0)
+
+held = status.get("held") or {}
+total = held.get("total")
+if not isinstance(total, int):
+    print("UNAVAILABLE")
+    print("review queue size not reported")
+elif total == 0:
+    print("PASS")
+    print("review queue empty")
+else:
+    queues = ", ".join(f"{k} {held[k]}" for k in
+                       ("conflicting", "risky", "superseding", "promotion-review")
+                       if isinstance(held.get(k), int) and held[k] > 0)
+    print("WARN")
+    print(f"{total} held for review" + (f" ({queues})" if queues else ""))
+')"
+
+  local queue_status queue_summary
+  {
+    read -r queue_status || true
+    read -r queue_summary || true
+  } <<< "$parsed"
+  local -a extra=(duration_ms="$duration")
+  [[ "$queue_status" != "PASS" ]] && extra+=(next_command="mqlaunch memory review-status")
+  pulse_item_add memory memory "$queue_status" "Review queue" "$queue_summary" "${extra[@]}"
 }
 
 # GIT / GITHUB — what is in flight for the repo mqlaunch is running from.
