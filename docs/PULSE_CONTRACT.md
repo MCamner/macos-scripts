@@ -72,6 +72,9 @@ dependency is missing must report it rather than return `PASS`, and rather than
 disappear from the output: an operator reading a clean screen has to be able to
 trust that everything on it was actually measured.
 
+When mq-agent reports semantic memory `skipped` for the local provider,
+Pulse keeps it visible as `SKIPPED`; it makes no claim about cloud health.
+
 `SKIPPED` is not a quieter `UNAVAILABLE`. It means the operator excluded the
 check — `--no-network` and the like — so the run is doing what it was asked.
 The difference matters at the exit code: an unreachable check is a warning, an

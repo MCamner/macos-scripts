@@ -113,6 +113,20 @@ states="$(pulse_items_states | tr '\n' ' ')"
   echo "FAIL: a report with no state gave '$states'" >&2; exit 1; }
 echo "  ok: degraded and stale warn, an unreported state is UNAVAILABLE"
 
+# A deliberately unselected cloud probe must stay visible without a warning.
+write_agent <<'EOF'
+#!/bin/sh
+case "$*" in
+  *"memory status"*) echo '{"status":"skipped","repo_signal_available":true}' ;;
+  *"review-status"*) echo '{"ok":true,"status":{"schema":"mqobsidian.memory-status.v1","held":{"total":0}}}' ;;
+  *"stack cockpit"*) echo '{"brain_export":{"status":"fresh","age_days":0}}' ;;
+esac
+EOF
+pulse_items_reset
+pulse_collect_memory
+states="$(pulse_items_states | tr '\n' ' ')"
+[[ "$states" == "SKIPPED PASS PASS " ]] || { echo "FAIL: skipped probe gave '$states'" >&2; exit 1; }
+
 echo "[4/11] memory reports the gap when mq-agent is not installed"
 ( export MQ_AGENT_BIN="$run_dir/absent"
   pulse_items_reset
