@@ -289,15 +289,14 @@ Six collectors:
 | `SYSTEM` | `tools/scripts/doctor.sh --json` | `macos-scripts` |
 | `REPOSITORIES` | `tools/scripts/mq-repos.py status --json` | `macos-scripts` |
 | `MQ STACK` | `mq-agent stack status --json` | `mq-agent` |
-| `MEMORY` | `mq-agent memory status --json`, `mq-agent stack cockpit --json` | `mq-agent` |
+| `MEMORY` | `mq-agent memory status --json`, `mq-agent memory review-status --json`, `mq-agent stack cockpit --json` | `mq-agent` |
 | `GIT / GITHUB` | `git status`, `git rev-list`, `gh pr list`, `gh run list` | local git, GitHub |
 | `QUALITY` | the repo's own gates, run one by one | `macos-scripts` |
 
 `QUALITY` reports each gate separately and never adds them up — "some checks
 passed" is not a verdict this repo publishes, so Pulse does not invent it. The
-held/review queue is absent from `MEMORY` for the same reason: `mq-agent memory
-review-status` has no machine-readable mode, and reading its screen would make
-that layout a contract.
+held/review queue in `MEMORY` comes from `mq-agent memory review-status --json`,
+never from its screen.
 
 Exit status is the verdict, and it is the one contract a script should read:
 

@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file.
 * `mqlaunch hal actions` passes its flags to `mq-hal actions`, the ledger of
   what mq-hal ran, cancelled or refused. Without its own case the bridge
   joined `actions --last 5` into one free-text prompt for the router.
+* Pulse `MEMORY` reports the held/review queue as a `Review queue` item, read
+  from `mq-agent memory review-status --json` (`mqobsidian.memory-status.v1`,
+  mq-agent #431). Empty is `PASS`, held memories `WARN` with per-queue counts
+  and `mqlaunch memory review-status` as the next step, and a failing delegate
+  or unknown schema `UNAVAILABLE`. The human screen is never parsed. With an
+  mq-agent that predates `--json` the item is `UNAVAILABLE`.
 
 ### Fixed
 

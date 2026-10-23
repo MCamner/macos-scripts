@@ -1969,16 +1969,14 @@ MQ STACK
 * [x] Surface vector-store availability.
 * [x] Surface vector-store source where already exposed.
 * [x] Surface stack-truth freshness.
-* [ ] Surface existing held/review queues when a read-only interface exists.
+* [x] Surface existing held/review queues when a read-only interface exists.
 
-  **Not done, and the condition is the reason.** `mq-agent memory review-status`
-  exists and is read-only, but it prints for a human — no `--json`. Reading it
-  would make mq-agent's screen layout a contract this repo depends on, which is
-  the mistake `--json` on `mq-repos.py` was added to avoid one level down.
-
-  So the queue is absent from `MEMORY` rather than guessed at. Closing this box
-  needs a machine-readable mode on `mq-agent memory review-status`, in mq-agent.
-  Nothing in `macos-scripts` can close it.
+  Closed 2026-10-23 once the interface existed: mq-agent PR #431 added
+  `memory review-status --json`, which forwards mqobsidian's
+  `mqobsidian.memory-status.v1`. `MEMORY` now carries a `Review queue` item —
+  `PASS` when empty, `WARN` with per-queue counts when memories are held,
+  `UNAVAILABLE` for a failing delegate or an unknown schema. The screen is still
+  never parsed. Cost: one more mq-agent call, about 450 ms in the memory lane.
 * [x] Never infer memory state from missing data.
 
 Example:
@@ -2899,8 +2897,8 @@ Owner: `macos-scripts`
 ### PR 3 — State collectors
 
 * [x] Memory — semantic store, vector store and stack-truth freshness. The
-  held/review queue is not here; see the box in the collector block for why the
-  gap is left open rather than guessed at.
+  held/review queue followed later, once mq-agent published it as JSON; see the
+  box in the collector block.
 * [x] Git/GitHub.
 * [x] Quality.
 * [x] `--no-network`, which the Git collector needed to be testable and an
@@ -3040,9 +3038,10 @@ settled semantics rather than establishing them by accident.
   `bin/mqlaunch` like every other row, and the gate holds it to that from both
   sides — it must route through the dispatcher, and it must not reach the
   entrypoint script or the selector library directly.
-* [ ] Reuse a collected document between `pulse` and `next` — see the decision
-  below. Blocked on the same freshness contract as the Pulse cache, and
-  deliberately not solved from this side.
+* [x] Reuse a collected document between `pulse` and `next` — delivered by
+  v2.2.0, which gave Pulse the freshness contract this box was blocked on:
+  `next` reuses a stored run inside the reader's window and says so
+  (`Reused pulse from 41s ago`). The decision below is kept for the record.
 * [ ] Find a consumer for `mq.next.v1`, or decline it.
 
   The contract is locked, documented and gated, and nothing in the stack reads

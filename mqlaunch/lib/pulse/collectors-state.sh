@@ -36,14 +36,13 @@ pulse_agent_json() {
 #
 # Two readings, both published by their owner as JSON:
 #
-#   mq-agent memory status --json   semantic store, vector store, repo-signal
-#   mq-agent stack cockpit --json   brain_export.status — stack-truth freshness
+#   mq-agent memory status --json          semantic store, vector store, repo-signal
+#   mq-agent memory review-status --json   held/review queues (mqobsidian.memory-status.v1)
+#   mq-agent stack cockpit --json          brain_export.status — stack-truth freshness
 #
-# The held/review queue is deliberately absent. `mq-agent memory review-status`
-# exists and is read-only, but prints only for a human; reading it would make
-# mq-agent's screen layout a contract this repo depends on, which is the same
-# mistake as parsing `repos status` instead of adding `--json` to it. The gap is
-# recorded in ROADMAP.md against the box, not papered over with a guess.
+# The review queue is read only through `--json`. Before it existed the queue was
+# left out rather than parsed off the human screen, which would have made that
+# layout a contract this repo depends on.
 pulse_collect_memory() {
   local started ended
   started="$(pulse_now_ms)"
@@ -108,6 +107,8 @@ print(store)
     fi
   fi
 
+  pulse_collect_review_queue
+
   # Stack truth freshness, from the cockpit's brain_export block.
   started="$(pulse_now_ms)"
   local cockpit truth_status=0
@@ -168,6 +169,73 @@ print(f"stack truth {state}{suffix}")
   local -a truth_extra=(duration_ms="$((ended - started))")
   [[ "$truth_status" != "PASS" ]] && truth_extra+=(next_command="mqlaunch obsidian status")
   pulse_item_add memory memory "$truth_status" "Stack truth" "$truth_summary" "${truth_extra[@]}"
+}
+
+# The held/review queues, as mqobsidian counts them and mq-agent forwards them.
+#
+# mq-agent exits 1 when mqobsidian fails but still prints one JSON document, so
+# the output is read whatever the exit status; only an empty answer is a gap by
+# status. The delegate's error text is not shown: it can name a local path.
+pulse_collect_review_queue() {
+  local started ended document read_status=0
+  started="$(pulse_now_ms)"
+  document="$(pulse_agent_json memory review-status --json)" || read_status=$?
+  ended="$(pulse_now_ms)"
+  if [[ -z "$document" ]]; then
+    pulse_item_add memory memory UNAVAILABLE "Review queue" \
+      "$(pulse_gap_reason "$read_status" "mq-agent did not report the review queue" \
+         "$PULSE_STACK_TIMEOUT")" \
+      next_command="mqlaunch memory review-status" \
+      duration_ms="$((ended - started))"
+    return 0
+  fi
+
+  local parsed
+  parsed="$(printf '%s' "$document" | python3 -c '
+import json, sys
+
+try:
+    doc = json.load(sys.stdin)
+except json.JSONDecodeError:
+    print("UNAVAILABLE")
+    print("review-status output was not readable")
+    raise SystemExit(0)
+
+status = doc.get("status") if isinstance(doc, dict) else None
+if not isinstance(status, dict) or not doc.get("ok"):
+    print("UNAVAILABLE")
+    print("mqobsidian did not report the review queue")
+    raise SystemExit(0)
+schema = status.get("schema")
+if schema != "mqobsidian.memory-status.v1":
+    print("UNAVAILABLE")
+    print(f"review queue schema not understood: {schema}")
+    raise SystemExit(0)
+
+held = status.get("held") or {}
+total = held.get("total")
+if not isinstance(total, int):
+    print("UNAVAILABLE")
+    print("review queue size not reported")
+elif total == 0:
+    print("PASS")
+    print("review queue empty")
+else:
+    queues = ", ".join(f"{k} {held[k]}" for k in
+                       ("conflicting", "risky", "superseding", "promotion-review")
+                       if isinstance(held.get(k), int) and held[k] > 0)
+    print("WARN")
+    print(f"{total} held for review" + (f" ({queues})" if queues else ""))
+')"
+
+  local queue_status queue_summary
+  {
+    read -r queue_status || true
+    read -r queue_summary || true
+  } <<< "$parsed"
+  local -a extra=(duration_ms="$((ended - started))")
+  [[ "$queue_status" != "PASS" ]] && extra+=(next_command="mqlaunch memory review-status")
+  pulse_item_add memory memory "$queue_status" "Review queue" "$queue_summary" "${extra[@]}"
 }
 
 # GIT / GITHUB — what is in flight for the repo mqlaunch is running from.
