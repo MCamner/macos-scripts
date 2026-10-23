@@ -25,7 +25,7 @@ echo "SMOKE: pulse memory, git and quality collectors"
 run_dir="$(mktemp -d)"
 trap 'rm -rf "$run_dir"' EXIT
 
-echo "[1/10] the state collectors exist and load"
+echo "[1/11] the state collectors exist and load"
 test -f "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
 # shellcheck source=/dev/null
 source "$ROOT/mqlaunch/lib/pulse/collectors-state.sh"
@@ -46,7 +46,7 @@ write_agent() {
   chmod +x "$run_dir/bin/uv"
 }
 
-echo "[2/10] memory maps the owner's words, and carries the vector store as evidence"
+echo "[2/11] memory maps the owner's words, and carries the vector store as evidence"
 write_agent <<'EOF'
 #!/bin/sh
 case "$*" in
@@ -73,7 +73,7 @@ truth="$(pulse_item_field "${PULSE_ITEMS[2]}" summary)"
   echo "FAIL: freshness summary was '$truth'" >&2; exit 1; }
 echo "  ok: ready, empty queue and fresh all PASS, store id is evidence not summary"
 
-echo "[3/10] memory never translates an unknown state into a pass"
+echo "[3/11] memory never translates an unknown state into a pass"
 # The owner's word is reported as it came. Anything that is not the word it uses
 # for working is a reason to look, and a state it does not report at all is a
 # gap rather than health.
@@ -113,7 +113,7 @@ states="$(pulse_items_states | tr '\n' ' ')"
   echo "FAIL: a report with no state gave '$states'" >&2; exit 1; }
 echo "  ok: degraded and stale warn, an unreported state is UNAVAILABLE"
 
-echo "[4/10] memory reports the gap when mq-agent is not installed"
+echo "[4/11] memory reports the gap when mq-agent is not installed"
 ( export MQ_AGENT_BIN="$run_dir/absent"
   pulse_items_reset
   pulse_collect_memory
@@ -123,7 +123,7 @@ echo "[4/10] memory reports the gap when mq-agent is not installed"
 )
 echo "  ok: three UNAVAILABLE items, no guesses"
 
-echo "[5/10] the review queue is read from its JSON, never from the screen"
+echo "[5/11] the review queue is read from its JSON, never from the screen"
 # mq-agent memory review-status --json publishes mqobsidian.memory-status.v1.
 # Held memories are a reason to look; a failing delegate or an unknown schema is
 # a gap, and the delegate's error text (which can name a local path) stays out.
@@ -174,7 +174,40 @@ schema_summary="$(pulse_item_field "${PULSE_ITEMS[1]}" summary)"
   echo "FAIL: unknown schema gave '$schema_state' '$schema_summary'" >&2; exit 1; }
 echo "  ok: held warns with a next step, a failing delegate and an unknown schema are gaps"
 
-echo "[6/10] the git collector reads the worktree and never writes to it"
+echo "[6/11] the three mq-agent readings overlap, and keep list order"
+# Each reading is a separate mq-agent process, and mq-agent costs ~430 ms to
+# start before it does any work, so serially the area paid that three times.
+# They ask independent questions, so they are launched together and emitted in
+# list order — the shape the Git collector's two gh reads already use. Stack
+# truth answers first here, and must still be reported last.
+write_agent <<'EOF'
+#!/bin/sh
+case "$*" in
+  *"memory status"*)
+    sleep 1; echo '{"status":"ready","repo_signal_available":true}' ;;
+  *"review-status"*)
+    sleep 1; echo '{"ok":true,"status":{"schema":"mqobsidian.memory-status.v1","held":{"total":0}}}' ;;
+  *"stack cockpit"*)
+    sleep 0.2; echo '{"brain_export":{"status":"fresh","age_days":0}}' ;;
+esac
+EOF
+pulse_items_reset
+overlap_started="$(pulse_now_ms)"
+pulse_collect_memory
+overlap_ms=$(( $(pulse_now_ms) - overlap_started ))
+subjects="$(for item in "${PULSE_ITEMS[@]}"; do pulse_item_field "$item" subject; printf ','; done)"
+[[ "$subjects" == "Semantic memory,Review queue,Stack truth," ]] || {
+  echo "FAIL: memory items came out as '$subjects'" >&2; exit 1; }
+# Serial is at least 2200 ms, because the stub sleeps are a hard floor;
+# concurrent is a little over 1000 ms.
+[[ "$overlap_ms" -lt 1900 ]] || {
+  echo "FAIL: the three readings took ${overlap_ms} ms — they ran one after another" >&2; exit 1; }
+truth_ms="$(pulse_item_field "${PULSE_ITEMS[2]}" duration_ms)"
+[[ "$truth_ms" -lt 900 ]] || {
+  echo "FAIL: stack truth reported ${truth_ms} ms, the area's wall time rather than its own" >&2; exit 1; }
+echo "  ok: ${overlap_ms} ms for three readings, list order kept, own durations"
+
+echo "[7/11] the git collector reads the worktree and never writes to it"
 # A scratch repo, so the assertions do not depend on the state of this checkout.
 work="$run_dir/repo"
 mkdir -p "$work"
@@ -217,7 +250,7 @@ status_after="$(git -C "$work" status --short | wc -l | tr -d ' ')"
   echo "FAIL: the git collector changed the worktree" >&2; exit 1; }
 echo "  ok: clean, dirty and no-upstream all read correctly, nothing mutated"
 
-echo "[7/10] --no-network marks GitHub SKIPPED rather than dropping it"
+echo "[8/11] --no-network marks GitHub SKIPPED rather than dropping it"
 ( export BASE_DIR="$work"
   pulse_items_reset
   pulse_collect_git 1
@@ -253,7 +286,7 @@ done
 )
 echo "  ok: skipped when asked, UNAVAILABLE when gh is missing"
 
-echo "[8/10] a failing CI run is FAIL on the subject, not on the reading"
+echo "[9/11] a failing CI run is FAIL on the subject, not on the reading"
 # The other half of the timeout rule. GitHub answering "this run failed" is a
 # fact about the branch, and it must arrive as FAIL — the collector is only
 # forbidden from inventing a verdict, not from reporting one it was given.
@@ -293,7 +326,7 @@ chmod +x "$ci_stub/gh"
 )
 echo "  ok: GitHub's verdict is carried, and it names the workflow"
 
-echo "[9/10] quality runs the real gates and reports each verdict separately"
+echo "[10/11] quality runs the real gates and reports each verdict separately"
 # The rule this step exists for: no aggregate verdict. One failing gate must
 # show as that gate failing, next to the others still passing.
 gate_root="$run_dir/gates"
@@ -339,7 +372,7 @@ chmod +x "$gate_root/tools/scripts/validate-command-registry.py" \
 )
 echo "  ok: five items, one per gate, no aggregate verdict"
 
-echo "[10/10] one unreachable delegate does not take the run with it"
+echo "[11/11] one unreachable delegate does not take the run with it"
 # The P1 exit gate: every collector runs independently, and a failure becomes a
 # state rather than a crash. Driven end to end with mq-agent absent, gh absent,
 # and one quality gate failing — the run must still finish and report 2.

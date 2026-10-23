@@ -225,6 +225,12 @@ lane on purpose: `stack` and `memory` both shell into mq-agent through the same
 alongside everything else. That is the whole of the serial rule, and it is a
 constraint on those two rather than on all six.
 
+Inside its lane, `memory` launches its three mq-agent reads together and emits
+them in list order. mq-agent spends ~430 ms starting before it does any work, so
+serially the area paid that three times (1.8 s measured, 0.95 s concurrent).
+Concurrent `uv run` against the same, already synced project was checked first;
+`tests/pulse-state-collectors-smoke.sh` holds the overlap and the order.
+
 Order is never completion order. A panel that reshuffled because a network call
 was fast would make two runs of the same command unreadable against each other,
 and the item order is also what `attention` breaks ties on.
