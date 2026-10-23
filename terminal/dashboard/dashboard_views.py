@@ -512,7 +512,7 @@ def home_panels(data: dict, width: int = 40) -> list:
     else:
         lines.append(missing(data, "routing"))
     inbox = get(data, "inbox")
-    counts = memory_counts(get(data, "memory_review") or "")
+    counts = memory_counts(get(data, "memory_review"))
     if inbox is not None:
         lines.append(L(S(f"{'Memory candidates':<22}", "muted"),
                        f"{inbox.get('count', 0)} ({counts.get('candidate', 0)} candidate, {counts.get('held', 0)} held)"))
@@ -1029,7 +1029,7 @@ def _ev_overview(data, ui):
     actual = tc.get("actual") or {}
     report = get(data, "feedback_report") or {}
     cands = (get(data, "feedback_candidates") or {}).get("candidates") or []
-    review = memory_counts(get(data, "memory_review") or "")
+    review = memory_counts(get(data, "memory_review"))
     lines = [L(S("ROUTING READINESS", "title"))]
     lines += ([kv("Recommendation", tc.get("recommendation")), kv("Observations", f"{actual.get('observations')} / 20 applied"),
                kv("Ignored (not applied)", routing.get("observations_ignored_not_applied")),
@@ -1048,12 +1048,21 @@ def _ev_overview(data, ui):
     return View(lines)
 
 
-def memory_counts(text: str) -> dict:
-    counts = {}
-    for key, value in re.findall(r"^\s*(observations|memories|observed|candidate|promoted|deprecated|held|quarantined):\s+(\d+)",
-                                 text, re.MULTILINE):
-        counts.setdefault(key, int(value))
-    return counts
+MEMORY_STATUS_SCHEMA = "mqobsidian.memory-status.v1"
+HELD_QUEUES = ("conflicting", "risky", "superseding", "promotion-review")
+
+
+def memory_counts(doc) -> dict:
+    """Counts from `mq-agent memory review-status --json`; empty unless the schema is the one understood."""
+    status = doc.get("status") if isinstance(doc, dict) else None
+    if not isinstance(status, dict) or status.get("schema") != MEMORY_STATUS_SCHEMA:
+        return {}
+    tiers = status.get("tiers") or {}
+    held = status.get("held") or {}
+    return {"observations": (status.get("observations") or {}).get("total"), "memories": status.get("memories"),
+            **{key: tiers.get(key) for key in ("observed", "candidate", "promoted", "deprecated")},
+            "held": held.get("total"), "quarantined": status.get("quarantined"),
+            "held_queues": {key: held[key] for key in HELD_QUEUES if isinstance(held.get(key), int) and held[key] > 0}}
 
 
 def _ev_routing(data, ui):
@@ -1117,9 +1126,21 @@ def _ev_hybrid(data, ui):
 
 
 def _ev_memory(data, ui):
-    text = get(data, "memory_review")
-    lines = [L(S("mq-agent memory review-status", "title"))]
-    lines += [L(S(x)) for x in text.splitlines()] if text else [missing(data, "memory_review")]
+    doc = get(data, "memory_review")
+    counts = memory_counts(doc)
+    lines = [L(S("mq-agent memory review-status --json", "title"))]
+    if counts:
+        queues = ", ".join(f"{key} {value}" for key, value in counts["held_queues"].items())
+        lines += [kv("Observations", counts["observations"]), kv("Memories", counts["memories"]),
+                  kv("Observed", counts["observed"]), kv("Candidates", counts["candidate"]),
+                  kv("Promoted", counts["promoted"]), kv("Deprecated", counts["deprecated"]),
+                  kv("Held for review", f"{counts['held']}" + (f" ({queues})" if queues else "")),
+                  kv("Quarantined", counts["quarantined"])]
+    elif doc:
+        schema = (doc.get("status") or {}).get("schema") if isinstance(doc.get("status"), dict) else None
+        lines.append(L(S("UNAVAILABLE", "muted"), S(f"  review queue schema not understood: {schema}", "muted")))
+    else:
+        lines.append(missing(data, "memory_review"))
     lines += [[], L(S("Promotion inbox ", "title"),
                     St("STALE") if (data.get("inbox") or {}).get("error") else St("PASS" if get(data, "inbox") else "UNAVAILABLE"))]
     inbox = get(data, "inbox")

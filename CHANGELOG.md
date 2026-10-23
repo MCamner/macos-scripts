@@ -18,6 +18,16 @@ All notable changes to this project will be documented in this file.
   or unknown schema `UNAVAILABLE`. The human screen is never parsed. With an
   mq-agent that predates `--json` the item is `UNAVAILABLE`.
 
+### Changed
+
+* Pulse `MEMORY` runs its three mq-agent reads concurrently and reports them
+  in list order, each with its own duration. The area went from 1.8 s to
+  0.95 s; it had grown by one mq-agent start (~430 ms) with the review queue.
+* `mqlaunch dashboard` reads the memory counts from
+  `mq-agent memory review-status --json` instead of matching the text output
+  with a regex. The Memory tab lists tiers and held queues from the same
+  document; an unknown schema is shown as not understood, not as zeros.
+
 ### Fixed
 
 * The command registry lists `dashboard` and `repl` (`prompt`, `shell`).

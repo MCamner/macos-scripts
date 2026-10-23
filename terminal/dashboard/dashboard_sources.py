@@ -116,14 +116,6 @@ def agent_json(*args: str, timeout: int = TIMEOUT) -> dict:
                     cwd=AGENT_DIR if AGENT_DIR.exists() else None, timeout=timeout)
 
 
-def agent_text(*args: str, timeout: int = TIMEOUT) -> str:
-    ok, output = run_readonly(agent_command() + list(args),
-                              cwd=AGENT_DIR if AGENT_DIR.exists() else None, timeout=timeout)
-    if not ok:
-        raise SourceError(output)
-    return redact(output)
-
-
 def script_json(script: str, *args: str) -> dict:
     return run_json(["/bin/bash", str(REPO_ROOT / script), *args], timeout=30)
 
@@ -392,7 +384,7 @@ def source_table() -> dict:
         "execution": ("mq-agent execution report --json", lambda: agent_json("execution", "report", "--json")),
         "feedback_report": ("mq-agent feedback report --json", lambda: agent_json("feedback", "report", "--json")),
         "feedback_candidates": ("mq-agent feedback candidates --json", lambda: agent_json("feedback", "candidates", "--json")),
-        "memory_review": ("mq-agent memory review-status", lambda: agent_text("memory", "review-status")),
+        "memory_review": ("mq-agent memory review-status --json", lambda: agent_json("memory", "review-status", "--json")),
         "inbox": ("mq-agent obsidian inbox list --json", lambda: agent_json("obsidian", "inbox", "list", "--json")),
         "model_profiles": ("mq-agent models current --json", lambda: agent_json("models", "current", "--json")),
         "mcp": ("mq-agent mcp status --json", collect_mcp),
