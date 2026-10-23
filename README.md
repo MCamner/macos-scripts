@@ -469,15 +469,15 @@ mqlaunch demo
 
 ### Release Menu
 
-![Release menu screenshot](docs/screenshots/readme-release-menu.svg)
+![Release menu screenshot](docs/screenshots/release-menu.png)
 
 ### Performance Hub
 
-![Performance hub screenshot](docs/screenshots/readme-performance-hub.svg)
+![Performance hub screenshot](docs/screenshots/performance-hub.png)
 
 ### Main Menu
 
-![Main menu screenshot](docs/screenshots/readme-main-menu.svg)
+![Main menu screenshot](docs/screenshots/main-menu.png)
 
 ---
 
