@@ -1,18 +1,18 @@
 # Roadmap
 
-Current version: 2.5.0
+Current version: 2.6.0
 
 ## Current direction
 
 `macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-No next release is scoped. v2.5.0 makes the pull-request release flow publish
-the wiki, moves the local model to qwen3.5:9b with thinking off, and adds
-`mqlaunch verify-changes`:
+No next release is scoped. v2.6.0 shows the memory review queue in Pulse,
+reads the three `MEMORY` sources concurrently, and passes `mqlaunch hal
+actions` through to the HAL action ledger:
 
 ```text
-Shipped:  v2.5.0  Wiki publishing after PR releases, qwen3.5 default, verify-changes
-Before:   v2.4.0  Dashboard reference layout, terminal background, orange frames
+Shipped:  v2.6.0  Pulse review queue, concurrent MEMORY reads, hal actions
+Before:   v2.5.0  Wiki publishing after PR releases, qwen3.5 default, verify-changes
 Next:     unscoped — no version number is reserved
 ```
 
