@@ -77,7 +77,14 @@ STEPS: dict[str, object] = {
 }
 
 # Local checks with no CI counterpart, and why.
-LOCAL_ONLY: dict[str, str] = {}
+LOCAL_ONLY: dict[str, str] = {
+    "check-github-releases.sh": (
+        "local-only by design: it asks GitHub whether VERSION is already "
+        "published, and main in CI sits between releases, so the answer there "
+        "would always be 'bump VERSION'. It is a pre-release question for the "
+        "operator, and release-check.sh skips it under CI, --dry-run and --json."
+    ),
+}
 
 
 def workflow_steps() -> dict[str, list[str]]:

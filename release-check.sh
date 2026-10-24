@@ -22,7 +22,6 @@ for arg in "$@"; do
     *) echo "usage: ./release-check.sh [--dry-run] [--json]" >&2; exit 2 ;;
   esac
 done
-: "$DRY_RUN"
 
 BLOCKERS=()
 # Prints a line unless --json is set.
@@ -63,6 +62,16 @@ if grep -q "$VERSION" README.md 2>/dev/null; then
   ok "README references $VERSION"
 else
   fail "README does not reference $VERSION"
+fi
+
+say "--- GitHub release publication ---"
+# Is VERSION already published, and was the previous CHANGELOG version ever
+# published. Network, so --dry-run, --json (the stack preflight) and CI skip it;
+# main sits between releases there and the answer would always be "bump".
+if [[ "$DRY_RUN" -eq 1 || "$JSON" -eq 1 || -n "${CI:-}" ]]; then
+  say "  skip: GitHub release lookup (dry-run, --json or CI)"
+else
+  run "check-github-releases.sh" bash scripts/check-github-releases.sh
 fi
 
 say "--- Consistency checks ---"
