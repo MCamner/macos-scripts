@@ -36,6 +36,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* HAL menu: `Doctor` and `Fix plan` showed nothing for 8–9 s while mq-hal
+  built the report. Both now wait behind a spinner, and the report is printed
+  after the spinner has cleared its line, so its first row no longer lands
+  after the spinner's label.
 * The command registry lists `dashboard` and `repl` (`prompt`, `shell`).
   Both are handled by `bin/mqlaunch` or `mqlaunch.sh` before
   `dispatch_cli_command()`, which the registry validator did not read, so
