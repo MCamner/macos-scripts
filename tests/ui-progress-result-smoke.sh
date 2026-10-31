@@ -176,4 +176,18 @@ for menu_shell in bash zsh; do
   grep -q '^RC:7$' <<<"$out"
 done
 
+echo "[15/15] stack sweep starts delegate output on its own line"
+for menu_shell in bash zsh; do
+  out="$(MQ_NO_TUI=1 "$menu_shell" -c '
+    source "$1"
+    pause_enter() { :; }
+    ui_spinner() { printf "SPINNER_ACTIVE"; shift; "$@"; }
+    _run_agent() { printf "── mqlaunch ──\nARG:%s\n" "$*"; }
+    handle_agent_menu_choice 6
+  ' _ "$MENU")"
+  ! grep -q 'SPINNER_ACTIVE' <<<"$out"
+  grep -q '^── mqlaunch ──$' <<<"$out"
+  grep -q '^ARG:stack sweep --brain$' <<<"$out"
+done
+
 echo "OK: progress/result UI smoke passed"

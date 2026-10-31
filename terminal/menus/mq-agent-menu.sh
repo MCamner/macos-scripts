@@ -847,7 +847,7 @@ handle_agent_menu_choice() {
     3) _run_agent_menu_wait "Running release check" _run_agent release-check; pause_enter ;;
     4) _run_agent_menu_wait "Diagnosing CI" _run_agent fix-ci;     pause_enter ;;
     5) agent_review_brain_menu_loop ;;
-    6) _run_agent_menu_wait "Running stack health sweep → brain" _run_agent stack sweep --brain; pause_enter ;;
+    6) _run_agent_menu_passthrough "Running stack health sweep → brain" _run_agent stack sweep --brain; pause_enter ;;
     7) _run_agent_menu_wait "Building stack loop plan" _run_agent stack loop; pause_enter ;;
     8) agent_cochange_menu_loop ;;
     9) agent_mcp_menu_loop ;;

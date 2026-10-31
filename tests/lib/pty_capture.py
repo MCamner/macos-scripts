@@ -20,16 +20,32 @@ Environment is inherited from this process, so a caller sets MQ_NO_TUI and
 friends via os.environ before calling.
 """
 
+import fcntl
 import os
 import select
 import subprocess
 import time
+import termios
 
 __all__ = ["run_pty"]
 
 DEFAULT_TIMEOUT = 5.0
 _READ_SIZE = 4096
 _POLL_INTERVAL = 0.1
+
+
+def _login_tty(slave):
+    """Attach a controlling terminal, including on macOS system Python 3.9."""
+    login_tty = getattr(os, "login_tty", None)
+    if login_tty is not None:
+        login_tty(slave)
+        return
+    os.setsid()
+    fcntl.ioctl(slave, termios.TIOCSCTTY, 0)
+    for fd in (0, 1, 2):
+        os.dup2(slave, fd)
+    if slave > 2:
+        os.close(slave)
 
 
 def run_pty(script, timeout=DEFAULT_TIMEOUT):
@@ -40,7 +56,7 @@ def run_pty(script, timeout=DEFAULT_TIMEOUT):
     master, slave = os.openpty()
     seen = bytearray()
     try:
-        # os.login_tty makes the pty the child's *controlling* terminal and
+        # _login_tty makes the pty the child's *controlling* terminal and
         # dups it onto 0/1/2. Redirecting stdout/stderr alone is not enough:
         # the child would keep the parent's /dev/tty, and the spinner writes
         # its frames there by design, so none of them would reach the master.
@@ -49,7 +65,7 @@ def run_pty(script, timeout=DEFAULT_TIMEOUT):
             ["bash", "-c", script],
             stdin=subprocess.DEVNULL,
             close_fds=True,
-            preexec_fn=lambda: os.login_tty(slave),
+            preexec_fn=lambda: _login_tty(slave),
         )
         # The child owns the slave now. Holding it open here would keep the
         # master readable forever after the child exits.
