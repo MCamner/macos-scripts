@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `mqlaunch selftest` no longer fails when the caller has `OPENAI_API_KEY`
+  exported, as the `se.mq.mcp` launchd job does. The rotation smoke inherited
+  the key, so its success case hit the exported-key refusal that another case
+  tests on purpose. The smoke now clears it, and
+  `openai-key-rotation-ambient-key-smoke.sh` runs it with a key exported
+  (MCamner/mq-agent#440).
+
 ## [2.6.0] - 2026-10-24
 
 ### Added
