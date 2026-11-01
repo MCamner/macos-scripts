@@ -77,6 +77,10 @@ export MQ_AGENT_HOME="$HOME_DIR/mq-agent"
 export MQ_SECURITY_BIN="$BIN/security"
 export MQ_OPENAI_KEYCHAIN_SERVICE="mq-openai-api-key"
 export MQ_OPENAI_KEYCHAIN_ACCOUNT="test-user"
+# The cases set OPENAI_API_KEY themselves where they need it. A key inherited
+# from the caller (a launchd job exports one) would make [2/8] hit the
+# exported-key refusal that [4/8] tests on purpose.
+unset OPENAI_API_KEY
 
 # Synthetic values deliberately avoid real provider token prefixes while still
 # satisfying the helper's generic `sk-...` shape check.
