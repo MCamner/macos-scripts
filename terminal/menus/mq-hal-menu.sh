@@ -48,6 +48,26 @@ _hal_pause_enter() {
   fi
 }
 
+# Runs a slow, silent mq-hal read behind a spinner, then prints its report.
+#
+# doctor-summary and fix-doctor print nothing for 8-9 s and then the whole
+# report at once. The report is captured and printed after the spinner has
+# cleared its row: printed while the spinner held the row, its first line landed
+# after the spinner's label. Both print plain text and read no stdin, so
+# capturing them changes nothing about what the operator sees.
+_hal_run_wait() {
+  local label="$1"
+  shift
+  if ! declare -f ui_spinner >/dev/null 2>&1; then
+    "$@"
+    return $?
+  fi
+  local out rc=0
+  out="$(ui_spinner "$label" "$@" 2>&1)" || rc=$?
+  [[ -n "$out" ]] && printf '%s\n' "$out"
+  return "$rc"
+}
+
 # Renders the HAL menu panel.
 render_hal_panel() {
   local width panel_color
@@ -404,8 +424,8 @@ mq_hal_menu_main() {
       3)  "$MQ_HAL_BIN" release-brief;      _hal_pause_enter ;;
       4)  "$MQ_HAL_BIN" ci;                 _hal_pause_enter ;;
       5)  hal_menu_intelligence_loop ;;
-      6)  "$MQ_HAL_BIN" doctor-summary;     _hal_pause_enter ;;
-      7)  "$MQ_HAL_BIN" fix-doctor;         _hal_pause_enter ;;
+      6)  _hal_run_wait "Reading doctor" "$MQ_HAL_BIN" doctor-summary; _hal_pause_enter ;;
+      7)  _hal_run_wait "Planning fixes" "$MQ_HAL_BIN" fix-doctor;     _hal_pause_enter ;;
       8)  hal_menu_memory_loop ;;
       9)  hal_menu_diagnostics_loop ;;
       10) hal_menu_prompt_loop ;;
