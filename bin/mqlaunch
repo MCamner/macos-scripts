@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-BASE_DIR="${BASE_DIR:-$HOME/macos-scripts}"
+BASE_DIR="${BASE_DIR:-${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 MAIN_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch.sh"
 REPL_LAUNCHER="$BASE_DIR/terminal/launchers/mqlaunch-repl.sh"
 
@@ -15,7 +15,17 @@ if [[ $# -gt 0 ]]; then
   case "$1" in
     dashboard)
       shift || true
-      exec /usr/bin/python3 "$BASE_DIR/terminal/dashboard/mq_dashboard.py" "$@"
+      # This shortcut bypasses mqlaunch.sh, which is where the global
+      # --no-color flag is stripped, so strip it here too.
+      dash_args=()
+      for arg in "$@"; do
+        if [[ "$arg" == "--no-color" ]]; then
+          export NO_COLOR=1
+        else
+          dash_args+=("$arg")
+        fi
+      done
+      exec /usr/bin/python3 "$BASE_DIR/terminal/dashboard/mq_dashboard.py" ${dash_args[@]+"${dash_args[@]}"}
       ;;
     repl|prompt|shell)
       shift || true
