@@ -14,6 +14,16 @@ All notable changes to this project will be documented in this file.
   tests on purpose. The smoke now clears it, and
   `openai-key-rotation-ambient-key-smoke.sh` runs it with a key exported
   (MCamner/mq-agent#440).
+* `bin/mqlaunch` and the REPL find the install through `MACOS_SCRIPTS_HOME`,
+  which `install.sh` exports. They read only `BASE_DIR`, so an install outside
+  `~/macos-scripts` exited 1 (#309).
+* REPL `perf`, `dev` and `demo` work. `perf` and `dev` executed bridge files
+  that only define functions, so they did nothing and reported success; `demo`
+  called a function that does not exist. All three now go through
+  `mqlaunch.sh` (#309).
+* `mqlaunch dashboard --no-color` is accepted. The wrapper's dashboard shortcut
+  skipped `mqlaunch.sh`, where the flag is stripped (#309).
+* The REPL prints no color codes when `NO_COLOR` is set (#309).
 
 ## [2.6.0] - 2026-10-24
 
