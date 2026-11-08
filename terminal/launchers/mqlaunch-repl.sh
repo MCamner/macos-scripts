@@ -2,19 +2,23 @@
 
 set -uo pipefail
 
-BASE_DIR="${BASE_DIR:-$HOME/macos-scripts}"
+BASE_DIR="${BASE_DIR:-${MACOS_SCRIPTS_HOME:-$HOME/macos-scripts}}"
 MQ_SHELL="${SHELL:-/bin/zsh}"
 MQ_LINE="════════════════════════════════════════════════════"
 PROMPT_LABEL="mqlaunch > "
 MQ_LAST_STATUS=0
 MQ_MODE="repl"
 
-# --- COLORS (subtle) ---
-C_RESET='\033[0m'
-C_DIM='\033[2m'
-C_ACCENT='\033[36m'     # cyan
-C_OK='\033[32m'         # green
-C_ERR='\033[31m'        # red
+# --- COLORS (subtle; empty when NO_COLOR is set, see https://no-color.org) ---
+if [[ -n "${NO_COLOR:-}" ]]; then
+  C_RESET='' C_DIM='' C_ACCENT='' C_OK='' C_ERR=''
+else
+  C_RESET='\033[0m'
+  C_DIM='\033[2m'
+  C_ACCENT='\033[36m'     # cyan
+  C_OK='\033[32m'         # green
+  C_ERR='\033[31m'        # red
+fi
 
 # Gets git branch.
 get_git_branch() {
@@ -52,10 +56,15 @@ run_menu() {
 
 # Runs doctor.
 run_doctor() { "$BASE_DIR/tools/scripts/doctor.sh"; }
+# Runs perf, dev and demo through mqlaunch.sh's command router. The bridge
+# files only define functions, so executing them did nothing.
+run_launcher_command() { "$BASE_DIR/terminal/launchers/mqlaunch.sh" "$@"; }
 # Runs perf.
-run_perf() { "$BASE_DIR/terminal/bridges/performance-bridge.sh"; }
+run_perf() { run_launcher_command perf; }
 # Runs dev.
-run_dev() { "$BASE_DIR/terminal/bridges/dev-bridge.sh"; }
+run_dev() { run_launcher_command dev; }
+# Runs demo.
+run_demo() { run_launcher_command demo; }
 # Runs tools.
 run_tools() { "$BASE_DIR/terminal/menus/mq-tools-menu.sh"; }
 
