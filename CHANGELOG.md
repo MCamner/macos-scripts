@@ -24,6 +24,10 @@ All notable changes to this project will be documented in this file.
 * `mqlaunch dashboard --no-color` is accepted. The wrapper's dashboard shortcut
   skipped `mqlaunch.sh`, where the flag is stripped (#309).
 * The REPL prints no color codes when `NO_COLOR` is set (#309).
+* HAL menu: `Doctor` and `Fix plan` showed nothing for 8–9 s while mq-hal
+  built the report. Both now wait behind a spinner, and the report is printed
+  after the spinner has cleared its line, so its first row no longer lands
+  after the spinner's label (#304).
 
 ## [2.6.0] - 2026-10-24
 
