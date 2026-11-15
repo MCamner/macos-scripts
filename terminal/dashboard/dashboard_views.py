@@ -68,7 +68,7 @@ PERIODS = (("24h", 1), ("7d", 7), ("30d", 30), ("all", None))
 _KIND = {
     "PASS": "pass", "VERIFIED": "pass", "RUNNING": "pass", "OK": "pass", "HEALTHY": "pass",
     "ELIGIBLE": "pass", "AUTHENTICATED": "pass", "CLEAN": "pass", "MATCH": "pass", "PRESENT": "pass",
-    "OPEN": "pass", "LOADED": "pass",
+    "OPEN": "pass", "LOADED": "pass", "ON DEMAND": "pass",
     "WARN": "warn", "STALE": "warn", "DIRTY": "warn", "AWAITING_OPERATOR_APPROVAL": "warn",
     "REQUIRED": "warn", "DRIFT": "warn", "DEGRADED": "warn", "INSUFFICIENT_EVIDENCE": "warn",
     "CANDIDATE_WORSE": "warn", "DRAFT": "warn",
@@ -456,8 +456,11 @@ def home_panels(data: dict, width: int = 40) -> list:
     services = get(data, "services")
     if services:
         cols = [Col("SERVICE", 20), Col("PORT", 6, 1), Col("STATUS", 10)]
-        lines = table(cols, [[(f"● {s['name']}", kind_of(s["state"])), S(str(s["port"]), "muted"),
-                              (f"● {s['state']}", kind_of(s["state"]))] for s in services], width)
+        rows = [[(f"● {s['name']}", kind_of(s["state"])), S(str(s["port"]), "muted"),
+                 (f"● {s['state']}", kind_of(s["state"]))] for s in services]
+        rows += [[(f"● {t['name']}", kind_of(t["state"])), S("cli", "muted"),
+                  (f"● {t['state']}", kind_of(t["state"]))] for t in get(data, "on_demand") or []]
+        lines = table(cols, rows, width)
         mcp = next((s for s in services if s["name"] == "mq-mcp"), {})
         started = re.search(r"(\d\d:\d\d):\d\d", mcp.get("started", ""))
         contract = re.search(r"validation\s+\S+\s+(\w+)", (mcp_servers(data).get("mq-mcp") or {}).get("contract", ""))
@@ -648,6 +651,14 @@ def detect_issues(data: dict) -> list:
                 f"launchd state '{s['launchd_state']}', listening={s['listening']}, last exit {s['last_exit'] or '-'}.",
                 f"launchctl kickstart -k gui/{uid}/{s['label']}", risk="medium: restarts the service",
                 reversible="yes (restart again)", verify=f"lsof -nP -iTCP:{s['port']} -sTCP:LISTEN")
+
+    for tool in get(data, "on_demand") or []:
+        if tool["state"] != "ON DEMAND":
+            add("WARN", tool["name"], f"{tool['command']} CLI not found", "MQ_IMAGE_BIN, PATH, checkout venv",
+                f"{tool['name']} runs per call through its {tool['command']} CLI; without it, image review "
+                "and perception fail. It is not a service, so nothing should be restarted.",
+                f"cd ~/{tool['name']} && uv sync", risk="low: installs the project environment",
+                reversible="yes (remove .venv)", verify=f"ls ~/{tool['name']}/.venv/bin/{tool['command']}")
 
     for job in get(data, "jobs") or []:
         code = str(job.get("last_exit", ""))

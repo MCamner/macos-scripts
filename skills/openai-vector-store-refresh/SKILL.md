@@ -65,7 +65,7 @@ mq-agent mcp status --json
 
 In Codex, Python/httpx-based `mq-agent` checks may fail inside the sandbox with `Operation not permitted` even when `curl` works and the MCP server is healthy. In that case, rerun the `mq-agent mcp status`, `mq-agent mcp tools`, or `mq-agent memory search` check with normal host/network execution rather than treating the server as broken.
 
-Port `8765` is the MQ MCP server. Port `8766` is for `mq-image-analyze` and may be absent without blocking semantic memory.
+Port `8765` is the MQ MCP server. `mq-image-analyze` runs per call through its CLI and has no port (`8766` is atlas-one's) and is not needed for semantic memory.
 
 ## Output
 

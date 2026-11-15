@@ -68,9 +68,10 @@ def fixture():
             {"label": "se.mq.mcp", "name": "mq-mcp", "port": 8765, "state": "RUNNING", "launchd_state": "running",
              "listening": True, "pid": "77600", "runs": "4", "last_exit": "143", "started": "", "launch_agent": "",
              "program": "", "stdout": "", "stderr": ""},
-            {"label": "se.mq.image", "name": "mq-image-analyze", "port": 8766, "state": "DOWN",
-             "launchd_state": "not running", "listening": False, "pid": "", "runs": "1", "last_exit": "1",
-             "started": "", "launch_agent": "", "program": "", "stdout": "", "stderr": ""},
+        ]),
+        "on_demand": env([
+            {"name": "mq-image-analyze", "command": "mq-image", "state": "ON DEMAND",
+             "binary": "/home/u/mq-image-analyze/.venv/bin/mq-image"},
         ]),
         "mcp": env({"servers": {"mq-mcp": {"available": True, "endpoint": "http://127.0.0.1:8765", "tools": 3,
                                            "contract": CONTRACT, "tool_specs": [
@@ -299,10 +300,26 @@ class RepairPlanner(unittest.TestCase):
         return [i for i in self.issues if i["component"] == component]
 
     def test_down_service_gets_manual_restart_with_risk(self):
-        issue = self.find("mq-image-analyze")[0]
+        data = fixture()
+        data["services"]["data"][0].update(state="DOWN", launchd_state="not running", listening=False)
+        issue = [i for i in views.detect_issues(data) if i["component"] == "mq-mcp"][0]
         self.assertEqual(issue["severity"], "FAIL")
         self.assertIn("launchctl kickstart -k", issue["command"])
         self.assertIn("medium", issue["risk"])
+
+    def test_an_on_demand_cli_is_never_offered_a_service_restart(self):
+        # mq-image-analyze runs per call; restarting its old LaunchAgent would
+        # bring back the server the stack stopped using.
+        self.assertFalse(self.find("mq-image-analyze"))
+        self.assertFalse([i for i in self.issues if "se.mq.image" in str(i.get("command"))])
+
+    def test_a_missing_on_demand_cli_suggests_installing_it(self):
+        data = fixture()
+        data["on_demand"]["data"][0].update(state="MISSING", binary="")
+        issue = [i for i in views.detect_issues(data) if i["component"] == "mq-image-analyze"][0]
+        self.assertEqual(issue["severity"], "WARN")
+        self.assertIn("uv sync", issue["command"])
+        self.assertNotIn("launchctl", issue["command"])
 
     def test_keychain_explains_doctor_env_warning(self):
         issue = self.find("doctor:OPENAI_API_KEY")[0]
@@ -395,6 +412,32 @@ class Sources(unittest.TestCase):
         with self.assertRaises(sources.SourceError):
             sources.run_json([sys.executable, "-c", "print('{\"ok\": false, \"error\": \"stale\"}')"])
 
+    def test_image_analyze_is_not_a_launchd_service(self):
+        self.assertEqual([name for _, name, _ in sources.SERVICES], ["mq-mcp"])
+
+    def test_on_demand_cli_resolves_override_then_path_then_checkout_venv(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            venv_bin = home / "mq-image-analyze" / ".venv" / "bin"
+            venv_bin.mkdir(parents=True)
+            exe = venv_bin / "mq-image"
+            exe.write_text("#!/bin/sh\n")
+            exe.chmod(0o755)
+            found = sources.collect_on_demand(env={}, which=lambda name: None, home=home)
+            self.assertEqual(found, [{"name": "mq-image-analyze", "command": "mq-image",
+                                      "state": "ON DEMAND", "binary": str(exe)}])
+            on_path = sources.collect_on_demand(env={}, which=lambda name: "/opt/bin/mq-image", home=home)
+            self.assertEqual(on_path[0]["binary"], "/opt/bin/mq-image")
+            override = sources.collect_on_demand(env={"MQ_IMAGE_BIN": str(exe)},
+                                                 which=lambda name: "/opt/bin/mq-image", home=home)
+            self.assertEqual(override[0]["binary"], str(exe))
+            missing = sources.collect_on_demand(env={}, which=lambda name: None, home=home / "none")
+            self.assertEqual(missing[0]["state"], "MISSING")
+            self.assertEqual(missing[0]["binary"], "")
+
+    def test_on_demand_is_a_registered_source(self):
+        self.assertIn("on_demand", sources.source_table())
+
     def test_envelope_contains_exceptions(self):
         result = sources.envelope(lambda: 1 / 0)
         self.assertFalse(result["ok"])
@@ -468,6 +511,11 @@ class Rendering(unittest.TestCase):
                       "AI MODELS", "EVIDENCE & LEARNING", "RECENT RESULTS", "GITHUB & RELEASES", "QUICK ACTIONS",
                       "Doctor", "Check & diagnose", "Automation"):
             self.assertIn(label, text)
+
+    def test_mcp_panel_shows_image_analyze_as_an_on_demand_cli(self):
+        text = self.render(160, 48, dashboard.State())
+        self.assertIn("ON DEMAND", text)
+        self.assertNotIn("8766", text)
 
     def test_rich_header_only_when_tall_enough(self):
         self.assertIn("MQ CONTROL CENTER", self.render(160, 48, dashboard.State()))
