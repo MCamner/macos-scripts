@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The dashboard no longer treats mq-image-analyze as a launchd service. Its
+  consumers (mq-agent, mq-mcp, mq-hal) start the `mq-image` CLI per call, so
+  `SERVICES` lists only `se.mq.mcp`, and a new `on_demand` source reports the
+  CLI as `ON DEMAND` or `MISSING` (resolved as `MQ_IMAGE_BIN`, `PATH`, then
+  `~/mq-image-analyze/.venv`). A missing CLI is a WARN that suggests `uv sync`;
+  the dashboard no longer offers `launchctl kickstart` for the retired
+  `se.mq.image` job, whose port `8766` belongs to atlas-one. The
+  `mq-stack-recovery` and `openai-vector-store-refresh` skills say the same.
+
 ### Fixed
 
 * `mqlaunch selftest` no longer fails when the caller has `OPENAI_API_KEY`

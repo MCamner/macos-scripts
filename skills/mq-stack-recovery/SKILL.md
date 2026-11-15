@@ -24,10 +24,14 @@ mqlaunch stack status --json | jq -r '.repos[] | [.name, .verification.status, .
 mqlaunch auth status
 mqlaunch doctor
 launchctl print "gui/$(id -u)/se.mq.mcp"
-launchctl print "gui/$(id -u)/se.mq.image"
 lsof -nP -iTCP:8765 -sTCP:LISTEN
-lsof -nP -iTCP:8766 -sTCP:LISTEN
+ls -l ~/mq-image-analyze/.venv/bin/mq-image
 ```
+
+mq-image-analyze is not a service. mq-agent, mq-mcp and mq-hal start its
+`mq-image` CLI per call, so check that the binary exists rather than a port.
+Do not reload its old `se.mq.image` LaunchAgent; port `8766` belongs to
+atlas-one.
 
 From the mq-agent checkout:
 

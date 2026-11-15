@@ -36,7 +36,11 @@ OLLAMA_URL = "http://127.0.0.1:11434"
 TIMEOUT = 15
 
 # launchd label, display name, port
-SERVICES = (("se.mq.mcp", "mq-mcp", 8765), ("se.mq.image", "mq-image-analyze", 8766))
+SERVICES = (("se.mq.mcp", "mq-mcp", 8765),)
+# Tools the stack starts per call rather than as a service. mq-image-analyze
+# left SERVICES when every consumer (mq-agent, mq-mcp, mq-hal) moved to its CLI;
+# its old LaunchAgent stays off, and :8766 is atlas-one's port.
+ON_DEMAND = (("mq-image-analyze", "mq-image", "MQ_IMAGE_BIN"),)
 
 # Token-shaped values only: a word boundary and a realistic minimum length keep
 # ordinary words ("task-runner", "feat/risk-…", "API_KEY: missing") intact.
@@ -166,6 +170,24 @@ def collect_services() -> list[dict]:
             "stderr": info.get("stderr path", plist.get("StandardErrorPath", "") if plist else ""),
         })
     return services
+
+
+def collect_on_demand(env=None, which=shutil.which, home=None) -> list[dict]:
+    """Whether each on-demand CLI can start: override env var, PATH, checkout venv.
+
+    The same order mq-agent and mq-mcp use to find `mq-image`, so the dashboard
+    reports the binary those callers would actually run.
+    """
+    env = os.environ if env is None else env
+    home = Path.home() if home is None else Path(home)
+    tools = []
+    for name, command, override in ON_DEMAND:
+        candidate = home / name / ".venv" / "bin" / command
+        binary = (env.get(override, "").strip() or which(command)
+                  or (str(candidate) if candidate.is_file() and os.access(candidate, os.X_OK) else ""))
+        tools.append({"name": name, "command": command,
+                      "state": "ON DEMAND" if binary else "MISSING", "binary": binary or ""})
+    return tools
 
 
 def launchctl_fields(output: str) -> dict:
@@ -367,6 +389,7 @@ def source_table() -> dict:
     # mq-agent calls, so most cards fill within a fraction of a second.
     return {
         "services": ("launchctl print + lsof + ps", collect_services),
+        "on_demand": ("mq-image CLI: MQ_IMAGE_BIN, PATH, ~/mq-image-analyze/.venv", collect_on_demand),
         "jobs": ("~/Library/LaunchAgents/se.mq.*.plist + launchctl print", collect_jobs),
         "ollama": ("Ollama HTTP API 127.0.0.1:11434 (/api/version, /api/tags, /api/ps)", collect_ollama),
         "memory": ("sysctl hw.memsize + vm_stat", collect_memory),
