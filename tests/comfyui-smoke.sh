@@ -36,6 +36,7 @@ while [[ $# -gt 0 ]]; do
   [[ "$1" == "--port" ]] && port="$2"
   shift
 done
+echo "fake comfyui on $port"
 exec python3 -m http.server "$port" --bind 127.0.0.1
 EOF
 chmod +x "$TMP/comfy/.venv/bin/python"
@@ -43,10 +44,10 @@ chmod +x "$TMP/comfy/.venv/bin/python"
 PORT="$(free_port)"
 export PATH="$TMP/bin:$PATH" COMFYUI_PORT="$PORT" COMFYUI_LOG_DIR="$TMP/logs"
 
-echo "[1/8] syntax check"
+echo "[1/9] syntax check"
 bash -n "$SCRIPT"
 
-echo "[2/8] missing drive fails with exit 1"
+echo "[2/9] missing drive fails with exit 1"
 set +e
 out="$(COMFYUI_DIR="$TMP/nope" "$SCRIPT" start 2>&1)"
 rc=$?
@@ -54,7 +55,7 @@ set -e
 [[ $rc -eq 1 ]] || { echo "  expected exit 1, got $rc" >&2; exit 1; }
 grep -q 'MQ-AI' <<<"$out" || { echo "  message does not name the drive: $out" >&2; exit 1; }
 
-echo "[3/8] unknown subcommand fails with exit 2"
+echo "[3/9] unknown subcommand fails with exit 2"
 set +e
 COMFYUI_DIR="$TMP/comfy" "$SCRIPT" nonsense >/dev/null 2>&1
 rc=$?
@@ -63,14 +64,14 @@ set -e
 
 export COMFYUI_DIR="$TMP/comfy"
 
-echo "[4/8] start returns once the server answers, and does not block"
+echo "[4/9] start returns once the server answers, and does not block"
 "$SCRIPT" start >/dev/null
 curl -fsS "http://127.0.0.1:$PORT/" >/dev/null
 "$SCRIPT" status | grep -q 'running' || { echo "  status does not report running" >&2; exit 1; }
 # A second start reuses the running server.
 "$SCRIPT" start | grep -q 'already running' || { echo "  second start did not reuse" >&2; exit 1; }
 
-echo "[5/8] stop frees the port"
+echo "[5/9] stop frees the port"
 "$SCRIPT" stop >/dev/null
 if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   echo "  port $PORT still listening after stop" >&2
@@ -79,7 +80,7 @@ fi
 "$SCRIPT" status | grep -q 'not running' || { echo "  status after stop is wrong" >&2; exit 1; }
 "$SCRIPT" stop | grep -q 'not running' || { echo "  stop when stopped is not a no-op" >&2; exit 1; }
 
-echo "[6/8] stop refuses a listener that is not ComfyUI"
+echo "[6/9] stop refuses a listener that is not ComfyUI"
 (cd "$TMP" && exec python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1) &
 STRAY_PID=$!
 for _ in {1..50}; do
@@ -97,8 +98,10 @@ set +e
 rc=$?
 set -e
 [[ $rc -eq 1 ]] || { echo "  start over a foreign listener: expected exit 1, got $rc" >&2; exit 1; }
+kill "$STRAY_PID"; wait "$STRAY_PID" 2>/dev/null || true
+STRAY_PID=""
 
-echo "[7/8] log follows the ComfyUI log, and fails when there is none"
+echo "[7/9] log follows the ComfyUI log, and fails when there is none"
 set +e
 COMFYUI_LOG_DIR="$TMP/nologs" "$SCRIPT" log >/dev/null 2>&1
 rc=$?
@@ -115,7 +118,25 @@ wait "$LOG_PID" 2>/dev/null || true
 grep -q 'line one' "$TMP/followed" || { echo "  log did not print existing lines" >&2; exit 1; }
 grep -q 'line two' "$TMP/followed" || { echo "  log did not follow new lines" >&2; exit 1; }
 
-echo "[8/8] the menu path main 5 -> Dev 10 -> Menus 5/6 reaches comfyui"
+echo "[8/9] fg runs in the foreground with its output in the terminal"
+"$SCRIPT" fg >"$TMP/fg.out" 2>&1 &
+FG_PID=$!
+for _ in {1..50}; do
+  curl -fsS "http://127.0.0.1:$PORT/" >/dev/null 2>&1 && break
+  sleep 0.1
+done
+grep -q "fake comfyui on $PORT" "$TMP/fg.out" || { echo "  fg output not in the terminal" >&2; exit 1; }
+[[ "$(lsof -nP -t -iTCP:"$PORT" -sTCP:LISTEN | head -n 1)" == "$FG_PID" ]] || {
+  echo "  fg did not exec into ComfyUI, so Ctrl-C would not reach it" >&2; exit 1; }
+set +e
+"$SCRIPT" fg >"$TMP/fg2.out" 2>&1
+rc=$?
+set -e
+[[ $rc -eq 1 ]] || { echo "  fg while running: expected exit 1, got $rc" >&2; exit 1; }
+grep -q 'comfyui log' "$TMP/fg2.out" || { echo "  fg while running does not point to log" >&2; exit 1; }
+kill "$FG_PID"; wait "$FG_PID" 2>/dev/null || true
+
+echo "[9/9] the menu path main 5 -> Dev 10 -> Menus 5/6 reaches comfyui"
 MAIN="$ROOT/terminal/menus/mq-main-menu.sh"
 DEV="$ROOT/terminal/menus/mq-dev-menu.sh"
 grep -qE '^[[:space:]]+5\) open_dev_menu ;;' "$MAIN" || { echo "  main 5 does not open Dev" >&2; exit 1; }
