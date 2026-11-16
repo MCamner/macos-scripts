@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `mqlaunch comfyui [start|stop|status]` and Dev → 10. Menus →
+  `5. Start ComfyUI` / `6. Stop ComfyUI`. Starts ComfyUI from the MQ-AI drive
+  in the background on `127.0.0.1:8188` (`--lowvram --reserve-vram 2`), waits
+  until it answers, and opens the browser; the log goes to
+  `~/Library/Logs/mqlaunch/comfyui.log`. Stop frees the memory again. Both
+  refuse to touch a port listener whose working directory is not the ComfyUI
+  directory. `COMFYUI_DIR` and `COMFYUI_PORT` override the defaults.
+
 ## [2.7.0] - 2026-11-16
 
 ### Changed
