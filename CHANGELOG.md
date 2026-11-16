@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-11-16
+
 ### Changed
 
 * The dashboard no longer treats mq-image-analyze as a launchd service. Its
@@ -19,6 +21,13 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* Stack health sweep from the menu finishes its status label before the
+  delegate's output starts, instead of sharing a row with it. UI smoke tests
+  run on macOS system Python 3.9, which lacks `os.login_tty`, through a
+  `setsid`/`TIOCSCTTY` fallback (#306).
+* The HAL page, gallery and menu preview show the real 10-choice menu in five
+  groups instead of a stale 16-choice one, and mark Cloud code plan as the one
+  choice that sends data to OpenAI (#308).
 * `mqlaunch selftest` no longer fails when the caller has `OPENAI_API_KEY`
   exported, as the `se.mq.mcp` launchd job does. The rotation smoke inherited
   the key, so its success case hit the exported-key refusal that another case
