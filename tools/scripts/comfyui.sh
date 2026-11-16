@@ -11,6 +11,14 @@ COMFYUI_WAIT="${COMFYUI_WAIT:-120}"
 LOG_DIR="${COMFYUI_LOG_DIR:-$HOME/Library/Logs/mqlaunch}"
 LOG_FILE="$LOG_DIR/comfyui.log"
 URL="http://127.0.0.1:$COMFYUI_PORT"
+# One argument list for start and fg, so the two cannot drift apart.
+COMFYUI_ARGS=(
+  --listen 127.0.0.1
+  --port "$COMFYUI_PORT"
+  --lowvram
+  --reserve-vram 2
+  --preview-method none
+)
 
 # Prints an error and exits 1.
 die() {
@@ -21,9 +29,10 @@ die() {
 # Prints usage.
 usage() {
   cat <<EOF
-Usage: mqlaunch comfyui [start|stop|status|log]
+Usage: mqlaunch comfyui [start|fg|stop|status|log]
 
   start   Start ComfyUI from the MQ-AI drive and open $URL (default)
+  fg      Run ComfyUI in this terminal with its output here (Ctrl-C stops it)
   stop    Stop the ComfyUI server and free its memory
   status  Report whether ComfyUI is running
   log     Follow the ComfyUI output live (Ctrl-C stops following, not ComfyUI)
@@ -47,11 +56,33 @@ is_comfyui_pid() {
   [[ -n "$cwd" && "$cwd" == "$want" ]]
 }
 
-# Starts the server in the background and waits until it answers.
-cmd_start() {
+# Fails unless the ComfyUI checkout and its venv are present.
+need_comfyui() {
   if [[ ! -f "$COMFYUI_DIR/main.py" || ! -x "$COMFYUI_DIR/.venv/bin/python" ]]; then
     die "ComfyUI not found at $COMFYUI_DIR — is the MQ-AI drive connected?"
   fi
+}
+
+# Runs the server in this terminal. exec makes ComfyUI the process itself, so
+# Ctrl-C reaches it directly and stops it.
+cmd_fg() {
+  need_comfyui
+
+  local pid
+  pid="$(listener_pid)"
+  if [[ -n "$pid" ]]; then
+    is_comfyui_pid "$pid" || die "port $COMFYUI_PORT is used by another process (PID $pid)"
+    die "ComfyUI is already running (PID $pid) — stop it first, or follow its output with: comfyui log"
+  fi
+
+  cd "$COMFYUI_DIR"
+  printf 'ComfyUI at %s — Ctrl-C stops it\n' "$URL"
+  exec .venv/bin/python main.py "${COMFYUI_ARGS[@]}"
+}
+
+# Starts the server in the background and waits until it answers.
+cmd_start() {
+  need_comfyui
 
   local pid
   pid="$(listener_pid)"
@@ -66,12 +97,7 @@ cmd_start() {
   printf 'Starting ComfyUI from %s...\n' "$COMFYUI_DIR"
   (
     cd "$COMFYUI_DIR"
-    nohup .venv/bin/python main.py \
-      --listen 127.0.0.1 \
-      --port "$COMFYUI_PORT" \
-      --lowvram \
-      --reserve-vram 2 \
-      --preview-method none >"$LOG_FILE" 2>&1 &
+    nohup .venv/bin/python main.py "${COMFYUI_ARGS[@]}" >"$LOG_FILE" 2>&1 &
   )
 
   local i
@@ -139,6 +165,7 @@ cmd_log() {
 main() {
   case "${1:-start}" in
     start) cmd_start ;;
+    fg) cmd_fg ;;
     stop) cmd_stop ;;
     status) cmd_status ;;
     log) cmd_log ;;

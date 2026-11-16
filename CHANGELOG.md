@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch comfyui fg` runs ComfyUI in the current terminal with its output
+  there, like starting it by hand; Ctrl-C stops it. Same flags as `start`
+  (one shared argument list). Refuses when ComfyUI already runs and points to
+  `comfyui log`.
 * `mqlaunch comfyui log` follows the ComfyUI output live (`tail -f` on
   `~/Library/Logs/mqlaunch/comfyui.log`). Ctrl-C stops following; ComfyUI
   keeps running. `start` points to it once the server answers.

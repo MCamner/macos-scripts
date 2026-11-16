@@ -258,7 +258,7 @@ Usage:
 Quick commands:
   mqlaunch demo
   mqlaunch excalidraw
-  mqlaunch comfyui [start|stop|status|log]
+  mqlaunch comfyui [start|fg|stop|status|log]
   mqlaunch perf
   mqlaunch network
   mqlaunch check
@@ -438,7 +438,7 @@ dispatch_cli_command() {
       ;;
 
     comfyui)
-      # Arguments forwarded: comfyui.sh owns start, stop, status and log, and
+      # Arguments forwarded: comfyui.sh owns start, fg, stop, status and log, and
       # rejects anything else with exit 2.
       shift
       "$BASE_DIR/tools/scripts/comfyui.sh" "$@"
