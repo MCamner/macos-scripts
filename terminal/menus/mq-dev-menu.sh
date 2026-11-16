@@ -122,7 +122,7 @@ dev_menus_menu_loop() {
   local choice
   while true; do
     _dev_submenu_panel "Menus" "1. Network tools" "2. Themes" "3. Tools menu" \
-      "4. HAL terminal guide"
+      "4. HAL terminal guide" "5. Start ComfyUI" "6. Stop ComfyUI"
     read_menu_choice "" "menus" || return
     choice="$REPLY"
     echo
@@ -131,6 +131,9 @@ dev_menus_menu_loop() {
       2) open_themes_menu ;;
       3) open_tools_menu ;;
       4) run_dev_script "HAL TERMINAL GUIDE" "$(dev_repo_path "tools/scripts/hal-terminal-guide.sh")" ;;
+      # ComfyUI sits here because every front menu already holds ten choices.
+      5) "$BASE_DIR/bin/mqlaunch" comfyui start; pause_enter ;;
+      6) "$BASE_DIR/bin/mqlaunch" comfyui stop; pause_enter ;;
       b|B|back|x|X|exit) return ;;
       "") ;;
       *) echo "${C_ERR}Invalid dev selection:${C_RESET} $choice"; pause_enter ;;

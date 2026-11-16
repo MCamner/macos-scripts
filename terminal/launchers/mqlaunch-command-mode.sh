@@ -59,8 +59,8 @@ nearest_cli_command() {
   local unknown="${1:-}"
 
   printf '%s\n' \
-    about agent architecture ask auth brain bundle check commands demo dev doctor feedback \
-    excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
+    about agent architecture ask auth brain bundle check comfyui commands demo dev doctor \
+    feedback excalidraw fix flow focus ghost git guard hal help index learn mc mcp-status \
     memory netpulse network next notes obsidian palette perf release release-check \
     repo-health repos review risk-review route scan selftest skills srm stack system \
     theme tools ui version workflows workspace | awk -v target="$unknown" '
@@ -258,6 +258,7 @@ Usage:
 Quick commands:
   mqlaunch demo
   mqlaunch excalidraw
+  mqlaunch comfyui [start|stop|status]
   mqlaunch perf
   mqlaunch network
   mqlaunch check
@@ -434,6 +435,15 @@ dispatch_cli_command() {
     excalidraw|draw)
       "$BASE_DIR/tools/scripts/excalidraw.sh"
       return $?
+      ;;
+
+    comfyui)
+      # Arguments forwarded: comfyui.sh owns start, stop and status, and
+      # rejects anything else with exit 2.
+      shift
+      "$BASE_DIR/tools/scripts/comfyui.sh" "$@"
+      command_status=$?
+      return "$command_status"
       ;;
 
     focus)

@@ -112,6 +112,23 @@
       "local_role": "thin-entrypoint"
     },
     {
+      "name": "comfyui",
+      "aliases": [],
+      "namespace": null,
+      "summary": "Start, stop or check ComfyUI on the MQ-AI drive",
+      "owner": "macos-scripts",
+      "safety": "local-write",
+      "output_modes": [
+        "human"
+      ],
+      "json": false,
+      "interactive": false,
+      "compat_only": false,
+      "delegates_to": null,
+      "operator_surface": false,
+      "local_role": "thin-entrypoint"
+    },
+    {
       "name": "review",
       "aliases": [
         "/review"
