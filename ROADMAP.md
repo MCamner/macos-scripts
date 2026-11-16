@@ -1,18 +1,18 @@
 # Roadmap
 
-Current version: 2.6.0
+Current version: 2.7.0
 
 ## Current direction
 
 `macos-scripts` is the human terminal entrypoint for the MQ stack.
 
-No next release is scoped. v2.6.0 shows the memory review queue in Pulse,
-reads the three `MEMORY` sources concurrently, and passes `mqlaunch hal
-actions` through to the HAL action ledger:
+No next release is scoped. v2.7.0 shows mq-image-analyze as an on-demand CLI
+in the dashboard instead of a launchd service, and fixes the mqlaunch wrapper,
+REPL, HAL menu spinner, stack sweep output and the selftest key rotation smoke:
 
 ```text
-Shipped:  v2.6.0  Pulse review queue, concurrent MEMORY reads, hal actions
-Before:   v2.5.0  Wiki publishing after PR releases, qwen3.5 default, verify-changes
+Shipped:  v2.7.0  mq-image-analyze on demand in the dashboard, wrapper and REPL fixes
+Before:   v2.6.0  Pulse review queue, concurrent MEMORY reads, hal actions
 Next:     unscoped — no version number is reserved
 ```
 
