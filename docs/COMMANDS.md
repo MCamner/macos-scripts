@@ -922,6 +922,7 @@ mqlaunch bundle                     # create debug/support bundle
 mqlaunch workspace                  # save, list, show and restore workspace snapshots
 mqlaunch excalidraw                 # open the Excalidraw drawing workflow
 mqlaunch comfyui [start|stop|status] # ComfyUI from the MQ-AI drive (background, 127.0.0.1:8188)
+mqlaunch comfyui log                # follow ComfyUI output live; Ctrl-C leaves it running
 mqlaunch b2tui                      # B2 Atlas Prompt OS terminal interface
 ```
 

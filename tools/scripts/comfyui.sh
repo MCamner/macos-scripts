@@ -21,11 +21,12 @@ die() {
 # Prints usage.
 usage() {
   cat <<EOF
-Usage: mqlaunch comfyui [start|stop|status]
+Usage: mqlaunch comfyui [start|stop|status|log]
 
   start   Start ComfyUI from the MQ-AI drive and open $URL (default)
   stop    Stop the ComfyUI server and free its memory
   status  Report whether ComfyUI is running
+  log     Follow the ComfyUI output live (Ctrl-C stops following, not ComfyUI)
 
 Environment: COMFYUI_DIR (default /Volumes/MQ-AI/AI-Apps/ComfyUI), COMFYUI_PORT
 Log: $LOG_FILE
@@ -77,7 +78,7 @@ cmd_start() {
   for ((i = 0; i < COMFYUI_WAIT; i++)); do
     if curl -fsS "$URL" >/dev/null 2>&1; then
       printf 'OK: ComfyUI ready at %s\n' "$URL"
-      printf 'Log: %s\n' "$LOG_FILE"
+      printf 'Follow its output: mqlaunch comfyui log\n'
       open "$URL" >/dev/null 2>&1 || true
       return 0
     fi
@@ -127,12 +128,20 @@ cmd_status() {
   fi
 }
 
+# Follows the server output. Ctrl-C ends tail only; ComfyUI keeps running.
+cmd_log() {
+  [[ -f "$LOG_FILE" ]] || die "no log yet at $LOG_FILE — start ComfyUI first"
+  printf '%s (Ctrl-C stops following; ComfyUI keeps running)\n' "$LOG_FILE"
+  exec tail -n 50 -f "$LOG_FILE"
+}
+
 # Runs the main entry point.
 main() {
   case "${1:-start}" in
     start) cmd_start ;;
     stop) cmd_stop ;;
     status) cmd_status ;;
+    log) cmd_log ;;
     -h|--help|help) usage ;;
     *)
       usage >&2

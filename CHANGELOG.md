@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `mqlaunch comfyui log` follows the ComfyUI output live (`tail -f` on
+  `~/Library/Logs/mqlaunch/comfyui.log`). Ctrl-C stops following; ComfyUI
+  keeps running. `start` points to it once the server answers.
 * `mqlaunch comfyui [start|stop|status]` and Dev → 10. Menus →
   `5. Start ComfyUI` / `6. Stop ComfyUI`. Starts ComfyUI from the MQ-AI drive
   in the background on `127.0.0.1:8188` (`--lowvram --reserve-vram 2`), waits
